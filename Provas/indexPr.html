@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="stylePr.css">
+    <script src="scriptPr.js"></script>
+    <title>Provas</title>
+    <link rel="icon" href="ImagensPr/Provas.png" type="image/x-icon">
+</head>
+<body>
+
+    <div id="ImgTopo" class="aba-container">
+        <img src="ImagensPr/Provas.png" alt="Provas">
+    </div>
+
+    <div class="provas-container">
+        <!-- SAEB -->
+        <div class="prova-card prova-saeb">
+            <div class="card-header">
+                <p class="text-prova">PROVA.SAEB</p>
+            </div>
+            <div class="card-content">
+                <div class="info-prova">
+                    <p>Ocorrerá no dia:</p>
+                    <p class="data-prova">25/10</p>
+                </div>
+                <img class="ProvaBrasil" src="ImagensPr/SaebPr.png" alt="SAEB">
+                <button class="btn-estudo" onclick="mostrarSB()">Estude Agora!</button>
+            </div>
+        </div>
+
+        <!-- PROVA BRASIL -->
+        <div class="prova-card prova-brasil">
+            <div class="card-header">
+                <p class="text-prova">PROVA.BRASIL</p>
+            </div>
+            <div class="card-content">
+                <div class="info-prova">
+                    <p>Ocorrerá no dia:</p>
+                    <p class="data-prova">27/10</p>
+                </div>
+                <img class="ProvaBrasil" src="ImagensPr/ProvaBrasilPr.png" alt="Prova Brasil">
+                <button class="btn-estudo" onclick="mostrarPB()">Estude Agora!</button>
+            </div>
+        </div>
+
+        <!-- SARESP -->
+        <div class="prova-card prova-saresp">
+            <div class="card-header">
+                <p class="text-prova">PROVA.SARESP</p>
+            </div>
+            <div class="card-content">
+                <div class="info-prova">
+                    <p>Ocorrerá no dia:</p>
+                    <p class="data-prova">3/11</p>
+                </div>
+                <img class="ProvaBrasil" src="ImagensPr/SarespPr.png" alt="SARESP">
+                <button class="btn-estudo" onclick="mostrarSR()">Estude Agora!</button>
+            </div>
+        </div>
+
+        <!-- ETEC -->
+        <div class="prova-card prova-etec">
+            <div class="card-header">
+                <p class="text-prova">PROVA.ETEC</p>
+            </div>
+            <div class="card-content">
+                <div class="info-prova">
+                    <p>Ocorrerá no dia:</p>
+                    <p class="data-prova">30/11</p>
+                </div>
+                <img class="ProvaBrasil" src="ImagensPr/EtecPr.png" alt="ETEC">
+                <button class="btn-estudo" onclick="mostrarPE()">Estude Agora!</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-voltar" onclick="history.back()">←</button>
+    <button class="btn-proximo" onclick="mostrarEstudo()">→</button>
+
+</body>
+</html>

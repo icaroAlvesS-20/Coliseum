@@ -1,0 +1,299 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #000000 0%, #000000 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    background-color: #242424;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    width: 100%;
+    max-width: 450px;
+    overflow: hidden;
+}
+
+.header {
+    background: linear-gradient(135deg, #0f0f0f 100%, #242424 0%);
+    padding: 25px;
+    text-align: center;
+}
+
+.header h1 {
+    color: #ffcf00;
+    font-size: 28px;
+    font-weight: 800;
+    margin-top: 10px;
+}
+
+#logo {
+    width: 80px;
+    height: 80px;
+}
+
+.form-container {
+    padding: 30px;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 0;
+}
+
+.form-group {
+    flex: 1;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.form-group.full-width {
+    flex: 0 0 100%;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #ffcf00;
+    font-size: 14px;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #616161;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: #1a1a1a;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #ffcf00;
+    box-shadow: 0 0 0 3px rgba(255, 207, 0, 0.3);
+}
+
+.password-container {
+    position: relative;
+    width: 100%;
+}
+
+.password-container input {
+    padding-right: 50px;
+    width: 100%;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+    color: #ffcf00;
+    z-index: 2;
+}
+
+.btn-registrar {
+    background: linear-gradient(135deg, #000000 100%, #1a1818b2 0%);
+    color: #ffcf00;
+    border: 2px solid #ffcf00;
+    padding: 15px;
+    width: 100%;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.btn-registrar:hover {
+    background: linear-gradient(135deg, #ffcf00 0%, #ffea00 100%);
+    color: #000000;
+}
+
+.modo-info {
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(255, 207, 0, 0.1);
+    border-radius: 5px;
+}
+
+.campo-opcional {
+    transition: all 0.3s ease;
+}
+
+.campo-opcional.hidden {
+    display: none;
+}
+
+.campo-opcional.fade-out {
+    opacity: 0.6;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.campo-group {
+    transition: all 0.3s ease;
+}
+
+.campo-group.hidden {
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+/* ============ RESPONSIVIDADE ============ */
+
+/* Tablets (768px a 1024px) */
+@media (max-width: 1024px) {
+    .container {
+        max-width: 600px;
+    }
+    
+    .header h1 {
+        font-size: 24px;
+    }
+    
+    .form-container {
+        padding: 25px;
+    }
+}
+
+/* Celulares grandes (576px a 768px) */
+@media (max-width: 768px) {
+    body {
+        padding: 15px;
+    }
+    
+    .container {
+        max-width: 100%;
+        border-radius: 10px;
+    }
+    
+    .header {
+        padding: 20px;
+    }
+    
+    .header h1 {
+        font-size: 22px;
+    }
+    
+    #logo {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .form-container {
+        padding: 20px;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    input, select {
+        padding: 14px;
+        font-size: 16px;
+    }
+}
+
+/* Celulares pequenos (até 576px) */
+@media (max-width: 576px) {
+    body {
+        padding: 10px;
+        align-items: flex-start;
+        min-height: 100vh;
+        height: auto;
+    }
+    
+    .container {
+        border-radius: 8px;
+        margin: 10px 0;
+    }
+    
+    .header {
+        padding: 15px;
+    }
+    
+    .header h1 {
+        font-size: 20px;
+        margin-top: 5px;
+    }
+    
+    #logo {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .form-container {
+        padding: 15px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    label {
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+    
+    input, select {
+        padding: 12px;
+        font-size: 16px;
+    }
+    
+    .btn-registrar {
+        padding: 14px;
+        font-size: 16px;
+    }
+    
+    .modo-info {
+        font-size: 12px;
+        padding: 8px;
+    }
+}
+
+@media (max-width: 360px) {
+    .header h1 {
+        font-size: 18px;
+    }
+    
+    .form-container {
+        padding: 12px;
+    }
+    
+    input, select {
+        padding: 10px;
+    }
+    
+    .btn-registrar {
+        padding: 12px;
+    }
+}

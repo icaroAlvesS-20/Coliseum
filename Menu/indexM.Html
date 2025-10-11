@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styleM.css">
+    <script src="scriptM.js" defer></script>
+    <title>Coliseum-Menu</title>
+    <link rel="icon" href="ImagensM/Coliseu copy.png" type="image/x-icon">
+</head>
+<body>
+    <div class="menu-container">
+        <div class="welcome-panel">
+            <div class="welcome-text">Seja bem-vindo ao</div>
+            <div class="coliseum-title">COLISEUM</div>
+            
+            <hr class="divider">
+            
+            <div class="serie-info">
+                <div class="serie-label">Série atual:</div>
+                <div class="serie-value" id="serie-aleatoria">Carregando...</div>
+            </div>
+        </div>
+
+        <div class="menu-grid">
+            <div class="aba-container" onclick="mostrarRanking()">
+                <img src="ImagensM/RankingM.png" alt="Ranking">
+                <button class="btn-menu">Ranking</button>
+            </div>
+
+            <div class="aba-container" onclick="mostrarAmigos()">
+                <img src="ImagensM/AmigosM.png" alt="Amigos">
+                <button class="btn-menu">Amigos</button>
+            </div>
+
+            <div class="aba-container" onclick="mostrarDesafios()">
+                <img src="ImagensM/DesafiosM.png" alt="Desafios">
+                <button class="btn-menu">Desafios</button>
+            </div>
+
+            <div class="aba-container" onclick="mostrarProvas()">
+                <img src="ImagensM/ProvasM.png" alt="Provas">
+                <button class="btn-menu">Provas</button>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <button class="Aba5" onclick="mostrarConfig()">
+                <img src="ImagensM/ConfiguraçoesM.png" alt="Configurações">
+                <div class="bottom-nav-label">Config</div>
+            </button>
+
+            <button class="Aba6" onclick="mostrarPerfil()">
+                <img src="ImagensM/PerfilM.png" alt="Perfil">
+                <div class="bottom-nav-label">Perfil</div>
+            </button>
+
+            <button class="Aba7" onclick="mostrarContato()">
+                <img src="ImagensM/ContatoM.png" alt="Contato">
+                <div class="bottom-nav-label">Contato</div>
+            </button>
+
+            <button class="Aba8" onclick="mostrarNavegador()">
+                <img src="ImagensM/NavegaçãoM.png" alt="Navegador">
+                <div class="bottom-nav-label">Navegar</div>
+            </button>
+        </div>
+    </div>
+</body>
+</html>

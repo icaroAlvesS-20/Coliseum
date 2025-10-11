@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styleEs.css">
+    <script src="scriptEs.js"></script>
+    <title>Estudo</title>
+</head>
+<body>
+    
+    <button class="btn-Navegar" onclick="mostrarN()">
+        <img src="imagensEst/Navegação copy.png" alt="Navegação">
+    </button>
+
+    <div class="materias-container">
+        <!-- Matemática -->
+        <div class="materia-card materia-matematica">
+            <div class="card-header">
+                <p class="text-prova">Matemática</p>
+            </div>
+            <div class="card-content">
+                <div class="info-prova">
+                    <p class="data-prova">+ - × ÷</p>
+                </div>
+                <img class="ProvaBrasil" src="imagensEst/Matematica_icon.png" alt="Matemática">
+                <button class="btn-estudo" onclick="mostrarMT()">Estude Agora!</button>
+            </div>
+        </div>
+
+        <!-- Português -->
+        <div class="materia-card materia-portugues">
+            <div class="card-header">
+                <p class="text-prova">Português</p>
+            </div>
+            <div class="card-content">
+                <div class="info-prova">
+                    <p class="data-prova">? ! . ,</p>
+                </div>
+                <img class="ProvaBrasil" src="imagensEst/Portuguese.png" alt="Português">
+                <button class="btn-estudo" onclick="mostrarLP()">Estude Agora!</button>
+            </div>
+        </div>
+
+        <!-- Ciências Humanas -->
+        <div class="materia-card materia-humanas">
+            <div class="card-header">
+                <p class="text-prova">Ciências Humanas</p>
+            </div>
+            <div class="card-content">
+                <div class="info-prova">
+                    <p class="data-prova">H G F S</p>
+                </div>
+                <img class="ProvaBrasil" src="imagensEst/CiêciasHumanas.png" alt="Ciências Humanas">
+                <button class="btn-estudo" onclick="mostrarCSH()">Estude Agora!</button>
+            </div>
+        </div>
+
+        <!-- Ciências da Natureza -->
+        <div class="materia-card materia-natureza">
+            <div class="card-header">
+                <p class="text-prova">Ciências da Natureza</p>
+            </div>
+            <div class="card-content">
+                <div class="info-prova">
+                    <p class="data-prova">B Q F</p>
+                </div>
+                <img class="ProvaBrasil" src="imagensEst/CiênciasDaNatureza.png" alt="Ciências da Natureza">
+                <button class="btn-estudo" onclick="mostrarCSN()">Estude Agora!</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-voltar" onclick="history.back()">←</button>
+</body>
+</html>

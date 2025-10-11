@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking - Coliseum</title>
+    <link rel="stylesheet" href="styleR.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">🏆 Ranking Coliseum</h1>
+            <p class="subtitle">Top competidores da plataforma</p>
+            
+            <div class="pontuacao-info">
+                <h3>📊 Sistema de Pontuação:</h3>
+                <div class="regras-lista">
+                    <div class="regra-item"><span>100% de acerto:</span> <strong>20 pontos</strong></div>
+                    <div class="regra-item"><span>75% de acerto:</span> <strong>15 pontos</strong></div>
+                    <div class="regra-item"><span>50% de acerto:</span> <strong> 10 pontos</strong></div>
+                    <div class="regra-item"><span>25% de acerto:</span> <strong> 5 pontos</strong></div>
+                    <div class="regra-item"><span>0% de acerto:</span> <strong>0 pontos</strong></div>
+                </div>
+            </div>
+        </header>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="total-usuarios">0</div>
+                <div class="stat-label">Usuários</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-desafios">0</div>
+                <div class="stat-label">Desafios Completos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-pontos">0</div>
+                <div class="stat-label">Pontos Conquistados</div>
+            </div>
+        </div>
+
+       <div class="ranking-container">
+            <div class="ranking-header">
+                <span>Posição</span>
+                <span>Usuário</span>
+                <span>Série</span>
+                <span>Desafios</span>
+                <span>Pontuação</span>
+            </div>
+            
+            <div id="ranking-list" class="ranking-list">
+                <div class="loading">Carregando ranking...</div>
+            </div>
+        </div>
+        </div>
+    </div>
+<button class="btn-voltar" onclick="history.back()">←</button>
+
+
+    <script src="scriptR.js"></script>
+</body>
+</html>

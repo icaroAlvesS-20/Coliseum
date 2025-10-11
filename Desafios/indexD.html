@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styleD.css">
+    <title>Desafios</title>
+    <link rel="icon" href="ImagensD/Desafios.png" type="image/x-icon">
+</head>
+<body>
+
+
+    <div class="praticas-diarias">
+        <h3> Desafios do Dia</h3>
+        <div id="praticas-container">
+        </div>
+        <p id="contador-praticas">Próximas práticas em: <span id="tempo-restante">24:00:00</span></p>
+    </div>
+
+    <!-- Modal de Perguntas -->
+    <div class="modal-perguntas" id="modalPerguntas">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📝 Questionário</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Conteúdo das perguntas será injetado aqui -->
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-voltar" onclick="history.back()">←</button>
+
+    <script src="scriptD.js"></script>
+</body>
+</html>
