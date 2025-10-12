@@ -1,5 +1,8 @@
-// ✅ CONFIGURAÇÃO DA API CORRIGIDA - URL DIRETA
+// ✅ CONFIGURAÇÃO DA API COM CORS PROXY
 const API_URL = 'https://coliseum-api.onrender.com';
+
+// ✅ PROXY PARA EVITAR CORS (fallback)
+const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
 
 // ✅ 1. FUNÇÃO atualizarModo - Controla modo Login/Registro
 function atualizarModo() {
@@ -130,22 +133,50 @@ function formatarSerie(serie) {
     return serie;
 }
 
-// ✅ 4. FUNÇÃO testarConexaoServidor - Verifica servidor
+// ✅ 4. FUNÇÃO testarConexaoServidor - Verifica servidor (CORRIGIDA)
 async function testarConexaoServidor() {
     try {
         console.log('🌐 Testando conexão com o servidor...');
-        const response = await fetch(`${API_URL}/api/health`);
-        const data = await response.json();
-        console.log('✅ Servidor respondendo:', data);
-        return true;
+        
+        // Tentar direto primeiro
+        try {
+            const response = await fetch(`${API_URL}/api/health`);
+            const data = await response.json();
+            console.log('✅ Servidor respondendo:', data);
+            return true;
+        } catch (directError) {
+            console.log('⚠️ Tentativa direta falhou, usando proxy...');
+            
+            // Tentar com proxy CORS
+            const response = await fetch(`${CORS_PROXY}${API_URL}/api/health`);
+            const data = await response.json();
+            console.log('✅ Servidor respondendo via proxy:', data);
+            return true;
+        }
     } catch (error) {
         console.error('❌ Servidor não respondendo:', error);
-        alert('⚠️ Servidor offline! Verifique se o servidor está rodando.');
-        return false;
+        alert('⚠️ Servidor offline! Mas você pode tentar fazer login/registro mesmo assim.');
+        return false; // Continua mesmo com erro
     }
 }
 
-// ✅ 5. FUNÇÃO limparSessaoAntiga - Remove dados anteriores
+// ✅ 5. FUNÇÃO fazerRequisicaoAPI - Gerencia CORS automaticamente
+async function fazerRequisicaoAPI(url, options = {}) {
+    try {
+        // Tentar direto primeiro
+        const response = await fetch(url, options);
+        return response;
+    } catch (error) {
+        console.log('⚠️ Requisição direta falhou, tentando com proxy CORS...');
+        
+        // Usar proxy CORS como fallback
+        const proxiedUrl = `${CORS_PROXY}${url}`;
+        const response = await fetch(proxiedUrl, options);
+        return response;
+    }
+}
+
+// ✅ 6. FUNÇÃO limparSessaoAntiga - Remove dados anteriores
 function limparSessaoAntiga() {
     console.log('🧹 Limpando sessão anterior...');
     
@@ -167,7 +198,7 @@ function limparSessaoAntiga() {
     console.log('✅ Sessão anterior limpa!');
 }
 
-// ✅ 6. FUNÇÃO salvarNovaSessao - Salva dados do usuário
+// ✅ 7. FUNÇÃO salvarNovaSessao - Salva dados do usuário
 function salvarNovaSessao(usuario) {
     console.log('💾 Salvando nova sessão...');
     
@@ -182,14 +213,10 @@ function salvarNovaSessao(usuario) {
     console.log('✅ Nova sessão salva! Usuário:', usuario.nome);
 }
 
-// ✅ 7. FUNÇÃO registrar - Processo de login/registro
+// ✅ 8. FUNÇÃO registrar - Processo de login/registro (CORRIGIDA)
 async function registrar() {
     try {
         console.log('🟡 INICIANDO PROCESSO DE LOGIN/REGISTRO...');
-        
-        // Testar conexão primeiro
-        const servidorOnline = await testarConexaoServidor();
-        if (!servidorOnline) return;
         
         const ra = document.getElementById('ra').value.trim();
         const nome = document.getElementById('nome').value.trim();
@@ -253,7 +280,8 @@ async function registrar() {
             senha: '***' 
         });
         
-        const response = await fetch(`${API_URL}/api/usuarios`, {
+        // ✅ USAR FUNÇÃO CORRIGIDA PARA REQUISIÇÃO
+        const response = await fazerRequisicaoAPI(`${API_URL}/api/usuarios`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -276,9 +304,10 @@ async function registrar() {
             
             alert(`✅ ${result.message}`);
             
-            // ✅ REDIRECIONAMENTO 100% CORRETO (indexM.html)
+            // ✅ REDIRECIONAMENTO CORRIGIDO
             setTimeout(() => {
                 console.log('🔀 Redirecionando para Menu...');
+                // Usar caminho absoluto para Vercel
                 window.location.href = '/Menu/indexM.html';
             }, 1000);
 
@@ -288,11 +317,11 @@ async function registrar() {
 
     } catch (error) {
         console.error('❌ ERRO:', error);
-        alert('❌ Erro: ' + error.message);
+        alert('❌ Erro: ' + error.message + '\n\n⚠️ Problema de CORS detectado. Verifique a configuração do servidor.');
     }
 }
 
-// ✅ 8. FUNÇÃO fazerLogout - Limpa sessão
+// ✅ 9. FUNÇÃO fazerLogout - Limpa sessão
 async function fazerLogout() {
     try {
         console.log('🚪 Realizando logout...');
@@ -311,7 +340,7 @@ async function fazerLogout() {
     }
 }
 
-// ✅ 9. FUNÇÃO verificarSessaoAtiva - Verifica se usuário está logado
+// ✅ 10. FUNÇÃO verificarSessaoAtiva - Verifica se usuário está logado
 function verificarSessaoAtiva() {
     const usuarioLogado = localStorage.getItem('usuarioLogado');
     const usuarioId = localStorage.getItem('usuarioId');
@@ -325,12 +354,12 @@ function verificarSessaoAtiva() {
     return false;
 }
 
-// ✅ 10. FUNÇÃO getUsuarioId - Retorna ID do usuário
+// ✅ 11. FUNÇÃO getUsuarioId - Retorna ID do usuário
 function getUsuarioId() {
     return localStorage.getItem('usuarioId');
 }
 
-// ✅ 11. FUNÇÃO getUsuarioLogado - Retorna dados do usuário
+// ✅ 12. FUNÇÃO getUsuarioLogado - Retorna dados do usuário
 function getUsuarioLogado() {
     if (!verificarSessaoAtiva()) return null;
     
@@ -344,7 +373,7 @@ function getUsuarioLogado() {
     };
 }
 
-// ✅ 12. FUNÇÃO setupPasswordToggle - Toggle de senha
+// ✅ 13. FUNÇÃO setupPasswordToggle - Toggle de senha
 function setupPasswordToggle() {
     const toggleBtn = document.getElementById('toggleSenha');
     const senhaInput = document.getElementById('senha');
@@ -359,6 +388,35 @@ function setupPasswordToggle() {
     }
 }
 
+// ✅ 14. FUNÇÃO navegarPara - Navegação inteligente
+async function navegarPara(caminho) {
+    console.log(`🧭 Navegando para: ${caminho}`);
+    
+    // Tentar o caminho diretamente
+    window.location.href = caminho;
+    
+    // Fallback após 3 segundos
+    setTimeout(() => {
+        if (window.location.href.includes('/Login')) {
+            console.log('🔄 Primeiro redirecionamento falhou, tentando alternativas...');
+            
+            // Tentar caminhos alternativos
+            const alternativas = [
+                caminho.toLowerCase(),
+                caminho.replace('indexM.html', 'index.html'),
+                '/Menu/',
+                '/Menu'
+            ];
+            
+            for (let alt of alternativas) {
+                console.log(`🔄 Tentando: ${alt}`);
+                window.location.href = alt;
+                break; // Tenta apenas o primeiro alternativo
+            }
+        }
+    }, 3000);
+}
+
 // ✅ INICIALIZAÇÃO - DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Sistema de login inicializando...');
@@ -366,7 +424,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Verificar se já está logado
     if (verificarSessaoAtiva() && window.location.pathname.includes('/Login/')) {
         console.log('🔐 Usuário já está logado, redirecionando para Menu...');
-        window.location.href = '/Menu/indexM.html';
+        navegarPara('/Menu/indexM.html');
         return;
     }
     
