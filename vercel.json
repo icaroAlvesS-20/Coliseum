@@ -2,15 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "*.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*/index.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*/*.html",
+      "src": "**/*.html",
       "use": "@vercel/static"
     },
     {
@@ -40,58 +32,52 @@
       "dest": "/Login/index.html"
     },
     {
+      "src": "/Menu",
+      "dest": "/Menu/indexM.html"
+    },
+    {
       "src": "/menu",
       "dest": "/Menu/indexM.html"
+    },
+    {
+      "src": "/Ranking",
+      "dest": "/Ranking/indexR.html"
     },
     {
       "src": "/ranking",
       "dest": "/Ranking/indexR.html"
     },
     {
-      "src": "/amigos",
+      "src": "/Amigos",
       "dest": "/Amigos/indexA.html"
     },
     {
-      "src": "/desafios",
+      "src": "/Desafios", 
       "dest": "/Desafios/indexD.html"
     },
     {
-      "src": "/provas",
+      "src": "/Provas",
       "dest": "/Provas/indexPr.html"
     },
     {
-      "src": "/configuracao",
+      "src": "/Configuracao",
       "dest": "/Configuração/indexC.html"
     },
     {
-      "src": "/perfil",
+      "src": "/Perfil",
       "dest": "/Perfil/indexP.html"
     },
     {
-      "src": "/contato",
+      "src": "/Contato",
       "dest": "/Contato/indexCo.html"
     },
     {
-      "src": "/navegador",
+      "src": "/Navegador",
       "dest": "/Navegador/indexN.html"
-    },
-    {
-      "src": "/(.*\\.js)",
-      "headers": {
-        "Content-Type": "application/javascript"
-      }
-    },
-    {
-      "src": "/(.*\\.css)",
-      "headers": {
-        "Content-Type": "text/css"
-      }
     },
     {
       "src": "/(.*)",
       "dest": "/Login/index.html"
     }
-  ],
-  "cleanUrls": false,
-  "trailingSlash": false
+  ]
 }
