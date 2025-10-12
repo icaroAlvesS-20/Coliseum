@@ -49,15 +49,88 @@ function atualizarModo() {
 
 // ✅ 2. FUNÇÃO validarSerie - Valida a série informada
 function validarSerie(serie) {
-    // ... (código permanece igual)
+    if (!serie || serie.trim() === '') {
+        return false;
+    }
+    
+    serie = serie.toUpperCase().trim();
+    
+    const seriesValidas = [
+        "6 ANO", "7 ANO", "8 ANO", "9 ANO",
+        "1 ANO", "2 ANO", "3 ANO",
+        "1 ANO EM", "2 ANO EM", "3 ANO EM", 
+        "1 ANO ENSINO MÉDIO", "2 ANO ENSINO MÉDIO", "3 ANO ENSINO MÉDIO",
+        "1º ANO", "2º ANO", "3º ANO", "6º ANO", "7º ANO", "8º ANO", "9º ANO",
+        "PRIMEIRO ANO", "SEGUNDO ANO", "TERCEIRO ANO",
+        "1° ANO", "2° ANO", "3° ANO"
+    ];
+    
+    if (seriesValidas.includes(serie)) {
+        return true;
+    }
+    
+    const padroesValidos = [
+        /^(1|2|3|6|7|8|9)(º|°)?\s*ANO/i,
+        /^(PRIMEIRO|SEGUNDO|TERCEIRO)\s+ANO/i,
+        /^(1|2|3)\s+ANO\s+EM/i,
+        /^(1|2|3)\s+ANO\s+ENSINO\s+MÉDIO/i
+    ];
+    
+    for (let padrao of padroesValidos) {
+        if (padrao.test(serie)) {
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 // ✅ 3. FUNÇÃO formatarSerie - Padroniza o formato da série
 function formatarSerie(serie) {
-    // ... (código permanece igual)
+    if (!serie || serie.trim() === '') {
+        return '';
+    }
+    
+    serie = serie.toUpperCase().trim();
+    
+    const mapeamento = {
+        'PRIMEIRO ANO': '1 ANO',
+        'SEGUNDO ANO': '2 ANO', 
+        'TERCEIRO ANO': '3 ANO',
+        '1º ANO': '1 ANO',
+        '2º ANO': '2 ANO',
+        '3º ANO': '3 ANO',
+        '1° ANO': '1 ANO',
+        '2° ANO': '2 ANO',
+        '3° ANO': '3 ANO',
+        '6º ANO': '6 ANO',
+        '7º ANO': '7 ANO', 
+        '8º ANO': '8 ANO',
+        '9º ANO': '9 ANO'
+    };
+    
+    if (mapeamento[serie]) {
+        return mapeamento[serie];
+    }
+    
+    const formatosPadronizados = [
+        "1 ANO", "2 ANO", "3 ANO", "6 ANO", "7 ANO", "8 ANO", "9 ANO",
+        "1 ANO EM", "2 ANO EM", "3 ANO EM"
+    ];
+    
+    if (formatosPadronizados.includes(serie)) {
+        return serie;
+    }
+    
+    const match = serie.match(/(\d+)\s*(º|°)?\s*ANO/i);
+    if (match) {
+        return `${match[1]} ANO`;
+    }
+    
+    return serie;
 }
 
-// ✅ 4. FUNÇÃO testarConexaoServidor - Verifica servidor
+// ✅ 4. FUNÇÃO testarConexaoServidor - Verifica servidor (CORRIGIDA)
 async function testarConexaoServidor() {
     try {
         console.log('🌐 Testando conexão com o servidor...');
@@ -74,15 +147,42 @@ async function testarConexaoServidor() {
 
 // ✅ 5. FUNÇÃO limparSessaoAntiga - Remove dados anteriores
 function limparSessaoAntiga() {
-    // ... (código permanece igual)
+    console.log('🧹 Limpando sessão anterior...');
+    
+    const itensParaLimpar = [
+        'usuarioId',
+        'usuarioNome', 
+        'usuarioRA',
+        'usuarioSerie',
+        'usuarioPontuacao',
+        'usuarioDesafios',
+        'usuarioLogado'
+    ];
+    
+    itensParaLimpar.forEach(item => {
+        localStorage.removeItem(item);
+        sessionStorage.removeItem(item);
+    });
+    
+    console.log('✅ Sessão anterior limpa!');
 }
 
-// ✅ 6. FUNÇÃO salvarNovaSessao - CORRIGIDA (sem sessionId)
+// ✅ 6. FUNÇÃO salvarNovaSessao - Salva dados do usuário
 function salvarNovaSessao(usuario) {
-    // ... (código permanece igual)
+    console.log('💾 Salvando nova sessão...');
+    
+    localStorage.setItem('usuarioId', usuario.id);
+    localStorage.setItem('usuarioNome', usuario.nome);
+    localStorage.setItem('usuarioRA', usuario.ra);
+    localStorage.setItem('usuarioSerie', usuario.serie);
+    localStorage.setItem('usuarioPontuacao', usuario.pontuacao);
+    localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados);
+    localStorage.setItem('usuarioLogado', 'true');
+    
+    console.log('✅ Nova sessão salva! Usuário:', usuario.nome);
 }
 
-// ✅ 7. FUNÇÃO registrar - CORRIGIDA (sem sessionId)
+// ✅ 7. FUNÇÃO registrar - Processo de login/registro (CORRIGIDA)
 async function registrar() {
     try {
         console.log('🟡 INICIANDO PROCESSO DE LOGIN/REGISTRO...');
@@ -191,4 +291,111 @@ async function registrar() {
     }
 }
 
-// ... (restante do código permanece igual)
+// ✅ 8. FUNÇÃO fazerLogout - Limpa sessão
+async function fazerLogout() {
+    try {
+        console.log('🚪 Realizando logout...');
+        
+        // Apenas limpar localStorage (não há API de logout)
+        limparSessaoAntiga();
+        
+        console.log('✅ Logout realizado com sucesso!');
+        window.location.href = '../Login/index.html';
+        
+    } catch (error) {
+        console.error('❌ Erro no logout:', error);
+        // Limpar local mesmo com erro
+        limparSessaoAntiga();
+        window.location.href = '../Login/index.html';
+    }
+}
+
+// ✅ 9. FUNÇÃO verificarSessaoAtiva - Verifica se usuário está logado
+function verificarSessaoAtiva() {
+    const usuarioLogado = localStorage.getItem('usuarioLogado');
+    const usuarioId = localStorage.getItem('usuarioId');
+    
+    if (usuarioLogado === 'true' && usuarioId) {
+        console.log('✅ Sessão ativa encontrada para usuário ID:', usuarioId);
+        return true;
+    }
+    
+    console.log('❌ Nenhuma sessão ativa encontrada');
+    return false;
+}
+
+// ✅ 10. FUNÇÃO getUsuarioId - Retorna ID do usuário
+function getUsuarioId() {
+    return localStorage.getItem('usuarioId');
+}
+
+// ✅ 11. FUNÇÃO getUsuarioLogado - Retorna dados do usuário
+function getUsuarioLogado() {
+    if (!verificarSessaoAtiva()) return null;
+    
+    return {
+        id: localStorage.getItem('usuarioId'),
+        nome: localStorage.getItem('usuarioNome'),
+        ra: localStorage.getItem('usuarioRA'),
+        serie: localStorage.getItem('usuarioSerie'),
+        pontuacao: localStorage.getItem('usuarioPontuacao'),
+        desafiosCompletados: localStorage.getItem('usuarioDesafios')
+    };
+}
+
+// ✅ 12. FUNÇÃO setupPasswordToggle - Toggle de senha
+function setupPasswordToggle() {
+    const toggleBtn = document.getElementById('toggleSenha');
+    const senhaInput = document.getElementById('senha');
+    
+    if (toggleBtn && senhaInput) {
+        toggleBtn.addEventListener('click', () => {
+            const mostrar = senhaInput.type === 'password';
+            senhaInput.type = mostrar ? 'text' : 'password';
+            toggleBtn.textContent = mostrar ? '🔓' : '🔒';
+            toggleBtn.title = mostrar ? 'Ocultar senha' : 'Mostrar senha';
+        });
+    }
+}
+
+// ✅ INICIALIZAÇÃO - DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Sistema de login inicializando...');
+    
+    // Verificar se já está logado
+    if (verificarSessaoAtiva() && window.location.pathname.includes('/Login/')) {
+        console.log('🔐 Usuário já está logado, redirecionando para Menu...');
+        window.location.href = '../Menu/indexM.html';
+        return;
+    }
+    
+    // Configurar toggle de senha
+    setupPasswordToggle();
+    
+    // Configurar eventos nos inputs
+    const inputs = ['ra', 'nome', 'serie', 'senha'];
+    inputs.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('input', atualizarModo);
+        }
+    });
+    
+    // Configurar botão de ação
+    const btnAcao = document.getElementById('btnAcao');
+    if (btnAcao) {
+        btnAcao.addEventListener('click', registrar);
+    }
+    
+    // Configurar evento de Enter
+    document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            registrar();
+        }
+    });
+    
+    // Inicializar modo
+    setTimeout(atualizarModo, 100);
+    
+    console.log('✅ Sistema de login inicializado!');
+});
