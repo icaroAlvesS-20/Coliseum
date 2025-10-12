@@ -2,7 +2,15 @@
   "version": 2,
   "builds": [
     {
-      "src": "**/*.html",
+      "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*/*.html", 
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*/*/*.html",
       "use": "@vercel/static"
     },
     {
@@ -40,7 +48,7 @@
       "dest": "/Ranking/index.html"
     },
     {
-      "src": "/Perfil",
+      "src": "/Perfil", 
       "dest": "/Perfil/index.html"
     },
     {
@@ -51,5 +59,7 @@
       "src": "/(.*)",
       "dest": "/Login/index.html"
     }
-  ]
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false
 }
