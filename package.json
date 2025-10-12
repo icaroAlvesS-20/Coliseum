@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "node server.js",
+    "build": "prisma generate",
     "start": "node server.js"
   },
   "dependencies": {
