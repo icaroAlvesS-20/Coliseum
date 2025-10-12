@@ -1,5 +1,5 @@
-// ✅ CONFIGURAÇÃO DA API - SEMPRE NO TOPO!
-const API_URL = process.env.REACT_APP_API_URL || 'https://coliseum-api.onrender.com';
+// ✅ CONFIGURAÇÃO DA API CORRIGIDA - URL DIRETA
+const API_URL = 'https://coliseum-api.onrender.com';
 
 // ✅ 1. FUNÇÃO atualizarModo - Controla modo Login/Registro
 function atualizarModo() {
@@ -130,7 +130,7 @@ function formatarSerie(serie) {
     return serie;
 }
 
-// ✅ 4. FUNÇÃO testarConexaoServidor - Verifica servidor (CORRIGIDA)
+// ✅ 4. FUNÇÃO testarConexaoServidor - Verifica servidor
 async function testarConexaoServidor() {
     try {
         console.log('🌐 Testando conexão com o servidor...');
@@ -182,7 +182,7 @@ function salvarNovaSessao(usuario) {
     console.log('✅ Nova sessão salva! Usuário:', usuario.nome);
 }
 
-// ✅ 7. FUNÇÃO registrar - Processo de login/registro (CORRIGIDA)
+// ✅ 7. FUNÇÃO registrar - Processo de login/registro
 async function registrar() {
     try {
         console.log('🟡 INICIANDO PROCESSO DE LOGIN/REGISTRO...');
