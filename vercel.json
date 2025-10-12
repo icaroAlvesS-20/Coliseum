@@ -2,14 +2,42 @@
   "version": 2,
   "builds": [
     {
-      "src": "**/*",
+      "src": "**/*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "**/*.js", 
+      "use": "@vercel/static"
+    },
+    {
+      "src": "**/*.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "**/*.png",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
+      "src": "/",
+      "dest": "/Login/index.html"
+    },
+    {
+      "src": "/login",
+      "dest": "/Login/index.html"
+    },
+    {
+      "src": "/menu",
+      "dest": "/Menu/indexM.html"
+    },
+    {
+      "src": "/ranking",
+      "dest": "/Ranking/index.html"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "/Login/index.html"
     }
   ]
 }
