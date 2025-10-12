@@ -1,12 +1,8 @@
 {
   "name": "coliseum-frontend",
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
     "dev": "echo 'Use live server para desenvolvimento local'",
-    "build": "echo 'Build completo - Frontend estático'",
-    "start": "echo 'Frontend estático - Arquivos HTML'"
-  },
-  "dependencies": {},
-  "devDependencies": {}
+    "build": "echo 'Build completo'"
+  }
 }
