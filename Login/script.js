@@ -1,8 +1,5 @@
-// ✅ CONFIGURAÇÃO DA API COM CORS PROXY
+// ✅ CONFIGURAÇÃO DA API
 const API_URL = 'https://coliseum-api.onrender.com';
-
-// ✅ PROXY PARA EVITAR CORS (fallback)
-const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
 
 // ✅ 1. FUNÇÃO atualizarModo - Controla modo Login/Registro
 function atualizarModo() {
@@ -133,50 +130,22 @@ function formatarSerie(serie) {
     return serie;
 }
 
-// ✅ 4. FUNÇÃO testarConexaoServidor - Verifica servidor (CORRIGIDA)
+// ✅ 4. FUNÇÃO testarConexaoServidor - Verifica servidor
 async function testarConexaoServidor() {
     try {
         console.log('🌐 Testando conexão com o servidor...');
-        
-        // Tentar direto primeiro
-        try {
-            const response = await fetch(`${API_URL}/api/health`);
-            const data = await response.json();
-            console.log('✅ Servidor respondendo:', data);
-            return true;
-        } catch (directError) {
-            console.log('⚠️ Tentativa direta falhou, usando proxy...');
-            
-            // Tentar com proxy CORS
-            const response = await fetch(`${CORS_PROXY}${API_URL}/api/health`);
-            const data = await response.json();
-            console.log('✅ Servidor respondendo via proxy:', data);
-            return true;
-        }
+        const response = await fetch(`${API_URL}/api/health`);
+        const data = await response.json();
+        console.log('✅ Servidor respondendo:', data);
+        return true;
     } catch (error) {
         console.error('❌ Servidor não respondendo:', error);
-        alert('⚠️ Servidor offline! Mas você pode tentar fazer login/registro mesmo assim.');
-        return false; // Continua mesmo com erro
+        alert('⚠️ Servidor offline! Verifique se o servidor está rodando.');
+        return false;
     }
 }
 
-// ✅ 5. FUNÇÃO fazerRequisicaoAPI - Gerencia CORS automaticamente
-async function fazerRequisicaoAPI(url, options = {}) {
-    try {
-        // Tentar direto primeiro
-        const response = await fetch(url, options);
-        return response;
-    } catch (error) {
-        console.log('⚠️ Requisição direta falhou, tentando com proxy CORS...');
-        
-        // Usar proxy CORS como fallback
-        const proxiedUrl = `${CORS_PROXY}${url}`;
-        const response = await fetch(proxiedUrl, options);
-        return response;
-    }
-}
-
-// ✅ 6. FUNÇÃO limparSessaoAntiga - Remove dados anteriores
+// ✅ 5. FUNÇÃO limparSessaoAntiga - Remove dados anteriores
 function limparSessaoAntiga() {
     console.log('🧹 Limpando sessão anterior...');
     
@@ -198,7 +167,7 @@ function limparSessaoAntiga() {
     console.log('✅ Sessão anterior limpa!');
 }
 
-// ✅ 7. FUNÇÃO salvarNovaSessao - Salva dados do usuário
+// ✅ 6. FUNÇÃO salvarNovaSessao - Salva dados do usuário
 function salvarNovaSessao(usuario) {
     console.log('💾 Salvando nova sessão...');
     
@@ -213,10 +182,37 @@ function salvarNovaSessao(usuario) {
     console.log('✅ Nova sessão salva! Usuário:', usuario.nome);
 }
 
-// ✅ 8. FUNÇÃO registrar - Processo de login/registro (CORRIGIDA)
+// ✅ 7. FUNÇÃO redirecionarParaMenu - SIMPLIFICADA E CORRETA
+function redirecionarParaMenu() {
+    console.log('🎯 Redirecionando para Menu...');
+    
+    // Caminhos possíveis no Vercel
+    const caminhos = [
+        '/Menu/indexM.html',
+        'Menu/indexM.html',
+        '../Menu/indexM.html'
+    ];
+    
+    // Tenta o primeiro caminho (mais comum)
+    window.location.href = caminhos[0];
+    
+    // Fallback após 3 segundos
+    setTimeout(() => {
+        if (window.location.pathname.includes('/Login')) {
+            console.log('🔄 Primeiro caminho falhou, tentando alternativas...');
+            window.location.href = caminhos[1];
+        }
+    }, 3000);
+}
+
+// ✅ 8. FUNÇÃO registrar - Processo de login/registro
 async function registrar() {
     try {
         console.log('🟡 INICIANDO PROCESSO DE LOGIN/REGISTRO...');
+        
+        // Testar conexão primeiro
+        const servidorOnline = await testarConexaoServidor();
+        if (!servidorOnline) return;
         
         const ra = document.getElementById('ra').value.trim();
         const nome = document.getElementById('nome').value.trim();
@@ -280,8 +276,7 @@ async function registrar() {
             senha: '***' 
         });
         
-        // ✅ USAR FUNÇÃO CORRIGIDA PARA REQUISIÇÃO
-        const response = await fazerRequisicaoAPI(`${API_URL}/api/usuarios`, {
+        const response = await fetch(`${API_URL}/api/usuarios`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -304,11 +299,9 @@ async function registrar() {
             
             alert(`✅ ${result.message}`);
             
-            // ✅ REDIRECIONAMENTO CORRIGIDO
+            // ✅ REDIRECIONAMENTO CORRETO
             setTimeout(() => {
-                console.log('🔀 Redirecionando para Menu...');
-                // Usar caminho absoluto para Vercel
-                window.location.href = '/Menu/indexM.html';
+                redirecionarParaMenu();
             }, 1000);
 
         } else {
@@ -317,7 +310,7 @@ async function registrar() {
 
     } catch (error) {
         console.error('❌ ERRO:', error);
-        alert('❌ Erro: ' + error.message + '\n\n⚠️ Problema de CORS detectado. Verifique a configuração do servidor.');
+        alert('❌ Erro: ' + error.message);
     }
 }
 
@@ -388,35 +381,6 @@ function setupPasswordToggle() {
     }
 }
 
-// ✅ 14. FUNÇÃO navegarPara - Navegação inteligente
-async function navegarPara(caminho) {
-    console.log(`🧭 Navegando para: ${caminho}`);
-    
-    // Tentar o caminho diretamente
-    window.location.href = caminho;
-    
-    // Fallback após 3 segundos
-    setTimeout(() => {
-        if (window.location.href.includes('/Login')) {
-            console.log('🔄 Primeiro redirecionamento falhou, tentando alternativas...');
-            
-            // Tentar caminhos alternativos
-            const alternativas = [
-                caminho.toLowerCase(),
-                caminho.replace('indexM.html', 'index.html'),
-                '/Menu/',
-                '/Menu'
-            ];
-            
-            for (let alt of alternativas) {
-                console.log(`🔄 Tentando: ${alt}`);
-                window.location.href = alt;
-                break; // Tenta apenas o primeiro alternativo
-            }
-        }
-    }, 3000);
-}
-
 // ✅ INICIALIZAÇÃO - DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Sistema de login inicializando...');
@@ -424,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Verificar se já está logado
     if (verificarSessaoAtiva() && window.location.pathname.includes('/Login/')) {
         console.log('🔐 Usuário já está logado, redirecionando para Menu...');
-        navegarPara('/Menu/indexM.html');
+        redirecionarParaMenu();
         return;
     }
     
