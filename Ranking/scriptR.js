@@ -1,5 +1,8 @@
-// scriptR.js - VERSÃO TESTE
+// scriptR.js - VERSÃO CORRIGIDA
 console.log('🎯 scriptR.js CARREGADO!');
+
+// ✅ CONFIGURAÇÃO DA API CORRIGIDA
+const API_URL = process.env.REACT_APP_API_URL || 'https://coliseum-api.onrender.com';
 
 class RankingManager {
     constructor() {
@@ -15,8 +18,8 @@ class RankingManager {
             // Mostrar que está tentando
             this.rankingList.innerHTML = '<div class="loading">🔄 Conectando ao servidor...</div>';
             
-            // URL absoluta
-            const url = 'http://localhost:5500/api/ranking';
+            // ✅ CORRIGIDO: URL do Render
+            const url = `${API_URL}/api/ranking`;
             console.log('🔗 URL:', url);
             
             const response = await fetch(url);
@@ -60,16 +63,17 @@ class RankingManager {
     mostrarErroCritico(error) {
         this.rankingList.innerHTML = `
             <div style="text-align: center; padding: 40px; color: #ff6b6b;">
-                <h2>❌ ERRO CRÍTICO</h2>
+                <h2>❌ ERRO DE CONEXÃO</h2>
                 <p><strong>${error.message}</strong></p>
                 <div style="background: #2a2a2a; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                    <p>O servidor não está respondendo na rota /api/ranking</p>
+                    <p>O servidor não está respondendo</p>
+                    <p><strong>URL tentada:</strong> ${API_URL}/api/ranking</p>
                     <p><strong>SOLUÇÃO:</strong></p>
                     <ol style="text-align: left; margin: 15px;">
-                        <li>Verifique se o servidor está rodando</li>
-                        <li>Teste: http://localhost:5500/api/health</li>
-                        <li>Teste: http://localhost:5500/api/ranking</li>
-                        <li>Reinicie o servidor: node server.js</li>
+                        <li>Verifique se o backend está online</li>
+                        <li>Teste: ${API_URL}/api/health</li>
+                        <li>Verifique a conexão de internet</li>
+                        <li>Tente novamente em alguns minutos</li>
                     </ol>
                 </div>
                 <button onclick="testeCompleto()" 
@@ -81,14 +85,13 @@ class RankingManager {
     }
 }
 
-// TESTE COMPLETO
+// ✅ TESTE COMPLETO CORRIGIDO
 window.testeCompleto = async function() {
     console.log('🧪 INICIANDO TESTE COMPLETO...');
     
     const tests = [
-        { name: 'Health Check', url: 'http://localhost:5500/api/health' },
-        { name: 'Ranking API', url: 'http://localhost:5500/api/ranking' },
-        { name: 'Test API', url: 'http://localhost:5500/api/test' }
+        { name: 'Health Check', url: `${API_URL}/api/health` },
+        { name: 'Ranking API', url: `${API_URL}/api/ranking` }
     ];
     
     let results = [];
@@ -109,7 +112,7 @@ window.testeCompleto = async function() {
     alert('🧪 RESULTADO DOS TESTES:\n\n' + results.join('\n'));
 };
 
-// INICIALIZAÇÃO
+// ✅ INICIALIZAÇÃO
 document.addEventListener('DOMContentLoaded', function() {
     console.log('📄 PÁGINA CARREGADA - INICIANDO...');
     window.rankingManager = new RankingManager();
