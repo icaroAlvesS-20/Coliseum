@@ -1,10 +1,10 @@
+const API_URL = process.env.REACT_APP_API_URL || 'https://coliseum-api.onrender.com';
+
 let praticaIndexAtual = 0;
 
+// ✅ FUNÇÃO getServerURL CORRIGIDA
 function getServerURL() {
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        return 'http://192.168.1.202';
-    }
-    return 'http://localhost:5500';
+    return API_URL;
 }
 
 const bancoPraticas = [
@@ -402,7 +402,7 @@ class Questionario {
         this.mostrarResultadoAnimado(this.acertos, this.perguntasAtuais.length, pontos, sequencia);
     }
 
-    // ✅ CORRIGIDO: Estrutura de dados conforme exigência do servidor
+    // ✅ CORRIGIDO: Usando API_URL
     async registrarPontuacaoNoServidor(acertos, totalPerguntas, pontos, sequencia) {
         try {
             const usuarioId = localStorage.getItem('usuarioId');
@@ -427,7 +427,8 @@ class Questionario {
 
             console.log('📤 Dados enviados:', dadosDesafio);
 
-            const response = await fetch(`${getServerURL()}/api/desafio-completo`, {
+            // ✅ CORRIGIDO: Usando API_URL
+            const response = await fetch(`${API_URL}/api/desafio-completo`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json'
@@ -730,7 +731,8 @@ class SistemaSincronizacao {
 
     async verificarConexao() {
         try {
-            const response = await fetch(`${getServerURL()}/api/health`, { 
+            // ✅ CORRIGIDO: Usando API_URL
+            const response = await fetch(`${API_URL}/api/health`, { 
                 method: 'GET',
                 timeout: 5000
             });
@@ -757,7 +759,8 @@ class SistemaSincronizacao {
                     pontuacaoGanha: desafio.pontos // ✅ Campo obrigatório
                 };
 
-                const response = await fetch(`${getServerURL()}/api/desafio-completo`, {
+                // ✅ CORRIGIDO: Usando API_URL
+                const response = await fetch(`${API_URL}/api/desafio-completo`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json'
