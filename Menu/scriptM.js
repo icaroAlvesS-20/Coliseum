@@ -1,41 +1,45 @@
+// ✅ CONFIGURAÇÃO DE CAMINHOS PARA VERCEL
+const BASE_PATH = '/';
+
+// ✅ FUNÇÕES DE REDIRECIONAMENTO CORRIGIDAS
 function mostrarRanking() {
     console.log('📊 Redirecionando para Ranking...');
-    window.location.href = "../Ranking/indexR.html";
+    window.location.href = `${BASE_PATH}Ranking/indexR.html`;
 }
 
 function mostrarAmigos() {
     console.log('👥 Redirecionando para Amigos...');
-    window.location.href = "../Amigos/indexA.html";
+    window.location.href = `${BASE_PATH}Amigos/indexA.html`;
 }
 
 function mostrarDesafios() {
     console.log('🎯 Redirecionando para Desafios...');
-    window.location.href = "../Desafios/indexD.html";
+    window.location.href = `${BASE_PATH}Desafios/indexD.html`;
 }
 
 function mostrarProvas() {
     console.log('📝 Redirecionando para Provas...');
-    window.location.href = "../Provas/indexPr.html";
+    window.location.href = `${BASE_PATH}Provas/indexPr.html`;
 }
 
 function mostrarConfig() {
     console.log('⚙️ Redirecionando para Configuração...');
-    window.location.href = "../Configuração/indexC.html";
+    window.location.href = `${BASE_PATH}Configuração/indexC.html`;
 }
 
 function mostrarPerfil() {
     console.log('👤 Redirecionando para Perfil...');
-    window.location.href = "../Perfil/indexP.html";
+    window.location.href = `${BASE_PATH}Perfil/indexP.html`;
 }
 
 function mostrarContato() {
     console.log('📞 Redirecionando para Contato...');
-    window.location.href = "../Contato/indexCo.html";
+    window.location.href = `${BASE_PATH}Contato/indexCo.html`;
 }
 
 function mostrarNavegador() {
     console.log('🌐 Redirecionando para Navegador...');
-    window.location.href = "../Navegador/indexN.html";
+    window.location.href = `${BASE_PATH}Navegador/indexN.html`;
 }
 
 function mostrarSerieUsuario() {
@@ -119,12 +123,55 @@ function verificarLogin() {
     if (!usuarioLogado || usuarioLogado !== 'true') {
         console.log('❌ Usuário não logado, redirecionando para login...');
         alert('⚠️ Você precisa fazer login primeiro!');
-        window.location.href = "../Login/index.html";
+        window.location.href = `${BASE_PATH}Login/index.html`;
         return false;
     }
     
     console.log('✅ Usuário logado:', usuarioNome);
     return true;
+}
+
+// ✅ FUNÇÃO PARA VERIFICAR SE ARQUIVO EXISTE
+async function verificarArquivoExiste(caminho) {
+    try {
+        const response = await fetch(caminho, { method: 'HEAD' });
+        return response.ok;
+    } catch {
+        return false;
+    }
+}
+
+// ✅ FUNÇÃO DE REDIRECIONAMENTO INTELIGENTE
+async function redirecionarInteligente(caminho, nomePagina) {
+    console.log(`🎯 Tentando redirecionar para: ${caminho}`);
+    
+    const existe = await verificarArquivoExiste(caminho);
+    
+    if (existe) {
+        console.log(`✅ Arquivo encontrado: ${caminho}`);
+        window.location.href = caminho;
+    } else {
+        console.log(`❌ Arquivo não encontrado: ${caminho}`);
+        
+        // Tentar alternativas
+        const alternativas = [
+            caminho.toLowerCase(),
+            caminho.replace('.html', '.htm'),
+            `/${caminho.split('/').pop()}`
+        ];
+        
+        for (let alt of alternativas) {
+            const altExiste = await verificarArquivoExiste(alt);
+            if (altExiste) {
+                console.log(`✅ Alternativa encontrada: ${alt}`);
+                window.location.href = alt;
+                return;
+            }
+        }
+        
+        alert(`❌ Página ${nomePagina} não encontrada!`);
+        console.error(`❌ Nenhuma alternativa funcionou para: ${caminho}`);
+    }
 }
 
 function inicializarMenu() {
