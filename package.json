@@ -1,20 +1,9 @@
 {
-  "name": "coliseum-app",
+  "name": "coliseum-frontend",
   "version": "1.0.0",
-  "type": "module",
+  "description": "Frontend Coliseum",
   "scripts": {
-    "dev": "node server.js",
-    "start": "node server.js",
-    "build": "npm run build:frontend && prisma generate",
-    "build:frontend": "echo 'Building frontend...'",
-    "vercel-build": "npm run build"
-  },
-  "dependencies": {
-    "express": "^4.18.0",
-    "cors": "^2.8.5",
-    "@prisma/client": "^5.0.0"
-  },
-  "devDependencies": {
-    "prisma": "^5.0.0"
+    "dev": "echo 'Frontend estático - use live server localmente'",
+    "build": "echo 'Build completo'"
   }
 }
