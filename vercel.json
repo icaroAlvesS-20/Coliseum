@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "buildCommand": "prisma generate && npm install",
+  "installCommand": "npm install",
   "builds": [
     {
       "src": "server.js",
@@ -11,10 +13,5 @@
       "src": "/(.*)",
       "dest": "server.js"
     }
-  ],
-  "functions": {
-    "server.js": {
-      "includeFiles": "node_modules/@prisma/client/**"
-    }
-  }
+  ]
 }
