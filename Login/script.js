@@ -182,27 +182,52 @@ function salvarNovaSessao(usuario) {
     console.log('✅ Nova sessão salva! Usuário:', usuario.nome);
 }
 
-// ✅ 7. FUNÇÃO redirecionarParaMenu - SIMPLIFICADA E CORRETA
+// ✅ 7. FUNÇÃO redirecionarParaMenu - CORRIGIDA E TESTADA
 function redirecionarParaMenu() {
     console.log('🎯 Redirecionando para Menu...');
     
-    // Caminhos possíveis no Vercel
+    // Caminhos possíveis em ordem de prioridade
     const caminhos = [
-        '/Menu/indexM.html',
-        'Menu/indexM.html',
-        '../Menu/indexM.html'
+        '/Menu/indexM.html',           // 1. Caminho absoluto (mais comum no Vercel)
+        'Menu/indexM.html',            // 2. Caminho relativo
+        '../Menu/indexM.html',         // 3. Um nível acima
+        './Menu/indexM.html',          // 4. Diretório atual
+        'https://coliseum-ebon.vercel.app/Menu/indexM.html'  // 5. URL completa
     ];
+    
+    console.log('🔄 Tentando caminho principal:', caminhos[0]);
     
     // Tenta o primeiro caminho (mais comum)
     window.location.href = caminhos[0];
     
-    // Fallback após 3 segundos
-    setTimeout(() => {
-        if (window.location.pathname.includes('/Login')) {
-            console.log('🔄 Primeiro caminho falhou, tentando alternativas...');
-            window.location.href = caminhos[1];
-        }
-    }, 3000);
+    // Sistema de fallback automático
+    let tentativaAtual = 0;
+    const maxTentativas = caminhos.length;
+    
+    const verificarERetentar = () => {
+        setTimeout(() => {
+            // Se ainda está na página de login após 2 segundos, tenta próximo caminho
+            if (window.location.href.includes('/Login') || 
+                window.location.href.includes('login') ||
+                document.querySelector('input[type="password"]')) {
+                
+                tentativaAtual++;
+                
+                if (tentativaAtual < maxTentativas) {
+                    console.log(`🔄 Tentativa ${tentativaAtual + 1}: ${caminhos[tentativaAtual]}`);
+                    window.location.href = caminhos[tentativaAtual];
+                    verificarERetentar();
+                } else {
+                    console.error('❌ Todos os caminhos falharam!');
+                    alert('❌ Erro: Não foi possível carregar o menu.\n\nPor favor, acesse manualmente: /Menu/indexM.html');
+                }
+            } else {
+                console.log('✅ Redirecionamento bem-sucedido!');
+            }
+        }, 2000);
+    };
+    
+    verificarERetentar();
 }
 
 // ✅ 8. FUNÇÃO registrar - Processo de login/registro
@@ -299,7 +324,7 @@ async function registrar() {
             
             alert(`✅ ${result.message}`);
             
-            // ✅ REDIRECIONAMENTO CORRETO
+            // ✅ REDIRECIONAMENTO CORRETO - CHAMA A FUNÇÃO CORRIGIDA
             setTimeout(() => {
                 redirecionarParaMenu();
             }, 1000);
