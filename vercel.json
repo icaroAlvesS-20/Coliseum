@@ -1,12 +1,23 @@
 {
   "version": 2,
-  "buildCommand": "prisma generate",
-  "outputDirectory": ".vercel/output",
-  "installCommand": "npm install",
-  "devCommand": "npm run dev",
-  "functions": {
-    "api/*.js": {
-      "runtime": "@vercel/node@4.0.0"
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/**/*",
+      "use": "@vercel/static"
     }
-  }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/server.js"
+    }
+  ]
 }
