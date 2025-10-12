@@ -4,11 +4,15 @@
   "type": "module",
   "scripts": {
     "dev": "node server.js",
-    "build": "echo 'Skipping Prisma build'",
+    "build": "npx prisma generate || echo 'Prisma skipped'",
     "start": "node server.js"
   },
   "dependencies": {
+    "@prisma/client": "^5.0.0",
     "express": "^4.18.0",
     "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "prisma": "^5.0.0"
   }
 }
