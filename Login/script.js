@@ -276,8 +276,9 @@ async function registrar() {
             
             alert(`✅ ${result.message}`);
             
-            // ✅ REDIRECIONAMENTO CORRIGIDO - CAMINHO ABSOLUTO
+            // ✅ REDIRECIONAMENTO 100% CORRETO (indexM.html)
             setTimeout(() => {
+                console.log('🔀 Redirecionando para Menu...');
                 window.location.href = '/Menu/indexM.html';
             }, 1000);
 
@@ -358,29 +359,9 @@ function setupPasswordToggle() {
     }
 }
 
-// ✅ 13. FUNÇÃO verificarEAjustarRedirecionamentos - Corrige todos os redirecionamentos
-function verificarEAjustarRedirecionamentos() {
-    console.log('🔧 Verificando e ajustando redirecionamentos...');
-    
-    // Verificar se estamos no Vercel
-    const isVercel = window.location.hostname.includes('vercel.app');
-    console.log('🌐 Ambiente Vercel detectado:', isVercel);
-    
-    if (isVercel) {
-        // Para Vercel, usar caminhos absolutos
-        console.log('✅ Usando caminhos absolutos para Vercel');
-    } else {
-        // Para desenvolvimento local, usar caminhos relativos
-        console.log('✅ Usando caminhos relativos para desenvolvimento local');
-    }
-}
-
 // ✅ INICIALIZAÇÃO - DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Sistema de login inicializando...');
-    
-    // Verificar e ajustar redirecionamentos
-    verificarEAjustarRedirecionamentos();
     
     // Verificar se já está logado
     if (verificarSessaoAtiva() && window.location.pathname.includes('/Login/')) {
@@ -419,27 +400,3 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('✅ Sistema de login inicializado!');
 });
-
-// ✅ 14. FUNÇÃO navegarPara - Função universal para navegação
-function navegarPara(caminho) {
-    // Usar caminho absoluto para Vercel
-    if (caminho.startsWith('./') || caminho.startsWith('../')) {
-        // Converter caminho relativo para absoluto
-        const caminhoAbsoluto = '/' + caminho.replace(/^(\.\.?\/)+/, '');
-        window.location.href = caminhoAbsoluto;
-    } else if (!caminho.startsWith('/')) {
-        window.location.href = '/' + caminho;
-    } else {
-        window.location.href = caminho;
-    }
-}
-
-// ✅ 15. FUNÇÃO getBasePath - Retorna o caminho base correto
-function getBasePath() {
-    if (window.location.hostname.includes('vercel.app')) {
-        return '/';
-    } else {
-        // Para desenvolvimento local, ajuste conforme sua estrutura
-        return '/';
-    }
-}
