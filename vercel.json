@@ -28,12 +28,16 @@
     {
       "src": "**/*.jpg",
       "use": "@vercel/static"
+    },
+    {
+      "src": "**/*.svg",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/",
-      "dest": "/index.html"
+      "dest": "/Login/index.html"
     },
     {
       "src": "/Login",
@@ -56,8 +60,22 @@
       "dest": "/Desafios/index.html"
     },
     {
+      "src": "/(.*\\.js)",
+      "headers": {
+        "Content-Type": "application/javascript"
+      }
+    },
+    {
+      "src": "/(.*\\.css)",
+      "headers": {
+        "Content-Type": "text/css"
+      }
+    },
+    {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/Login/index.html"
     }
-  ]
+  ],
+  "cleanUrls": false,
+  "trailingSlash": false
 }
