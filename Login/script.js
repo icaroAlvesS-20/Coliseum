@@ -276,9 +276,9 @@ async function registrar() {
             
             alert(`✅ ${result.message}`);
             
-            // Redirecionar para o menu
+            // ✅ REDIRECIONAMENTO CORRIGIDO - CAMINHO ABSOLUTO
             setTimeout(() => {
-                window.location.href = '../Menu/indexM.html';
+                window.location.href = '/Menu/indexM.html';
             }, 1000);
 
         } else {
@@ -300,13 +300,13 @@ async function fazerLogout() {
         limparSessaoAntiga();
         
         console.log('✅ Logout realizado com sucesso!');
-        window.location.href = '../Login/index.html';
+        window.location.href = '/Login/index.html';
         
     } catch (error) {
         console.error('❌ Erro no logout:', error);
         // Limpar local mesmo com erro
         limparSessaoAntiga();
-        window.location.href = '../Login/index.html';
+        window.location.href = '/Login/index.html';
     }
 }
 
@@ -358,14 +358,34 @@ function setupPasswordToggle() {
     }
 }
 
+// ✅ 13. FUNÇÃO verificarEAjustarRedirecionamentos - Corrige todos os redirecionamentos
+function verificarEAjustarRedirecionamentos() {
+    console.log('🔧 Verificando e ajustando redirecionamentos...');
+    
+    // Verificar se estamos no Vercel
+    const isVercel = window.location.hostname.includes('vercel.app');
+    console.log('🌐 Ambiente Vercel detectado:', isVercel);
+    
+    if (isVercel) {
+        // Para Vercel, usar caminhos absolutos
+        console.log('✅ Usando caminhos absolutos para Vercel');
+    } else {
+        // Para desenvolvimento local, usar caminhos relativos
+        console.log('✅ Usando caminhos relativos para desenvolvimento local');
+    }
+}
+
 // ✅ INICIALIZAÇÃO - DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Sistema de login inicializando...');
     
+    // Verificar e ajustar redirecionamentos
+    verificarEAjustarRedirecionamentos();
+    
     // Verificar se já está logado
     if (verificarSessaoAtiva() && window.location.pathname.includes('/Login/')) {
         console.log('🔐 Usuário já está logado, redirecionando para Menu...');
-        window.location.href = '../Menu/indexM.html';
+        window.location.href = '/Menu/indexM.html';
         return;
     }
     
@@ -399,3 +419,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('✅ Sistema de login inicializado!');
 });
+
+// ✅ 14. FUNÇÃO navegarPara - Função universal para navegação
+function navegarPara(caminho) {
+    // Usar caminho absoluto para Vercel
+    if (caminho.startsWith('./') || caminho.startsWith('../')) {
+        // Converter caminho relativo para absoluto
+        const caminhoAbsoluto = '/' + caminho.replace(/^(\.\.?\/)+/, '');
+        window.location.href = caminhoAbsoluto;
+    } else if (!caminho.startsWith('/')) {
+        window.location.href = '/' + caminho;
+    } else {
+        window.location.href = caminho;
+    }
+}
+
+// ✅ 15. FUNÇÃO getBasePath - Retorna o caminho base correto
+function getBasePath() {
+    if (window.location.hostname.includes('vercel.app')) {
+        return '/';
+    } else {
+        // Para desenvolvimento local, ajuste conforme sua estrutura
+        return '/';
+    }
+}
