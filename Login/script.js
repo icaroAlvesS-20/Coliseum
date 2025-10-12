@@ -1,3 +1,6 @@
+// ✅ CONFIGURAÇÃO DA API
+const API_URL = process.env.REACT_APP_API_URL || 'https://coliseum-api.onrender.com';
+
 // ✅ 1. FUNÇÃO atualizarModo - Controla modo Login/Registro
 function atualizarModo() {
     console.log('🔄 Atualizando modo de login/registro...');
@@ -131,13 +134,13 @@ function formatarSerie(serie) {
 async function testarConexaoServidor() {
     try {
         console.log('🌐 Testando conexão com o servidor...');
-        const response = await fetch('http://localhost:5500/api/health');
+        const response = await fetch(`${API_URL}/api/health`);
         const data = await response.json();
         console.log('✅ Servidor respondendo:', data);
         return true;
     } catch (error) {
         console.error('❌ Servidor não respondendo:', error);
-        alert('⚠️ Servidor offline! Verifique se o servidor está rodando na porta 5500.');
+        alert('⚠️ Servidor offline! Verifique se o servidor está rodando.');
         return false;
     }
 }
@@ -250,7 +253,7 @@ async function registrar() {
             senha: '***' 
         });
         
-        const response = await fetch('http://localhost:5500/api/usuarios', {
+        const response = await fetch(`${API_URL}/api/usuarios`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
