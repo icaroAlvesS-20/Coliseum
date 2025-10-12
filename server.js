@@ -8,28 +8,29 @@ import { PrismaClient } from '@prisma/client';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express();
-const PORT = process.env.PORT || 5500;
+if (process.env.VERCEL) {
+  console.log('🚀 Ambiente: Vercel');
+}
 
-// Configuração do Prisma Client para Neon
+const app = express();
+const PORT = process.env.PORT || 3000; // Vercel usa porta 3000
+
+// ✅ PRISMA CONFIGURADO PARA VERCEL
 const prisma = new PrismaClient({
-  log: ['warn', 'error'],
+  log: process.env.VERCEL ? ['error'] : ['warn', 'error'],
   errorFormat: 'minimal'
 });
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Servir arquivos estáticos das pastas
 app.use('/Login', express.static(path.join(__dirname, 'Login')));
 app.use('/Menu', express.static(path.join(__dirname, 'Menu')));
 app.use('/Desafios', express.static(path.join(__dirname, 'Desafios')));
 app.use('/Ranking', express.static(path.join(__dirname, 'Ranking')));
 app.use('/Perfil', express.static(path.join(__dirname, 'Perfil')));
 
-// Log de requisições
 app.use((req, res, next) => {
     console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.path}`);
     next();
