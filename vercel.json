@@ -2,14 +2,74 @@
   "version": 2,
   "builds": [
     {
-      "src": "server.js",
-      "use": "@vercel/node"
+      "src": "**/*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "**/*.js", 
+      "use": "@vercel/static"
+    },
+    {
+      "src": "**/*.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "**/*.png",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "**/*.jpg",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "**/*.svg",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
+      "src": "/Menu/(.*)",
+      "dest": "/Menu/$1"
+    },
+    {
+      "src": "/Login/(.*)",
+      "dest": "/Login/$1"
+    },
+    {
+      "src": "/Ranking/(.*)",
+      "dest": "/Ranking/$1"
+    },
+    {
+      "src": "/Amigos/(.*)",
+      "dest": "/Amigos/$1"
+    },
+    {
+      "src": "/Desafios/(.*)",
+      "dest": "/Desafios/$1"
+    },
+    {
+      "src": "/Provas/(.*)",
+      "dest": "/Provas/$1"
+    },
+    {
+      "src": "/Configuração/(.*)",
+      "dest": "/Configuração/$1"
+    },
+    {
+      "src": "/Perfil/(.*)",
+      "dest": "/Perfil/$1"
+    },
+    {
+      "src": "/Contato/(.*)",
+      "dest": "/Contato/$1"
+    },
+    {
+      "src": "/Navegador/(.*)",
+      "dest": "/Navegador/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "server.js"
+      "dest": "/$1"
     }
   ]
 }
