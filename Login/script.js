@@ -441,6 +441,30 @@ document.addEventListener('DOMContentLoaded', function() {
             registrar();
         }
     });
+
+function redirectToMenu(usuario) {
+    // Salva usuário no localStorage
+    localStorage.setItem('usuario', JSON.stringify(usuario));
+    
+    // Redireciona para o menu
+    window.location.href = '/Menu';
+}
+
+// ✅ VERIFICA SE JÁ ESTÁ LOGADO (no Menu/indexM.html)
+function checkAuth() {
+    const usuario = localStorage.getItem('usuario');
+    if (!usuario) {
+        window.location.href = '/Login';
+        return null;
+    }
+    return JSON.parse(usuario);
+}
+
+// ✅ LOGOUT
+function logout() {
+    localStorage.removeItem('usuario');
+    window.location.href = '/Login';
+}
     
     // Inicializar modo
     setTimeout(atualizarModo, 100);
