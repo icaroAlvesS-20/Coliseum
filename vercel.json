@@ -33,7 +33,7 @@
     },
     {
       "src": "/Menu",
-      "dest": "/Menu/indexM.html"
+      "dest": "../Menu/indexM.html"
     },
     {
       "src": "/menu",
