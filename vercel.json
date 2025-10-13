@@ -32,11 +32,11 @@
       "dest": "/Login/index.html"
     },
     {
-      "src": "/Menu",
+      "src": "../Menu",
       "dest": "../Menu/indexM.html"
     },
     {
-      "src": "/menu",
+      "src": "../menu",
       "dest": "/Menu/indexM.html"
     },
     {
