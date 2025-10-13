@@ -32,48 +32,44 @@
       "dest": "/Login/index.html"
     },
     {
-      "src": "../Menu",
+      "src": "/Menu/indexM.html",
       "dest": "../Menu/indexM.html"
     },
     {
-      "src": "../menu",
-      "dest": "/Menu/indexM.html"
-    },
-    {
-      "src": "/Ranking",
-      "dest": "/Ranking/indexR.html"
+      "src": "/menu",
+      "dest": "../Menu/indexM.html"
     },
     {
       "src": "/ranking",
-      "dest": "/Ranking/indexR.html"
+      "dest": "../Ranking/indexR.html"
     },
     {
-      "src": "/Amigos",
-      "dest": "/Amigos/indexA.html"
+      "src": "/amigos", 
+      "dest": "../Amigos/indexA.html"
     },
     {
-      "src": "/Desafios", 
-      "dest": "/Desafios/indexD.html"
+      "src": "/desafios",
+      "dest": "../Desafios/indexD.html"
     },
     {
-      "src": "/Provas",
-      "dest": "/Provas/indexPr.html"
+      "src": "/provas",
+      "dest": "../Provas/indexPr.html"
     },
     {
-      "src": "/Configuracao",
-      "dest": "/Configuração/indexC.html"
+      "src": "/configuracao",
+      "dest": "../Configuração/indexC.html"
     },
     {
-      "src": "/Perfil",
-      "dest": "/Perfil/indexP.html"
+      "src": "/perfil",
+      "dest": "../Perfil/indexP.html"
     },
     {
-      "src": "/Contato",
-      "dest": "/Contato/indexCo.html"
+      "src": "/contato",
+      "dest": "../Contato/indexCo.html"
     },
     {
-      "src": "/Navegador",
-      "dest": "/Navegador/indexN.html"
+      "src": "/navegador",
+      "dest": "../Navegador/indexN.html"
     },
     {
       "src": "/(.*)",
