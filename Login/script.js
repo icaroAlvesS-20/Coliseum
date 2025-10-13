@@ -149,6 +149,14 @@ async function processarLogin(event) {
             localStorage.setItem('usuario', JSON.stringify(data.usuario));
             localStorage.setItem('ultimoLogin', new Date().toISOString());
             
+            // Também salvar no formato antigo para compatibilidade
+            localStorage.setItem('usuarioLogado', 'true');
+            localStorage.setItem('usuarioNome', data.usuario.nome);
+            localStorage.setItem('usuarioRA', data.usuario.ra);
+            localStorage.setItem('usuarioSerie', data.usuario.serie);
+            localStorage.setItem('usuarioPontuacao', data.usuario.pontuacao);
+            localStorage.setItem('usuarioDesafios', data.usuario.desafiosCompletados);
+            
             // Redirecionar para o menu após breve delay
             setTimeout(() => {
                 safeRedirectToMenu();
@@ -228,6 +236,14 @@ async function processarCadastro(event) {
             localStorage.setItem('usuario', JSON.stringify(data.usuario));
             localStorage.setItem('ultimoLogin', new Date().toISOString());
             
+            // Também salvar no formato antigo para compatibilidade
+            localStorage.setItem('usuarioLogado', 'true');
+            localStorage.setItem('usuarioNome', data.usuario.nome);
+            localStorage.setItem('usuarioRA', data.usuario.ra);
+            localStorage.setItem('usuarioSerie', data.usuario.serie);
+            localStorage.setItem('usuarioPontuacao', data.usuario.pontuacao);
+            localStorage.setItem('usuarioDesafios', data.usuario.desafiosCompletados);
+            
             // Redirecionar para o menu após breve delay
             setTimeout(() => {
                 safeRedirectToMenu();
@@ -246,85 +262,57 @@ async function processarCadastro(event) {
     }
 }
 
-// ========== REDIRECIONAMENTO SEGURO ========== //
+// ========== REDIRECIONAMENTO PARA O MENU ========== //
 async function safeRedirectToMenu() {
     console.log('🔄 Iniciando redirecionamento seguro para o menu...');
     
-    try {
-        // Verificar se o menu existe
-        const menuExists = await checkMenuExists();
-        
-        if (menuExists) {
-            console.log('✅ Menu encontrado, redirecionando...');
-            redirectToMenu();
-        } else {
-            console.error('❌ Menu não encontrado!');
-            
-            // Tentar URLs alternativas
-            const alternativeUrls = [
-                '/menu',
-                '/Menu',
-                '/Menu/indexM.html',
-                '/menu/index.html'
-            ];
-            
-            let foundAlternative = false;
-            
-            for (const url of alternativeUrls) {
-                const exists = await checkUrlExists(url);
-                if (exists) {
-                    console.log(`✅ URL alternativa encontrada: ${url}`);
-                    window.location.href = url;
-                    foundAlternative = true;
-                    break;
-                }
-            }
-            
-            if (!foundAlternative) {
-                mostrarMensagem('❌ Página do menu não encontrada!', 'erro');
-                console.error('Nenhuma URL alternativa funcionou');
-            }
-        }
-    } catch (error) {
-        console.error('💥 Erro no redirecionamento:', error);
-        mostrarMensagem('❌ Erro ao acessar o menu', 'erro');
-    }
-}
-
-async function checkMenuExists() {
-    try {
-        const response = await fetch('/menu', { 
-            method: 'HEAD',
-            cache: 'no-cache'
-        });
-        return response.ok;
-    } catch (error) {
-        console.log('❌ Menu não encontrado:', error);
-        return false;
-    }
-}
-
-async function checkUrlExists(url) {
-    try {
-        const response = await fetch(url, { 
-            method: 'HEAD',
-            cache: 'no-cache'
-        });
-        return response.ok;
-    } catch (error) {
-        return false;
-    }
-}
-
-function redirectToMenu() {
-    console.log('🎯 Redirecionando para o menu...');
+    // URLs possíveis para o menu
+    const possibleMenuUrls = [
+        '/Menu/indexM.html',
+        '/menu',
+        '/Menu',
+        '/menu/index.html',
+        '/Menu/index.html',
+        '/Menu/',
+        '/menu/'
+    ];
     
-    // Aguarda um pouco para evitar rate limit e mostrar mensagem
-    setTimeout(() => {
-        const menuUrl = `${window.location.origin}/menu`;
-        console.log('📍 Navegando para:', menuUrl);
-        window.location.href = menuUrl;
-    }, 500);
+    console.log('🎯 Testando URLs do menu:', possibleMenuUrls);
+    
+    // Testa cada URL sequencialmente
+    for (const url of possibleMenuUrls) {
+        console.log(`🔍 Verificando: ${url}`);
+        
+        try {
+            const response = await fetch(url, { 
+                method: 'HEAD',
+                cache: 'no-cache'
+            });
+            
+            if (response.ok) {
+                console.log(`✅ URL encontrada: ${url}`);
+                console.log('🚀 Redirecionando para o menu...');
+                
+                // Pequeno delay antes do redirecionamento
+                setTimeout(() => {
+                    window.location.href = url;
+                }, 500);
+                
+                return; // Sai da função se encontrou uma URL válida
+            } else {
+                console.log(`❌ URL não acessível: ${url} (Status: ${response.status})`);
+            }
+        } catch (error) {
+            console.log(`❌ Erro ao acessar ${url}:`, error.message);
+        }
+    }
+    
+    // Se nenhuma URL funcionou
+    console.error('💥 Nenhuma URL do menu funcionou!');
+    mostrarMensagem('❌ Erro: Não foi possível acessar o menu. Tente novamente.', 'erro');
+    
+    // Mostra todas as URLs tentadas para debug
+    console.log('📋 Todas as URLs tentadas:', possibleMenuUrls);
 }
 
 // ========== VERIFICAÇÃO DE SESSÃO ========== //
@@ -332,7 +320,15 @@ function verificarSessaoAtiva() {
     try {
         const usuario = localStorage.getItem('usuario');
         const ultimoLogin = localStorage.getItem('ultimoLogin');
+        const usuarioLogado = localStorage.getItem('usuarioLogado');
         
+        console.log('🔍 Verificando sessão:', {
+            usuario: usuario ? 'Presente' : 'Ausente',
+            ultimoLogin,
+            usuarioLogado
+        });
+        
+        // Verifica no novo sistema (JSON completo)
         if (usuario && ultimoLogin) {
             const usuarioObj = JSON.parse(usuario);
             const loginTime = new Date(ultimoLogin);
@@ -341,26 +337,58 @@ function verificarSessaoAtiva() {
             
             // Sessão expira em 24 horas
             if (diffHours < 24) {
-                console.log('✅ Sessão ativa encontrada para usuário ID:', usuarioObj.id);
+                console.log('✅ Sessão ativa encontrada (novo sistema)');
                 console.log('👤 Usuário:', usuarioObj.nome);
                 
-                // Opcional: Redirecionar automaticamente se sessão ativa
-                // setTimeout(() => safeRedirectToMenu(), 1000);
+                // Redirecionar automaticamente após 2 segundos
+                setTimeout(() => {
+                    console.log('🔄 Redirecionamento automático para o menu...');
+                    safeRedirectToMenu();
+                }, 2000);
                 
                 return true;
             } else {
-                console.log('⚠️ Sessão expirada');
-                localStorage.removeItem('usuario');
-                localStorage.removeItem('ultimoLogin');
+                console.log('⚠️ Sessão expirada (novo sistema)');
+                limparDadosUsuario();
             }
         }
+        
+        // Verifica no sistema antigo
+        if (usuarioLogado === 'true') {
+            console.log('✅ Sessão ativa encontrada (sistema antigo)');
+            
+            // Redirecionar automaticamente após 2 segundos
+            setTimeout(() => {
+                console.log('🔄 Redirecionamento automático para o menu...');
+                safeRedirectToMenu();
+            }, 2000);
+            
+            return true;
+        }
+        
     } catch (error) {
-        console.error('Erro ao verificar sessão:', error);
-        localStorage.removeItem('usuario');
-        localStorage.removeItem('ultimoLogin');
+        console.error('❌ Erro ao verificar sessão:', error);
+        limparDadosUsuario();
     }
     
+    console.log('❌ Nenhuma sessão ativa encontrada');
     return false;
+}
+
+function limparDadosUsuario() {
+    // Limpa dados do novo sistema
+    localStorage.removeItem('usuario');
+    localStorage.removeItem('ultimoLogin');
+    
+    // Limpa dados do sistema antigo
+    localStorage.removeItem('usuarioLogado');
+    localStorage.removeItem('usuarioNome');
+    localStorage.removeItem('usuarioRA');
+    localStorage.removeItem('usuarioSerie');
+    localStorage.removeItem('usuarioPontuacao');
+    localStorage.removeItem('usuarioDesafios');
+    
+    console.log('🧹 Dados do usuário limpos');
 }
 
 // ========== VERIFICAÇÃO DE CONEXÃO ========== //
@@ -412,29 +440,6 @@ function mostrarMensagem(mensagem, tipo = 'info') {
     mensagemElement.id = 'mensagemGlobal';
     mensagemElement.className = `mensagem-global ${tipo}`;
     mensagemElement.textContent = mensagem;
-    mensagemElement.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 12px 24px;
-        border-radius: 8px;
-        color: white;
-        font-weight: bold;
-        z-index: 1000;
-        animation: slideDown 0.3s ease;
-        max-width: 90%;
-        text-align: center;
-    `;
-    
-    // Cor baseada no tipo
-    const cores = {
-        sucesso: '#10b981',
-        erro: '#ef4444',
-        info: '#3b82f6'
-    };
-    
-    mensagemElement.style.backgroundColor = cores[tipo] || cores.info;
     
     document.body.appendChild(mensagemElement);
     
@@ -453,45 +458,10 @@ function mostrarLoading(mostrar, texto = 'Carregando...') {
         if (!loadingElement) {
             loadingElement = document.createElement('div');
             loadingElement.id = 'loadingGlobal';
-            loadingElement.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.7);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                flex-direction: column;
-                color: white;
-                font-size: 18px;
-                z-index: 9999;
-            `;
-            
             loadingElement.innerHTML = `
-                <div class="spinner" style="
-                    border: 4px solid rgba(255,255,255,0.3);
-                    border-radius: 50%;
-                    border-top: 4px solid white;
-                    width: 50px;
-                    height: 50px;
-                    animation: spin 1s linear infinite;
-                    margin-bottom: 20px;
-                "></div>
+                <div class="spinner"></div>
                 <div>${texto}</div>
             `;
-            
-            // Adicionar animação CSS
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            `;
-            document.head.appendChild(style);
-            
             document.body.appendChild(loadingElement);
         }
     } else {
@@ -501,19 +471,9 @@ function mostrarLoading(mostrar, texto = 'Carregando...') {
     }
 }
 
-// ========== UTILITÁRIOS GLOBAIS ========== //
-function formatarRA(ra) {
-    return ra.toString().replace(/\D/g, '').slice(0, 10);
-}
-
-function validarEmail(email) {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-}
-
 // ========== EXPORTAÇÕES PARA USO GLOBAL ========== //
 window.safeRedirectToMenu = safeRedirectToMenu;
-window.redirectToMenu = redirectToMenu;
 window.mostrarMensagem = mostrarMensagem;
+window.mostrarLoading = mostrarLoading;
 
 console.log('📦 Login/script.js carregado com sucesso!');
