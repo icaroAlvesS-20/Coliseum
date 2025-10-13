@@ -32,10 +32,6 @@
       "dest": "/Login/index.html"
     },
     {
-      "src": "/Menu/indexM.html",
-      "dest": "/Menu/indexM.html"
-    },
-    {
       "src": "/menu",
       "dest": "/Menu/indexM.html"
     },
@@ -57,7 +53,7 @@
     },
     {
       "src": "/configuracao",
-      "dest": "/Configuração/indexC.html"
+      "dest": "/Configuracao/indexC.html"
     },
     {
       "src": "/perfil",
