@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coliseum - Login</title>    
+    <title>Coliseum - Login</title>
+    
 <style>
     * {
         margin: 0;
@@ -161,6 +162,10 @@
         box-shadow: 0 6px 20px rgba(255, 207, 0, 0.4);
     }
 
+    .btn-registrar:active {
+        transform: translateY(0);
+    }
+
     .mensagem {
         position: fixed;
         top: 20px;
@@ -217,6 +222,7 @@
         100% { transform: rotate(360deg); }
     }
 
+    /* RESPONSIVIDADE MELHORADA */
     @media (max-width: 480px) {
         body {
             padding: 15px;
@@ -240,17 +246,47 @@
         h1 {
             font-size: 32px;
         }
+        
+        input {
+            padding: 14px 16px;
+        }
+        
+        .btn-registrar {
+            padding: 16px;
+        }
     }
-    </style>
+
+    @media (max-width: 360px) {
+        .container {
+            padding: 25px 20px;
+        }
+        
+        .logo-container {
+            width: 90px;
+            height: 90px;
+        }
+        
+        #logo {
+            width: 60px;
+            height: 60px;
+        }
+        
+        h1 {
+            font-size: 28px;
+        }
+    }
+</style>
 </head>
 <body>
     <div class="container">
-       <div class="header">
-    <div class="logo-container">
-<img src="https://cdn-icons-png.flaticon.com/512/2194/2194470.png" alt="Coliseum" id="logo">    </div>
+        <div class="header">
+            <!-- CONTAINER DO CÍRCULO COM IMAGEM DENTRO -->
+            <div class="logo-container">
+                <img src="https://cdn-icons-png.flaticon.com/512/2194/2194470.png" alt="Coliseum" id="logo">
+            </div>
+            <h1>Coliseum</h1>
         </div>
-<h1>Coliseum</h1>
-
+        
         <div class="form-container">
             <div class="form-group">
                 <label for="ra">RA</label>
