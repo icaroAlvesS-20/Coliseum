@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coliseum - Login</title>
-    <!-- IMAGEM ONLINE TEMPORÁRIA -->
-<img src="https://img.icons8.com/ios-filled/100/FFCF00/coliseum.png" alt="Coliseum" id="logo">
-    
+    <title>Coliseum - Login</title>    
 <style>
     * {
         margin: 0;
@@ -40,14 +37,26 @@
         margin-bottom: 35px;
     }
 
-    #logo {
-        width: 100px;
-        height: 100px;
+    /* CONTAINER DO CÍRCULO COM IMAGEM DENTRO */
+    .logo-container {
+        width: 110px;
+        height: 110px;
         margin: 0 auto 20px auto;
         border-radius: 50%;
         border: 3px solid #ffcf00;
         box-shadow: 0 0 20px rgba(255, 207, 0, 0.4);
-        display: block;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #383838;
+        padding: 8px;
+    }
+
+    /* IMAGEM DENTRO DO CÍRCULO */
+    #logo {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
     }
 
     h1 {
@@ -152,10 +161,6 @@
         box-shadow: 0 6px 20px rgba(255, 207, 0, 0.4);
     }
 
-    .btn-registrar:active {
-        transform: translateY(0);
-    }
-
     .mensagem {
         position: fixed;
         top: 20px;
@@ -212,7 +217,6 @@
         100% { transform: rotate(360deg); }
     }
 
-    /* RESPONSIVIDADE MELHORADA */
     @media (max-width: 480px) {
         body {
             padding: 15px;
@@ -223,46 +227,28 @@
             max-width: 100%;
         }
         
+        .logo-container {
+            width: 100px;
+            height: 100px;
+        }
+        
         #logo {
-            width: 90px;
-            height: 90px;
+            width: 65px;
+            height: 65px;
         }
         
         h1 {
             font-size: 32px;
         }
-        
-        input {
-            padding: 14px 16px;
-        }
-        
-        .btn-registrar {
-            padding: 16px;
-        }
     }
-
-    @media (max-width: 360px) {
-        .container {
-            padding: 25px 20px;
-        }
-        
-        #logo {
-            width: 80px;
-            height: 80px;
-        }
-        
-        h1 {
-            font-size: 28px;
-        }
-    }
-</style>
+    </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <!-- IMAGEM ONLINE TEMPORÁRIA -->
-            <img src="https://cdn-icons-png.flaticon.com/512/2194/2194470.png" alt="Coliseum" id="logo">
-            <h1>Coliseum</h1>
+       <div class="header">
+    <div class="logo-container">
+        <img src="https://cdn-icons-png.flaticon.com/512/2194/2194470.png" alt="Coliseum" id="logo">
+    </div>
         </div>
         
         <div class="form-container">
