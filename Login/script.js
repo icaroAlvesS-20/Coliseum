@@ -268,7 +268,7 @@ async function safeRedirectToMenu() {
     
     // URLs possíveis para o menu
     const possibleMenuUrls = [
-        '/Menu/indexM.html',
+        '../Menu/indexM.html',
         '/menu',
         '/Menu',
         '/menu/index.html',
