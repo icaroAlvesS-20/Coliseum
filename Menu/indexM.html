@@ -301,59 +301,59 @@
     </div>
 
 <script>
-// ✅ CONFIGURAÇÃO DAS URLs BASEADA NO SEU vercel.json
-const URLS = {
-    RANKING: '/ranking.html',
-    AMIGOS: '/amigos.html',
-    DESAFIOS: '/desafios.html', 
-    PROVAS: '/provas.html',
-    CONFIGURACAO: '/configuracao.html',
-    PERFIL: '/perfil.html',
-    CONTATO: '/contato.html',
-    NAVEGADOR: '/navegador.html',
-    LOGIN: '/index.html',
-    MENU: '/menu.html'
+// ✅ ROTAS DO VERCEL CONFIGURADAS
+const ROTAS = {
+    MENU: '/menu',
+    RANKING: '/ranking',
+    PERFIL: '/perfil',
+    AMIGOS: '/amigos',
+    DESAFIOS: '/desafios',
+    PROVAS: '/provas',
+    CONFIGURACAO: '/configuracao',
+    CONTATO: '/contato',
+    NAVEGADOR: '/navegador',
+    LOGIN: '/login'
 };
 
 // ✅ FUNÇÕES DE REDIRECIONAMENTO SIMPLES
 function mostrarRanking() { 
     console.log('📊 Redirecionando para Ranking...');
-    window.location.href = URLS.RANKING;
+    window.location.href = ROTAS.RANKING;
 }
 
 function mostrarAmigos() { 
     console.log('👥 Redirecionando para Amigos...');
-    window.location.href = URLS.AMIGOS;
+    window.location.href = ROTAS.AMIGOS;
 }
 
 function mostrarDesafios() { 
     console.log('🎯 Redirecionando para Desafios...');
-    window.location.href = URLS.DESAFIOS;
+    window.location.href = ROTAS.DESAFIOS;
 }
 
 function mostrarProvas() { 
     console.log('📝 Redirecionando para Provas...');
-    window.location.href = URLS.PROVAS;
+    window.location.href = ROTAS.PROVAS;
 }
 
 function mostrarConfig() { 
     console.log('⚙️ Redirecionando para Configuração...');
-    window.location.href = URLS.CONFIGURACAO;
+    window.location.href = ROTAS.CONFIGURACAO;
 }
 
 function mostrarPerfil() { 
     console.log('👤 Redirecionando para Perfil...');
-    window.location.href = URLS.PERFIL;
+    window.location.href = ROTAS.PERFIL;
 }
 
 function mostrarContato() { 
     console.log('📞 Redirecionando para Contato...');
-    window.location.href = URLS.CONTATO;
+    window.location.href = ROTAS.CONTATO;
 }
 
 function mostrarNavegador() { 
     console.log('🌐 Redirecionando para Navegador...');
-    window.location.href = URLS.NAVEGADOR;
+    window.location.href = ROTAS.NAVEGADOR;
 }
 
 // ✅ FUNÇÃO PARA CARREGAR DADOS DO USUÁRIO (CORRIGIDA)
