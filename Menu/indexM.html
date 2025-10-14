@@ -438,43 +438,32 @@
         }
 
         // ✅ FUNÇÃO VERIFICAR LOGIN ATUALIZADA
-        function verificarLogin() {
-            console.log('🔐 Verificando login...');
-            
-            // Verifica no novo sistema
-            const usuarioJSON = localStorage.getItem('usuario');
-            // Verifica no sistema antigo
-            const usuarioLogado = localStorage.getItem('usuarioLogado');
-            
-            console.log('📋 Status do login:', {
-                usuarioJSON: usuarioJSON ? 'Presente' : 'Ausente',
-                usuarioLogado
-            });
-            
-            if (!usuarioJSON && (!usuarioLogado || usuarioLogado !== 'true')) {
-                console.log('❌ Usuário não logado, redirecionando...');
-                mostrarErro('⚠️ Você precisa fazer login primeiro!');
-                setTimeout(() => {
-                    window.location.href = URLS.LOGIN;
-                }, 2000);
-                return false;
-            }
-            
-            console.log('✅ Usuário logado com sucesso');
-            return true;
-        }
+function verificarLogin() {
+    console.log('🔐 Verificando login...');
+    
+    const usuarioJSON = localStorage.getItem('usuario');
+    const usuarioLogado = localStorage.getItem('usuarioLogado');
+    
+    // ✅ PERMITE ACESSO MESMO SEM LOGIN (apenas mostra aviso)
+    if (!usuarioJSON && (!usuarioLogado || usuarioLogado !== 'true')) {
+        console.log('⚠️ Usuário não logado, mas permitindo acesso...');
+        mostrarErro('⚠️ Faça login para salvar seu progresso!');
+        // NÃO redireciona - permite acesso ao menu
+        return true;
+    }
+    
+    console.log('✅ Usuário logado com sucesso');
+    return true;
+}
 
-        // ✅ MOSTRAR MENSAGEM DE ERRO
         function mostrarErro(mensagem) {
             console.log(`💬 Erro: ${mensagem}`);
             
-            // Remove mensagem anterior se existir
             const mensagemAnterior = document.getElementById('mensagemErro');
             if (mensagemAnterior) {
                 mensagemAnterior.remove();
             }
             
-            // Cria nova mensagem
             const mensagemElement = document.createElement('div');
             mensagemElement.className = 'error-message';
             mensagemElement.id = 'mensagemErro';
