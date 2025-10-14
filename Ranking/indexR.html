@@ -602,447 +602,172 @@
     </div>
     <button class="btn-voltar" onclick="history.back()">←</button>
 
-    <script>
+<script>
+console.log('🎯 RANKING CARREGADO!');
+
 const API_URL = 'https://coliseum-api.onrender.com';
-let praticaIndexAtual = 0;
 
-// ✅ FUNÇÃO CRÍTICA: Obter usuarioId de forma consistente
-function obterUsuarioIdConsistente() {
-    let usuarioId = localStorage.getItem('usuarioId');
-    
-    // Se não tem usuarioId válido, tentar pegar do objeto usuario
-    if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
-        const usuarioJSON = localStorage.getItem('usuario');
-        if (usuarioJSON) {
-            try {
-                const usuario = JSON.parse(usuarioJSON);
-                usuarioId = usuario.id;
-                console.log('🔍 Usuário ID encontrado no objeto usuario:', usuarioId);
-                localStorage.setItem('usuarioId', usuarioId);
-            } catch (e) {
-                console.error('Erro ao parsear usuario:', e);
-            }
-        }
-    }
-
-    // ✅ VERIFICAÇÃO CRÍTICA - Se ainda não tem, criar temporário
-    if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
-        console.error('❌ ERRO CRÍTICO: usuarioId não encontrado!');
-        
-        // Verificar se há dados de usuário no localStorage
-        const usuarioNome = localStorage.getItem('usuarioNome');
-        const usuarioLogado = localStorage.getItem('usuarioLogado');
-        
-        if (usuarioLogado === 'true' && usuarioNome) {
-            // Usuário está logado mas sem ID - criar temporário
-            usuarioId = 'temp_' + Date.now();
-            console.log('🆔 Criando ID temporário:', usuarioId);
-            localStorage.setItem('usuarioId', usuarioId);
-        } else {
-            // Usuário não está logado - redirecionar
-            console.log('❌ Usuário não logado - redirecionando...');
-            window.location.href = '../Login/index.html';
-            return null;
-        }
-    }
-
-    console.log('👤 Usando usuarioId:', usuarioId);
-    return usuarioId;
-}
-
-// ✅ SISTEMA DE PONTUAÇÃO CORRIGIDO
-class SistemaPontuacao {
-    calcularPontuacao(acertos, totalPerguntas) {
-        const porcentagemBase = (acertos / totalPerguntas) * 100;
-        
-        console.log(`🎯 Calculando pontuação: ${acertos}/${totalPerguntas} = ${porcentagemBase}%`);
-
-        let pontosBase = 0;
-        if (porcentagemBase >= 90) pontosBase = 20;
-        else if (porcentagemBase >= 75) pontosBase = 15;
-        else if (porcentagemBase >= 60) pontosBase = 10;
-        else if (porcentagemBase >= 50) pontosBase = 8;
-        else if (porcentagemBase >= 25) pontosBase = 5;
-        else pontosBase = 2;
-
-        // ✅ BÔNUS POR PERFEIÇÃO
-        if (acertos === totalPerguntas) {
-            pontosBase += 5;
-            console.log('⭐ Bônus por perfeição: +5 pontos');
-        }
-
-        // ✅ BÔNUS POR SEQUÊNCIA
-        const sequenciaAtual = this.getSequenciaAtual();
-        if (sequenciaAtual > 1) {
-            const bonusSequencia = Math.min(sequenciaAtual, 10);
-            pontosBase += bonusSequencia;
-            console.log(`🔥 Bônus por sequência (${sequenciaAtual}): +${bonusSequencia} pontos`);
-        }
-
-        console.log(`💰 Pontuação final calculada: ${pontosBase} pontos`);
-        return pontosBase;
-    }
-
-    getSequenciaAtual() {
-        const usuarioId = obterUsuarioIdConsistente();
-        const sequencia = localStorage.getItem(`sequencia_${usuarioId}`) || 0;
-        return parseInt(sequencia);
-    }
-
-    atualizarSequencia(acertos, totalPerguntas) {
-        const usuarioId = obterUsuarioIdConsistente();
-        let sequencia = this.getSequenciaAtual();
-        
-        if (acertos === totalPerguntas) {
-            sequencia++;
-            localStorage.setItem(`sequencia_${usuarioId}`, sequencia);
-            console.log(`🔥 Sequência aumentada para: ${sequencia}`);
-        } else {
-            localStorage.setItem(`sequencia_${usuarioId}`, 0);
-            console.log('💥 Sequência quebrada');
-        }
-        
-        return sequencia;
-    }
-}
-
-// ✅ QUESTIONÁRIO CORRIGIDO - FOCO NA PONTUAÇÃO
-class Questionario {
+class RankingManager {
     constructor() {
-        this.perguntasAtuais = [];
-        this.perguntaIndex = 0;
-        this.acertos = 0;
-        this.modal = document.getElementById('modalPerguntas');
-        this.modalBody = document.getElementById('modalBody');
-        
-        console.log("📝 Inicializando Questionário...");
-        
-        if (this.modal && this.modalBody) {
-            this.inicializarEventos();
-        }
+        console.log('✅ RankingManager INICIADO');
+        this.rankingList = document.getElementById('ranking-list');
+        this.totalUsuarios = document.getElementById('total-usuarios');
+        this.totalDesafios = document.getElementById('total-desafios');
+        this.totalPontos = document.getElementById('total-pontos');
+        this.carregarRanking();
     }
 
-    // ... (mantenha as funções existentes: inicializarEventos, abrirQuestionario, mostrarPergunta, adicionarEventListenersPergunta, verificarResposta, proximaPergunta)
-
-    mostrarResultado() {
-        const percentual = Math.round((this.acertos / this.perguntasAtuais.length) * 100);
-        console.log(`🏁 Questionário finalizado: ${this.acertos}/${this.perguntasAtuais.length} (${percentual}%)`);
-        
-        const sistemaPontuacao = new SistemaPontuacao();
-        const pontos = sistemaPontuacao.calcularPontuacao(this.acertos, this.perguntasAtuais.length);
-        const sequencia = sistemaPontuacao.atualizarSequencia(this.acertos, this.perguntasAtuais.length);
-
-        console.log(`🎯 Pontuação calculada: ${pontos} pontos`);
-
-        // ✅ ENVIAR PARA O SERVIDOR E ATUALIZAR LOCALMENTE
-        this.registrarPontuacaoNoServidor(this.acertos, this.perguntasAtuais.length, pontos, sequencia)
-            .then((resultado) => {
-                console.log('✅ Pontuação registrada com sucesso no servidor');
-                this.atualizarDadosLocais(pontos);
-            })
-            .catch((error) => {
-                console.error('❌ Erro ao registrar no servidor, salvando localmente:', error);
-                this.atualizarDadosLocais(pontos);
-            });
-        
-        this.mostrarResultadoAnimado(this.acertos, this.perguntasAtuais.length, pontos, sequencia);
-    }
-
-    // ✅ FUNÇÃO CRÍTICA: Registrar pontuação no servidor
-    async registrarPontuacaoNoServidor(acertos, totalPerguntas, pontos, sequencia) {
+    async carregarRanking() {
         try {
-            const usuarioId = obterUsuarioIdConsistente();
+            console.log('🔄 INICIANDO CARREGAMENTO...');
             
-            if (!usuarioId) {
-                throw new Error('Usuário não identificado');
+            this.rankingList.innerHTML = '<div class="loading">🔄 Conectando ao servidor...</div>';
+            
+            const url = `${API_URL}/api/ranking`;
+            console.log('🔗 URL:', url);
+            
+            const response = await fetch(url);
+            console.log('📡 RESPOSTA:', response.status, response.statusText);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-
-            console.log('🎯 Enviando desafio para servidor - usuarioId:', usuarioId);
-
-            const usuarioNome = localStorage.getItem('usuarioNome') || 'Jogador';
-            const porcentagemAcerto = Math.round((acertos / totalPerguntas) * 100);
-
-            // ✅ DADOS CORRETOS PARA O SERVIDOR
-            const dadosDesafio = {
-                usuarioId: parseInt(usuarioId), // ✅ GARANTIR QUE É NÚMERO
-                pontuacaoGanha: parseInt(pontos), // ✅ GARANTIR QUE É NÚMERO
-                acertos: parseInt(acertos),
-                totalPerguntas: parseInt(totalPerguntas),
-                porcentagemAcerto: porcentagemAcerto,
-                sequencia: parseInt(sequencia),
-                materia: this.obterMateriaAtual(),
-                data: new Date().toISOString()
-            };
-
-            console.log('📤 Dados enviados para servidor:', dadosDesafio);
-
-            // ✅ VERIFICAÇÃO FINAL ANTES DO ENVIO
-            if (isNaN(dadosDesafio.usuarioId) || isNaN(dadosDesafio.pontuacaoGanha)) {
-                throw new Error('Dados inválidos para envio: usuarioId ou pontuacaoGanha não são números');
-            }
-
-            const response = await fetch(`${API_URL}/api/desafio-completo`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(dadosDesafio)
-            });
-
-            console.log('📥 Status da resposta:', response.status);
-
-            if (response.ok) {
-                const result = await response.json();
-                console.log('✅ Sucesso do servidor:', result.message);
-                
-                // ✅ ATUALIZAR DADOS LOCAIS COM A RESPOSTA DO SERVIDOR
-                if (result.usuario) {
-                    this.atualizarDadosDoServidor(result.usuario);
-                }
-                
-                return result;
-            } else {
-                const errorText = await response.text();
-                console.error('❌ Erro do servidor:', response.status, errorText);
-                throw new Error(`Erro ${response.status}: ${errorText}`);
-            }
+            
+            const data = await response.json();
+            console.log('✅ DADOS RECEBIDOS:', data);
+            
+            this.exibirRanking(data);
+            this.atualizarEstatisticas(data);
             
         } catch (error) {
-            console.error('❌ Erro na requisição:', error);
-            throw error; // Re-lançar para tratamento no chamador
+            console.error('❌ ERRO CRÍTICO:', error);
+            this.mostrarErroCritico(error);
         }
     }
 
-    // ✅ FUNÇÃO NOVA: Atualizar dados locais com resposta do servidor
-    atualizarDadosDoServidor(usuario) {
-        if (usuario && usuario.id) {
-            // ✅ ATUALIZAR LOCALSTORAGE COM DADOS ATUALIZADOS DO SERVIDOR
-            localStorage.setItem('usuarioId', usuario.id.toString());
-            localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
-            localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
-            localStorage.setItem('usuarioNome', usuario.nome || 'Jogador');
-            localStorage.setItem('usuarioRA', usuario.ra || '');
-            localStorage.setItem('usuarioSerie', usuario.serie || '');
-            
-            console.log('✅ Dados atualizados do servidor:', {
-                id: usuario.id,
-                pontuacao: usuario.pontuacao,
-                desafios: usuario.desafiosCompletados,
-                nome: usuario.nome
-            });
-            
-            // ✅ NOTIFICAR OUTRAS PÁGINAS (se existirem)
-            if (window.parent && window.parent.atualizarPerfil) {
-                window.parent.atualizarPerfil();
-            }
+    exibirRanking(ranking) {
+        if (!ranking || ranking.length === 0) {
+            this.rankingList.innerHTML = `
+                <div class="no-data">
+                    <h3>📊 Nenhum dado disponível</h3>
+                    <p>Complete alguns desafios para aparecer no ranking!</p>
+                </div>
+            `;
+            return;
         }
-    }
 
-    // ✅ FUNÇÃO MELHORADA: Atualizar dados locais (fallback offline)
-    atualizarDadosLocais(pontos) {
-        try {
-            const pontuacaoAtual = parseInt(localStorage.getItem('usuarioPontuacao') || '0');
-            const desafiosAtuais = parseInt(localStorage.getItem('usuarioDesafios') || '0');
-            
-            const novaPontuacao = pontuacaoAtual + pontos;
-            const novosDesafios = desafiosAtuais + 1;
-            
-            // ✅ ATUALIZAR LOCALSTORAGE
-            localStorage.setItem('usuarioPontuacao', novaPontuacao.toString());
-            localStorage.setItem('usuarioDesafios', novosDesafios.toString());
-            
-            console.log('📊 Dados locais atualizados:', {
-                pontuacaoAnterior: pontuacaoAtual,
-                novaPontuacao: novaPontuacao,
-                desafiosAnteriores: desafiosAtuais,
-                novosDesafios: novosDesafios,
-                pontosGanhos: pontos
-            });
-            
-            // ✅ SALVAR DESAFIO PENDENTE PARA SINCRONIZAÇÃO FUTURA
-            this.salvarDesafioPendente(pontos);
-            
-        } catch (error) {
-            console.error('❌ Erro ao atualizar dados locais:', error);
-        }
-    }
-
-    // ✅ FUNÇÃO NOVA: Salvar desafio pendente para sincronização
-    salvarDesafioPendente(pontos) {
-        try {
-            const usuarioId = obterUsuarioIdConsistente();
-            const usuarioNome = localStorage.getItem('usuarioNome') || 'Jogador';
-            
-            const desafioPendente = {
-                usuarioId: usuarioId,
-                usuarioNome: usuarioNome,
-                pontuacaoGanha: pontos,
-                acertos: this.acertos,
-                totalPerguntas: this.perguntasAtuais.length,
-                data: new Date().toISOString(),
-                materia: this.obterMateriaAtual()
-            };
-            
-            const desafiosPendentes = JSON.parse(localStorage.getItem('desafiosPendentes') || '[]');
-            desafiosPendentes.push(desafioPendente);
-            localStorage.setItem('desafiosPendentes', JSON.stringify(desafiosPendentes));
-            
-            console.log('💾 Desafio salvo para sincronização futura. Total pendentes:', desafiosPendentes.length);
-            
-        } catch (error) {
-            console.error('❌ Erro ao salvar desafio pendente:', error);
-        }
-    }
-
-    obterMateriaAtual() {
-        if (window.gerenciadorPraticas?.praticasHoje[praticaIndexAtual]) {
-            return window.gerenciadorPraticas.praticasHoje[praticaIndexAtual].materia;
-        }
-        return 'Desconhecida';
-    }
-
-    // ✅ FUNÇÃO MELHORADA: Mostrar resultado com confirmação
-    mostrarResultadoAnimado(acertos, total, pontosTotais, sequencia) {
-        const percentual = Math.round((acertos / total) * 100);
-        const emoji = percentual >= 90 ? '🎉' : percentual >= 70 ? '🎯' : percentual >= 50 ? '👍' : '💪';
+        this.rankingList.innerHTML = ranking.map((user, index) => `
+            <div class="ranking-item">
+                <div class="ranking-item-header">
+                    <div class="posicao posicao-${index + 1}">${index + 1}°</div>
+                    <div class="user-info">
+                        <div class="user-avatar">${user.nome ? user.nome.charAt(0).toUpperCase() : 'U'}</div>
+                        <div class="user-details">
+                            <div class="user-name">${user.nome || 'Usuário'}</div>
+                            <div class="user-serie">${user.serie || 'Série não informada'}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ranking-item-stats">
+                    <div class="stat-item">
+                        <div class="stat-label-small">Série</div>
+                        <div class="stat-value serie-value">${user.serie || '-'}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label-small">Desafios</div>
+                        <div class="stat-value desafios-value">${user.desafiosCompletados || 0}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label-small">Pontuação</div>
+                        <div class="stat-value pontuacao-value">${user.pontuacao || 0}</div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
         
-        let mensagemBonus = '';
-        if (sequencia > 1) {
-            mensagemBonus = `<div class="bonus-sequencia" style="color: #ffd700; margin: 10px 0; font-size: 14px;">🔥 Sequência de ${sequencia} desafios perfeitos!</div>`;
+        console.log('✅ RANKING EXIBIDO!');
+    }
+
+    atualizarEstatisticas(ranking) {
+        if (!ranking || ranking.length === 0) {
+            this.totalUsuarios.textContent = '0';
+            this.totalDesafios.textContent = '0';
+            this.totalPontos.textContent = '0';
+            return;
         }
 
-        this.modalBody.innerHTML = `
-            <div class="resultado-final">
-                <div style="font-size: 48px; margin-bottom: 20px;">${emoji}</div>
-                <div class="resultado-titulo">Desafio Concluído!</div>
-                <div style="color: #fff; font-size: 18px; margin-bottom: 15px;">${acertos}/${total} acertos (${percentual}%)</div>
-                <div class="resultado-pontuacao">
-                    <div class="pontos-ganhos">+${pontosTotais} pontos</div>
-                    ${mensagemBonus}
+        const totalUsuarios = ranking.length;
+        const totalDesafios = ranking.reduce((sum, user) => sum + (user.desafiosCompletados || 0), 0);
+        const totalPontos = ranking.reduce((sum, user) => sum + (user.pontuacao || 0), 0);
+
+        this.totalUsuarios.textContent = totalUsuarios;
+        this.totalDesafios.textContent = totalDesafios;
+        this.totalPontos.textContent = totalPontos;
+
+        console.log('📊 Estatísticas atualizadas:', { totalUsuarios, totalDesafios, totalPontos });
+    }
+
+    mostrarErroCritico(error) {
+        this.rankingList.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #ff6b6b;">
+                <h2>❌ ERRO DE CONEXÃO</h2>
+                <p><strong>${error.message}</strong></p>
+                <div style="background: #2a2a2a; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <p>O servidor não está respondendo</p>
+                    <p><strong>URL tentada:</strong> ${API_URL}/api/ranking</p>
+                    <p><strong>SOLUÇÃO:</strong></p>
+                    <ol style="text-align: left; margin: 15px;">
+                        <li>Verifique se o backend está online</li>
+                        <li>Teste: ${API_URL}/api/health</li>
+                        <li>Verifique a conexão de internet</li>
+                        <li>Tente novamente em alguns minutos</li>
+                    </ol>
                 </div>
-                <div class="info-pontuacao">
-                    <small>✅ Pontos registrados no seu perfil e ranking!</small>
-                </div>
-                <div style="margin-top: 15px; font-size: 12px; color: #ccc;">
-                    Pontuação anterior: ${parseInt(localStorage.getItem('usuarioPontuacao') || '0') - pontosTotais} → Nova: ${localStorage.getItem('usuarioPontuacao')}
-                </div>
-                <button class="btn-reiniciar">Continuar</button>
+                <button onclick="testeCompleto()" 
+                        style="padding: 15px 30px; background: #ffd700; color: #000; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px;">
+                    🧪 EXECUTAR TESTE COMPLETO
+                </button>
+                <button onclick="window.rankingManager.carregarRanking()" 
+                        style="padding: 15px 30px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-left: 10px;">
+                    🔄 TENTAR NOVAMENTE
+                </button>
             </div>
         `;
-
-        setTimeout(() => {
-            const btnReiniciar = this.modalBody.querySelector('.btn-reiniciar');
-            if (btnReiniciar) {
-                btnReiniciar.addEventListener('click', () => {
-                    this.fecharModal();
-                    if (window.gerenciadorPraticas) {
-                        window.gerenciadorPraticas.concluirPratica(praticaIndexAtual);
-                    }
-                    
-                    // ✅ ATUALIZAR PERFIL SE ESTIVER EM IFRAME
-                    if (window.parent && window.parent.carregarPerfilUsuario) {
-                        window.parent.carregarPerfilUsuario();
-                    }
-                });
-            }
-        }, 50);
-    }
-
-    fecharModal() {
-        if (this.modal) this.modal.style.display = 'none';
     }
 }
 
-// ✅ SISTEMA DE SINCRONIZAÇÃO PARA DESAFIOS PENDENTES
-class SincronizadorDesafios {
-    constructor() {
-        this.sincronizando = false;
-    }
-
-    async sincronizarDesafiosPendentes() {
-        if (this.sincronizando) return;
-        
-        const desafiosPendentes = JSON.parse(localStorage.getItem('desafiosPendentes') || '[]');
-        if (desafiosPendentes.length === 0) return;
-
-        console.log('🔄 Sincronizando desafios pendentes:', desafiosPendentes.length);
-        this.sincronizando = true;
-
+// ✅ TESTE COMPLETO
+window.testeCompleto = async function() {
+    console.log('🧪 INICIANDO TESTE COMPLETO...');
+    
+    const tests = [
+        { name: 'Health Check', url: `${API_URL}/api/health` },
+        { name: 'Ranking API', url: `${API_URL}/api/ranking` }
+    ];
+    
+    let results = [];
+    
+    for (const test of tests) {
         try {
-            for (let i = 0; i < desafiosPendentes.length; i++) {
-                const desafio = desafiosPendentes[i];
-                
-                const dados = {
-                    usuarioId: parseInt(desafio.usuarioId),
-                    pontuacaoGanha: desafio.pontuacaoGanha,
-                    acertos: desafio.acertos,
-                    totalPerguntas: desafio.totalPerguntas,
-                    porcentagemAcerto: Math.round((desafio.acertos / desafio.totalPerguntas) * 100),
-                    materia: desafio.materia,
-                    data: desafio.data
-                };
-
-                const response = await fetch(`${API_URL}/api/desafio-completo`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dados)
-                });
-
-                if (response.ok) {
-                    console.log(`✅ Desafio sincronizado: ${desafio.acertos}/${desafio.totalPerguntas}`);
-                    // Remover da lista
-                    desafiosPendentes.splice(i, 1);
-                    i--; // Ajustar índice após remoção
-                } else {
-                    console.log(`❌ Falha ao sincronizar desafio: ${response.status}`);
-                    break; // Parar se encontrar erro
-                }
-            }
-
-            // Atualizar localStorage com lista atualizada
-            localStorage.setItem('desafiosPendentes', JSON.stringify(desafiosPendentes));
-            console.log('✅ Sincronização concluída. Pendentes restantes:', desafiosPendentes.length);
-            
+            console.log(`🔍 Testando: ${test.name} - ${test.url}`);
+            const response = await fetch(test.url);
+            const data = await response.json();
+            results.push(`✅ ${test.name}: FUNCIONA`);
+            console.log(`✅ ${test.name}:`, data);
         } catch (error) {
-            console.error('❌ Erro na sincronização:', error);
-        } finally {
-            this.sincronizando = false;
+            results.push(`❌ ${test.name}: FALHOU - ${error.message}`);
+            console.error(`❌ ${test.name}:`, error);
         }
     }
-}
+    
+    alert('🧪 RESULTADO DOS TESTES:\n\n' + results.join('\n'));
+};
 
-// ✅ INICIALIZAÇÃO CORRIGIDA
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log("🚀 Inicializando sistema de desafios...");
-    
-    // ✅ VERIFICAÇÃO RIGOROSA DE USUÁRIO
-    const usuarioLogado = localStorage.getItem('usuarioLogado');
-    const usuarioId = obterUsuarioIdConsistente();
-    
-    if (!usuarioLogado || usuarioLogado !== 'true' || !usuarioId) {
-        console.log('❌ Usuário não está logado, redirecionando...');
-        window.location.href = '../Login/index.html';
-        return;
-    }
-    
-    console.log('👤 Usuário verificado:', localStorage.getItem('usuarioNome'));
-    console.log('🎯 Pontuação atual:', localStorage.getItem('usuarioPontuacao'));
-    console.log('📊 Desafios completos:', localStorage.getItem('usuarioDesafios'));
-    
-    // ✅ INICIALIZAR SISTEMA DE SINCRONIZAÇÃO
-    window.sincronizador = new SincronizadorDesafios();
-    
-    // ✅ SINCRONIZAR DESAFIOS PENDENTES SE HOUVER INTERNET
-    setTimeout(() => {
-        window.sincronizador.sincronizarDesafiosPendentes();
-    }, 3000);
-    
-    // ✅ INICIALIZAR COMPONENTES
-    window.gerenciadorPraticas = new GerenciadorPraticas();
-    window.questionario = new Questionario();
-    
-    console.log("✅ Sistema de desafios inicializado com sucesso!");
+// ✅ INICIALIZAÇÃO
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 PÁGINA CARREGADA - INICIANDO...');
+    window.rankingManager = new RankingManager();
 });
-    </script>
+</script>
 </body>
 </html>
