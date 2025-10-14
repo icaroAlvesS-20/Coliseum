@@ -303,16 +303,16 @@
 <script>
 // ✅ CONFIGURAÇÃO DAS URLs BASEADA NO SEU vercel.json
 const URLS = {
-    RANKING: '/ranking',
-    AMIGOS: '/amigos',
-    DESAFIOS: '/desafios', 
-    PROVAS: '/provas',
-    CONFIGURACAO: '/configuracao',
-    PERFIL: '/perfil',
-    CONTATO: '/contato',
-    NAVEGADOR: '/navegador',
-    LOGIN: '/login',
-    MENU: '/menu'
+    RANKING: '/ranking.html',
+    AMIGOS: '/amigos.html',
+    DESAFIOS: '/desafios.html', 
+    PROVAS: '/provas.html',
+    CONFIGURACAO: '/configuracao.html',
+    PERFIL: '/perfil.html',
+    CONTATO: '/contato.html',
+    NAVEGADOR: '/navegador.html',
+    LOGIN: '/index.html',
+    MENU: '/menu.html'
 };
 
 // ✅ FUNÇÕES DE REDIRECIONAMENTO SIMPLES
@@ -356,44 +356,44 @@ function mostrarNavegador() {
     window.location.href = URLS.NAVEGADOR;
 }
 
-// ✅ FUNÇÃO PARA CARREGAR DADOS DO USUÁRIO
+// ✅ FUNÇÃO PARA CARREGAR DADOS DO USUÁRIO (CORRIGIDA)
 function carregarDadosUsuario() {
     console.log('👤 Carregando dados do usuário...');
     
     try {
-        const usuarioSerie = localStorage.getItem('usuarioSerie');
-        const usuarioNome = localStorage.getItem('usuarioNome');
-        const usuarioRA = localStorage.getItem('usuarioRA');
-        
+        // ✅ CORREÇÃO: Buscar dados padronizados
         const usuarioJSON = localStorage.getItem('usuario');
         let usuario = null;
         
         if (usuarioJSON) {
             usuario = JSON.parse(usuarioJSON);
-            console.log('✅ Usuário encontrado no novo formato:', usuario);
+            console.log('✅ Usuário encontrado:', usuario);
         }
+        
+        // ✅ CORREÇÃO: Buscar dados individuais como fallback
+        const usuarioNome = localStorage.getItem('usuarioNome');
+        const usuarioSerie = localStorage.getItem('usuarioSerie');
         
         console.log("📊 Dados disponíveis:", {
             usuarioJSON: usuario,
-            usuarioSerie,
-            usuarioNome, 
-            usuarioRA
+            usuarioNome,
+            usuarioSerie
         });
         
         let serieExibir = 'Série não informada';
+        let nomeExibir = 'Jogador';
         
-        if (usuario && usuario.serie) {
-            serieExibir = usuario.serie;
-            localStorage.setItem('usuarioSerie', usuario.serie);
-            localStorage.setItem('usuarioNome', usuario.nome);
-            localStorage.setItem('usuarioRA', usuario.ra);
-            localStorage.setItem('usuarioLogado', 'true');
+        // ✅ CORREÇÃO: Priorizar dados do objeto usuario
+        if (usuario) {
+            serieExibir = usuario.serie || usuarioSerie || 'Série não informada';
+            nomeExibir = usuario.nome || usuarioNome || 'Jogador';
         } else if (usuarioSerie && usuarioSerie !== "null") {
             serieExibir = usuarioSerie;
+            nomeExibir = usuarioNome || 'Jogador';
         }
         
         document.getElementById("serie-aleatoria").textContent = serieExibir;
-        console.log("✅ Série exibida:", serieExibir);
+        console.log("✅ Dados exibidos:", { nome: nomeExibir, serie: serieExibir });
         
     } catch (error) {
         console.error('❌ Erro ao carregar dados do usuário:', error);
@@ -401,17 +401,22 @@ function carregarDadosUsuario() {
     }
 }
 
-// ✅ FUNÇÃO VERIFICAR LOGIN
+// ✅ FUNÇÃO VERIFICAR LOGIN (CORRIGIDA)
 function verificarLogin() {
     console.log('🔐 Verificando login...');
     
     const usuarioJSON = localStorage.getItem('usuario');
     const usuarioLogado = localStorage.getItem('usuarioLogado');
+    const usuarioId = localStorage.getItem('usuarioId');
     
-    if (!usuarioJSON && (!usuarioLogado || usuarioLogado !== 'true')) {
+    // ✅ CORREÇÃO: Verificação mais robusta
+    const estaLogado = (usuarioJSON && usuarioLogado === 'true') || 
+                      (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined');
+    
+    if (!estaLogado) {
         console.log('⚠️ Usuário não logado, mas permitindo acesso...');
         mostrarErro('⚠️ Faça login para salvar seu progresso!');
-        return true;
+        return true; // Permite acesso em modo visitante
     }
     
     console.log('✅ Usuário logado com sucesso');
