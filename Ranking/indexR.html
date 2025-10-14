@@ -619,29 +619,26 @@ class RankingManager {
 
     async carregarRanking() {
         try {
-            console.log('🔄 INICIANDO CARREGAMENTO...');
+            console.log('🔄 Carregando ranking...');
             
             this.rankingList.innerHTML = '<div class="loading">🔄 Conectando ao servidor...</div>';
             
-            const url = `${API_URL}/api/ranking`;
-            console.log('🔗 URL:', url);
-            
-            const response = await fetch(url);
-            console.log('📡 RESPOSTA:', response.status, response.statusText);
+            const response = await fetch(`${API_URL}/api/ranking`);
+            console.log('📡 Status:', response.status);
             
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                throw new Error(`HTTP ${response.status}`);
             }
             
             const data = await response.json();
-            console.log('✅ DADOS RECEBIDOS:', data);
+            console.log('✅ Dados recebidos:', data);
             
             this.exibirRanking(data);
             this.atualizarEstatisticas(data);
             
         } catch (error) {
-            console.error('❌ ERRO CRÍTICO:', error);
-            this.mostrarErroCritico(error);
+            console.error('❌ Erro:', error);
+            this.mostrarErro('Erro ao carregar ranking: ' + error.message);
         }
     }
 
@@ -684,17 +681,10 @@ class RankingManager {
                 </div>
             </div>
         `).join('');
-        
-        console.log('✅ RANKING EXIBIDO!');
     }
 
     atualizarEstatisticas(ranking) {
-        if (!ranking || ranking.length === 0) {
-            this.totalUsuarios.textContent = '0';
-            this.totalDesafios.textContent = '0';
-            this.totalPontos.textContent = '0';
-            return;
-        }
+        if (!ranking || ranking.length === 0) return;
 
         const totalUsuarios = ranking.length;
         const totalDesafios = ranking.reduce((sum, user) => sum + (user.desafiosCompletados || 0), 0);
@@ -703,69 +693,24 @@ class RankingManager {
         this.totalUsuarios.textContent = totalUsuarios;
         this.totalDesafios.textContent = totalDesafios;
         this.totalPontos.textContent = totalPontos;
-
-        console.log('📊 Estatísticas atualizadas:', { totalUsuarios, totalDesafios, totalPontos });
     }
 
-    mostrarErroCritico(error) {
+    mostrarErro(mensagem) {
         this.rankingList.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #ff6b6b;">
-                <h2>❌ ERRO DE CONEXÃO</h2>
-                <p><strong>${error.message}</strong></p>
-                <div style="background: #2a2a2a; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                    <p>O servidor não está respondendo</p>
-                    <p><strong>URL tentada:</strong> ${API_URL}/api/ranking</p>
-                    <p><strong>SOLUÇÃO:</strong></p>
-                    <ol style="text-align: left; margin: 15px;">
-                        <li>Verifique se o backend está online</li>
-                        <li>Teste: ${API_URL}/api/health</li>
-                        <li>Verifique a conexão de internet</li>
-                        <li>Tente novamente em alguns minutos</li>
-                    </ol>
-                </div>
-                <button onclick="testeCompleto()" 
-                        style="padding: 15px 30px; background: #ffd700; color: #000; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px;">
-                    🧪 EXECUTAR TESTE COMPLETO
-                </button>
-                <button onclick="window.rankingManager.carregarRanking()" 
-                        style="padding: 15px 30px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-left: 10px;">
-                    🔄 TENTAR NOVAMENTE
+            <div class="error">
+                <h3>❌ Erro</h3>
+                <p>${mensagem}</p>
+                <button onclick="window.rankingManager.carregarRanking()" class="btn-interno">
+                    🔄 Tentar Novamente
                 </button>
             </div>
         `;
     }
 }
 
-// ✅ TESTE COMPLETO
-window.testeCompleto = async function() {
-    console.log('🧪 INICIANDO TESTE COMPLETO...');
-    
-    const tests = [
-        { name: 'Health Check', url: `${API_URL}/api/health` },
-        { name: 'Ranking API', url: `${API_URL}/api/ranking` }
-    ];
-    
-    let results = [];
-    
-    for (const test of tests) {
-        try {
-            console.log(`🔍 Testando: ${test.name} - ${test.url}`);
-            const response = await fetch(test.url);
-            const data = await response.json();
-            results.push(`✅ ${test.name}: FUNCIONA`);
-            console.log(`✅ ${test.name}:`, data);
-        } catch (error) {
-            results.push(`❌ ${test.name}: FALHOU - ${error.message}`);
-            console.error(`❌ ${test.name}:`, error);
-        }
-    }
-    
-    alert('🧪 RESULTADO DOS TESTES:\n\n' + results.join('\n'));
-};
-
-// ✅ INICIALIZAÇÃO
+// ✅ INICIALIZAÇÃO SIMPLIFICADA
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📄 PÁGINA CARREGADA - INICIANDO...');
+    console.log('📄 Ranking carregado');
     window.rankingManager = new RankingManager();
 });
 </script>
