@@ -3,18 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styleCo.css">
-    <script src="indexCo.html"></script>
-    <title>Contato</title>
+    <title>Contato - Coliseum</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        #ImgTopo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            object-fit: cover;
+        }
+
+        .bloco-cinza {
+            width: 90%;
+            max-width: 800px;
+            background-color: #202021;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .texto-contato {
+            color: white;
+            font-size: 20px;
+            line-height: 1.8;
+            position: relative;
+        }
+
+        .contato-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .aba-ICON {
+            width: 50px;
+            height: 50px;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .aba-ICON img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .texto-contato a {
+            color: #ffcf00;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .texto-contato a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-voltar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #ffcf00;
+            color: #000;
+            font-size: 30px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-voltar:hover {
+            background: #e6b800;
+            transform: scale(1.1);
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .bloco-cinza {
+                width: 95%;
+                padding: 20px;
+            }
+            
+            .texto-contato {
+                font-size: 18px;
+            }
+            
+            .aba-ICON {
+                width: 40px;
+                height: 40px;
+                margin-right: 15px;
+            }
+            
+            .contato-item {
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .texto-contato {
+                font-size: 16px;
+            }
+            
+            .aba-ICON {
+                width: 35px;
+                height: 35px;
+                margin-right: 10px;
+            }
+            
+            .btn-voltar {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+        }
+    </style>
 </head>
 <body>
 
-  
     <div class="bloco-cinza">
         <div class="texto-contato">
             <div class="contato-item">
                 <div class="aba-ICON">
-                    <img src="ImagensCo/Gmail.png" alt="Email">
+                    <!-- Ícone de Email inline como fallback -->
+                    <svg viewBox="0 0 24 24" fill="#ffcf00">
+                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                    </svg>
                 </div>
                 <div>
                     <p>Email: coliseum.oficial.br@gmail.com</p>
@@ -23,7 +159,10 @@
             
             <div class="contato-item">
                 <div class="aba-ICON">
-                    <img src="ImagensCo/Telefone.png" alt="Telefone">
+                    <!-- Ícone de Telefone inline como fallback -->
+                    <svg viewBox="0 0 24 24" fill="#ffcf00">
+                        <path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57-.35-.11-.74-.03-1.02.24l-2.2 2.2c-2.83-1.44-5.15-3.75-6.59-6.59l2.2-2.21c.28-.26.36-.65.25-1C8.7 6.45 8.5 5.25 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1zM12 3v10l3-3h6V3h-9z"/>
+                    </svg>
                 </div>
                 <div>
                     <p>Telefone: (11) 98356-6450</p>
@@ -32,7 +171,10 @@
             
             <div class="contato-item">
                 <div class="aba-ICON">
-                    <img src="ImagensCo/Insta.png" alt="Instagram">
+                    <!-- Ícone do Instagram inline como fallback -->
+                    <svg viewBox="0 0 24 24" fill="#ffcf00">
+                        <path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8 1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/>
+                    </svg>
                 </div>
                 <div>
                     <p>Instagram: <a href="https://www.instagram.com/app.coliseum/" target="_blank">app.coliseum</a></p>
