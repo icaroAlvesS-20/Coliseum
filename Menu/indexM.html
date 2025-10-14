@@ -301,143 +301,143 @@
     </div>
 
     <script>
-        // ✅ CONFIGURAÇÃO DAS URLs
-        const URLS = {
-            RANKING: '/ranking',
-            AMIGOS: '/amigos',
-            DESAFIOS: '/desafios',
-            PROVAS: '/provas',
-            CONFIGURACAO: '/configuracao',
-            PERFIL: '/perfil',
-            CONTATO: '/contato',
-            NAVEGADOR: '/navegador',
-            LOGIN: '/login'
-        };
+// ✅ CONFIGURAÇÃO DAS URLs
+const URLS = {
+    RANKING: '/ranking',
+    AMIGOS: '/amigos',
+    DESAFIOS: '/desafios',
+    PROVAS: '/provas',
+    CONFIGURACAO: '/configuracao',
+    PERFIL: '/perfil',
+    CONTATO: '/contato',
+    NAVEGADOR: '/navegador',
+    LOGIN: '/login'
+};
 
-        // ✅ FUNÇÕES DE REDIRECIONAMENTO CORRETAS
-       function mostrarRanking() { 
-       console.log('📊 Redirecionando para Ranking...');
-      safeRedirect('/ranking', '/Ranking/indexR.html');
-       }
+// ✅ FUNÇÕES DE REDIRECIONAMENTO CORRETAS
+function mostrarRanking() { 
+    console.log('📊 Redirecionando para Ranking...');
+    safeRedirect('/ranking', '/Ranking/indexR.html');
+}
 
-        function mostrarAmigos() { 
-            console.log('👥 Redirecionando para Amigos...');
-            safeRedirect'/amigos', '/Amigos/indexA.html');
+function mostrarAmigos() { 
+    console.log('👥 Redirecionando para Amigos...');
+    safeRedirect('/amigos', '/Amigos/indexA.html');
+}
+
+function mostrarDesafios() { 
+    console.log('🎯 Redirecionando para Desafios...');
+    safeRedirect('/desafios', '/Desafios/indexD.html');
+}
+
+function mostrarProvas() { 
+    console.log('📝 Redirecionando para Provas...');
+    safeRedirect('/provas', '/Provas/indexP.html');
+}
+
+function mostrarConfig() { 
+    console.log('⚙️ Redirecionando para Configuração...');
+    safeRedirect('/config', '/Configuração/indexC.html');
+}
+
+function mostrarPerfil() { 
+    console.log('👤 Redirecionando para Perfil...');
+    safeRedirect('/perfil', '/Perfil/indexP.html');
+}
+
+function mostrarContato() { 
+    console.log('📞 Redirecionando para Contato...');
+    safeRedirect('/contato', '/Contato/indexCO.html');
+}
+
+function mostrarNavegador() { 
+    console.log('🌐 Redirecionando para Navegador...');
+    safeRedirect('/navegador', '/Navegador/indexN.html');
+}
+
+// ✅ REDIRECIONAMENTO SEGURO CORRIGIDO
+async function safeRedirect(urlPreferida, urlAlternativa) {
+    console.log(`🎯 Tentando redirecionar para: ${urlPreferida}`);
+    
+    try {
+        // Verifica se a URL preferida existe
+        const response = await fetch(urlPreferida, { method: 'HEAD' });
+        if (response.ok) {
+            console.log(`✅ URL encontrada: ${urlPreferida}`);
+            window.location.href = urlPreferida;
+            return;
         }
-
-        function mostrarDesafios() { 
-            console.log('🎯 Redirecionando para Desafios...');
-            safeRedirect'/desafios', '/Desafios/indexD.html');
+    } catch (error) {
+        console.log(`❌ URL não encontrada: ${urlPreferida}`);
+    }
+    
+    // Tenta a URL alternativa
+    console.log(`🔄 Tentando URL alternativa: ${urlAlternativa}`);
+    try {
+        const response = await fetch(urlAlternativa, { method: 'HEAD' });
+        if (response.ok) {
+            console.log(`✅ URL alternativa encontrada: ${urlAlternativa}`);
+            window.location.href = urlAlternativa;
+        } else {
+            console.log(`❌ URL alternativa também não encontrada: ${urlAlternativa}`);
+            mostrarErro('Página não encontrada!');
         }
+    } catch (error) {
+        console.log(`💥 Erro na URL alternativa: ${urlAlternativa}`);
+        mostrarErro('Erro ao carregar a página!');
+    }
+}
 
-        function mostrarProvas() { 
-            console.log('📝 Redirecionando para Provas...');
-            safeRedirect'/provas', '/Provas/indexP.html');
+// ✅ FUNÇÃO PARA CARREGAR DADOS DO USUÁRIO
+function carregarDadosUsuario() {
+    console.log('👤 Carregando dados do usuário...');
+    
+    try {
+        // Tenta pegar do localStorage (sistema antigo)
+        const usuarioSerie = localStorage.getItem('usuarioSerie');
+        const usuarioNome = localStorage.getItem('usuarioNome');
+        const usuarioRA = localStorage.getItem('usuarioRA');
+        
+        // Tenta pegar do novo sistema (JSON completo)
+        const usuarioJSON = localStorage.getItem('usuario');
+        let usuario = null;
+        
+        if (usuarioJSON) {
+            usuario = JSON.parse(usuarioJSON);
+            console.log('✅ Usuário encontrado no novo formato:', usuario);
         }
-
-        function mostrarConfig() { 
-            console.log('⚙️ Redirecionando para Configuração...');
-            safeRedirect'/config', '/Configuração/indexC.html');
+        
+        console.log("📊 Dados disponíveis:", {
+            usuarioJSON: usuario,
+            usuarioSerie,
+            usuarioNome, 
+            usuarioRA
+        });
+        
+        // Prioriza os dados do novo sistema
+        let serieExibir = 'Série não informada';
+        
+        if (usuario && usuario.serie) {
+            serieExibir = usuario.serie;
+            // Atualiza o sistema antigo para compatibilidade
+            localStorage.setItem('usuarioSerie', usuario.serie);
+            localStorage.setItem('usuarioNome', usuario.nome);
+            localStorage.setItem('usuarioRA', usuario.ra);
+            localStorage.setItem('usuarioLogado', 'true');
+        } else if (usuarioSerie && usuarioSerie !== "null") {
+            serieExibir = usuarioSerie;
         }
+        
+        document.getElementById("serie-aleatoria").textContent = serieExibir;
+        console.log("✅ Série exibida:", serieExibir);
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar dados do usuário:', error);
+        document.getElementById("serie-aleatoria").textContent = "Erro ao carregar";
+    }
+}
 
-        function mostrarPerfil() { 
-            console.log('👤 Redirecionando para Perfil...');
-            safeRedirect'/perfil', '/Perfil/indexP.html');
-        }
-
-        function mostrarContato() { 
-            console.log('📞 Redirecionando para Contato...');
-            safeRedirect'/contato', '/Contato/indexCO.html');
-        }
-
-        function mostrarNavegador() { 
-            console.log('🌐 Redirecionando para Navegador...');
-            safeRedirect'/navegador', '/Navegador/indexN.html');
-        }
-
-        // ✅ REDIRECIONAMENTO SEGURO
-        async function safeRedirect(urlPreferida, urlAlternativa) {
-            console.log(`🎯 Tentando redirecionar para: ${urlPreferida}`);
-            
-            try {
-                // Verifica se a URL preferida existe
-                const response = await fetch(urlPreferida, { method: 'HEAD' });
-                if (response.ok) {
-                    console.log(`✅ URL encontrada: ${urlPreferida}`);
-                    window.location.href = urlPreferida;
-                    return;
-                }
-            } catch (error) {
-                console.log(`❌ URL não encontrada: ${urlPreferida}`);
-            }
-            
-            // Tenta a URL alternativa
-            console.log(`🔄 Tentando URL alternativa: ${urlAlternativa}`);
-            try {
-                const response = await fetch(urlAlternativa, { method: 'HEAD' });
-                if (response.ok) {
-                    console.log(`✅ URL alternativa encontrada: ${urlAlternativa}`);
-                    window.location.href = urlAlternativa;
-                } else {
-                    console.log(`❌ URL alternativa também não encontrada: ${urlAlternativa}`);
-                    mostrarErro('Página não encontrada!');
-                }
-            } catch (error) {
-                console.log(`💥 Erro na URL alternativa: ${urlAlternativa}`);
-                mostrarErro('Erro ao carregar a página!');
-            }
-        }
-
-        // ✅ FUNÇÃO PARA CARREGAR DADOS DO USUÁRIO
-        function carregarDadosUsuario() {
-            console.log('👤 Carregando dados do usuário...');
-            
-            try {
-                // Tenta pegar do localStorage (sistema antigo)
-                const usuarioSerie = localStorage.getItem('usuarioSerie');
-                const usuarioNome = localStorage.getItem('usuarioNome');
-                const usuarioRA = localStorage.getItem('usuarioRA');
-                
-                // Tenta pegar do novo sistema (JSON completo)
-                const usuarioJSON = localStorage.getItem('usuario');
-                let usuario = null;
-                
-                if (usuarioJSON) {
-                    usuario = JSON.parse(usuarioJSON);
-                    console.log('✅ Usuário encontrado no novo formato:', usuario);
-                }
-                
-                console.log("📊 Dados disponíveis:", {
-                    usuarioJSON: usuario,
-                    usuarioSerie,
-                    usuarioNome, 
-                    usuarioRA
-                });
-                
-                // Prioriza os dados do novo sistema
-                let serieExibir = 'Série não informada';
-                
-                if (usuario && usuario.serie) {
-                    serieExibir = usuario.serie;
-                    // Atualiza o sistema antigo para compatibilidade
-                    localStorage.setItem('usuarioSerie', usuario.serie);
-                    localStorage.setItem('usuarioNome', usuario.nome);
-                    localStorage.setItem('usuarioRA', usuario.ra);
-                    localStorage.setItem('usuarioLogado', 'true');
-                } else if (usuarioSerie && usuarioSerie !== "null") {
-                    serieExibir = usuarioSerie;
-                }
-                
-                document.getElementById("serie-aleatoria").textContent = serieExibir;
-                console.log("✅ Série exibida:", serieExibir);
-                
-            } catch (error) {
-                console.error('❌ Erro ao carregar dados do usuário:', error);
-                document.getElementById("serie-aleatoria").textContent = "Erro ao carregar";
-            }
-        }
-
-        // ✅ FUNÇÃO VERIFICAR LOGIN ATUALIZADA
+// ✅ FUNÇÃO VERIFICAR LOGIN ATUALIZADA
 function verificarLogin() {
     console.log('🔐 Verificando login...');
     
@@ -456,48 +456,48 @@ function verificarLogin() {
     return true;
 }
 
-        function mostrarErro(mensagem) {
-            console.log(`💬 Erro: ${mensagem}`);
-            
-            const mensagemAnterior = document.getElementById('mensagemErro');
-            if (mensagemAnterior) {
-                mensagemAnterior.remove();
-            }
-            
-            const mensagemElement = document.createElement('div');
-            mensagemElement.className = 'error-message';
-            mensagemElement.id = 'mensagemErro';
-            mensagemElement.textContent = mensagem;
-            
-            document.body.appendChild(mensagemElement);
-            
-            // Auto-remove após 3 segundos
-            setTimeout(() => {
-                if (mensagemElement.parentNode) {
-                    mensagemElement.remove();
-                }
-            }, 3000);
+function mostrarErro(mensagem) {
+    console.log(`💬 Erro: ${mensagem}`);
+    
+    const mensagemAnterior = document.getElementById('mensagemErro');
+    if (mensagemAnterior) {
+        mensagemAnterior.remove();
+    }
+    
+    const mensagemElement = document.createElement('div');
+    mensagemElement.className = 'error-message';
+    mensagemElement.id = 'mensagemErro';
+    mensagemElement.textContent = mensagem;
+    
+    document.body.appendChild(mensagemElement);
+    
+    // Auto-remove após 3 segundos
+    setTimeout(() => {
+        if (mensagemElement.parentNode) {
+            mensagemElement.remove();
         }
+    }, 3000);
+}
 
-        // ✅ INICIALIZAR MENU
-        function inicializarMenu() {
-            console.log("🚀 Inicializando menu...");
-            
-            // Verificar login
-            if (!verificarLogin()) {
-                return;
-            }
-            
-            // Carregar dados do usuário
-            carregarDadosUsuario();
-            
-            console.log("✅ Menu inicializado com sucesso!");
-        }
+// ✅ INICIALIZAR MENU
+function inicializarMenu() {
+    console.log("🚀 Inicializando menu...");
+    
+    // Verificar login
+    if (!verificarLogin()) {
+        return;
+    }
+    
+    // Carregar dados do usuário
+    carregarDadosUsuario();
+    
+    console.log("✅ Menu inicializado com sucesso!");
+}
 
-        // ✅ INICIALIZAR QUANDO O DOM ESTIVER PRONTO
-        document.addEventListener('DOMContentLoaded', inicializarMenu);
+// ✅ INICIALIZAR QUANDO O DOM ESTIVER PRONTO
+document.addEventListener('DOMContentLoaded', inicializarMenu);
 
-        console.log('📦 Menu carregado com sucesso!');
+console.log('📦 Menu carregado com sucesso!');
     </script>
 </body>
 </html>
