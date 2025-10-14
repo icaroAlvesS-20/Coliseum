@@ -20,6 +20,10 @@
     {
       "src": "**/*.jpg",
       "use": "@vercel/static"
+    },
+    {
+      "src": "**/*.svg",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -32,7 +36,7 @@
       "dest": "/Login/index.html"
     },
     {
-      "src": "/Menu",
+      "src": "/menu",
       "dest": "/Menu/indexM.html"
     },
     {
@@ -62,6 +66,14 @@
     {
       "src": "/contato",
       "dest": "/Contato/indexCo.html"
+    },
+    {
+      "src": "/navegador",
+      "dest": "/Navegador/indexN.html"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "https://coliseum-api.onrender.com/api/$1"
     },
     {
       "src": "/(.*)",
