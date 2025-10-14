@@ -465,271 +465,226 @@ console.error = (...args) => {
 
 const API_URL = 'https://coliseum-api.onrender.com';
 
-// ✅ FUNÇÃO MELHORADA: Sincronizar perfil com servidor
-async function sincronizarPerfilComServidor() {
-    try {
-        const usuarioId = localStorage.getItem('usuarioId');
-        if (!usuarioId || usuarioId.includes('temp_')) {
-            console.log('📴 Usuário offline ou temporário, usando dados locais');
-            return null;
-        }
-
-        console.log('🔄 Sincronizando perfil com servidor...');
-        
-        const response = await fetch(`${API_URL}/api/usuario/${usuarioId}`);
-        
-        if (response.ok) {
-            const usuario = await response.json();
-            
-            // ✅ ATUALIZAR LOCALSTORAGE COM DADOS DO SERVIDOR
-            localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
-            localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
-            localStorage.setItem('usuarioNome', usuario.nome || 'Jogador');
-            localStorage.setItem('usuarioRA', usuario.ra || '');
-            localStorage.setItem('usuarioSerie', usuario.serie || '');
-            localStorage.setItem('usuarioId', usuario.id.toString());
-            
-            console.log('✅ Perfil sincronizado com servidor:', {
-                nome: usuario.nome,
-                pontuacao: usuario.pontuacao,
-                desafios: usuario.desafiosCompletados
-            });
-            
-            return usuario;
-        } else {
-            console.log('❌ Erro ao sincronizar perfil:', response.status);
-            return null;
-        }
-    } catch (error) {
-        console.log('📴 Modo offline - usando dados locais');
-        return null;
-    }
-}
-
-// ✅ FUNÇÃO PARA FORÇAR ATUALIZAÇÃO (chamada de outras páginas)
-window.atualizarPerfil = function() {
-    console.log('🔄 Forçando atualização do perfil...');
-    carregarPerfilUsuario();
-};
-
-// ✅ FUNÇÃO PARA LIMPAR DADOS DE USUÁRIOS ANTIGOS
-function limparDadosUsuariosAntigos() {
-    const usuarioAtualId = localStorage.getItem('usuarioId');
-    if (!usuarioAtualId) return;
-
-    // Lista de todas as chaves do localStorage
-    const todasChaves = Object.keys(localStorage);
-    
-    // Encontrar chaves de outros usuários
-    const chavesOutrosUsuarios = todasChaves.filter(key => {
-        return key.startsWith('user_') && !key.includes(usuarioAtualId);
-    });
-    
-    // Limpar dados de outros usuários
-    chavesOutrosUsuarios.forEach(key => {
-        localStorage.removeItem(key);
-        console.log('🧹 Limpando dados de usuário antigo:', key);
-    });
-}
-
-function carregarPerfilUsuario() {
-    console.log("🚀 Iniciando carregamento do perfil...");
+// ✅ FUNÇÃO PRINCIPAL: Carregar dados online do servidor
+async function carregarPerfilUsuario() {
+    console.log("🚀 Iniciando carregamento do perfil ONLINE...");
     
     const container = document.getElementById("nome-usuario-container");
     const raContainer = document.getElementById("RA-container");
     const rankingContainer = document.getElementById("ranking-container");
     const estatisticasContainer = document.getElementById("estatisticas-container");
     
-    // ✅ LIMPAR DADOS DE USUÁRIOS ANTIGOS PRIMEIRO
-    limparDadosUsuariosAntigos();
-    
-    // ✅ SINCRONIZAR PRIMEIRO COM SERVIDOR
-    sincronizarPerfilComServidor().then((usuarioSincronizado) => {
-        // Buscar dados do usuário (agora atualizados)
-        const usuarioNome = localStorage.getItem('usuarioNome');
-        const usuarioRA = localStorage.getItem('usuarioRA');
-        const usuarioSerie = localStorage.getItem('usuarioSerie');
-        const usuarioPontuacao = parseInt(localStorage.getItem('usuarioPontuacao')) || 0;
-        const usuarioDesafios = parseInt(localStorage.getItem('usuarioDesafios')) || 0;
+    try {
         const usuarioId = localStorage.getItem('usuarioId');
-
-        console.log("📊 Dados carregados:", {
-            usuarioId,
-            usuarioNome,
-            usuarioRA,
-            usuarioSerie,
-            usuarioPontuacao,
-            usuarioDesafios
-        });
         
-        if (usuarioNome && usuarioId) {
-            // Container do nome (bloco 1)
-            if (container) {
-                container.innerHTML = `
-                    <h2>${usuarioNome}</h2>
-                    <p style="color: #ccc; font-size: 16px; margin-top: 10px;">
-                        ${usuarioSerie || 'Série não informada'} • ${usuarioPontuacao} pontos
-                    </p>
-                    ${usuarioSincronizado ? '<p style="color: #4CAF50; font-size: 12px; margin-top: 5px;">✅ Sincronizado</p>' : '<p style="color: #ff9800; font-size: 12px; margin-top: 5px;">📴 Modo offline</p>'}
-                `;
-            }
-            
-            // Container das credenciais (bloco 4)
-            if (raContainer) {
-                raContainer.innerHTML = `
-                    <h3>Informações</h3>
-                    <div style="color: white; margin-top: 20px;">
-                        <p><strong>RA:</strong> ${usuarioRA || 'Não informado'}</p>
-                        <p><strong>Série:</strong> ${usuarioSerie || 'Não informada'}</p>
-                        <p><strong>Pontuação:</strong> ${usuarioPontuacao} pontos</p>
-                        <p><strong>Desafios:</strong> ${usuarioDesafios} completos</p>
-                        <p><strong>ID:</strong> ${usuarioId}</p>
-                        <p style="margin-top: 15px; color: #ffcf00; font-size: 12px;">
-                            🔐 Dados protegidos online
-                        </p>
-                    </div>
-                `;
-            }
-
-            // Container do ranking (bloco 2)
-            if (rankingContainer) {
-                const progresso = usuarioPontuacao % 100;
-                const nivel = Math.floor(usuarioPontuacao / 100) + 1;
-                const pontosProximoNivel = 100 - progresso;
-                
-                rankingContainer.innerHTML = `
-                    <h3>Minha Posição</h3>
-                    <div style="color: white; margin-top: 15px;">
-                        <p><strong>Nome:</strong> ${usuarioNome}</p>
-                        <p><strong>Pontuação Total:</strong> ${usuarioPontuacao} pontos</p>
-                        <p><strong>Nível:</strong> ${nivel}</p>
-                        <p><strong>Desafios Completos:</strong> ${usuarioDesafios}</p>
-                    </div>
-                    <div style="margin-top: 20px;">
-                        <p style="color: #ffcf00; font-size: 14px;">
-                            📈 Progresso para o próximo nível:
-                        </p>
-                        <div class="barra-progresso">
-                            <div class="progresso-interno" style="width: ${progresso}%"></div>
-                        </div>
-                        <p style="color: #ccc; font-size: 12px; text-align: center;">
-                            ${progresso}% • Faltam ${pontosProximoNivel} pontos
-                        </p>
-                    </div>
-                    <button class="btn-interno" onclick="carregarRankingCompleto()" style="width: 100%; margin-top: 15px;">
-                        📊 Ver Ranking Completo
-                    </button>
-                `;
-            }
-
-            // Container de estatísticas (bloco 3)
-            if (estatisticasContainer) {
-                const mediaPontos = usuarioDesafios > 0 ? (usuarioPontuacao / usuarioDesafios).toFixed(1) : '0';
-                const taxaConclusao = usuarioDesafios > 10 ? 'Excelente' : 
-                                    usuarioDesafios > 5 ? 'Alta' : 
-                                    usuarioDesafios > 2 ? 'Média' : 'Iniciante';
-                
-                let status = 'Novato';
-                let corStatus = '#ffcf00';
-                
-                if (usuarioPontuacao >= 500) {
-                    status = 'Lenda 🏆';
-                    corStatus = '#ffd700';
-                } else if (usuarioPontuacao >= 300) {
-                    status = 'Mestre ⭐';
-                    corStatus = '#4CAF50';
-                } else if (usuarioPontuacao >= 150) {
-                    status = 'Veterano 🔥';
-                    corStatus = '#ff9800';
-                } else if (usuarioPontuacao >= 50) {
-                    status = 'Intermediário 💪';
-                    corStatus = '#2196F3';
-                }
-                
-                estatisticasContainer.innerHTML = `
-                    <h3>Estatísticas</h3>
-                    <div style="color: white; margin-top: 15px;">
-                        <p><strong>Média de Pontos:</strong> ${mediaPontos} por desafio</p>
-                        <p><strong>Taxa de Conclusão:</strong> ${taxaConclusao}</p>
-                        <p><strong>Status:</strong> ${usuarioPontuacao >= 100 ? 'Avançado' : 'Iniciante'}</p>
-                        <div style="margin-top: 20px; padding: 15px; background: #333; border-radius: 10px; border: 2px solid ${corStatus};">
-                            <p style="color: ${corStatus}; font-size: 18px; text-align: center; font-weight: bold; margin: 0;">
-                                ${status}
-                            </p>
-                        </div>
-                    </div>
-                    <div style="margin-top: 15px; display: flex; gap: 10px;">
-                        <button class="btn-interno" onclick="atualizarPerfil()" style="flex: 1;">
-                            🔄 Atualizar
-                        </button>
-                        <button class="btn-interno" onclick="verificarDadosUsuario()" style="flex: 1;">
-                            🔍 Verificar Dados
-                        </button>
-                    </div>
-                `;
-            }
-
-            console.log("✅ Perfil carregado com sucesso!");
-
-        } else {
-            // Usuário não logado
-            if (container) {
-                container.innerHTML = `
-                    <h2>Usuário não identificado</h2>
-                    <p style="color: #ccc; margin-top: 10px;">Faça login para acessar seu perfil</p>
-                `;
-            }
-            
-            if (raContainer) {
-                raContainer.innerHTML = `
-                    <h3>Informações</h3>
-                    <div style="color: white; margin-top: 20px; text-align: center;">
-                        <p>🔒 Área restrita</p>
-                        <button class="btn-interno" onclick="fazerLogin()" style="margin-top: 15px;">
-                            📲 Fazer Login
-                        </button>
-                    </div>
-                `;
-            }
-            
-            if (rankingContainer) {
-                rankingContainer.innerHTML = `
-                    <div style="color: white; text-align: center; margin-top: 50px;">
-                        <p>Faça login para ver seu ranking</p>
-                    </div>
-                `;
-            }
-            
-            if (estatisticasContainer) {
-                estatisticasContainer.innerHTML = `
-                    <div style="color: white; text-align: center;">
-                        <p>Faça login para ver estatísticas</p>
-                    </div>
-                `;
-            }
-            
-            console.log("❌ Usuário não encontrado no localStorage");
+        if (!usuarioId || usuarioId.includes('temp_')) {
+            mostrarUsuarioNaoLogado();
+            return;
         }
-    }).catch(error => {
-        console.error('❌ Erro ao carregar perfil:', error);
+
+        console.log('📡 Buscando dados online do servidor...');
         
-        // Fallback: carregar apenas dados locais
-        carregarDadosLocais();
-    });
+        // ✅ BUSCAR DADOS DIRETAMENTE DO SERVIDOR
+        const response = await fetch(`${API_URL}/api/usuario/${usuarioId}`);
+        
+        if (!response.ok) {
+            throw new Error(`Erro HTTP: ${response.status}`);
+        }
+        
+        const usuario = await response.json();
+        
+        console.log('✅ Dados recebidos do servidor:', usuario);
+        
+        // ✅ ATUALIZAR LOCALSTORAGE COM DADOS FRESCOS DO SERVIDOR
+        localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
+        localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
+        localStorage.setItem('usuarioNome', usuario.nome || 'Jogador');
+        localStorage.setItem('usuarioRA', usuario.ra || '');
+        localStorage.setItem('usuarioSerie', usuario.serie || '');
+        localStorage.setItem('usuarioId', usuario.id.toString());
+        localStorage.setItem('usuarioLogado', 'true');
+        
+        // ✅ ATUALIZAR INTERFACE COM DADOS ONLINE
+        atualizarInterfaceUsuario(usuario);
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar dados online:', error);
+        
+        // ✅ FALLBACK: Tentar carregar dados locais se online falhar
+        carregarDadosLocaisFallback();
+    }
 }
 
-// ✅ FUNÇÃO FALLBACK: Carregar apenas dados locais
-function carregarDadosLocais() {
-    console.log('📴 Carregando dados locais...');
+// ✅ FUNÇÃO: Atualizar interface com dados do servidor
+function atualizarInterfaceUsuario(usuario) {
+    const container = document.getElementById("nome-usuario-container");
+    const raContainer = document.getElementById("RA-container");
+    const rankingContainer = document.getElementById("ranking-container");
+    const estatisticasContainer = document.getElementById("estatisticas-container");
+    
+    // Container do nome (bloco 1)
+    if (container) {
+        container.innerHTML = `
+            <h2>${usuario.nome}</h2>
+            <p style="color: #ccc; font-size: 16px; margin-top: 10px;">
+                ${usuario.serie || 'Série não informada'} • ${usuario.pontuacao} pontos
+            </p>
+            <p style="color: #4CAF50; font-size: 12px; margin-top: 5px;">
+                ✅ Online - Dados em tempo real
+            </p>
+        `;
+    }
+    
+    // Container das credenciais (bloco 4)
+    if (raContainer) {
+        raContainer.innerHTML = `
+            <h3>Informações</h3>
+            <div style="color: white; margin-top: 20px;">
+                <p><strong>RA:</strong> ${usuario.ra || 'Não informado'}</p>
+                <p><strong>Série:</strong> ${usuario.serie || 'Não informada'}</p>
+                <p><strong>Pontuação:</strong> ${usuario.pontuacao} pontos</p>
+                <p><strong>Desafios:</strong> ${usuario.desafiosCompletados} completos</p>
+                <p><strong>ID:</strong> ${usuario.id}</p>
+                <p style="margin-top: 15px; color: #4CAF50; font-size: 12px;">
+                    🌐 Dados sincronizados com servidor
+                </p>
+            </div>
+        `;
+    }
+
+    // Container do ranking (bloco 2)
+    if (rankingContainer) {
+        const progresso = usuario.pontuacao % 100;
+        const nivel = Math.floor(usuario.pontuacao / 100) + 1;
+        const pontosProximoNivel = 100 - progresso;
+        
+        rankingContainer.innerHTML = `
+            <h3>Minha Posição</h3>
+            <div style="color: white; margin-top: 15px;">
+                <p><strong>Nome:</strong> ${usuario.nome}</p>
+                <p><strong>Pontuação Total:</strong> ${usuario.pontuacao} pontos</p>
+                <p><strong>Nível:</strong> ${nivel}</p>
+                <p><strong>Desafios Completos:</strong> ${usuario.desafiosCompletados}</p>
+            </div>
+            <div style="margin-top: 20px;">
+                <p style="color: #ffcf00; font-size: 14px;">
+                    📈 Progresso para o próximo nível:
+                </p>
+                <div class="barra-progresso">
+                    <div class="progresso-interno" style="width: ${progresso}%"></div>
+                </div>
+                <p style="color: #ccc; font-size: 12px; text-align: center;">
+                    ${progresso}% • Faltam ${pontosProximoNivel} pontos
+                </p>
+            </div>
+            <button class="btn-interno" onclick="carregarRankingCompleto()" style="width: 100%; margin-top: 15px;">
+                📊 Ver Ranking Completo
+            </button>
+        `;
+    }
+
+    // Container de estatísticas (bloco 3)
+    if (estatisticasContainer) {
+        const mediaPontos = usuario.desafiosCompletados > 0 ? 
+            (usuario.pontuacao / usuario.desafiosCompletados).toFixed(1) : '0';
+        const taxaConclusao = usuario.desafiosCompletados > 10 ? 'Excelente' : 
+                            usuario.desafiosCompletados > 5 ? 'Alta' : 
+                            usuario.desafiosCompletados > 2 ? 'Média' : 'Iniciante';
+        
+        let status = 'Novato';
+        let corStatus = '#ffcf00';
+        
+        if (usuario.pontuacao >= 500) {
+            status = 'Lenda 🏆';
+            corStatus = '#ffd700';
+        } else if (usuario.pontuacao >= 300) {
+            status = 'Mestre ⭐';
+            corStatus = '#4CAF50';
+        } else if (usuario.pontuacao >= 150) {
+            status = 'Veterano 🔥';
+            corStatus = '#ff9800';
+        } else if (usuario.pontuacao >= 50) {
+            status = 'Intermediário 💪';
+            corStatus = '#2196F3';
+        }
+        
+        estatisticasContainer.innerHTML = `
+            <h3>Estatísticas</h3>
+            <div style="color: white; margin-top: 15px;">
+                <p><strong>Média de Pontos:</strong> ${mediaPontos} por desafio</p>
+                <p><strong>Taxa de Conclusão:</strong> ${taxaConclusao}</p>
+                <p><strong>Status:</strong> ${usuario.pontuacao >= 100 ? 'Avançado' : 'Iniciante'}</p>
+                <div style="margin-top: 20px; padding: 15px; background: #333; border-radius: 10px; border: 2px solid ${corStatus};">
+                    <p style="color: ${corStatus}; font-size: 18px; text-align: center; font-weight: bold; margin: 0;">
+                        ${status}
+                    </p>
+                </div>
+            </div>
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button class="btn-interno" onclick="recarregarDadosOnline()" style="flex: 1;">
+                    🔄 Atualizar Online
+                </button>
+                <button class="btn-interno" onclick="verificarDadosUsuario()" style="flex: 1;">
+                    🔍 Verificar Dados
+                </button>
+            </div>
+        `;
+    }
+
+    console.log("✅ Interface atualizada com dados online!");
+}
+
+// ✅ FUNÇÃO: Recarregar dados online (atualização manual)
+async function recarregarDadosOnline() {
+    console.log('🔄 Recarregando dados online...');
+    
+    try {
+        const usuarioId = localStorage.getItem('usuarioId');
+        
+        if (!usuarioId) {
+            alert('❌ Usuário não identificado');
+            return;
+        }
+        
+        const response = await fetch(`${API_URL}/api/usuario/${usuarioId}`);
+        
+        if (!response.ok) {
+            throw new Error('Erro ao buscar dados atualizados');
+        }
+        
+        const usuario = await response.json();
+        
+        // Atualizar localStorage
+        localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
+        localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
+        localStorage.setItem('usuarioNome', usuario.nome);
+        
+        // Atualizar interface
+        atualizarInterfaceUsuario(usuario);
+        
+        alert('✅ Dados atualizados com sucesso!');
+        
+    } catch (error) {
+        console.error('❌ Erro ao recarregar dados:', error);
+        alert('❌ Erro ao atualizar dados. Verifique sua conexão.');
+    }
+}
+
+// ✅ FUNÇÃO FALLBACK: Carregar dados locais se online falhar
+function carregarDadosLocaisFallback() {
+    console.log('📴 Carregando dados locais como fallback...');
     
     const usuarioNome = localStorage.getItem('usuarioNome');
     const usuarioRA = localStorage.getItem('usuarioRA');
     const usuarioSerie = localStorage.getItem('usuarioSerie');
     const usuarioPontuacao = parseInt(localStorage.getItem('usuarioPontuacao')) || 0;
     const usuarioDesafios = parseInt(localStorage.getItem('usuarioDesafios')) || 0;
+    const usuarioId = localStorage.getItem('usuarioId');
     
     const container = document.getElementById("nome-usuario-container");
     const raContainer = document.getElementById("RA-container");
+    const rankingContainer = document.getElementById("ranking-container");
+    const estatisticasContainer = document.getElementById("estatisticas-container");
     
     if (container && usuarioNome) {
         container.innerHTML = `
@@ -737,7 +692,9 @@ function carregarDadosLocais() {
             <p style="color: #ccc; font-size: 16px; margin-top: 10px;">
                 ${usuarioSerie || 'Série não informada'} • ${usuarioPontuacao} pontos
             </p>
-            <p style="color: #ff9800; font-size: 12px; margin-top: 5px;">📴 Dados locais</p>
+            <p style="color: #ff9800; font-size: 12px; margin-top: 5px;">
+                ⚠️ Dados locais (modo offline)
+            </p>
         `;
     }
     
@@ -749,15 +706,91 @@ function carregarDadosLocais() {
                 <p><strong>Série:</strong> ${usuarioSerie || 'Não informada'}</p>
                 <p><strong>Pontuação:</strong> ${usuarioPontuacao} pontos</p>
                 <p><strong>Desafios:</strong> ${usuarioDesafios} completos</p>
+                <p><strong>ID:</strong> ${usuarioId || 'Não identificado'}</p>
                 <p style="margin-top: 15px; color: #ff9800; font-size: 12px;">
-                    ⚠️ Modo offline - alguns dados podem estar desatualizados
+                    🔌 Sem conexão - dados podem estar desatualizados
                 </p>
+            </div>
+            <button class="btn-interno" onclick="recarregarDadosOnline()" style="width: 100%; margin-top: 10px;">
+                🔄 Tentar Conectar Novamente
+            </button>
+        `;
+    }
+    
+    // Atualizar outros containers com dados locais...
+    if (rankingContainer && usuarioNome) {
+        const progresso = usuarioPontuacao % 100;
+        const nivel = Math.floor(usuarioPontuacao / 100) + 1;
+        
+        rankingContainer.innerHTML = `
+            <h3>Minha Posição</h3>
+            <div style="color: white; margin-top: 15px;">
+                <p><strong>Nome:</strong> ${usuarioNome}</p>
+                <p><strong>Pontuação Total:</strong> ${usuarioPontuacao} pontos</p>
+                <p><strong>Nível:</strong> ${nivel}</p>
+                <p><strong>Desafios Completos:</strong> ${usuarioDesafios}</p>
+            </div>
+            <div style="margin-top: 20px;">
+                <p style="color: #ffcf00; font-size: 14px;">
+                    📈 Progresso para o próximo nível:
+                </p>
+                <div class="barra-progresso">
+                    <div class="progresso-interno" style="width: ${progresso}%"></div>
+                </div>
+            </div>
+            <p style="color: #ff9800; font-size: 11px; text-align: center; margin-top: 10px;">
+                ⚠️ Dados locais
+            </p>
+        `;
+    }
+}
+
+// ✅ FUNÇÃO: Mostrar estado não logado
+function mostrarUsuarioNaoLogado() {
+    console.log('👤 Usuário não logado - mostrando tela de login');
+    
+    const container = document.getElementById("nome-usuario-container");
+    const raContainer = document.getElementById("RA-container");
+    const rankingContainer = document.getElementById("ranking-container");
+    const estatisticasContainer = document.getElementById("estatisticas-container");
+    
+    if (container) {
+        container.innerHTML = `
+            <h2>Usuário não identificado</h2>
+            <p style="color: #ccc; margin-top: 10px;">Faça login para acessar seu perfil</p>
+        `;
+    }
+    
+    if (raContainer) {
+        raContainer.innerHTML = `
+            <h3>Informações</h3>
+            <div style="color: white; margin-top: 20px; text-align: center;">
+                <p>🔒 Área restrita</p>
+                <button class="btn-interno" onclick="fazerLogin()" style="margin-top: 15px;">
+                    📲 Fazer Login
+                </button>
+            </div>
+        `;
+    }
+    
+    if (rankingContainer) {
+        rankingContainer.innerHTML = `
+            <div style="color: white; text-align: center; margin-top: 50px;">
+                <p>Faça login para ver seu ranking</p>
+            </div>
+        `;
+    }
+    
+    if (estatisticasContainer) {
+        estatisticasContainer.innerHTML = `
+            <div style="color: white; text-align: center;">
+                <p>Faça login para ver estatísticas</p>
             </div>
         `;
     }
 }
 
-// ✅ NOVA FUNÇÃO: Verificar dados do usuário
+// ✅ FUNÇÕES AUXILIARES (mantidas do código original)
 function verificarDadosUsuario() {
     const usuarioId = localStorage.getItem('usuarioId');
     const usuarioNome = localStorage.getItem('usuarioNome');
@@ -784,7 +817,6 @@ function verificarDadosUsuario() {
     alert(mensagem);
 }
 
-// ✅ FUNÇÃO: Fazer login
 function fazerLogin() {
     window.location.href = "../Login/index.html";
 }
@@ -797,14 +829,11 @@ function fazerLogout() {
     if (confirm('Tem certeza que deseja sair?')) {
         console.log('🚪 Fazendo logout...');
         
-        // ✅ MANTER APENAS DADOS ESSENCIAIS PARA EVITAR CONFLITOS
         const usuarioIdBackup = localStorage.getItem('usuarioId');
         const deviceIdBackup = localStorage.getItem('deviceId');
         
-        // Limpar todas as chaves
         localStorage.clear();
         
-        // Restaurar backups se existirem
         if (usuarioIdBackup) {
             localStorage.setItem('usuarioId_backup', usuarioIdBackup);
         }
@@ -818,7 +847,6 @@ function fazerLogout() {
     }
 }
 
-// ✅ FUNÇÃO: Debug completo do localStorage
 function debugLocalStorage() {
     console.log('🔍 DEBUG COMPLETO DO LOCALSTORAGE:');
     const todasChaves = Object.keys(localStorage);
@@ -830,23 +858,23 @@ function debugLocalStorage() {
     });
 }
 
-// Carregar perfil quando a página abrir
+// ✅ INICIALIZAÇÃO DA PÁGINA
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("📄 Página de perfil carregada");
+    console.log("📄 Página de perfil carregada - MODO ONLINE");
     
-    // ✅ VERIFICAR SE USUÁRIO ESTÁ LOGADO
+    // Verificar se usuário está logado
     const usuarioLogado = localStorage.getItem('usuarioLogado');
     const usuarioId = localStorage.getItem('usuarioId');
     
     if (!usuarioLogado || usuarioLogado !== 'true' || !usuarioId) {
-        console.log('❌ Usuário não logado - mostrando tela de login');
-        // Não redirecionar automaticamente, apenas mostrar estado não logado
+        console.log('❌ Usuário não logado');
+        mostrarUsuarioNaoLogado();
     } else {
-        console.log('👤 Usuário logado:', localStorage.getItem('usuarioNome'));
+        console.log('👤 Usuário logado - carregando dados online');
         carregarPerfilUsuario();
     }
     
-    // ✅ ADICIONAR BOTÃO DE DEBUG (apenas para desenvolvimento)
+    // Botão de debug para desenvolvimento
     if (window.location.href.includes('localhost') || window.location.href.includes('127.0.0.1')) {
         const debugBtn = document.createElement('button');
         debugBtn.innerHTML = '🐛 Debug';
@@ -866,8 +894,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ✅ EXPORTAR FUNÇÕES PARA USO EXTERNO
-window.sincronizarPerfilComServidor = sincronizarPerfilComServidor;
 window.carregarPerfilUsuario = carregarPerfilUsuario;
+window.recarregarDadosOnline = recarregarDadosOnline;
     </script>
 </body>
 </html>
