@@ -24,7 +24,7 @@
       "dest": "/Ranking/indexR.html"
     },
     {
-      "src": "/amigos",
+      "src": "/amigos", 
       "dest": "/Amigos/indexA.html"
     },
     {
@@ -58,6 +58,10 @@
     {
       "src": "/",
       "dest": "/Login/index.html"
+    },
+    {
+      "src": "/(.*\\.html)",
+      "dest": "/$1"
     },
     {
       "src": "/(.*)",
