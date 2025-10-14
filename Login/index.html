@@ -318,13 +318,26 @@
             <button class="btn-registrar" id="btnAcao">Entrar</button>
         </div>
     </div>
-<script>
-const CONFIG = {
+<script>const CONFIG = {
     API_URL: 'https://coliseum-api.onrender.com',
     ENDPOINTS: {
         LOGIN: '/api/usuarios',
         HEALTH: '/api/health'
     }
+};
+
+// ✅ ROTAS DO VERCEL
+const ROTAS = {
+    MENU: '/menu',
+    RANKING: '/ranking',
+    PERFIL: '/perfil',
+    AMIGOS: '/amigos',
+    DESAFIOS: '/desafios',
+    PROVAS: '/provas',
+    CONFIGURACAO: '/configuracao',
+    CONTATO: '/contato',
+    NAVEGADOR: '/navegador',
+    LOGIN: '/login'
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -450,8 +463,8 @@ async function registrar() {
             salvarDadosUsuarioPadronizados(data.usuario);
             
             setTimeout(() => {
-                // ✅ CORREÇÃO: Redirecionamento absoluto
-                window.location.href = '/menu.html';
+                // ✅ CORREÇÃO: Usar rota do Vercel
+                window.location.href = ROTAS.MENU;
             }, 1500);
         } else {
             mostrarMensagem(`❌ ${data.error}`, 'erro');
