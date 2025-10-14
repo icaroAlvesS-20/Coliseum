@@ -300,92 +300,60 @@
         </div>
     </div>
 
-    <script>
-// ✅ CONFIGURAÇÃO DAS URLs
+<script>
+// ✅ CONFIGURAÇÃO DAS URLs BASEADA NO SEU vercel.json
 const URLS = {
     RANKING: '/ranking',
     AMIGOS: '/amigos',
-    DESAFIOS: '/desafios',
+    DESAFIOS: '/desafios', 
     PROVAS: '/provas',
     CONFIGURACAO: '/configuracao',
     PERFIL: '/perfil',
     CONTATO: '/contato',
     NAVEGADOR: '/navegador',
-    LOGIN: '/login'
+    LOGIN: '/login',
+    MENU: '/menu'
 };
 
-// ✅ FUNÇÕES DE REDIRECIONAMENTO CORRETAS
+// ✅ FUNÇÕES DE REDIRECIONAMENTO SIMPLES
 function mostrarRanking() { 
     console.log('📊 Redirecionando para Ranking...');
-    safeRedirect('/ranking', '/Ranking/indexR.html');
+    window.location.href = URLS.RANKING;
 }
 
 function mostrarAmigos() { 
     console.log('👥 Redirecionando para Amigos...');
-    safeRedirect('/amigos', '/Amigos/indexA.html');
+    window.location.href = URLS.AMIGOS;
 }
 
 function mostrarDesafios() { 
     console.log('🎯 Redirecionando para Desafios...');
-    safeRedirect('/desafios', '/Desafios/indexD.html');
+    window.location.href = URLS.DESAFIOS;
 }
 
 function mostrarProvas() { 
     console.log('📝 Redirecionando para Provas...');
-    safeRedirect('/provas', '/Provas/indexP.html');
+    window.location.href = URLS.PROVAS;
 }
 
 function mostrarConfig() { 
     console.log('⚙️ Redirecionando para Configuração...');
-    safeRedirect('/config', '/Configuração/indexC.html');
+    window.location.href = URLS.CONFIGURACAO;
 }
 
 function mostrarPerfil() { 
     console.log('👤 Redirecionando para Perfil...');
-    safeRedirect('/perfil', '/Perfil/indexP.html');
+    window.location.href = URLS.PERFIL;
 }
 
 function mostrarContato() { 
     console.log('📞 Redirecionando para Contato...');
-    safeRedirect('/contato', '/Contato/indexCO.html');
+    window.location.href = URLS.CONTATO;
 }
 
 function mostrarNavegador() { 
     console.log('🌐 Redirecionando para Navegador...');
-    safeRedirect('/navegador', '/Navegador/indexN.html');
-}
-
-// ✅ REDIRECIONAMENTO SEGURO CORRIGIDO
-async function safeRedirect(urlPreferida, urlAlternativa) {
-    console.log(`🎯 Tentando redirecionar para: ${urlPreferida}`);
-    
-    try {
-        // Verifica se a URL preferida existe
-        const response = await fetch(urlPreferida, { method: 'HEAD' });
-        if (response.ok) {
-            console.log(`✅ URL encontrada: ${urlPreferida}`);
-            window.location.href = urlPreferida;
-            return;
-        }
-    } catch (error) {
-        console.log(`❌ URL não encontrada: ${urlPreferida}`);
-    }
-    
-    // Tenta a URL alternativa
-    console.log(`🔄 Tentando URL alternativa: ${urlAlternativa}`);
-    try {
-        const response = await fetch(urlAlternativa, { method: 'HEAD' });
-        if (response.ok) {
-            console.log(`✅ URL alternativa encontrada: ${urlAlternativa}`);
-            window.location.href = urlAlternativa;
-        } else {
-            console.log(`❌ URL alternativa também não encontrada: ${urlAlternativa}`);
-            mostrarErro('Página não encontrada!');
-        }
-    } catch (error) {
-        console.log(`💥 Erro na URL alternativa: ${urlAlternativa}`);
-        mostrarErro('Erro ao carregar a página!');
-    }
+    window.location.href = URLS.NAVEGADOR;
 }
 
 // ✅ FUNÇÃO PARA CARREGAR DADOS DO USUÁRIO
@@ -393,12 +361,10 @@ function carregarDadosUsuario() {
     console.log('👤 Carregando dados do usuário...');
     
     try {
-        // Tenta pegar do localStorage (sistema antigo)
         const usuarioSerie = localStorage.getItem('usuarioSerie');
         const usuarioNome = localStorage.getItem('usuarioNome');
         const usuarioRA = localStorage.getItem('usuarioRA');
         
-        // Tenta pegar do novo sistema (JSON completo)
         const usuarioJSON = localStorage.getItem('usuario');
         let usuario = null;
         
@@ -414,12 +380,10 @@ function carregarDadosUsuario() {
             usuarioRA
         });
         
-        // Prioriza os dados do novo sistema
         let serieExibir = 'Série não informada';
         
         if (usuario && usuario.serie) {
             serieExibir = usuario.serie;
-            // Atualiza o sistema antigo para compatibilidade
             localStorage.setItem('usuarioSerie', usuario.serie);
             localStorage.setItem('usuarioNome', usuario.nome);
             localStorage.setItem('usuarioRA', usuario.ra);
@@ -437,18 +401,16 @@ function carregarDadosUsuario() {
     }
 }
 
-// ✅ FUNÇÃO VERIFICAR LOGIN ATUALIZADA
+// ✅ FUNÇÃO VERIFICAR LOGIN
 function verificarLogin() {
     console.log('🔐 Verificando login...');
     
     const usuarioJSON = localStorage.getItem('usuario');
     const usuarioLogado = localStorage.getItem('usuarioLogado');
     
-    // ✅ PERMITE ACESSO MESMO SEM LOGIN (apenas mostra aviso)
     if (!usuarioJSON && (!usuarioLogado || usuarioLogado !== 'true')) {
         console.log('⚠️ Usuário não logado, mas permitindo acesso...');
         mostrarErro('⚠️ Faça login para salvar seu progresso!');
-        // NÃO redireciona - permite acesso ao menu
         return true;
     }
     
@@ -471,7 +433,6 @@ function mostrarErro(mensagem) {
     
     document.body.appendChild(mensagemElement);
     
-    // Auto-remove após 3 segundos
     setTimeout(() => {
         if (mensagemElement.parentNode) {
             mensagemElement.remove();
@@ -483,12 +444,10 @@ function mostrarErro(mensagem) {
 function inicializarMenu() {
     console.log("🚀 Inicializando menu...");
     
-    // Verificar login
     if (!verificarLogin()) {
         return;
     }
     
-    // Carregar dados do usuário
     carregarDadosUsuario();
     
     console.log("✅ Menu inicializado com sucesso!");
@@ -498,6 +457,6 @@ function inicializarMenu() {
 document.addEventListener('DOMContentLoaded', inicializarMenu);
 
 console.log('📦 Menu carregado com sucesso!');
-    </script>
+</script>
 </body>
 </html>
