@@ -839,7 +839,6 @@ const bancoPraticas = [
         ]
     }
 ];
-
 // ✅ FUNÇÃO DE DEBUG
 function debugLocalStorage() {
     console.log('🔍 DEBUG LOCALSTORAGE:');
@@ -888,8 +887,8 @@ class SistemaPontuacao {
         console.log(`🎯 Calculando pontuação: ${acertos}/${totalPerguntas} = ${porcentagemBase}%`);
 
         let pontosBase = 0;
-        if (porcentagemBase >= 90) pontosBase = 15;
-        else if (porcentagemBase >= 75) pontosBase = 12;
+        if (porcentagemBase >= 90) pontosBase = 20;
+        else if (porcentagemBase >= 75) pontosBase = 15;
         else if (porcentagemBase >= 60) pontosBase = 10;
         else if (porcentagemBase >= 50) pontosBase = 8;
         else if (porcentagemBase >= 25) pontosBase = 5;
@@ -963,6 +962,63 @@ class Questionario {
         }
     }
 
+    // ✅ NOVA FUNÇÃO: Obter usuarioId de forma consistente
+    obterUsuarioIdConsistente() {
+        // Tentativa 1: Buscar do localStorage diretamente
+        let usuarioId = localStorage.getItem('usuarioId');
+        
+        // Tentativa 2: Buscar do objeto usuario salvo
+        if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
+            const usuarioJSON = localStorage.getItem('usuario');
+            if (usuarioJSON) {
+                try {
+                    const usuario = JSON.parse(usuarioJSON);
+                    usuarioId = usuario.id;
+                    console.log('🔍 Usuário ID encontrado no objeto usuario:', usuarioId);
+                    // Salvar para uso futuro
+                    localStorage.setItem('usuarioId', usuarioId);
+                } catch (e) {
+                    console.error('Erro ao parsear usuario:', e);
+                }
+            }
+        }
+
+        // ✅ VERIFICAÇÃO CRÍTICA
+        if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
+            console.error('❌ ERRO CRÍTICO: usuarioId não encontrado!');
+            debugLocalStorage();
+            
+            // Tentativa 3: Usar deviceId como fallback
+            const deviceId = gerarDeviceId();
+            usuarioId = 'temp_' + deviceId;
+            console.log('🆔 Usando ID temporário:', usuarioId);
+            
+            // Salvar para evitar problemas futuros
+            localStorage.setItem('usuarioId', usuarioId);
+        }
+
+        return usuarioId;
+    }
+
+    // ✅ NOVA FUNÇÃO: Atualizar dados do usuário
+    atualizarDadosUsuario(usuario) {
+        if (usuario && usuario.id) {
+            localStorage.setItem('usuarioId', usuario.id.toString());
+            localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
+            localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
+            localStorage.setItem('usuarioNome', usuario.nome || 'Jogador');
+            localStorage.setItem('usuarioRA', usuario.ra || '');
+            localStorage.setItem('usuarioSerie', usuario.serie || '');
+            
+            console.log('✅ Dados do usuário atualizados:', {
+                id: usuario.id,
+                pontuacao: usuario.pontuacao,
+                desafios: usuario.desafiosCompletados,
+                nome: usuario.nome
+            });
+        }
+    }
+
     abrirQuestionario(praticaIndex) {
         if (!window.gerenciadorPraticas?.praticasHoje[praticaIndex]) return;
 
@@ -1026,8 +1082,13 @@ class Questionario {
         alternativas.forEach(btn => btn.style.pointerEvents = 'none');
 
         alternativas.forEach((btn, index) => {
-            if (index === pergunta.correta) btn.classList.add('correta');
-            else if (index === respostaIndex) btn.classList.add('incorreta');
+            if (index === pergunta.correta) {
+                btn.style.background = '#4CAF50';
+                btn.style.color = 'white';
+            } else if (index === respostaIndex) {
+                btn.style.background = '#f44336';
+                btn.style.color = 'white';
+            }
         });
 
         if (respostaIndex === pergunta.correta) {
@@ -1059,7 +1120,14 @@ class Questionario {
 
         console.log(`🎯 Enviando para servidor: ${pontos} pontos`);
 
-        this.registrarPontuacaoNoServidor(this.acertos, this.perguntasAtuais.length, pontos, sequencia);
+        // ✅ CORREÇÃO: Usar then para garantir sincronização
+        this.registrarPontuacaoNoServidor(this.acertos, this.perguntasAtuais.length, pontos, sequencia)
+            .then(() => {
+                console.log('✅ Pontuação registrada com sucesso');
+            })
+            .catch(error => {
+                console.error('❌ Erro ao registrar pontuação:', error);
+            });
         
         this.mostrarResultadoAnimado(this.acertos, this.perguntasAtuais.length, pontos, sequencia);
     }
@@ -1067,37 +1135,10 @@ class Questionario {
     // ✅ CORREÇÃO CRÍTICA: Função corrigida para resolver erro 400
     async registrarPontuacaoNoServidor(acertos, totalPerguntas, pontos, sequencia) {
         try {
-            // ✅ CORREÇÃO: Pegar o usuarioId corretamente
-            let usuarioId = localStorage.getItem('usuarioId');
+            // ✅ CORREÇÃO: Usar função consistente para obter usuarioId
+            const usuarioId = this.obterUsuarioIdConsistente();
             
-            // Se não encontrar no localStorage, tenta pegar do objeto usuario
-            if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
-                const usuarioJSON = localStorage.getItem('usuario');
-                if (usuarioJSON) {
-                    const usuario = JSON.parse(usuarioJSON);
-                    usuarioId = usuario.id;
-                    console.log('🔍 Usuário ID encontrado no objeto usuario:', usuarioId);
-                }
-            }
-
-            // ✅ VERIFICAÇÃO CRÍTICA
-            if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
-                console.error('❌ ERRO CRÍTICO: usuarioId não encontrado!');
-                debugLocalStorage();
-                
-                // Tenta usar um ID temporário
-                usuarioId = 'temp_' + Date.now();
-                console.log('🆔 Usando ID temporário:', usuarioId);
-            }
-
-            console.log('🎯 Enviando desafio para usuarioId:', usuarioId, '(Tipo:', typeof usuarioId + ')');
-
-            // ✅ CORREÇÃO: Garantir que usuarioId seja número
-            const usuarioIdNumero = parseInt(usuarioId);
-            if (isNaN(usuarioIdNumero)) {
-                console.error('❌ usuarioId não é um número válido:', usuarioId);
-                throw new Error('ID de usuário inválido');
-            }
+            console.log('🎯 Enviando desafio para usuarioId:', usuarioId);
 
             const deviceId = gerarDeviceId();
             const usuarioNome = localStorage.getItem('usuarioNome') || `Jogador_${deviceId.substr(7, 6)}`;
@@ -1105,8 +1146,8 @@ class Questionario {
 
             // ✅ ESTRUTURA CORRIGIDA com validação
             const dadosDesafio = {
-                usuarioId: usuarioIdNumero, // ✅ AGORA É UM NÚMERO
-                pontuacaoGanha: parseInt(pontos), // ✅ GARANTINDO QUE É NÚMERO
+                usuarioId: parseInt(usuarioId),
+                pontuacaoGanha: parseInt(pontos),
                 acertos: parseInt(acertos),
                 totalPerguntas: parseInt(totalPerguntas),
                 porcentagemAcerto: porcentagemAcerto,
@@ -1139,12 +1180,12 @@ class Questionario {
                 const result = await response.json();
                 console.log('✅ Sucesso:', result.message);
                 
+                // ✅ ATUALIZAR LOCALSTORAGE COM DADOS DO SERVIDOR
                 if (result.usuario) {
-                    localStorage.setItem('usuarioPontuacao', result.usuario.pontuacao);
-                    localStorage.setItem('usuarioDesafios', result.usuario.desafiosCompletados);
+                    this.atualizarDadosUsuario(result.usuario);
                 }
                 
-                return;
+                return result;
             }
 
             const errorResponse = await response.json();
@@ -1155,6 +1196,7 @@ class Questionario {
             console.error('❌ Erro na requisição:', error);
             console.log('📴 Salvando localmente...');
             this.salvarPontuacaoOffline(acertos, totalPerguntas, pontos, sequencia);
+            throw error; // Re-lançar o erro para tratamento externo
         }
     }
 
@@ -1169,7 +1211,7 @@ class Questionario {
     // ✅ CORRIGIDO: Método para salvar offline
     salvarPontuacaoOffline(acertos, totalPerguntas, pontos, sequencia) {
         try {
-            const usuarioId = localStorage.getItem('usuarioId');
+            const usuarioId = this.obterUsuarioIdConsistente();
             const deviceId = gerarDeviceId();
             const usuarioNome = localStorage.getItem('usuarioNome') || `Jogador_${deviceId.substr(7, 6)}`;
             const porcentagemAcerto = Math.round((acertos / totalPerguntas) * 100);
@@ -1182,8 +1224,8 @@ class Questionario {
             const novaPontuacao = pontuacaoAtual + pontos;
             const novosDesafios = desafiosAtuais + 1;
             
-            localStorage.setItem('usuarioPontuacao', novaPontuacao);
-            localStorage.setItem('usuarioDesafios', novosDesafios);
+            localStorage.setItem('usuarioPontuacao', novaPontuacao.toString());
+            localStorage.setItem('usuarioDesafios', novosDesafios.toString());
             localStorage.setItem('usuarioOffline', 'true');
 
             const desafioPendente = {
@@ -1212,6 +1254,30 @@ class Questionario {
         }
     }
 
+    // ✅ VERIFICAÇÃO DE SINCRONIZAÇÃO
+    async verificarSincronizacao() {
+        try {
+            const usuarioId = this.obterUsuarioIdConsistente();
+            if (!usuarioId || usuarioId.includes('temp_')) return;
+
+            const response = await fetch(`${API_URL}/api/usuario/${usuarioId}`);
+            if (response.ok) {
+                const usuario = await response.json();
+                
+                // Comparar com dados locais
+                const pontuacaoLocal = parseInt(localStorage.getItem('usuarioPontuacao') || '0');
+                const desafiosLocal = parseInt(localStorage.getItem('usuarioDesafios') || '0');
+                
+                if (usuario.pontuacao !== pontuacaoLocal || usuario.desafiosCompletados !== desafiosLocal) {
+                    console.log('🔄 Dados desatualizados, sincronizando...');
+                    this.atualizarDadosUsuario(usuario);
+                }
+            }
+        } catch (error) {
+            console.log('❌ Erro na verificação de sincronização');
+        }
+    }
+
     // ✅ CORRIGIDO: Método para mostrar resultado
     mostrarResultadoAnimado(acertos, total, pontosTotais, sequencia) {
         const percentual = Math.round((acertos / total) * 100);
@@ -1219,14 +1285,14 @@ class Questionario {
         
         let mensagemBonus = '';
         if (sequencia > 1) {
-            mensagemBonus = `<div class="bonus-sequencia">🔥 Sequência de ${sequencia} desafios perfeitos!</div>`;
+            mensagemBonus = `<div class="bonus-sequencia" style="color: #ffd700; margin: 10px 0; font-size: 14px;">🔥 Sequência de ${sequencia} desafios perfeitos!</div>`;
         }
 
         this.modalBody.innerHTML = `
             <div class="resultado-final">
-                <div class="resultado-emoji">${emoji}</div>
+                <div style="font-size: 48px; margin-bottom: 20px;">${emoji}</div>
                 <div class="resultado-titulo">Desafio Concluído!</div>
-                <div class="resultado-acertos">${acertos}/${total} acertos (${percentual}%)</div>
+                <div style="color: #fff; font-size: 18px; margin-bottom: 15px;">${acertos}/${total} acertos (${percentual}%)</div>
                 <div class="resultado-pontuacao">
                     <div class="pontos-ganhos">+${pontosTotais} pontos</div>
                     ${mensagemBonus}
@@ -1355,7 +1421,7 @@ class GerenciadorPraticas {
             const card = document.createElement('div');
             card.className = 'pratica-card';
             card.innerHTML = `
-                <div class="pontuacao">+10 p</div>
+                <div class="pontuacao">+20 p</div>
                 <div class="materia-tag">${pratica.materia}</div>
                 <div class="pratica-titulo">${pratica.titulo}</div>
                 <div class="pratica-descricao">${pratica.descricao}</div>
