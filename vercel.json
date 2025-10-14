@@ -16,52 +16,12 @@
       "dest": "/server.js"
     },
     {
-      "src": "/login",
-      "dest": "/Login/index.html"
-    },
-    {
-      "src": "/menu", 
+      "src": "/menu",
       "dest": "/Menu/indexM.html"
     },
     {
-      "src": "/ranking",
-      "dest": "/Ranking/indexR.html"
-    },
-    {
-      "src": "/amigos",
-      "dest": "/Amigos/indexA.html"
-    },
-    {
-      "src": "/desafios",
-      "dest": "/Desafios/indexD.html"
-    },
-    {
-      "src": "/provas",
-      "dest": "/Provas/indexPr.html"
-    },
-    {
-      "src": "/configuracao",
-      "dest": "/Configuracao/indexC.html"
-    },
-    {
-      "src": "/perfil",
-      "dest": "/Perfil/indexP.html"
-    },
-    {
-      "src": "/contato",
-      "dest": "/Contato/indexCo.html"
-    },
-    {
-      "src": "/navegador",
-      "dest": "/Navegador/indexN.html"
-    },
-    {
-      "src": "/",
+      "src": "/(.*)",
       "dest": "/Login/index.html"
     }
-  ],
-  "functions": {
-    "**/*.js": { "include": false },
-    "server.js": { "include": true }
-  }
+  ]
 }
