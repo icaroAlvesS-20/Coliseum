@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil - Coliseum</title>
     <style>
-        * {
+               * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -69,7 +69,7 @@
             display: grid;
             grid-template-columns: 1fr 2fr 1fr;
             grid-template-rows: auto 1fr;
-            gap: 20px;
+            gap: 25px; /* ✅ AUMENTADO de 20px para 25px */
             grid-template-areas: 
                 "foto nome estatisticas"
                 "info ranking estatisticas";
@@ -78,10 +78,10 @@
 
         .bloco-cinza-escuro1 {
             grid-area: nome;
-            height: 80px;
+            height: 100px; /* ✅ AUMENTADO de 80px para 100px */
             background: linear-gradient(145deg, #383838, #282828);
             border-radius: 15px;
-            padding: 15px 25px;
+            padding: 20px 30px; /* ✅ AUMENTADO */
             box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
                         inset -2px -2px 5px rgba(255, 255, 255, 0.1);
             border: 1px solid #444;
@@ -96,7 +96,7 @@
             grid-area: ranking;
             background: linear-gradient(145deg, #383838, #282828);
             border-radius: 15px;
-            padding: 20px;
+            padding: 25px; /* ✅ AUMENTADO de 20px para 25px */
             box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
                         inset -2px -2px 5px rgba(255, 255, 255, 0.1);
             border: 1px solid #444;
@@ -111,7 +111,7 @@
             grid-area: estatisticas;
             background: linear-gradient(145deg, #383838, #282828);
             border-radius: 15px;
-            padding: 20px;
+            padding: 25px; /* ✅ AUMENTADO de 20px para 25px */
             box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
                         inset -2px -2px 5px rgba(255, 255, 255, 0.1);
             border: 1px solid #444;
@@ -125,7 +125,7 @@
             grid-area: info;
             background: linear-gradient(145deg, #383838, #282828);
             border-radius: 15px;
-            padding: 20px;
+            padding: 25px; /* ✅ AUMENTADO de 20px para 25px */
             box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
                         inset -2px -2px 5px rgba(255, 255, 255, 0.1);
             border: 1px solid #444;
@@ -143,8 +143,8 @@
         }
 
         .imgp {
-            width: 120px;
-            height: 120px;
+            width: 140px; /* ✅ AUMENTADO de 120px para 140px */
+            height: 140px; /* ✅ AUMENTADO de 120px para 140px */
             border-radius: 50%;
             border: 4px solid #ffcf00;
             box-shadow: 0 4px 15px rgba(255, 207, 0, 0.3);
@@ -153,20 +153,20 @@
 
         /* BOTÃO SAIR - AGORA DENTRO DO FLUXO PARA MOBILE */
         .btn-logout-container {
-            margin-top: 20px;
+            margin-top: 25px; /* ✅ AUMENTADO de 20px para 25px */
             display: flex;
             justify-content: center;
             width: 100%;
         }
 
         .btn-logout {
-            width: 120px;
-            height: 45px;
+            width: 140px; /* ✅ AUMENTADO de 120px para 140px */
+            height: 50px; /* ✅ AUMENTADO de 45px para 50px */
             background: linear-gradient(145deg, #ff4444, #cc0000);
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 18px; /* ✅ AUMENTADO de 16px para 18px */
             font-weight: bold;
             cursor: pointer;
             display: flex;
@@ -185,9 +185,9 @@
         /* Estilos para o conteúdo */
         h2 {
             color: #ffcf00;
-            font-size: 28px;
+            font-size: 32px; /* ✅ AUMENTADO de 28px para 32px */
             font-weight: bold;
-            margin: 0 0 10px 0;
+            margin: 0 0 15px 0; /* ✅ AUMENTADO margin */
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
             text-align: center;
             width: 100%;
@@ -195,9 +195,9 @@
 
         h3 {
             color: #ffcf00;
-            font-size: 20px;
+            font-size: 24px; /* ✅ AUMENTADO de 20px para 24px */
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 25px; /* ✅ AUMENTADO de 20px para 25px */
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
             text-align: center;
             width: 100%;
@@ -209,9 +209,9 @@
         .bloco-cinza-escuro3 p,
         .bloco-cinza-escuro4 p {
             color: #ffffff;
-            font-size: 14px;
-            line-height: 1.5;
-            margin-bottom: 8px;
+            font-size: 16px; /* ✅ AUMENTADO de 14px para 16px */
+            line-height: 1.6; /* ✅ AUMENTADO de 1.5 para 1.6 */
+            margin-bottom: 12px; /* ✅ AUMENTADO de 8px para 12px */
             text-align: center;
             width: 100%;
         }
@@ -227,21 +227,21 @@
         .nivel-badge {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px; /* ✅ AUMENTADO de 6px para 8px */
             background: linear-gradient(135deg, #4CAF50, #45a049);
             color: white;
-            padding: 6px 15px;
+            padding: 8px 18px; /* ✅ AUMENTADO */
             border-radius: 20px;
-            font-size: 14px;
+            font-size: 16px; /* ✅ AUMENTADO de 14px para 16px */
             font-weight: 600;
-            margin: 8px 0;
+            margin: 12px 0; /* ✅ AUMENTADO de 8px para 12px */
             border: 2px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
             justify-content: center;
         }
 
         .nivel-icone {
-            font-size: 16px;
+            font-size: 18px; /* ✅ AUMENTADO de 16px para 18px */
         }
 
         .nivel-nome {
@@ -250,9 +250,9 @@
 
         .progresso-nivel {
             background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
+            padding: 20px; /* ✅ AUMENTADO de 15px para 20px */
             border-radius: 10px;
-            margin: 15px 0;
+            margin: 20px 0; /* ✅ AUMENTADO de 15px para 20px */
             border-left: 4px solid #ffcf00;
             width: 100%;
             text-align: center;
@@ -262,8 +262,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
-            font-size: 12px;
+            margin-bottom: 12px; /* ✅ AUMENTADO de 8px para 12px */
+            font-size: 14px; /* ✅ AUMENTADO de 12px para 14px */
             color: #ccc;
             width: 100%;
         }
@@ -275,9 +275,9 @@
 
         .barra-progresso {
             background: #555;
-            height: 8px;
-            border-radius: 4px;
-            margin: 8px 0;
+            height: 10px; /* ✅ AUMENTADO de 8px para 10px */
+            border-radius: 5px; /* ✅ AUMENTADO de 4px para 5px */
+            margin: 12px 0; /* ✅ AUMENTADO de 8px para 12px */
             overflow: hidden;
             width: 100%;
         }
@@ -285,16 +285,16 @@
         .progresso-preenchido {
             background: linear-gradient(90deg, #ffcf00, #ffaa00);
             height: 100%;
-            border-radius: 4px;
+            border-radius: 5px; /* ✅ AUMENTADO de 4px para 5px */
             transition: width 0.5s ease-in-out;
             box-shadow: 0 0 10px rgba(255, 207, 0, 0.3);
         }
 
         .proximo-nivel {
-            font-size: 11px;
+            font-size: 13px; /* ✅ AUMENTADO de 11px para 13px */
             color: #ffcf00;
             text-align: center;
-            margin-top: 5px;
+            margin-top: 8px; /* ✅ AUMENTADO de 5px para 8px */
             font-weight: 600;
             width: 100%;
         }
@@ -303,27 +303,27 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
-            margin: 8px 0;
+            gap: 12px; /* ✅ AUMENTADO de 8px para 12px */
+            margin: 12px 0; /* ✅ AUMENTADO de 8px para 12px */
             width: 100%;
         }
 
         .serie {
             color: #ccc;
-            font-size: 16px;
+            font-size: 18px; /* ✅ AUMENTADO de 16px para 18px */
             text-align: center;
         }
 
         .status {
             color: #4CAF50;
-            font-size: 12px;
-            margin-top: 5px;
+            font-size: 14px; /* ✅ AUMENTADO de 12px para 14px */
+            margin-top: 8px; /* ✅ AUMENTADO de 5px para 8px */
             text-align: center;
         }
 
         .info-item {
-            margin-bottom: 12px;
-            padding: 8px 0;
+            margin-bottom: 15px; /* ✅ AUMENTADO de 12px para 15px */
+            padding: 10px 0; /* ✅ AUMENTADO de 8px para 10px */
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             width: 100%;
             text-align: center;
@@ -335,8 +335,8 @@
 
         .sync-info {
             color: #4CAF50;
-            font-size: 12px;
-            margin-top: 15px;
+            font-size: 14px; /* ✅ AUMENTADO de 12px para 14px */
+            margin-top: 20px; /* ✅ AUMENTADO de 15px para 20px */
             text-align: center;
             width: 100%;
         }
@@ -344,9 +344,9 @@
         /* Barra de progresso */
         .barra-progresso {
             background: #555;
-            height: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
+            height: 12px; /* ✅ AUMENTADO de 10px para 12px */
+            border-radius: 6px; /* ✅ AUMENTADO de 5px para 6px */
+            margin: 12px 0; /* ✅ AUMENTADO de 10px para 12px */
             overflow: hidden;
             width: 100%;
         }
@@ -354,7 +354,7 @@
         .progresso-interno {
             background: linear-gradient(90deg, #ffcf00, #ffaa00);
             height: 100%;
-            border-radius: 5px;
+            border-radius: 6px; /* ✅ AUMENTADO de 5px para 6px */
             transition: width 0.5s ease-in-out;
         }
 
@@ -363,15 +363,15 @@
             background: #ffcf00;
             color: #000;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px; /* ✅ AUMENTADO */
             border-radius: 6px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 16px; /* ✅ AUMENTADO de 14px para 16px */
             font-weight: bold;
             transition: all 0.3s ease;
-            margin-top: 15px;
+            margin-top: 20px; /* ✅ AUMENTADO de 15px para 20px */
             width: auto;
-            min-width: 160px;
+            min-width: 180px; /* ✅ AUMENTADO de 160px para 180px */
         }
 
         .btn-interno:hover {
@@ -410,10 +410,10 @@
         /* ========== RESPONSIVIDADE ========== */
         @media (max-width: 1024px) {
             .bloco-cinza {
-                width: 95%;
+                width: 98%; /* ✅ AUMENTADO para mobile */
                 height: auto;
                 min-height: 90vh;
-                padding: 15px;
+                padding: 20px; /* ✅ AUMENTADO */
             }
             
             .conteudo-principal {
@@ -425,7 +425,7 @@
                     "info"
                     "ranking"
                     "estatisticas";
-                gap: 15px;
+                gap: 20px; /* ✅ AUMENTADO */
             }
             
             .foto-perfil {
@@ -435,7 +435,7 @@
             .bloco-cinza-escuro1 {
                 order: 2;
                 height: auto;
-                min-height: 70px;
+                min-height: 80px; /* ✅ AUMENTADO */
             }
             
             .bloco-cinza-escuro4 {
@@ -444,66 +444,66 @@
             
             .bloco-cinza-escuro2 {
                 order: 4;
-                min-height: 250px;
+                min-height: 280px; /* ✅ AUMENTADO */
             }
             
             .bloco-cinza-escuro3 {
                 order: 5;
-                min-height: 200px;
+                min-height: 220px; /* ✅ AUMENTADO */
             }
             
             .imgp {
-                width: 100px;
-                height: 100px;
+                width: 120px; /* ✅ Ajustado para mobile */
+                height: 120px;
             }
             
             h2 {
-                font-size: 24px;
+                font-size: 28px; /* ✅ Ajustado para mobile */
             }
             
             h3 {
-                font-size: 18px;
+                font-size: 20px; /* ✅ Ajustado para mobile */
             }
         }
 
         @media (max-width: 768px) {
             body {
-                padding: 10px;
+                padding: 15px; /* ✅ AUMENTADO */
             }
             
             .bloco-cinza {
                 width: 100%;
-                padding: 10px;
+                padding: 15px; /* ✅ AUMENTADO */
             }
             
             .conteudo-principal {
-                gap: 10px;
+                gap: 15px; /* ✅ AUMENTADO */
             }
             
             .bloco-cinza-escuro1,
             .bloco-cinza-escuro2,
             .bloco-cinza-escuro3,
             .bloco-cinza-escuro4 {
-                padding: 15px;
+                padding: 20px; /* ✅ AUMENTADO */
             }
             
             .imgp {
-                width: 80px;
-                height: 80px;
+                width: 100px; /* ✅ Ajustado para mobile */
+                height: 100px;
             }
             
             h2 {
-                font-size: 20px;
+                font-size: 24px; /* ✅ Ajustado para mobile */
             }
             
             h3 {
-                font-size: 16px;
+                font-size: 18px; /* ✅ Ajustado para mobile */
             }
             
             .btn-logout {
-                width: 100px;
-                height: 40px;
-                font-size: 14px;
+                width: 120px; /* ✅ Ajustado para mobile */
+                height: 45px; /* ✅ Ajustado para mobile */
+                font-size: 16px; /* ✅ Ajustado para mobile */
             }
             
             .btn-voltar {
@@ -515,8 +515,8 @@
             }
 
             .nivel-badge {
-                font-size: 12px;
-                padding: 5px 12px;
+                font-size: 14px; /* ✅ Ajustado para mobile */
+                padding: 6px 15px; /* ✅ Ajustado para mobile */
             }
         }
 
@@ -525,40 +525,40 @@
             .bloco-cinza-escuro2 p,
             .bloco-cinza-escuro3 p,
             .bloco-cinza-escuro4 p {
-                font-size: 12px;
+                font-size: 14px; /* ✅ Ajustado para mobile */
             }
             
             .imgp {
-                width: 70px;
-                height: 70px;
+                width: 80px; /* ✅ Ajustado para mobile */
+                height: 80px;
             }
             
             h2 {
-                font-size: 18px;
+                font-size: 20px; /* ✅ Ajustado para mobile */
             }
             
             h3 {
-                font-size: 14px;
+                font-size: 16px; /* ✅ Ajustado para mobile */
             }
             
             .btn-logout {
-                width: 90px;
-                height: 35px;
-                font-size: 12px;
+                width: 100px; /* ✅ Ajustado para mobile */
+                height: 40px; /* ✅ Ajustado para mobile */
+                font-size: 14px; /* ✅ Ajustado para mobile */
             }
 
             .progresso-nivel {
-                padding: 10px;
+                padding: 15px; /* ✅ Ajustado para mobile */
             }
 
             .progresso-info {
-                font-size: 11px;
+                font-size: 12px; /* ✅ Ajustado para mobile */
             }
 
             .btn-interno {
-                padding: 8px 16px;
-                font-size: 12px;
-                min-width: 140px;
+                padding: 10px 20px; /* ✅ Ajustado para mobile */
+                font-size: 14px; /* ✅ Ajustado para mobile */
+                min-width: 160px; /* ✅ Ajustado para mobile */
             }
         }
     </style>
