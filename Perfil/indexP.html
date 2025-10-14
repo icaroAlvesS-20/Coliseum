@@ -465,6 +465,20 @@ console.error = (...args) => {
 
 const API_URL = 'https://coliseum-api.onrender.com';
 
+// ✅ ROTAS DO VERCEL
+const ROTAS = {
+    MENU: '/menu',
+    RANKING: '/ranking',
+    PERFIL: '/perfil',
+    AMIGOS: '/amigos',
+    DESAFIOS: '/desafios',
+    PROVAS: '/provas',
+    CONFIGURACAO: '/configuracao',
+    CONTATO: '/contato',
+    NAVEGADOR: '/navegador',
+    LOGIN: '/login'
+};
+
 // ✅ VERIFICAÇÃO ROBUSTA DE LOGIN (CORRIGIDA)
 function verificarEstadoLogin() {
     console.log('🔍 Verificando estado do login...');
@@ -611,9 +625,12 @@ function atualizarInterfaceUsuario(usuario) {
                 </p>
             </div>
         `;
-    
+    }
 
-// ✅ CARREGAR DADOS LOCAIS
+    // ... (restante do código de atualização da interface)
+}
+
+// ✅ CARREGAR DADOS LOCAIS (CORRIGIDA)
 function carregarDadosLocais() {
     console.log('📱 Carregando dados locais...');
     
@@ -677,19 +694,19 @@ function mostrarUsuarioNaoLogado() {
 
 // ✅ FUNÇÕES AUXILIARES (CORRIGIDAS)
 function fazerLogin() {
-    // ✅ CORREÇÃO: Caminho absoluto
-    window.location.href = '/index.html';
+    // ✅ CORREÇÃO: Usar rota do Vercel
+    window.location.href = ROTAS.LOGIN;
 }
 
 function carregarRankingCompleto() {
-    window.location.href = '/ranking.html';
+    window.location.href = ROTAS.RANKING;
 }
 
 function fazerLogout() {
     if (confirm('Tem certeza que deseja sair?')) {
         localStorage.clear();
         alert('Logout realizado!');
-        window.location.href = '/index.html';
+        window.location.href = ROTAS.LOGIN;
     }
 }
 
