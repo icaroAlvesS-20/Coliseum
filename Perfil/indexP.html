@@ -465,47 +465,29 @@ console.error = (...args) => {
 
 const API_URL = 'https://coliseum-api.onrender.com';
 
-// ✅ VERIFICAÇÃO ROBUSTA DE LOGIN
+// ✅ VERIFICAÇÃO ROBUSTA DE LOGIN (CORRIGIDA)
 function verificarEstadoLogin() {
     console.log('🔍 Verificando estado do login...');
     
-    // Verificar múltiplas possibilidades de dados de usuário
-    const usuarioId = localStorage.getItem('usuarioId');
-    const usuarioNome = localStorage.getItem('usuarioNome');
-    const usuarioLogado = localStorage.getItem('usuarioLogado');
+    // ✅ CORREÇÃO: Verificação unificada
     const usuarioJSON = localStorage.getItem('usuario');
+    const usuarioLogado = localStorage.getItem('usuarioLogado');
+    const usuarioId = localStorage.getItem('usuarioId');
     
     console.log('📊 Dados encontrados:', {
-        usuarioId,
-        usuarioNome,
+        temUsuarioJSON: !!usuarioJSON,
         usuarioLogado,
-        temUsuarioJSON: !!usuarioJSON
+        usuarioId
     });
 
     // ✅ SE TEM DADOS DE USUÁRIO, CONSIDERA LOGADO
-    if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
-        console.log('✅ Usuário identificado pelo ID');
-        if (!usuarioLogado || usuarioLogado !== 'true') {
-            console.log('⚠️ Corrigindo flag de login...');
-            localStorage.setItem('usuarioLogado', 'true');
-        }
-        return true;
-    }
-    
-    // ✅ TENTAR BUSCAR EM CHAVE 'usuario' (JSON)
     if (usuarioJSON) {
         try {
             const usuario = JSON.parse(usuarioJSON);
             if (usuario && usuario.id) {
                 console.log('✅ Usuário encontrado na chave "usuario"');
-                // Migrar dados para chaves padrão
-                localStorage.setItem('usuarioId', usuario.id.toString());
-                localStorage.setItem('usuarioNome', usuario.nome || 'Jogador');
-                localStorage.setItem('usuarioPontuacao', usuario.pontuacao?.toString() || '0');
-                localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados?.toString() || '0');
-                localStorage.setItem('usuarioRA', usuario.ra || '');
-                localStorage.setItem('usuarioSerie', usuario.serie || '');
-                localStorage.setItem('usuarioLogado', 'true');
+                // Garantir que dados individuais também existam
+                garantirDadosIndividuais(usuario);
                 return true;
             }
         } catch (e) {
@@ -513,8 +495,40 @@ function verificarEstadoLogin() {
         }
     }
     
+    // ✅ Fallback para dados individuais
+    if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
+        console.log('✅ Usuário identificado pelo ID');
+        if (!usuarioLogado || usuarioLogado !== 'true') {
+            localStorage.setItem('usuarioLogado', 'true');
+        }
+        return true;
+    }
+    
     console.log('❌ Nenhum dado de usuário válido encontrado');
     return false;
+}
+
+// ✅ NOVA FUNÇÃO: Garantir dados individuais
+function garantirDadosIndividuais(usuario) {
+    if (!localStorage.getItem('usuarioId')) {
+        localStorage.setItem('usuarioId', usuario.id.toString());
+    }
+    if (!localStorage.getItem('usuarioNome')) {
+        localStorage.setItem('usuarioNome', usuario.nome || 'Jogador');
+    }
+    if (!localStorage.getItem('usuarioPontuacao')) {
+        localStorage.setItem('usuarioPontuacao', usuario.pontuacao?.toString() || '0');
+    }
+    if (!localStorage.getItem('usuarioDesafios')) {
+        localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados?.toString() || '0');
+    }
+    if (!localStorage.getItem('usuarioRA')) {
+        localStorage.setItem('usuarioRA', usuario.ra || '');
+    }
+    if (!localStorage.getItem('usuarioSerie')) {
+        localStorage.setItem('usuarioSerie', usuario.serie || '');
+    }
+    localStorage.setItem('usuarioLogado', 'true');
 }
 
 // ✅ CARREGAR PERFIL PRINCIPAL
@@ -557,13 +571,11 @@ async function carregarPerfilUsuario() {
 
 // ✅ ATUALIZAR LOCALSTORAGE
 function atualizarLocalStorageComDados(usuario) {
-    localStorage.setItem('usuarioPontuacao', usuario.pontuacao?.toString() || '0');
-    localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados?.toString() || '0');
-    localStorage.setItem('usuarioNome', usuario.nome || 'Jogador');
-    localStorage.setItem('usuarioRA', usuario.ra || '');
-    localStorage.setItem('usuarioSerie', usuario.serie || '');
-    localStorage.setItem('usuarioId', usuario.id?.toString() || '');
-    localStorage.setItem('usuarioLogado', 'true');
+    // Atualizar objeto completo
+    localStorage.setItem('usuario', JSON.stringify(usuario));
+    
+    // Atualizar dados individuais
+    garantirDadosIndividuais(usuario);
 }
 
 // ✅ ATUALIZAR INTERFACE
@@ -599,31 +611,40 @@ function atualizarInterfaceUsuario(usuario) {
                 </p>
             </div>
         `;
-    }
-
-    // ... (restante do código de atualização da interface igual ao anterior)
-}
+    
 
 // ✅ CARREGAR DADOS LOCAIS
 function carregarDadosLocais() {
     console.log('📱 Carregando dados locais...');
     
-    const usuarioNome = localStorage.getItem('usuarioNome');
-    const usuarioId = localStorage.getItem('usuarioId');
+    // ✅ CORREÇÃO: Priorizar objeto usuario
+    const usuarioJSON = localStorage.getItem('usuario');
+    let usuario = null;
     
-    if (!usuarioNome || !usuarioId) {
+    if (usuarioJSON) {
+        try {
+            usuario = JSON.parse(usuarioJSON);
+        } catch (e) {
+            console.error('Erro ao parsear usuario:', e);
+        }
+    }
+    
+    if (!usuario) {
+        // Fallback para dados individuais
+        usuario = {
+            nome: localStorage.getItem('usuarioNome'),
+            id: localStorage.getItem('usuarioId'),
+            pontuacao: parseInt(localStorage.getItem('usuarioPontuacao')) || 0,
+            desafiosCompletados: parseInt(localStorage.getItem('usuarioDesafios')) || 0,
+            ra: localStorage.getItem('usuarioRA') || '',
+            serie: localStorage.getItem('usuarioSerie') || ''
+        };
+    }
+    
+    if (!usuario.nome || !usuario.id) {
         mostrarUsuarioNaoLogado();
         return;
     }
-    
-    const usuario = {
-        nome: usuarioNome,
-        id: usuarioId,
-        pontuacao: parseInt(localStorage.getItem('usuarioPontuacao')) || 0,
-        desafiosCompletados: parseInt(localStorage.getItem('usuarioDesafios')) || 0,
-        ra: localStorage.getItem('usuarioRA') || '',
-        serie: localStorage.getItem('usuarioSerie') || ''
-    };
     
     atualizarInterfaceUsuario(usuario);
 }
@@ -654,20 +675,21 @@ function mostrarUsuarioNaoLogado() {
     });
 }
 
-// ✅ FUNÇÕES AUXILIARES
+// ✅ FUNÇÕES AUXILIARES (CORRIGIDAS)
 function fazerLogin() {
-    window.location.href = "../Login/index.html";
+    // ✅ CORREÇÃO: Caminho absoluto
+    window.location.href = '/index.html';
 }
 
 function carregarRankingCompleto() {
-    window.location.href = "../Ranking/indexR.html";
+    window.location.href = '/ranking.html';
 }
 
 function fazerLogout() {
     if (confirm('Tem certeza que deseja sair?')) {
         localStorage.clear();
         alert('Logout realizado!');
-        window.location.href = "../Login/index.html";
+        window.location.href = '/index.html';
     }
 }
 
