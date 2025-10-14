@@ -446,10 +446,12 @@ async function registrar() {
         if (data.success) {
             mostrarMensagem(`✅ ${data.message}`, 'sucesso');
             
-            localStorage.setItem('usuario', JSON.stringify(data.usuario));
+            // ✅ CORREÇÃO: Padronizar localStorage
+            salvarDadosUsuarioPadronizados(data.usuario);
             
             setTimeout(() => {
-                window.location.href = '/menu';
+                // ✅ CORREÇÃO: Redirecionamento absoluto
+                window.location.href = '/menu.html';
             }, 1500);
         } else {
             mostrarMensagem(`❌ ${data.error}`, 'erro');
@@ -461,6 +463,20 @@ async function registrar() {
     } finally {
         mostrarLoading(false);
     }
+}
+
+// ✅ NOVA FUNÇÃO: Padronizar dados do usuário
+function salvarDadosUsuarioPadronizados(usuario) {
+    localStorage.setItem('usuario', JSON.stringify(usuario));
+    localStorage.setItem('usuarioLogado', 'true');
+    localStorage.setItem('usuarioId', usuario.id.toString());
+    localStorage.setItem('usuarioNome', usuario.nome);
+    localStorage.setItem('usuarioRA', usuario.ra);
+    localStorage.setItem('usuarioSerie', usuario.serie);
+    localStorage.setItem('usuarioPontuacao', usuario.pontuacao?.toString() || '0');
+    localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados?.toString() || '0');
+    
+    console.log('✅ Dados do usuário salvos e padronizados:', usuario);
 }
 
 function mostrarMensagem(mensagem, tipo = 'info') {
