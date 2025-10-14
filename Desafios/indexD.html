@@ -656,9 +656,67 @@
 const API_URL = 'https://coliseum-api.onrender.com';
 let praticaIndexAtual = 0;
 
-// ✅ FUNÇÃO getServerURL CORRIGIDA
-function getServerURL() {
-    return API_URL;
+// ✅ FUNÇÃO CRÍTICA: Namespace único por usuário
+function getUserNamespace() {
+    const usuarioId = localStorage.getItem('usuarioId');
+    const usuarioNome = localStorage.getItem('usuarioNome');
+    
+    if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
+        console.error('❌ ERRO: Usuário não identificado!');
+        return 'anonymous';
+    }
+    
+    return `user_${usuarioId}`;
+}
+
+// ✅ FUNÇÕES COM NAMESPACE
+function getLocalStorage(key) {
+    const namespace = getUserNamespace();
+    const namespacedKey = `${namespace}_${key}`;
+    return localStorage.getItem(namespacedKey);
+}
+
+function setLocalStorage(key, value) {
+    const namespace = getUserNamespace();
+    const namespacedKey = `${namespace}_${key}`;
+    localStorage.setItem(namespacedKey, value);
+}
+
+function removeLocalStorage(key) {
+    const namespace = getUserNamespace();
+    const namespacedKey = `${namespace}_${key}`;
+    localStorage.removeItem(namespacedKey);
+}
+
+// ✅ FUNÇÃO DE DEBUG MELHORADA
+function debugLocalStorage() {
+    const namespace = getUserNamespace();
+    console.log('🔍 DEBUG LOCALSTORAGE:');
+    console.log('   - Namespace:', namespace);
+    console.log('   - usuarioId:', localStorage.getItem('usuarioId'));
+    console.log('   - usuarioNome:', localStorage.getItem('usuarioNome'));
+    console.log('   - Práticas concluídas:', getLocalStorage('praticas_concluidas'));
+    console.log('   - Pontuação:', getLocalStorage('usuarioPontuacao'));
+}
+
+// ✅ FUNÇÕES AUXILIARES CORRIGIDAS
+function getUsuarioId() {
+    const usuarioId = localStorage.getItem('usuarioId');
+    if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
+        console.error('❌ USUÁRIO NÃO IDENTIFICADO - Redirecionando para login...');
+        window.location.href = '../Login/index.html';
+        return null;
+    }
+    return usuarioId.toString();
+}
+
+function gerarDeviceId() {
+    let deviceId = getLocalStorage('deviceId');
+    if (!deviceId) {
+        deviceId = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        setLocalStorage('deviceId', deviceId);
+    }
+    return deviceId;
 }
 
 const bancoPraticas = [
@@ -840,52 +898,10 @@ const bancoPraticas = [
     }
 ];
 // ✅ FUNÇÃO DE DEBUG
-function debugLocalStorage() {
-    console.log('🔍 DEBUG LOCALSTORAGE:');
-    console.log('   - usuarioId:', localStorage.getItem('usuarioId'));
-    console.log('   - usuario:', localStorage.getItem('usuario'));
-    console.log('   - usuarioLogado:', localStorage.getItem('usuarioLogado'));
-    console.log('   - usuarioNome:', localStorage.getItem('usuarioNome'));
-    console.log('   - usuarioPontuacao:', localStorage.getItem('usuarioPontuacao'));
-}
-
-// ✅ FUNÇÕES AUXILIARES CORRIGIDAS
-function getUsuarioId() {
-    const usuarioId = localStorage.getItem('usuarioId') || 'anonimo';
-    console.log("👤 ID do usuário para desafios:", usuarioId);
-    return usuarioId.toString();
-}
-
-function gerarDeviceId() {
-    let deviceId = localStorage.getItem('deviceId');
-    if (!deviceId) {
-        deviceId = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-        localStorage.setItem('deviceId', deviceId);
-        console.log('📱 Novo Device ID gerado:', deviceId);
-    }
-    return deviceId;
-}
-
-function verificarUsuarioDesafio() {
-    console.log('🔍 VERIFICAÇÃO DE USUÁRIO PARA DESAFIO:');
-    debugLocalStorage();
-}
-
-// ✅ SISTEMA DE PONTUAÇÃO CORRIGIDO
 class SistemaPontuacao {
-    constructor() {
-        this.multiplicadores = {
-            sequencia: 1.0,
-            materia: 1.0,
-            dificuldade: 1.0
-        };
-    }
-
     calcularPontuacao(acertos, totalPerguntas) {
         const porcentagemBase = (acertos / totalPerguntas) * 100;
         
-        console.log(`🎯 Calculando pontuação: ${acertos}/${totalPerguntas} = ${porcentagemBase}%`);
-
         let pontosBase = 0;
         if (porcentagemBase >= 90) pontosBase = 20;
         else if (porcentagemBase >= 75) pontosBase = 15;
@@ -896,37 +912,30 @@ class SistemaPontuacao {
 
         if (acertos === totalPerguntas) {
             pontosBase += 5;
-            console.log('⭐ Bônus por perfeição: +5 pontos');
         }
 
         const sequenciaAtual = this.getSequenciaAtual();
         if (sequenciaAtual > 1) {
             const bonusSequencia = Math.min(sequenciaAtual, 10);
             pontosBase += bonusSequencia;
-            console.log(`🔥 Bônus por sequência (${sequenciaAtual}): +${bonusSequencia} pontos`);
         }
 
-        console.log(`💰 Pontuação final calculada: ${pontosBase} pontos`);
         return pontosBase;
     }
 
     getSequenciaAtual() {
-        const usuarioId = getUsuarioId();
-        const sequencia = localStorage.getItem(`sequencia_${usuarioId}`) || 0;
+        const sequencia = getLocalStorage('sequencia') || 0;
         return parseInt(sequencia);
     }
 
     atualizarSequencia(acertos, totalPerguntas) {
-        const usuarioId = getUsuarioId();
         let sequencia = this.getSequenciaAtual();
         
         if (acertos === totalPerguntas) {
             sequencia++;
-            localStorage.setItem(`sequencia_${usuarioId}`, sequencia);
-            console.log(`🔥 Sequência aumentada para: ${sequencia}`);
+            setLocalStorage('sequencia', sequencia);
         } else {
-            localStorage.setItem(`sequencia_${usuarioId}`, 0);
-            console.log('💥 Sequência quebrada');
+            setLocalStorage('sequencia', 0);
         }
         
         return sequencia;
@@ -941,8 +950,6 @@ class Questionario {
         this.acertos = 0;
         this.modal = document.getElementById('modalPerguntas');
         this.modalBody = document.getElementById('modalBody');
-        
-        console.log("📝 Inicializando Questionário...");
         
         if (this.modal && this.modalBody) {
             this.inicializarEventos();
@@ -962,20 +969,16 @@ class Questionario {
         }
     }
 
-    // ✅ NOVA FUNÇÃO: Obter usuarioId de forma consistente
+    // ✅ FUNÇÃO MELHORADA: Obter usuarioId de forma consistente
     obterUsuarioIdConsistente() {
-        // Tentativa 1: Buscar do localStorage diretamente
         let usuarioId = localStorage.getItem('usuarioId');
         
-        // Tentativa 2: Buscar do objeto usuario salvo
         if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
             const usuarioJSON = localStorage.getItem('usuario');
             if (usuarioJSON) {
                 try {
                     const usuario = JSON.parse(usuarioJSON);
                     usuarioId = usuario.id;
-                    console.log('🔍 Usuário ID encontrado no objeto usuario:', usuarioId);
-                    // Salvar para uso futuro
                     localStorage.setItem('usuarioId', usuarioId);
                 } catch (e) {
                     console.error('Erro ao parsear usuario:', e);
@@ -983,26 +986,20 @@ class Questionario {
             }
         }
 
-        // ✅ VERIFICAÇÃO CRÍTICA
         if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
             console.error('❌ ERRO CRÍTICO: usuarioId não encontrado!');
-            debugLocalStorage();
-            
-            // Tentativa 3: Usar deviceId como fallback
             const deviceId = gerarDeviceId();
             usuarioId = 'temp_' + deviceId;
-            console.log('🆔 Usando ID temporário:', usuarioId);
-            
-            // Salvar para evitar problemas futuros
             localStorage.setItem('usuarioId', usuarioId);
         }
 
         return usuarioId;
     }
 
-    // ✅ NOVA FUNÇÃO: Atualizar dados do usuário
-    atualizarDadosUsuario(usuario) {
+    // ✅ FUNÇÃO MELHORADA: Atualizar dados do usuário
+    async atualizarDadosUsuario(usuario) {
         if (usuario && usuario.id) {
+            // ✅ ATUALIZAR LOCALSTORAGE GLOBAL (compartilhado)
             localStorage.setItem('usuarioId', usuario.id.toString());
             localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
             localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
@@ -1010,26 +1007,30 @@ class Questionario {
             localStorage.setItem('usuarioRA', usuario.ra || '');
             localStorage.setItem('usuarioSerie', usuario.serie || '');
             
-            console.log('✅ Dados do usuário atualizados:', {
-                id: usuario.id,
-                pontuacao: usuario.pontuacao,
-                desafios: usuario.desafiosCompletados,
-                nome: usuario.nome
-            });
+            console.log('✅ Dados do usuário atualizados:', usuario);
+            
+            // ✅ FORÇAR ATUALIZAÇÃO DO PERFIL
+            if (window.parent && window.parent.atualizarPerfil) {
+                window.parent.atualizarPerfil();
+            }
         }
     }
 
     abrirQuestionario(praticaIndex) {
         if (!window.gerenciadorPraticas?.praticasHoje[praticaIndex]) return;
 
-        verificarUsuarioDesafio();
+        const usuarioId = this.obterUsuarioIdConsistente();
+        if (!usuarioId) {
+            alert('❌ Erro: Usuário não identificado. Faça login novamente.');
+            window.location.href = '../Login/index.html';
+            return;
+        }
 
         const pratica = window.gerenciadorPraticas.praticasHoje[praticaIndex];
         this.perguntasAtuais = [...pratica.perguntas];
         this.perguntaIndex = 0;
         this.acertos = 0;
         
-        console.log(`📖 Abrindo questionário: ${pratica.titulo}`);
         this.mostrarPergunta();
         
         if (this.modal) this.modal.style.display = 'flex';
@@ -1095,11 +1096,9 @@ class Questionario {
             this.acertos++;
             feedbackTexto.textContent = '✓ Resposta correta!';
             feedbackTexto.style.color = '#4CAF50';
-            console.log(`✅ Pergunta ${this.perguntaIndex + 1}: Acerto!`);
         } else {
             feedbackTexto.textContent = '✗ Resposta incorreta!';
             feedbackTexto.style.color = '#f44336';
-            console.log(`❌ Pergunta ${this.perguntaIndex + 1}: Erro!`);
         }
 
         feedbackContainer.style.display = 'block';
@@ -1112,7 +1111,6 @@ class Questionario {
 
     mostrarResultado() {
         const percentual = Math.round((this.acertos / this.perguntasAtuais.length) * 100);
-        console.log(`🏁 Questionário finalizado: ${this.acertos}/${this.perguntasAtuais.length} (${percentual}%)`);
         
         const sistemaPontuacao = new SistemaPontuacao();
         const pontos = sistemaPontuacao.calcularPontuacao(this.acertos, this.perguntasAtuais.length);
@@ -1120,7 +1118,7 @@ class Questionario {
 
         console.log(`🎯 Enviando para servidor: ${pontos} pontos`);
 
-        // ✅ CORREÇÃO: Usar then para garantir sincronização
+        // ✅ REGISTRAR E SINCRONIZAR
         this.registrarPontuacaoNoServidor(this.acertos, this.perguntasAtuais.length, pontos, sequencia)
             .then(() => {
                 console.log('✅ Pontuação registrada com sucesso');
@@ -1132,19 +1130,15 @@ class Questionario {
         this.mostrarResultadoAnimado(this.acertos, this.perguntasAtuais.length, pontos, sequencia);
     }
 
-    // ✅ CORREÇÃO CRÍTICA: Função corrigida para resolver erro 400
+    // ✅ FUNÇÃO CRÍTICA: Registrar pontuação no servidor
     async registrarPontuacaoNoServidor(acertos, totalPerguntas, pontos, sequencia) {
         try {
-            // ✅ CORREÇÃO: Usar função consistente para obter usuarioId
             const usuarioId = this.obterUsuarioIdConsistente();
             
             console.log('🎯 Enviando desafio para usuarioId:', usuarioId);
 
-            const deviceId = gerarDeviceId();
-            const usuarioNome = localStorage.getItem('usuarioNome') || `Jogador_${deviceId.substr(7, 6)}`;
             const porcentagemAcerto = Math.round((acertos / totalPerguntas) * 100);
 
-            // ✅ ESTRUTURA CORRIGIDA com validação
             const dadosDesafio = {
                 usuarioId: parseInt(usuarioId),
                 pontuacaoGanha: parseInt(pontos),
@@ -1156,15 +1150,7 @@ class Questionario {
                 data: new Date().toISOString()
             };
 
-            console.log('📤 Dados enviados (VALIDADOS):', dadosDesafio);
-
-            // ✅ VERIFICAÇÃO FINAL ANTES DO ENVIO
-            if (!dadosDesafio.usuarioId || !dadosDesafio.pontuacaoGanha) {
-                console.error('❌ DADOS INVÁLIDOS PARA ENVIO:');
-                console.error('   - usuarioId:', dadosDesafio.usuarioId);
-                console.error('   - pontuacaoGanha:', dadosDesafio.pontuacaoGanha);
-                throw new Error('Dados incompletos para envio');
-            }
+            console.log('📤 Dados enviados:', dadosDesafio);
 
             const response = await fetch(`${API_URL}/api/desafio-completo`, {
                 method: 'POST',
@@ -1180,9 +1166,9 @@ class Questionario {
                 const result = await response.json();
                 console.log('✅ Sucesso:', result.message);
                 
-                // ✅ ATUALIZAR LOCALSTORAGE COM DADOS DO SERVIDOR
+                // ✅ ATUALIZAR DADOS LOCAIS COM RESPOSTA DO SERVIDOR
                 if (result.usuario) {
-                    this.atualizarDadosUsuario(result.usuario);
+                    await this.atualizarDadosUsuario(result.usuario);
                 }
                 
                 return result;
@@ -1190,17 +1176,39 @@ class Questionario {
 
             const errorResponse = await response.json();
             console.error('❌ Erro do servidor:', errorResponse);
-            throw new Error(`Erro ${response.status}: ${JSON.stringify(errorResponse)}`);
+            throw new Error(`Erro ${response.status}`);
             
         } catch (error) {
             console.error('❌ Erro na requisição:', error);
-            console.log('📴 Salvando localmente...');
-            this.salvarPontuacaoOffline(acertos, totalPerguntas, pontos, sequencia);
-            throw error; // Re-lançar o erro para tratamento externo
+            // ✅ MESMO OFFLINE, ATUALIZAR DADOS LOCAIS
+            this.atualizarDadosLocais(acertos, totalPerguntas, pontos, sequencia);
+            throw error;
         }
     }
 
-    // ✅ FUNÇÃO PARA OBTER MATÉRIA ATUAL
+    // ✅ NOVA FUNÇÃO: Atualizar dados locais mesmo offline
+    atualizarDadosLocais(acertos, totalPerguntas, pontos, sequencia) {
+        try {
+            const pontuacaoAtual = parseInt(localStorage.getItem('usuarioPontuacao') || '0');
+            const desafiosAtuais = parseInt(localStorage.getItem('usuarioDesafios') || '0');
+            
+            const novaPontuacao = pontuacaoAtual + pontos;
+            const novosDesafios = desafiosAtuais + 1;
+            
+            // ✅ ATUALIZAR LOCALSTORAGE GLOBAL
+            localStorage.setItem('usuarioPontuacao', novaPontuacao.toString());
+            localStorage.setItem('usuarioDesafios', novosDesafios.toString());
+            
+            console.log('📊 Dados locais atualizados:', {
+                pontuacao: novaPontuacao,
+                desafios: novosDesafios
+            });
+            
+        } catch (error) {
+            console.error('❌ Erro ao atualizar dados locais:', error);
+        }
+    }
+
     obterMateriaAtual() {
         if (window.gerenciadorPraticas?.praticasHoje[praticaIndexAtual]) {
             return window.gerenciadorPraticas.praticasHoje[praticaIndexAtual].materia;
@@ -1208,77 +1216,6 @@ class Questionario {
         return 'Desconhecida';
     }
 
-    // ✅ CORRIGIDO: Método para salvar offline
-    salvarPontuacaoOffline(acertos, totalPerguntas, pontos, sequencia) {
-        try {
-            const usuarioId = this.obterUsuarioIdConsistente();
-            const deviceId = gerarDeviceId();
-            const usuarioNome = localStorage.getItem('usuarioNome') || `Jogador_${deviceId.substr(7, 6)}`;
-            const porcentagemAcerto = Math.round((acertos / totalPerguntas) * 100);
-            
-            console.log('💾 Salvando pontuação offline para usuário:', usuarioId);
-
-            const pontuacaoAtual = parseInt(localStorage.getItem('usuarioPontuacao') || '0');
-            const desafiosAtuais = parseInt(localStorage.getItem('usuarioDesafios') || '0');
-            
-            const novaPontuacao = pontuacaoAtual + pontos;
-            const novosDesafios = desafiosAtuais + 1;
-            
-            localStorage.setItem('usuarioPontuacao', novaPontuacao.toString());
-            localStorage.setItem('usuarioDesafios', novosDesafios.toString());
-            localStorage.setItem('usuarioOffline', 'true');
-
-            const desafioPendente = {
-                usuarioId: usuarioId,
-                deviceId: deviceId,
-                usuarioNome: usuarioNome,
-                acertos: acertos,
-                totalPerguntas: totalPerguntas,
-                porcentagem: porcentagemAcerto,
-                pontos: pontos,
-                pontuacaoGanha: pontos,
-                sequencia: sequencia,
-                data: new Date().toISOString(),
-                materia: this.obterMateriaAtual()
-            };
-            
-            const desafiosPendentes = JSON.parse(localStorage.getItem('desafiosPendentes') || '[]');
-            desafiosPendentes.push(desafioPendente);
-            localStorage.setItem('desafiosPendentes', JSON.stringify(desafiosPendentes));
-
-            console.log('✅ Pontuação salva offline. Pendentes:', desafiosPendentes.length);
-            console.log('📊 Nova pontuação local:', novaPontuacao, '| Desafios:', novosDesafios);
-            
-        } catch (error) {
-            console.error('❌ Erro ao salvar offline:', error);
-        }
-    }
-
-    // ✅ VERIFICAÇÃO DE SINCRONIZAÇÃO
-    async verificarSincronizacao() {
-        try {
-            const usuarioId = this.obterUsuarioIdConsistente();
-            if (!usuarioId || usuarioId.includes('temp_')) return;
-
-            const response = await fetch(`${API_URL}/api/usuario/${usuarioId}`);
-            if (response.ok) {
-                const usuario = await response.json();
-                
-                // Comparar com dados locais
-                const pontuacaoLocal = parseInt(localStorage.getItem('usuarioPontuacao') || '0');
-                const desafiosLocal = parseInt(localStorage.getItem('usuarioDesafios') || '0');
-                
-                if (usuario.pontuacao !== pontuacaoLocal || usuario.desafiosCompletados !== desafiosLocal) {
-                    console.log('🔄 Dados desatualizados, sincronizando...');
-                    this.atualizarDadosUsuario(usuario);
-                }
-            }
-        } catch (error) {
-            console.log('❌ Erro na verificação de sincronização');
-        }
-    }
-
-    // ✅ CORRIGIDO: Método para mostrar resultado
     mostrarResultadoAnimado(acertos, total, pontosTotais, sequencia) {
         const percentual = Math.round((acertos / total) * 100);
         const emoji = percentual >= 90 ? '🎉' : percentual >= 70 ? '🎯' : percentual >= 50 ? '👍' : '💪';
@@ -1298,7 +1235,7 @@ class Questionario {
                     ${mensagemBonus}
                 </div>
                 <div class="info-pontuacao">
-                    <small>Os pontos serão registrados no ranking...</small>
+                    <small>Pontos registrados no seu perfil!</small>
                 </div>
                 <button class="btn-reiniciar">Continuar</button>
             </div>
@@ -1328,8 +1265,6 @@ class GerenciadorPraticas {
         this.praticasHoje = [];
         this.ultimaAtualizacao = this.getDataUltimaAtualizacao();
         
-        console.log("🔄 Inicializando Gerenciador de Práticas...");
-        
         if (this.elementosExistem()) {
             this.inicializar();
         }
@@ -1340,11 +1275,11 @@ class GerenciadorPraticas {
     }
 
     getDataUltimaAtualizacao() {
-        return localStorage.getItem('ultimaAtualizacaoPraticas');
+        return getLocalStorage('ultimaAtualizacaoPraticas');
     }
 
     salvarDataAtualizacao() {
-        localStorage.setItem('ultimaAtualizacaoPraticas', new Date().toISOString());
+        setLocalStorage('ultimaAtualizacaoPraticas', new Date().toISOString());
     }
 
     precisaAtualizar() {
@@ -1388,19 +1323,18 @@ class GerenciadorPraticas {
     }
 
     resetarPraticasConcluidas() {
-        const usuarioId = getUsuarioId();
-        console.log("🔄 Resetando práticas concluídas para usuário:", usuarioId);
+        // ✅ LIMPAR APENAS AS PRÁTICAS DO USUÁRIO ATUAL
         for (let i = 0; i < 10; i++) {
-            localStorage.removeItem(`pratica_${usuarioId}_${i}_concluida`);
+            removeLocalStorage(`pratica_${i}_concluida`);
         }
     }
 
     salvarPraticasAtuais() {
-        localStorage.setItem('praticasAtuais', JSON.stringify(this.praticasHoje));
+        setLocalStorage('praticasAtuais', JSON.stringify(this.praticasHoje));
     }
 
     carregarPraticasSalvas() {
-        const salvas = localStorage.getItem('praticasAtuais');
+        const salvas = getLocalStorage('praticasAtuais');
         this.praticasHoje = salvas ? JSON.parse(salvas) : this.selecionarPraticasDoDia();
     }
 
@@ -1415,8 +1349,8 @@ class GerenciadorPraticas {
 
         container.innerHTML = '';
         this.praticasHoje.forEach((pratica, index) => {
-            const usuarioId = getUsuarioId();
-            const concluida = localStorage.getItem(`pratica_${usuarioId}_${index}_concluida`);
+            // ✅ VERIFICAR SE A PRÁTICA JÁ FOI CONCLUÍDA POR ESTE USUÁRIO
+            const concluida = getLocalStorage(`pratica_${index}_concluida`);
             
             const card = document.createElement('div');
             card.className = 'pratica-card';
@@ -1451,9 +1385,9 @@ class GerenciadorPraticas {
     }
 
     concluirPratica(index) {
-        const usuarioId = getUsuarioId();
-        localStorage.setItem(`pratica_${usuarioId}_${index}_concluida`, 'true');
-        console.log(`✅ Prática ${index} concluída para usuário ${usuarioId}`);
+        // ✅ MARCAR APENAS PARA ESTE USUÁRIO
+        setLocalStorage(`pratica_${index}_concluida`, 'true');
+        console.log(`✅ Prática ${index} concluída`);
         this.renderizarPraticas();
     }
 
@@ -1474,7 +1408,6 @@ class GerenciadorPraticas {
             elementoContador.textContent = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
             
             if (diff <= 0) {
-                console.log("⏰ 24 horas passaram! Atualizando práticas...");
                 this.atualizarPraticas();
             }
         };
@@ -1484,97 +1417,28 @@ class GerenciadorPraticas {
     }
 }
 
-// ✅ SISTEMA DE SINCRONIZAÇÃO CORRIGIDO
-class SistemaSincronizacao {
-    constructor() {
-        this.online = false;
-        this.verificarConexao();
-    }
-
-    async verificarConexao() {
-        try {
-            const response = await fetch(`${API_URL}/api/health`, { 
-                method: 'GET',
-                timeout: 5000
-            });
-            this.online = response.ok;
-            console.log(this.online ? '🌐 Online' : '📴 Offline');
-        } catch (error) {
-            this.online = false;
-            console.log('📴 Modo offline - Servidor não disponível');
-        }
-    }
-
-    async sincronizarDesafiosPendentes() {
-        const desafiosPendentes = JSON.parse(localStorage.getItem('desafiosPendentes') || '[]');
-        
-        if (desafiosPendentes.length === 0) return;
-
-        console.log('🔄 Sincronizando desafios pendentes:', desafiosPendentes.length);
-
-        try {
-            for (const desafio of desafiosPendentes) {
-                const dadosSincronizacao = {
-                    usuarioId: parseInt(desafio.usuarioId),
-                    pontuacaoGanha: desafio.pontos
-                };
-
-                const response = await fetch(`${API_URL}/api/desafio-completo`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(dadosSincronizacao)
-                });
-
-                if (response.ok) {
-                    console.log(`✅ Desafio sincronizado: ${desafio.acertos}/${desafio.totalPerguntas}`);
-                } else {
-                    console.log(`❌ Falha ao sincronizar desafio: ${response.status}`);
-                    break;
-                }
-            }
-
-            const remaining = JSON.parse(localStorage.getItem('desafiosPendentes') || '[]');
-            if (remaining.length === desafiosPendentes.length) {
-                console.log('⚠️ Alguns desafios não foram sincronizados');
-            } else {
-                localStorage.removeItem('desafiosPendentes');
-                localStorage.removeItem('usuarioOffline');
-                console.log('✅ Todos os desafios sincronizados!');
-            }
-        } catch (error) {
-            console.log('❌ Falha na sincronização, mantendo modo offline');
-        }
-    }
-}
-
 // ✅ INICIALIZAÇÃO CORRIGIDA
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("🚀 Inicializando sistema de desafios...");
     
-    // Verificar se usuário está logado
+    // ✅ VERIFICAÇÃO CRÍTICA DE USUÁRIO
     const usuarioLogado = localStorage.getItem('usuarioLogado');
-    if (!usuarioLogado || usuarioLogado !== 'true') {
+    const usuarioId = localStorage.getItem('usuarioId');
+    
+    if (!usuarioLogado || usuarioLogado !== 'true' || !usuarioId) {
         console.log('❌ Usuário não está logado, redirecionando...');
         window.location.href = '../Login/index.html';
         return;
     }
     
-    window.sincronizador = new SistemaSincronizacao();
-    
-    if (window.sincronizador.online) {
-        setTimeout(() => window.sincronizador.sincronizarDesafiosPendentes(), 2000);
-    }
+    console.log('👤 Usuário identificado:', localStorage.getItem('usuarioNome'));
+    console.log('🔑 User ID:', usuarioId);
+    console.log('🏷️ Namespace:', getUserNamespace());
     
     window.gerenciadorPraticas = new GerenciadorPraticas();
     window.questionario = new Questionario();
     
     console.log("✅ Sistema de desafios inicializado!");
-    
-    const usuarioNome = localStorage.getItem('usuarioNome') || 'Jogador';
-    const offline = localStorage.getItem('usuarioOffline') === 'true';
-    console.log(`👤 ${usuarioNome} | ${offline ? '📴 Offline' : '🌐 Online'}`);
 });
     </script>
 </body>
