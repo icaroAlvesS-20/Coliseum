@@ -607,9 +607,32 @@ console.log('🎯 RANKING CARREGADO!');
 
 const API_URL = 'https://coliseum-api.onrender.com';
 
+// ✅ VERIFICAÇÃO DE LOGIN PARA RANKING
+function verificarLoginRanking() {
+    console.log('🔍 Verificando login para ranking...');
+    
+    const usuarioId = localStorage.getItem('usuarioId');
+    
+    // Verificação mais flexível - ranking pode ser visto sem login estrito
+    if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
+        console.log('✅ Usuário identificado');
+        return true;
+    }
+    
+    console.log('⚠️ Modo visitante - ranking público');
+    return true; // Ranking pode ser visto por todos
+}
+
 class RankingManager {
     constructor() {
         console.log('✅ RankingManager INICIADO');
+        
+        // Verificar se pode carregar (modo visitante é permitido)
+        if (!verificarLoginRanking()) {
+            this.mostrarErro('Erro de autenticação');
+            return;
+        }
+        
         this.rankingList = document.getElementById('ranking-list');
         this.totalUsuarios = document.getElementById('total-usuarios');
         this.totalDesafios = document.getElementById('total-desafios');
@@ -653,34 +676,45 @@ class RankingManager {
             return;
         }
 
-        this.rankingList.innerHTML = ranking.map((user, index) => `
-            <div class="ranking-item">
-                <div class="ranking-item-header">
-                    <div class="posicao posicao-${index + 1}">${index + 1}°</div>
-                    <div class="user-info">
-                        <div class="user-avatar">${user.nome ? user.nome.charAt(0).toUpperCase() : 'U'}</div>
-                        <div class="user-details">
-                            <div class="user-name">${user.nome || 'Usuário'}</div>
-                            <div class="user-serie">${user.serie || 'Série não informada'}</div>
+        // Destacar usuário atual no ranking
+        const usuarioAtualId = localStorage.getItem('usuarioId');
+        
+        this.rankingList.innerHTML = ranking.map((user, index) => {
+            const isUsuarioAtual = user.id && user.id.toString() === usuarioAtualId;
+            const highlightClass = isUsuarioAtual ? 'ranking-item-destaque' : '';
+            
+            return `
+                <div class="ranking-item ${highlightClass}" style="${isUsuarioAtual ? 'background: rgba(255, 215, 0, 0.2); border: 2px solid #ffd700;' : ''}">
+                    <div class="ranking-item-header">
+                        <div class="posicao posicao-${index + 1}">${index + 1}°</div>
+                        <div class="user-info">
+                            <div class="user-avatar">${user.nome ? user.nome.charAt(0).toUpperCase() : 'U'}</div>
+                            <div class="user-details">
+                                <div class="user-name">
+                                    ${user.nome || 'Usuário'} 
+                                    ${isUsuarioAtual ? '<span style="color: #ffd700; font-size: 12px;"> (Você)</span>' : ''}
+                                </div>
+                                <div class="user-serie">${user.serie || 'Série não informada'}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ranking-item-stats">
+                        <div class="stat-item">
+                            <div class="stat-label-small">Série</div>
+                            <div class="stat-value serie-value">${user.serie || '-'}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label-small">Desafios</div>
+                            <div class="stat-value desafios-value">${user.desafiosCompletados || 0}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label-small">Pontuação</div>
+                            <div class="stat-value pontuacao-value">${user.pontuacao || 0}</div>
                         </div>
                     </div>
                 </div>
-                <div class="ranking-item-stats">
-                    <div class="stat-item">
-                        <div class="stat-label-small">Série</div>
-                        <div class="stat-value serie-value">${user.serie || '-'}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label-small">Desafios</div>
-                        <div class="stat-value desafios-value">${user.desafiosCompletados || 0}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label-small">Pontuação</div>
-                        <div class="stat-value pontuacao-value">${user.pontuacao || 0}</div>
-                    </div>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     atualizarEstatisticas(ranking) {
@@ -700,7 +734,15 @@ class RankingManager {
             <div class="error">
                 <h3>❌ Erro</h3>
                 <p>${mensagem}</p>
-                <button onclick="window.rankingManager.carregarRanking()" class="btn-interno">
+                <button onclick="window.rankingManager.carregarRanking()" style="
+                    background: #ffd700; 
+                    color: #000; 
+                    border: none; 
+                    padding: 10px 20px; 
+                    border-radius: 5px; 
+                    cursor: pointer; 
+                    margin-top: 10px;
+                ">
                     🔄 Tentar Novamente
                 </button>
             </div>
@@ -708,7 +750,7 @@ class RankingManager {
     }
 }
 
-// ✅ INICIALIZAÇÃO SIMPLIFICADA
+// ✅ INICIALIZAÇÃO RANKING
 document.addEventListener('DOMContentLoaded', function() {
     console.log('📄 Ranking carregado');
     window.rankingManager = new RankingManager();
