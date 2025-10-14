@@ -4,26 +4,6 @@
     {
       "src": "**/*.html",
       "use": "@vercel/static"
-    },
-    {
-      "src": "**/*.js",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "**/*.css",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "**/*.png",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "**/*.jpg",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "**/*.svg",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -32,11 +12,11 @@
       "dest": "/Login/index.html"
     },
     {
-      "src": "/Login",
+      "src": "/login",
       "dest": "/Login/index.html"
     },
     {
-      "src": "/Menu",
+      "src": "/menu",
       "dest": "/Menu/indexM.html"
     },
     {
@@ -44,7 +24,7 @@
       "dest": "/Ranking/indexR.html"
     },
     {
-      "src": "/amigos",
+      "src": "/amigos", 
       "dest": "/Amigos/indexA.html"
     },
     {
@@ -70,10 +50,6 @@
     {
       "src": "/navegador",
       "dest": "/Navegador/indexN.html"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "https://coliseum-api.onrender.com/api/$1"
     },
     {
       "src": "/(.*)",
