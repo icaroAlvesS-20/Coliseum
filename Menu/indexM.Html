@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coliseum-Menu</title>
+    <title>Coliseum - Menu</title>
     <style>
-        /* SEU CSS DO MENU COMPLETO AQUI */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+
         body {
             background: linear-gradient(135deg, #000000 0%, #2d2d2d 100%);
             min-height: 100vh;
@@ -21,12 +21,212 @@
             flex-direction: column;
             align-items: center;
         }
-        /* ... resto do CSS do menu ... */
+
+        /* ========== LAYOUT PRINCIPAL MOBILE-FIRST ========== */
+        .menu-container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* ========== PAINEL DE BOAS-VINDAS ========== */
+        .welcome-panel {
+            background: linear-gradient(145deg, #383838, #282828);
+            border-radius: 20px;
+            padding: 25px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+            width: 100%;
+        }
+
+        .welcome-text {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 300;
+            margin-bottom: 5px;
+        }
+
+        .coliseum-title {
+            color: #ffcf00;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(255, 207, 0, 0.3);
+        }
+
+        .divider {
+            border: none;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ffcf00, transparent);
+            margin: 15px 0;
+        }
+
+        .serie-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .serie-label {
+            color: #cccccc;
+            font-size: 14px;
+        }
+
+        .serie-value {
+            color: #ffcf00;
+            font-size: 16px;
+            font-weight: bold;
+            background: rgba(255, 207, 0, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid #ffcf00;
+        }
+
+        /* ========== GRID DE BOTÕES PRINCIPAIS ========== */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .menu-card {
+            background: linear-gradient(145deg, #383838, #282828);
+            border-radius: 15px;
+            padding: 20px 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            min-height: 120px;
+            justify-content: center;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .menu-card:active {
+            transform: scale(0.95);
+            background: linear-gradient(145deg, #282828, #383838);
+        }
+
+        .card-icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+
+        .menu-card h3 {
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .menu-card p {
+            color: #cccccc;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .bottom-nav {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+            background: linear-gradient(145deg, #383838, #282828);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn:active {
+            background: rgba(255, 207, 0, 0.1);
+            transform: scale(0.95);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* ========== RESPONSIVO ========== */
+        @media (max-width: 768px) {
+            .menu-container {
+                width: 95%;
+            }
+            
+            .welcome-panel {
+                padding: 20px 15px;
+            }
+            
+            .coliseum-title {
+                font-size: 28px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .menu-container {
+                width: 400px;
+            }
+        }
+
+        /* ========== ANIMAÇÕES ========== */
+        @keyframes slideDown {
+            from { transform: translate(-50%, -100%); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+
+        .error-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ef4444;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 1000;
+            animation: slideDown 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="menu-container">
-        <!-- SEU HTML DO MENU COMPLETO AQUI -->
+        <!-- PAINEL DE BOAS-VINDAS -->
         <div class="welcome-panel">
             <div class="welcome-text">Seja bem-vindo ao</div>
             <div class="coliseum-title">COLISEUM</div>
@@ -37,13 +237,71 @@
             </div>
         </div>
 
+        <!-- MENU PRINCIPAL -->
         <div class="menu-grid">
-            <!-- ... resto do HTML do menu ... -->
+            <a href="#" class="menu-card" onclick="mostrarDesafios()">
+                <div class="card-icon">🎯</div>
+                <h3>Desafios</h3>
+                <p>Pratique e ganhe pontos</p>
+            </a>
+
+            <a href="#" class="menu-card" onclick="mostrarRanking()">
+                <div class="card-icon">🏆</div>
+                <h3>Ranking</h3>
+                <p>Veja sua posição</p>
+            </a>
+
+            <a href="#" class="menu-card" onclick="mostrarPerfil()">
+                <div class="card-icon">👤</div>
+                <h3>Perfil</h3>
+                <p>Seus dados e estatísticas</p>
+            </a>
+
+            <a href="#" class="menu-card" onclick="mostrarAmigos()">
+                <div class="card-icon">👥</div>
+                <h3>Amigos</h3>
+                <p>Conecte com outros alunos</p>
+            </a>
+
+            <a href="#" class="menu-card" onclick="mostrarProvas()">
+                <div class="card-icon">📝</div>
+                <h3>Provas</h3>
+                <p>Simulados e exercícios</p>
+            </a>
+
+            <a href="#" class="menu-card" onclick="mostrarConfig()">
+                <div class="card-icon">⚙️</div>
+                <h3>Configurações</h3>
+                <p>Ajustes do sistema</p>
+            </a>
+        </div>
+
+        <!-- NAVEGAÇÃO INFERIOR -->
+        <div class="bottom-nav">
+            <button class="nav-btn" onclick="mostrarConfig()">
+                <div class="nav-icon">⚙️</div>
+                <div class="nav-label">Config</div>
+            </button>
+
+            <button class="nav-btn" onclick="mostrarPerfil()">
+                <div class="nav-icon">👤</div>
+                <div class="nav-label">Perfil</div>
+            </button>
+
+            <button class="nav-btn" onclick="mostrarContato()">
+                <div class="nav-icon">📞</div>
+                <div class="nav-label">Contato</div>
+            </button>
+
+            <button class="nav-btn" onclick="mostrarNavegador()">
+                <div class="nav-icon">🌐</div>
+                <div class="nav-label">Navegador</div>
+            </button>
         </div>
     </div>
 
     <script>
-        // SEU JAVASCRIPT DO MENU COMPLETO AQUI
+        // ✅ CONFIGURAÇÃO DAS URLs
         const URLS = {
             RANKING: '/ranking',
             AMIGOS: '/amigos',
@@ -56,7 +314,201 @@
             LOGIN: '/login'
         };
 
-        // ... resto do JavaScript do menu ...
+        // ✅ FUNÇÕES DE REDIRECIONAMENTO CORRETAS
+        function mostrarRanking() { 
+            console.log('📊 Redirecionando para Ranking...');
+            safeRedirect(URLS.RANKING, '/Ranking/indexR.html');
+        }
+
+        function mostrarAmigos() { 
+            console.log('👥 Redirecionando para Amigos...');
+            safeRedirect(URLS.AMIGOS, '/Amigos/indexA.html');
+        }
+
+        function mostrarDesafios() { 
+            console.log('🎯 Redirecionando para Desafios...');
+            safeRedirect(URLS.DESAFIOS, '/Desafios/indexD.html');
+        }
+
+        function mostrarProvas() { 
+            console.log('📝 Redirecionando para Provas...');
+            safeRedirect(URLS.PROVAS, '/Provas/indexPr.html');
+        }
+
+        function mostrarConfig() { 
+            console.log('⚙️ Redirecionando para Configuração...');
+            safeRedirect(URLS.CONFIGURACAO, '/Configuração/indexC.html');
+        }
+
+        function mostrarPerfil() { 
+            console.log('👤 Redirecionando para Perfil...');
+            safeRedirect(URLS.PERFIL, '/Perfil/indexP.html');
+        }
+
+        function mostrarContato() { 
+            console.log('📞 Redirecionando para Contato...');
+            safeRedirect(URLS.CONTATO, '/Contato/indexCo.html');
+        }
+
+        function mostrarNavegador() { 
+            console.log('🌐 Redirecionando para Navegador...');
+            safeRedirect(URLS.NAVEGADOR, '/Navegador/indexN.html');
+        }
+
+        // ✅ REDIRECIONAMENTO SEGURO
+        async function safeRedirect(urlPreferida, urlAlternativa) {
+            console.log(`🎯 Tentando redirecionar para: ${urlPreferida}`);
+            
+            try {
+                // Verifica se a URL preferida existe
+                const response = await fetch(urlPreferida, { method: 'HEAD' });
+                if (response.ok) {
+                    console.log(`✅ URL encontrada: ${urlPreferida}`);
+                    window.location.href = urlPreferida;
+                    return;
+                }
+            } catch (error) {
+                console.log(`❌ URL não encontrada: ${urlPreferida}`);
+            }
+            
+            // Tenta a URL alternativa
+            console.log(`🔄 Tentando URL alternativa: ${urlAlternativa}`);
+            try {
+                const response = await fetch(urlAlternativa, { method: 'HEAD' });
+                if (response.ok) {
+                    console.log(`✅ URL alternativa encontrada: ${urlAlternativa}`);
+                    window.location.href = urlAlternativa;
+                } else {
+                    console.log(`❌ URL alternativa também não encontrada: ${urlAlternativa}`);
+                    mostrarErro('Página não encontrada!');
+                }
+            } catch (error) {
+                console.log(`💥 Erro na URL alternativa: ${urlAlternativa}`);
+                mostrarErro('Erro ao carregar a página!');
+            }
+        }
+
+        // ✅ FUNÇÃO PARA CARREGAR DADOS DO USUÁRIO
+        function carregarDadosUsuario() {
+            console.log('👤 Carregando dados do usuário...');
+            
+            try {
+                // Tenta pegar do localStorage (sistema antigo)
+                const usuarioSerie = localStorage.getItem('usuarioSerie');
+                const usuarioNome = localStorage.getItem('usuarioNome');
+                const usuarioRA = localStorage.getItem('usuarioRA');
+                
+                // Tenta pegar do novo sistema (JSON completo)
+                const usuarioJSON = localStorage.getItem('usuario');
+                let usuario = null;
+                
+                if (usuarioJSON) {
+                    usuario = JSON.parse(usuarioJSON);
+                    console.log('✅ Usuário encontrado no novo formato:', usuario);
+                }
+                
+                console.log("📊 Dados disponíveis:", {
+                    usuarioJSON: usuario,
+                    usuarioSerie,
+                    usuarioNome, 
+                    usuarioRA
+                });
+                
+                // Prioriza os dados do novo sistema
+                let serieExibir = 'Série não informada';
+                
+                if (usuario && usuario.serie) {
+                    serieExibir = usuario.serie;
+                    // Atualiza o sistema antigo para compatibilidade
+                    localStorage.setItem('usuarioSerie', usuario.serie);
+                    localStorage.setItem('usuarioNome', usuario.nome);
+                    localStorage.setItem('usuarioRA', usuario.ra);
+                    localStorage.setItem('usuarioLogado', 'true');
+                } else if (usuarioSerie && usuarioSerie !== "null") {
+                    serieExibir = usuarioSerie;
+                }
+                
+                document.getElementById("serie-aleatoria").textContent = serieExibir;
+                console.log("✅ Série exibida:", serieExibir);
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar dados do usuário:', error);
+                document.getElementById("serie-aleatoria").textContent = "Erro ao carregar";
+            }
+        }
+
+        // ✅ FUNÇÃO VERIFICAR LOGIN ATUALIZADA
+        function verificarLogin() {
+            console.log('🔐 Verificando login...');
+            
+            // Verifica no novo sistema
+            const usuarioJSON = localStorage.getItem('usuario');
+            // Verifica no sistema antigo
+            const usuarioLogado = localStorage.getItem('usuarioLogado');
+            
+            console.log('📋 Status do login:', {
+                usuarioJSON: usuarioJSON ? 'Presente' : 'Ausente',
+                usuarioLogado
+            });
+            
+            if (!usuarioJSON && (!usuarioLogado || usuarioLogado !== 'true')) {
+                console.log('❌ Usuário não logado, redirecionando...');
+                mostrarErro('⚠️ Você precisa fazer login primeiro!');
+                setTimeout(() => {
+                    window.location.href = URLS.LOGIN;
+                }, 2000);
+                return false;
+            }
+            
+            console.log('✅ Usuário logado com sucesso');
+            return true;
+        }
+
+        // ✅ MOSTRAR MENSAGEM DE ERRO
+        function mostrarErro(mensagem) {
+            console.log(`💬 Erro: ${mensagem}`);
+            
+            // Remove mensagem anterior se existir
+            const mensagemAnterior = document.getElementById('mensagemErro');
+            if (mensagemAnterior) {
+                mensagemAnterior.remove();
+            }
+            
+            // Cria nova mensagem
+            const mensagemElement = document.createElement('div');
+            mensagemElement.className = 'error-message';
+            mensagemElement.id = 'mensagemErro';
+            mensagemElement.textContent = mensagem;
+            
+            document.body.appendChild(mensagemElement);
+            
+            // Auto-remove após 3 segundos
+            setTimeout(() => {
+                if (mensagemElement.parentNode) {
+                    mensagemElement.remove();
+                }
+            }, 3000);
+        }
+
+        // ✅ INICIALIZAR MENU
+        function inicializarMenu() {
+            console.log("🚀 Inicializando menu...");
+            
+            // Verificar login
+            if (!verificarLogin()) {
+                return;
+            }
+            
+            // Carregar dados do usuário
+            carregarDadosUsuario();
+            
+            console.log("✅ Menu inicializado com sucesso!");
+        }
+
+        // ✅ INICIALIZAR QUANDO O DOM ESTIVER PRONTO
+        document.addEventListener('DOMContentLoaded', inicializarMenu);
+
+        console.log('📦 Menu carregado com sucesso!');
     </script>
 </body>
 </html>
