@@ -445,16 +445,19 @@
                 const data = await response.json();
                 console.log('📨 Resposta:', data);
                 
-                if (data.success) {
-                    mostrarMensagem(`✅ ${data.message}`, 'sucesso');
-                    
-                    localStorage.setItem('usuario', JSON.stringify(data.usuario));
-                    
-                    setTimeout(() => {
-                        window.location.href = '/Menu';
-                    }, 1500);
-                    
-                } else {
+            if (data.success) {
+    mostrarMensagem(`✅ ${data.message}`, 'sucesso');
+    
+    localStorage.setItem('usuario', JSON.stringify(data.usuario));
+    
+    setTimeout(() => {
+        // ✅ CORREÇÃO: Use a URL ABSOLUTA com o nome correto do arquivo
+        window.location.href = 'https://coliseum-1aepcwffs-icaroass-projects.vercel.app/menu';
+        
+        // Ou se preferir relativo (teste ambas):
+        // window.location.href = '/menu';
+    }, 1500);
+} else {
                     mostrarMensagem(`❌ ${data.error}`, 'erro');
                 }
                 
