@@ -200,6 +200,112 @@
             color: #ffcf00;
         }
 
+        /* ✅ NOVOS ESTILOS PARA SISTEMA DE NÍVEIS */
+        .nivel-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+
+        .nivel-icone {
+            font-size: 14px;
+        }
+
+        .nivel-nome {
+            font-weight: bold;
+        }
+
+        .progresso-nivel {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #ffcf00;
+        }
+
+        .progresso-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        .progresso-texto {
+            color: #ffcf00;
+            font-weight: bold;
+        }
+
+        .barra-progresso {
+            background: #555;
+            height: 8px;
+            border-radius: 4px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+
+        .progresso-preenchido {
+            background: linear-gradient(90deg, #ffcf00, #ffaa00);
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease-in-out;
+            box-shadow: 0 0 10px rgba(255, 207, 0, 0.3);
+        }
+
+        .proximo-nivel {
+            font-size: 11px;
+            color: #ffcf00;
+            text-align: center;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        .info-basica {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 8px 0;
+        }
+
+        .serie {
+            color: #ccc;
+            font-size: 16px;
+        }
+
+        .status {
+            color: #4CAF50;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .info-item {
+            margin-bottom: 10px;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .sync-info {
+            color: #4CAF50;
+            font-size: 12px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
         /* Barra de progresso */
         .barra-progresso {
             background: #555;
@@ -319,6 +425,16 @@
             h3 {
                 font-size: 18px;
             }
+
+            .info-basica {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .nivel-badge {
+                margin-left: 0;
+            }
         }
 
         @media (max-width: 768px) {
@@ -368,6 +484,11 @@
                 bottom: 15px;
                 right: 15px;
             }
+
+            .nivel-badge {
+                font-size: 11px;
+                padding: 3px 10px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -395,6 +516,14 @@
                 width: 90px;
                 height: 35px;
                 font-size: 12px;
+            }
+
+            .progresso-nivel {
+                padding: 10px;
+            }
+
+            .progresso-info {
+                font-size: 11px;
             }
         }
     </style>
@@ -479,11 +608,55 @@ const ROTAS = {
     LOGIN: '/login'
 };
 
+// ✅ SISTEMA DE NÍVEIS
+const SISTEMA_NIVEIS = {
+    niveis: [
+        { nome: "🌱 Novato", icone: "🌱", pontosMin: 0, cor: "#4CAF50" },
+        { nome: "📚 Aprendiz", icone: "📚", pontosMin: 50, cor: "#2196F3" },
+        { nome: "⚔️ Guerreiro", icone: "⚔️", pontosMin: 100, cor: "#FF9800" },
+        { nome: "🎯 Mestre", icone: "🎯", pontosMin: 200, cor: "#9C27B0" },
+        { nome: "🏆 Lenda", icone: "🏆", pontosMin: 500, cor: "#FFD700" },
+        { nome: "👑 Imperador", icone: "👑", pontosMin: 1000, cor: "#FF5722" }
+    ],
+    
+    calcularNivel: function(pontuacao) {
+        for (let i = this.niveis.length - 1; i >= 0; i--) {
+            if (pontuacao >= this.niveis[i].pontosMin) {
+                return this.niveis[i];
+            }
+        }
+        return this.niveis[0];
+    },
+    
+    calcularProgresso: function(pontuacao) {
+        const nivelAtual = this.calcularNivel(pontuacao);
+        const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
+        const proximoNivel = this.niveis[nivelIndex + 1];
+        
+        if (!proximoNivel) return 100; // Nível máximo
+        
+        const pontosNivelAtual = nivelAtual.pontosMin;
+        const pontosProximoNivel = proximoNivel.pontosMin;
+        const progresso = ((pontuacao - pontosNivelAtual) / (pontosProximoNivel - pontosNivelAtual)) * 100;
+        
+        return Math.min(Math.max(progresso, 0), 100);
+    },
+    
+    calcularPontosParaProximoNivel: function(pontuacao) {
+        const nivelAtual = this.calcularNivel(pontuacao);
+        const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
+        const proximoNivel = this.niveis[nivelIndex + 1];
+        
+        if (!proximoNivel) return 0; // Nível máximo
+        
+        return proximoNivel.pontosMin - pontuacao;
+    }
+};
+
 // ✅ VERIFICAÇÃO ROBUSTA DE LOGIN (CORRIGIDA)
 function verificarEstadoLogin() {
     console.log('🔍 Verificando estado do login...');
     
-    // ✅ CORREÇÃO: Verificação unificada
     const usuarioJSON = localStorage.getItem('usuario');
     const usuarioLogado = localStorage.getItem('usuarioLogado');
     const usuarioId = localStorage.getItem('usuarioId');
@@ -494,13 +667,11 @@ function verificarEstadoLogin() {
         usuarioId
     });
 
-    // ✅ SE TEM DADOS DE USUÁRIO, CONSIDERA LOGADO
     if (usuarioJSON) {
         try {
             const usuario = JSON.parse(usuarioJSON);
             if (usuario && usuario.id) {
                 console.log('✅ Usuário encontrado na chave "usuario"');
-                // Garantir que dados individuais também existam
                 garantirDadosIndividuais(usuario);
                 return true;
             }
@@ -509,7 +680,6 @@ function verificarEstadoLogin() {
         }
     }
     
-    // ✅ Fallback para dados individuais
     if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
         console.log('✅ Usuário identificado pelo ID');
         if (!usuarioLogado || usuarioLogado !== 'true') {
@@ -561,14 +731,12 @@ async function carregarPerfilUsuario() {
         const usuarioId = localStorage.getItem('usuarioId');
         console.log('📡 Buscando dados para usuarioId:', usuarioId);
 
-        // ✅ TENTAR DADOS ONLINE PRIMEIRO
         const response = await fetch(`${API_URL}/api/usuario/${usuarioId}`);
         
         if (response.ok) {
             const usuario = await response.json();
             console.log('✅ Dados online recebidos:', usuario);
             
-            // Atualizar localStorage com dados frescos
             atualizarLocalStorageComDados(usuario);
             atualizarInterfaceUsuario(usuario);
             
@@ -585,29 +753,35 @@ async function carregarPerfilUsuario() {
 
 // ✅ ATUALIZAR LOCALSTORAGE
 function atualizarLocalStorageComDados(usuario) {
-    // Atualizar objeto completo
     localStorage.setItem('usuario', JSON.stringify(usuario));
-    
-    // Atualizar dados individuais
     garantirDadosIndividuais(usuario);
 }
 
-// ✅ ATUALIZAR INTERFACE
+// ✅ ATUALIZAR INTERFACE COM SISTEMA DE NÍVEIS
 function atualizarInterfaceUsuario(usuario) {
     const container = document.getElementById("nome-usuario-container");
     const raContainer = document.getElementById("RA-container");
     const rankingContainer = document.getElementById("ranking-container");
     const estatisticasContainer = document.getElementById("estatisticas-container");
     
+    // ✅ CALCULAR NÍVEL E PROGRESSO
+    const pontuacao = usuario.pontuacao || 0;
+    const nivelAtual = SISTEMA_NIVEIS.calcularNivel(pontuacao);
+    const progresso = SISTEMA_NIVEIS.calcularProgresso(pontuacao);
+    const pontosParaProximo = SISTEMA_NIVEIS.calcularPontosParaProximoNivel(pontuacao);
+    
     if (container) {
         container.innerHTML = `
             <h2>${usuario.nome}</h2>
-            <p style="color: #ccc; font-size: 16px; margin-top: 10px;">
-                ${usuario.serie || 'Série não informada'} • ${usuario.pontuacao || 0} pontos
-            </p>
-            <p style="color: #4CAF50; font-size: 12px; margin-top: 5px;">
-                ✅ Online - Dados em tempo real
-            </p>
+            <div class="info-basica">
+                <span class="serie">${usuario.serie || 'Série não informada'} • ${pontuacao} pontos</span>
+                <!-- ✅ NÍVEL NO ESPAÇO 1 -->
+                <div class="nivel-badge" style="background: linear-gradient(135deg, ${nivelAtual.cor}, ${nivelAtual.cor}dd);">
+                    <span class="nivel-icone">${nivelAtual.icone}</span>
+                    <span class="nivel-nome">${nivelAtual.nome}</span>
+                </div>
+            </div>
+            <p class="status">✅ Online - Dados em tempo real</p>
         `;
     }
     
@@ -615,69 +789,80 @@ function atualizarInterfaceUsuario(usuario) {
         raContainer.innerHTML = `
             <h3>Informações</h3>
             <div style="color: white; margin-top: 20px;">
-                <p><strong>RA:</strong> ${usuario.ra || 'Não informado'}</p>
-                <p><strong>Série:</strong> ${usuario.serie || 'Não informada'}</p>
-                <p><strong>Pontuação:</strong> ${usuario.pontuacao || 0} pontos</p>
-                <p><strong>Desafios:</strong> ${usuario.desafiosCompletados || 0} completos</p>
-                <p><strong>ID:</strong> ${usuario.id || 'N/A'}</p>
-                <p style="margin-top: 15px; color: #4CAF50; font-size: 12px;">
-                    🌐 Dados sincronizados com servidor
-                </p>
+                <div class="info-item">
+                    <strong>RA:</strong> ${usuario.ra || 'Não informado'}
+                </div>
+                <div class="info-item">
+                    <strong>Série:</strong> ${usuario.serie || 'Não informada'}
+                </div>
+                <div class="info-item">
+                    <strong>Pontuação:</strong> ${pontuacao} pontos
+                </div>
+                
+                <!-- ✅ BARRA DE PROGRESSO NO ESPAÇO 2 -->
+                <div class="progresso-nivel">
+                    <div class="progresso-info">
+                        <span>Progresso para o próximo nível</span>
+                        <span class="progresso-texto">${Math.round(progresso)}%</span>
+                    </div>
+                    <div class="barra-progresso">
+                        <div class="progresso-preenchido" style="width: ${progresso}%"></div>
+                    </div>
+                    <div class="proximo-nivel">
+                        ${pontosParaProximo > 0 ? 
+                            `⏫ ${pontosParaProximo} pontos para o próximo nível` : 
+                            '🎉 Nível máximo alcançado!'}
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <strong>Desafios:</strong> ${usuario.desafiosCompletados || 0} completos
+                </div>
+                <div class="info-item">
+                    <strong>ID:</strong> ${usuario.id || 'N/A'}
+                </div>
+                <p class="sync-info">🌐 Dados sincronizados com servidor</p>
             </div>
         `;
     }
 
-    // ... (restante do código de atualização da interface)
-}
-// ✅ SISTEMA DE NÍVEIS
-const SISTEMA_NIVEIS = {
-    niveis: [
-        { nome: "🌱 Novato", icone: "🌱", pontosMin: 0, cor: "#4CAF50" },
-        { nome: "📚 Aprendiz", icone: "📚", pontosMin: 50, cor: "#2196F3" },
-        { nome: "⚔️ Guerreiro", icone: "⚔️", pontosMin: 100, cor: "#FF9800" },
-        { nome: "🎯 Mestre", icone: "🎯", pontosMin: 200, cor: "#9C27B0" },
-        { nome: "🏆 Lenda", icone: "🏆", pontosMin: 500, cor: "#FFD700" },
-        { nome: "👑 Imperador", icone: "👑", pontosMin: 1000, cor: "#FF5722" }
-    ],
-    
-    calcularNivel: function(pontuacao) {
-        for (let i = this.niveis.length - 1; i >= 0; i--) {
-            if (pontuacao >= this.niveis[i].pontosMin) {
-                return this.niveis[i];
-            }
-        }
-        return this.niveis[0];
-    },
-    
-    calcularProgresso: function(pontuacao) {
-        const nivelAtual = this.calcularNivel(pontuacao);
-        const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
-        const proximoNivel = this.niveis[nivelIndex + 1];
-        
-        if (!proximoNivel) return 100; // Nível máximo
-        
-        const pontosNivelAtual = nivelAtual.pontosMin;
-        const pontosProximoNivel = proximoNivel.pontosMin;
-        const progresso = ((pontuacao - pontosNivelAtual) / (pontosProximoNivel - pontosNivelAtual)) * 100;
-        
-        return Math.min(Math.max(progresso, 0), 100);
-    },
-    
-    calcularPontosParaProximoNivel: function(pontuacao) {
-        const nivelAtual = this.calcularNivel(pontuacao);
-        const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
-        const proximoNivel = this.niveis[nivelIndex + 1];
-        
-        if (!proximoNivel) return 0; // Nível máximo
-        
-        return proximoNivel.pontosMin - pontuacao;
+    // Conteúdo para os outros containers
+    if (rankingContainer) {
+        rankingContainer.innerHTML = `
+            <h3>🏆 Ranking Pessoal</h3>
+            <div style="color: white; margin-top: 20px;">
+                <p><strong>Nível Atual:</strong> ${nivelAtual.nome}</p>
+                <p><strong>Posição no Ranking:</strong> Carregando...</p>
+                <p><strong>Melhor Pontuação:</strong> ${pontuacao} pontos</p>
+                <button class="btn-interno" onclick="carregarRankingCompleto()">
+                    📊 Ver Ranking Completo
+                </button>
+            </div>
+        `;
     }
-};
+
+    if (estatisticasContainer) {
+        estatisticasContainer.innerHTML = `
+            <h3>📈 Estatísticas</h3>
+            <div style="color: white; margin-top: 20px;">
+                <p><strong>Desafios Completos:</strong> ${usuario.desafiosCompletados || 0}</p>
+                <p><strong>Taxa de Acerto:</strong> Calculando...</p>
+                <p><strong>Tempo de Plataforma:</strong> Desde ${new Date().toLocaleDateString()}</p>
+                <div class="barra-progresso">
+                    <div class="progresso-interno" style="width: ${(usuario.desafiosCompletados || 0) * 10}%"></div>
+                </div>
+                <p style="font-size: 12px; color: #ccc; text-align: center;">
+                    Progresso geral: ${(usuario.desafiosCompletados || 0) * 10}%
+                </p>
+            </div>
+        `;
+    }
+}
+
 // ✅ CARREGAR DADOS LOCAIS (CORRIGIDA)
 function carregarDadosLocais() {
     console.log('📱 Carregando dados locais...');
     
-    // ✅ CORREÇÃO: Priorizar objeto usuario
     const usuarioJSON = localStorage.getItem('usuario');
     let usuario = null;
     
@@ -690,7 +875,6 @@ function carregarDadosLocais() {
     }
     
     if (!usuario) {
-        // Fallback para dados individuais
         usuario = {
             nome: localStorage.getItem('usuarioNome'),
             id: localStorage.getItem('usuarioId'),
@@ -737,7 +921,6 @@ function mostrarUsuarioNaoLogado() {
 
 // ✅ FUNÇÕES AUXILIARES (CORRIGIDAS)
 function fazerLogin() {
-    // ✅ CORREÇÃO: Usar rota do Vercel
     window.location.href = ROTAS.LOGIN;
 }
 
@@ -768,27 +951,9 @@ function debugLocalStorage() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log("📄 Página de perfil carregada");
     carregarPerfilUsuario();
-    
-    // Adicionar botões de debug
-    adicionarBotoesDebug();
 });
 
-function adicionarBotoesDebug() {
-    const debugBtn = document.createElement('button');
-    debugBtn.innerHTML = '🐛 Debug';
-    debugBtn.style.position = 'fixed';
-    debugBtn.style.top = '10px';
-    debugBtn.style.left = '10px';
-    debugBtn.style.zIndex = '10000';
-    debugBtn.style.background = '#ff4444';
-    debugBtn.style.color = 'white';
-    debugBtn.style.border = 'none';
-    debugBtn.style.padding = '5px 10px';
-    debugBtn.style.borderRadius = '5px';
-    debugBtn.style.cursor = 'pointer';
-    debugBtn.onclick = debugLocalStorage;
-    document.body.appendChild(debugBtn);
-}
+console.log('🎯 Sistema de níveis implementado!');
     </script>
 </body>
 </html>
