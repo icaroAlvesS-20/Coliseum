@@ -607,19 +607,23 @@ console.log('🎯 RANKING CARREGADO!');
 
 const API_URL = 'https://coliseum-api.onrender.com';
 
-// ✅ VERIFICAÇÃO DE LOGIN PARA RANKING
+// ✅ VERIFICAÇÃO DE LOGIN PARA RANKING (CORRIGIDA)
 function verificarLoginRanking() {
     console.log('🔍 Verificando login para ranking...');
     
+    // ✅ CORREÇÃO: Verificação unificada
+    const usuarioJSON = localStorage.getItem('usuario');
     const usuarioId = localStorage.getItem('usuarioId');
     
-    // Verificação mais flexível - ranking pode ser visto sem login estrito
-    if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
-        console.log('✅ Usuário identificado');
-        return true;
+    const usuarioLogado = (usuarioJSON && JSON.parse(usuarioJSON).id) || 
+                         (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined');
+    
+    if (!usuarioLogado) {
+        console.log('⚠️ Modo visitante - ranking público');
+    } else {
+        console.log('✅ Usuário logado');
     }
     
-    console.log('⚠️ Modo visitante - ranking público');
     return true; // Ranking pode ser visto por todos
 }
 
@@ -676,8 +680,23 @@ class RankingManager {
             return;
         }
 
-        // Destacar usuário atual no ranking
-        const usuarioAtualId = localStorage.getItem('usuarioId');
+        // ✅ CORREÇÃO: Obter ID do usuário de forma padronizada
+        const usuarioJSON = localStorage.getItem('usuario');
+        let usuarioAtualId = null;
+        
+        if (usuarioJSON) {
+            try {
+                const usuario = JSON.parse(usuarioJSON);
+                usuarioAtualId = usuario.id;
+            } catch (e) {
+                console.error('Erro ao parsear usuario:', e);
+            }
+        }
+        
+        // Fallback para ID individual
+        if (!usuarioAtualId) {
+            usuarioAtualId = localStorage.getItem('usuarioId');
+        }
         
         this.rankingList.innerHTML = ranking.map((user, index) => {
             const isUsuarioAtual = user.id && user.id.toString() === usuarioAtualId;
