@@ -603,10 +603,8 @@
     <button class="btn-voltar" onclick="history.back()">←</button>
 
     <script>
-// scriptR.js - VERSÃO CORRIGIDA - AGORA INTEGRADO
 console.log('🎯 RANKING CARREGADO!');
 
-// ✅ CONFIGURAÇÃO DA API CORRIGIDA
 const API_URL = 'https://coliseum-api.onrender.com';
 
 class RankingManager {
@@ -623,10 +621,8 @@ class RankingManager {
         try {
             console.log('🔄 INICIANDO CARREGAMENTO...');
             
-            // Mostrar que está tentando
             this.rankingList.innerHTML = '<div class="loading">🔄 Conectando ao servidor...</div>';
             
-            // ✅ CORRIGIDO: URL do Render
             const url = `${API_URL}/api/ranking`;
             console.log('🔗 URL:', url);
             
