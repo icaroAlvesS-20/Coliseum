@@ -629,7 +629,50 @@ function atualizarInterfaceUsuario(usuario) {
 
     // ... (restante do código de atualização da interface)
 }
-
+// ✅ SISTEMA DE NÍVEIS
+const SISTEMA_NIVEIS = {
+    niveis: [
+        { nome: "🌱 Novato", icone: "🌱", pontosMin: 0, cor: "#4CAF50" },
+        { nome: "📚 Aprendiz", icone: "📚", pontosMin: 50, cor: "#2196F3" },
+        { nome: "⚔️ Guerreiro", icone: "⚔️", pontosMin: 100, cor: "#FF9800" },
+        { nome: "🎯 Mestre", icone: "🎯", pontosMin: 200, cor: "#9C27B0" },
+        { nome: "🏆 Lenda", icone: "🏆", pontosMin: 500, cor: "#FFD700" },
+        { nome: "👑 Imperador", icone: "👑", pontosMin: 1000, cor: "#FF5722" }
+    ],
+    
+    calcularNivel: function(pontuacao) {
+        for (let i = this.niveis.length - 1; i >= 0; i--) {
+            if (pontuacao >= this.niveis[i].pontosMin) {
+                return this.niveis[i];
+            }
+        }
+        return this.niveis[0];
+    },
+    
+    calcularProgresso: function(pontuacao) {
+        const nivelAtual = this.calcularNivel(pontuacao);
+        const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
+        const proximoNivel = this.niveis[nivelIndex + 1];
+        
+        if (!proximoNivel) return 100; // Nível máximo
+        
+        const pontosNivelAtual = nivelAtual.pontosMin;
+        const pontosProximoNivel = proximoNivel.pontosMin;
+        const progresso = ((pontuacao - pontosNivelAtual) / (pontosProximoNivel - pontosNivelAtual)) * 100;
+        
+        return Math.min(Math.max(progresso, 0), 100);
+    },
+    
+    calcularPontosParaProximoNivel: function(pontuacao) {
+        const nivelAtual = this.calcularNivel(pontuacao);
+        const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
+        const proximoNivel = this.niveis[nivelIndex + 1];
+        
+        if (!proximoNivel) return 0; // Nível máximo
+        
+        return proximoNivel.pontosMin - pontuacao;
+    }
+};
 // ✅ CARREGAR DADOS LOCAIS (CORRIGIDA)
 function carregarDadosLocais() {
     console.log('📱 Carregando dados locais...');
