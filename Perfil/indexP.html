@@ -465,6 +465,30 @@ console.error = (...args) => {
 
 const API_URL = 'https://coliseum-api.onrender.com';
 
+// ✅ FUNÇÃO PARA VERIFICAR E CORRIGIR DADOS DE LOGIN
+function verificarEstadoLogin() {
+    console.log('🔍 Verificando estado do login...');
+    
+    const usuarioId = localStorage.getItem('usuarioId');
+    const usuarioNome = localStorage.getItem('usuarioNome');
+    const usuarioLogado = localStorage.getItem('usuarioLogado');
+    
+    console.log('Dados encontrados:', {
+        usuarioId,
+        usuarioNome,
+        usuarioLogado
+    });
+
+    // Verificar se há dados de usuário mas o flag de logado está faltando
+    if (usuarioId && usuarioNome && (!usuarioLogado || usuarioLogado !== 'true')) {
+        console.log('⚠️ Corrigindo flag de login...');
+        localStorage.setItem('usuarioLogado', 'true');
+        return true;
+    }
+    
+    return usuarioLogado === 'true' && usuarioId && usuarioNome;
+}
+
 // ✅ FUNÇÃO PRINCIPAL: Carregar dados online do servidor
 async function carregarPerfilUsuario() {
     console.log("🚀 Iniciando carregamento do perfil ONLINE...");
@@ -475,19 +499,30 @@ async function carregarPerfilUsuario() {
     const estatisticasContainer = document.getElementById("estatisticas-container");
     
     try {
-        const usuarioId = localStorage.getItem('usuarioId');
+        // Primeiro verificar e corrigir o estado do login
+        const estaLogado = verificarEstadoLogin();
         
-        if (!usuarioId || usuarioId.includes('temp_')) {
+        if (!estaLogado) {
+            console.log('❌ Usuário não está logado corretamente');
             mostrarUsuarioNaoLogado();
             return;
         }
 
-        console.log('📡 Buscando dados online do servidor...');
+        const usuarioId = localStorage.getItem('usuarioId');
+        const usuarioNome = localStorage.getItem('usuarioNome');
         
+        console.log('📡 Buscando dados online para:', { usuarioId, usuarioNome });
+
         // ✅ BUSCAR DADOS DIRETAMENTE DO SERVIDOR
         const response = await fetch(`${API_URL}/api/usuario/${usuarioId}`);
         
         if (!response.ok) {
+            if (response.status === 404) {
+                console.log('❌ Usuário não encontrado no servidor');
+                // Usar dados locais como fallback
+                carregarDadosLocaisFallback();
+                return;
+            }
             throw new Error(`Erro HTTP: ${response.status}`);
         }
         
@@ -496,12 +531,12 @@ async function carregarPerfilUsuario() {
         console.log('✅ Dados recebidos do servidor:', usuario);
         
         // ✅ ATUALIZAR LOCALSTORAGE COM DADOS FRESCOS DO SERVIDOR
-        localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
-        localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
+        localStorage.setItem('usuarioPontuacao', usuario.pontuacao?.toString() || '0');
+        localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados?.toString() || '0');
         localStorage.setItem('usuarioNome', usuario.nome || 'Jogador');
         localStorage.setItem('usuarioRA', usuario.ra || '');
         localStorage.setItem('usuarioSerie', usuario.serie || '');
-        localStorage.setItem('usuarioId', usuario.id.toString());
+        localStorage.setItem('usuarioId', usuario.id?.toString() || usuarioId);
         localStorage.setItem('usuarioLogado', 'true');
         
         // ✅ ATUALIZAR INTERFACE COM DADOS ONLINE
@@ -510,8 +545,16 @@ async function carregarPerfilUsuario() {
     } catch (error) {
         console.error('❌ Erro ao carregar dados online:', error);
         
-        // ✅ FALLBACK: Tentar carregar dados locais se online falhar
-        carregarDadosLocaisFallback();
+        // ✅ TENTAR USAR DADOS LOCAIS COMO FALLBACK
+        const temDadosLocais = localStorage.getItem('usuarioNome') && localStorage.getItem('usuarioId');
+        
+        if (temDadosLocais) {
+            console.log('📱 Usando dados locais como fallback');
+            carregarDadosLocaisFallback();
+        } else {
+            console.log('❌ Nenhum dado local encontrado');
+            mostrarUsuarioNaoLogado();
+        }
     }
 }
 
@@ -527,7 +570,7 @@ function atualizarInterfaceUsuario(usuario) {
         container.innerHTML = `
             <h2>${usuario.nome}</h2>
             <p style="color: #ccc; font-size: 16px; margin-top: 10px;">
-                ${usuario.serie || 'Série não informada'} • ${usuario.pontuacao} pontos
+                ${usuario.serie || 'Série não informada'} • ${usuario.pontuacao || 0} pontos
             </p>
             <p style="color: #4CAF50; font-size: 12px; margin-top: 5px;">
                 ✅ Online - Dados em tempo real
@@ -542,9 +585,9 @@ function atualizarInterfaceUsuario(usuario) {
             <div style="color: white; margin-top: 20px;">
                 <p><strong>RA:</strong> ${usuario.ra || 'Não informado'}</p>
                 <p><strong>Série:</strong> ${usuario.serie || 'Não informada'}</p>
-                <p><strong>Pontuação:</strong> ${usuario.pontuacao} pontos</p>
-                <p><strong>Desafios:</strong> ${usuario.desafiosCompletados} completos</p>
-                <p><strong>ID:</strong> ${usuario.id}</p>
+                <p><strong>Pontuação:</strong> ${usuario.pontuacao || 0} pontos</p>
+                <p><strong>Desafios:</strong> ${usuario.desafiosCompletados || 0} completos</p>
+                <p><strong>ID:</strong> ${usuario.id || 'N/A'}</p>
                 <p style="margin-top: 15px; color: #4CAF50; font-size: 12px;">
                     🌐 Dados sincronizados com servidor
                 </p>
@@ -554,17 +597,18 @@ function atualizarInterfaceUsuario(usuario) {
 
     // Container do ranking (bloco 2)
     if (rankingContainer) {
-        const progresso = usuario.pontuacao % 100;
-        const nivel = Math.floor(usuario.pontuacao / 100) + 1;
+        const pontuacao = usuario.pontuacao || 0;
+        const progresso = pontuacao % 100;
+        const nivel = Math.floor(pontuacao / 100) + 1;
         const pontosProximoNivel = 100 - progresso;
         
         rankingContainer.innerHTML = `
             <h3>Minha Posição</h3>
             <div style="color: white; margin-top: 15px;">
                 <p><strong>Nome:</strong> ${usuario.nome}</p>
-                <p><strong>Pontuação Total:</strong> ${usuario.pontuacao} pontos</p>
+                <p><strong>Pontuação Total:</strong> ${pontuacao} pontos</p>
                 <p><strong>Nível:</strong> ${nivel}</p>
-                <p><strong>Desafios Completos:</strong> ${usuario.desafiosCompletados}</p>
+                <p><strong>Desafios Completos:</strong> ${usuario.desafiosCompletados || 0}</p>
             </div>
             <div style="margin-top: 20px;">
                 <p style="color: #ffcf00; font-size: 14px;">
@@ -585,25 +629,27 @@ function atualizarInterfaceUsuario(usuario) {
 
     // Container de estatísticas (bloco 3)
     if (estatisticasContainer) {
-        const mediaPontos = usuario.desafiosCompletados > 0 ? 
-            (usuario.pontuacao / usuario.desafiosCompletados).toFixed(1) : '0';
-        const taxaConclusao = usuario.desafiosCompletados > 10 ? 'Excelente' : 
-                            usuario.desafiosCompletados > 5 ? 'Alta' : 
-                            usuario.desafiosCompletados > 2 ? 'Média' : 'Iniciante';
+        const desafiosCompletos = usuario.desafiosCompletados || 0;
+        const pontuacao = usuario.pontuacao || 0;
+        const mediaPontos = desafiosCompletos > 0 ? 
+            (pontuacao / desafiosCompletos).toFixed(1) : '0';
+        const taxaConclusao = desafiosCompletos > 10 ? 'Excelente' : 
+                            desafiosCompletos > 5 ? 'Alta' : 
+                            desafiosCompletos > 2 ? 'Média' : 'Iniciante';
         
         let status = 'Novato';
         let corStatus = '#ffcf00';
         
-        if (usuario.pontuacao >= 500) {
+        if (pontuacao >= 500) {
             status = 'Lenda 🏆';
             corStatus = '#ffd700';
-        } else if (usuario.pontuacao >= 300) {
+        } else if (pontuacao >= 300) {
             status = 'Mestre ⭐';
             corStatus = '#4CAF50';
-        } else if (usuario.pontuacao >= 150) {
+        } else if (pontuacao >= 150) {
             status = 'Veterano 🔥';
             corStatus = '#ff9800';
-        } else if (usuario.pontuacao >= 50) {
+        } else if (pontuacao >= 50) {
             status = 'Intermediário 💪';
             corStatus = '#2196F3';
         }
@@ -613,7 +659,7 @@ function atualizarInterfaceUsuario(usuario) {
             <div style="color: white; margin-top: 15px;">
                 <p><strong>Média de Pontos:</strong> ${mediaPontos} por desafio</p>
                 <p><strong>Taxa de Conclusão:</strong> ${taxaConclusao}</p>
-                <p><strong>Status:</strong> ${usuario.pontuacao >= 100 ? 'Avançado' : 'Iniciante'}</p>
+                <p><strong>Status:</strong> ${pontuacao >= 100 ? 'Avançado' : 'Iniciante'}</p>
                 <div style="margin-top: 20px; padding: 15px; background: #333; border-radius: 10px; border: 2px solid ${corStatus};">
                     <p style="color: ${corStatus}; font-size: 18px; text-align: center; font-weight: bold; margin: 0;">
                         ${status}
@@ -655,9 +701,10 @@ async function recarregarDadosOnline() {
         const usuario = await response.json();
         
         // Atualizar localStorage
-        localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
-        localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
+        localStorage.setItem('usuarioPontuacao', usuario.pontuacao?.toString() || '0');
+        localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados?.toString() || '0');
         localStorage.setItem('usuarioNome', usuario.nome);
+        localStorage.setItem('usuarioLogado', 'true');
         
         // Atualizar interface
         atualizarInterfaceUsuario(usuario);
@@ -672,7 +719,7 @@ async function recarregarDadosOnline() {
 
 // ✅ FUNÇÃO FALLBACK: Carregar dados locais se online falhar
 function carregarDadosLocaisFallback() {
-    console.log('📴 Carregando dados locais como fallback...');
+    console.log('📱 Carregando dados locais como fallback...');
     
     const usuarioNome = localStorage.getItem('usuarioNome');
     const usuarioRA = localStorage.getItem('usuarioRA');
@@ -686,7 +733,16 @@ function carregarDadosLocaisFallback() {
     const rankingContainer = document.getElementById("ranking-container");
     const estatisticasContainer = document.getElementById("estatisticas-container");
     
-    if (container && usuarioNome) {
+    if (!usuarioNome || !usuarioId) {
+        console.log('❌ Nenhum dado de usuário encontrado localmente');
+        mostrarUsuarioNaoLogado();
+        return;
+    }
+    
+    console.log('📊 Dados locais encontrados:', { usuarioNome, usuarioId });
+    
+    // Container do nome (bloco 1)
+    if (container) {
         container.innerHTML = `
             <h2>${usuarioNome}</h2>
             <p style="color: #ccc; font-size: 16px; margin-top: 10px;">
@@ -698,6 +754,7 @@ function carregarDadosLocaisFallback() {
         `;
     }
     
+    // Container das credenciais (bloco 4)
     if (raContainer) {
         raContainer.innerHTML = `
             <h3>Informações</h3>
@@ -706,7 +763,7 @@ function carregarDadosLocaisFallback() {
                 <p><strong>Série:</strong> ${usuarioSerie || 'Não informada'}</p>
                 <p><strong>Pontuação:</strong> ${usuarioPontuacao} pontos</p>
                 <p><strong>Desafios:</strong> ${usuarioDesafios} completos</p>
-                <p><strong>ID:</strong> ${usuarioId || 'Não identificado'}</p>
+                <p><strong>ID:</strong> ${usuarioId}</p>
                 <p style="margin-top: 15px; color: #ff9800; font-size: 12px;">
                     🔌 Sem conexão - dados podem estar desatualizados
                 </p>
@@ -717,8 +774,8 @@ function carregarDadosLocaisFallback() {
         `;
     }
     
-    // Atualizar outros containers com dados locais...
-    if (rankingContainer && usuarioNome) {
+    // Container do ranking (bloco 2)
+    if (rankingContainer) {
         const progresso = usuarioPontuacao % 100;
         const nivel = Math.floor(usuarioPontuacao / 100) + 1;
         
@@ -743,11 +800,30 @@ function carregarDadosLocaisFallback() {
             </p>
         `;
     }
+    
+    // Container de estatísticas (bloco 3)
+    if (estatisticasContainer) {
+        const mediaPontos = usuarioDesafios > 0 ? (usuarioPontuacao / usuarioDesafios).toFixed(1) : '0';
+        
+        estatisticasContainer.innerHTML = `
+            <h3>Estatísticas</h3>
+            <div style="color: white; margin-top: 15px;">
+                <p><strong>Média de Pontos:</strong> ${mediaPontos} por desafio</p>
+                <p><strong>Status:</strong> ${usuarioPontuacao >= 100 ? 'Avançado' : 'Iniciante'}</p>
+                <p style="color: #ff9800; margin-top: 10px;">
+                    ⚠️ Dados em modo offline
+                </p>
+            </div>
+            <button class="btn-interno" onclick="recarregarDadosOnline()" style="width: 100%; margin-top: 10px;">
+                🔄 Tentar Sincronizar
+            </button>
+        `;
+    }
 }
 
 // ✅ FUNÇÃO: Mostrar estado não logado
 function mostrarUsuarioNaoLogado() {
-    console.log('👤 Usuário não logado - mostrando tela de login');
+    console.log('👤 Mostrando tela de usuário não logado');
     
     const container = document.getElementById("nome-usuario-container");
     const raContainer = document.getElementById("RA-container");
@@ -790,7 +866,24 @@ function mostrarUsuarioNaoLogado() {
     }
 }
 
-// ✅ FUNÇÕES AUXILIARES (mantidas do código original)
+// ✅ FUNÇÃO: Forçar correção do login
+function forcarCorrecaoLogin() {
+    console.log('🔧 Forçando correção do login...');
+    
+    const usuarioId = localStorage.getItem('usuarioId');
+    const usuarioNome = localStorage.getItem('usuarioNome');
+    
+    if (usuarioId && usuarioNome) {
+        localStorage.setItem('usuarioLogado', 'true');
+        console.log('✅ Login corrigido forçadamente');
+        alert('✅ Login corrigido! Recarregando página...');
+        location.reload();
+    } else {
+        alert('❌ Não foi possível corrigir o login. Dados de usuário não encontrados.');
+    }
+}
+
+// ✅ FUNÇÕES AUXILIARES
 function verificarDadosUsuario() {
     const usuarioId = localStorage.getItem('usuarioId');
     const usuarioNome = localStorage.getItem('usuarioNome');
@@ -804,7 +897,8 @@ function verificarDadosUsuario() {
         'Desafios Completos': usuarioDesafios,
         'Série': localStorage.getItem('usuarioSerie'),
         'RA': localStorage.getItem('usuarioRA'),
-        'Está Logado': localStorage.getItem('usuarioLogado')
+        'Está Logado': localStorage.getItem('usuarioLogado'),
+        'Device ID': localStorage.getItem('deviceId')
     };
     
     console.log('🔍 Dados do usuário:', dados);
@@ -813,6 +907,8 @@ function verificarDadosUsuario() {
     for (const [chave, valor] of Object.entries(dados)) {
         mensagem += `${chave}: ${valor || 'Não definido'}\n`;
     }
+    
+    mensagem += '\n⚠️ Se estiver logado mas não aparece, use "Corrigir Login"';
     
     alert(mensagem);
 }
@@ -856,6 +952,13 @@ function debugLocalStorage() {
     todasChaves.forEach(chave => {
         console.log(`   ${chave}:`, localStorage.getItem(chave));
     });
+    
+    // Mostrar também em alerta para fácil visualização
+    let debugInfo = 'LOCALSTORAGE DEBUG:\n\n';
+    todasChaves.forEach(chave => {
+        debugInfo += `${chave}: ${localStorage.getItem(chave)}\n`;
+    });
+    alert(debugInfo);
 }
 
 // ✅ INICIALIZAÇÃO DA PÁGINA
@@ -863,19 +966,18 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log("📄 Página de perfil carregada - MODO ONLINE");
     
     // Verificar se usuário está logado
-    const usuarioLogado = localStorage.getItem('usuarioLogado');
-    const usuarioId = localStorage.getItem('usuarioId');
+    const estaLogado = verificarEstadoLogin();
     
-    if (!usuarioLogado || usuarioLogado !== 'true' || !usuarioId) {
-        console.log('❌ Usuário não logado');
+    if (!estaLogado) {
+        console.log('❌ Usuário não está logado corretamente');
         mostrarUsuarioNaoLogado();
     } else {
         console.log('👤 Usuário logado - carregando dados online');
         carregarPerfilUsuario();
     }
     
-    // Botão de debug para desenvolvimento
-    if (window.location.href.includes('localhost') || window.location.href.includes('127.0.0.1')) {
+    // Botão de debug e correção para desenvolvimento
+    if (window.location.href.includes('localhost') || window.location.href.includes('127.0.0.1') || true) {
         const debugBtn = document.createElement('button');
         debugBtn.innerHTML = '🐛 Debug';
         debugBtn.style.position = 'fixed';
@@ -890,12 +992,28 @@ document.addEventListener('DOMContentLoaded', function() {
         debugBtn.style.cursor = 'pointer';
         debugBtn.onclick = debugLocalStorage;
         document.body.appendChild(debugBtn);
+        
+        const fixLoginBtn = document.createElement('button');
+        fixLoginBtn.innerHTML = '🔧 Corrigir Login';
+        fixLoginBtn.style.position = 'fixed';
+        fixLoginBtn.style.top = '50px';
+        fixLoginBtn.style.left = '10px';
+        fixLoginBtn.style.zIndex = '10000';
+        fixLoginBtn.style.background = '#4CAF50';
+        fixLoginBtn.style.color = 'white';
+        fixLoginBtn.style.border = 'none';
+        fixLoginBtn.style.padding = '5px 10px';
+        fixLoginBtn.style.borderRadius = '5px';
+        fixLoginBtn.style.cursor = 'pointer';
+        fixLoginBtn.onclick = forcarCorrecaoLogin;
+        document.body.appendChild(fixLoginBtn);
     }
 });
 
 // ✅ EXPORTAR FUNÇÕES PARA USO EXTERNO
 window.carregarPerfilUsuario = carregarPerfilUsuario;
 window.recarregarDadosOnline = recarregarDadosOnline;
+window.forcarCorrecaoLogin = forcarCorrecaoLogin;
     </script>
 </body>
 </html>
