@@ -319,194 +319,193 @@
         </div>
     </div>
 
-    <script>
-        // SEU JAVASCRIPT AQUI (já está correto)
-        const CONFIG = {
-            API_URL: 'https://coliseum-api.onrender.com',
-            ENDPOINTS: {
-                LOGIN: '/api/usuarios',
-                HEALTH: '/api/health'
-            }
-        };
+// SEU JAVASCRIPT AQUI (já está correto)
+const CONFIG = {
+    API_URL: 'https://coliseum-api.onrender.com',
+    ENDPOINTS: {
+        LOGIN: '/api/usuarios',
+        HEALTH: '/api/health'
+    }
+};
 
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Sistema Coliseum inicializando...');
-            inicializarSistema();
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Sistema Coliseum inicializando...');
+    inicializarSistema();
+});
+
+function inicializarSistema() {
+    configurarEventListeners();
+    configurarModoFormulario();
+    console.log('✅ Sistema inicializado!');
+}
+
+function configurarEventListeners() {
+    const toggleSenha = document.getElementById('toggleSenha');
+    const senhaInput = document.getElementById('senha');
+    
+    if (toggleSenha && senhaInput) {
+        toggleSenha.addEventListener('click', function() {
+            const type = senhaInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            senhaInput.setAttribute('type', type);
+            toggleSenha.textContent = type === 'password' ? '🔒' : '👁️';
         });
-
-        function inicializarSistema() {
-            configurarEventListeners();
-            configurarModoFormulario();
-            console.log('✅ Sistema inicializado!');
-        }
-
-        function configurarEventListeners() {
-            const toggleSenha = document.getElementById('toggleSenha');
-            const senhaInput = document.getElementById('senha');
-            
-            if (toggleSenha && senhaInput) {
-                toggleSenha.addEventListener('click', function() {
-                    const type = senhaInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                    senhaInput.setAttribute('type', type);
-                    toggleSenha.textContent = type === 'password' ? '🔒' : '👁️';
-                });
-            }
-            
-            const btnAcao = document.getElementById('btnAcao');
-            if (btnAcao) {
-                btnAcao.addEventListener('click', registrar);
-            }
-            
-            const inputs = document.querySelectorAll('input');
-            inputs.forEach(input => {
-                input.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        registrar();
-                    }
-                });
-            });
-        }
-
-        function configurarModoFormulario() {
-            const raInput = document.getElementById('ra');
-            const nomeGroup = document.getElementById('nome-group');
-            const serieGroup = document.getElementById('serie-group');
-            const btnAcao = document.getElementById('btnAcao');
-            const modoInfo = document.getElementById('modoInfo');
-
-            function atualizarModo() {
-                const raPreenchido = raInput.value.trim().length > 0;
-                
-                if (raPreenchido) {
-                    nomeGroup.style.display = 'block';
-                    serieGroup.style.display = 'block';
-                    btnAcao.textContent = 'Cadastrar';
-                    modoInfo.textContent = '💡 Preencha todos os campos para CADASTRAR';
-                } else {
-                    nomeGroup.style.display = 'none';
-                    serieGroup.style.display = 'none';
-                    btnAcao.textContent = 'Entrar';
-                    modoInfo.textContent = '💡 Digite apenas RA e senha para ENTRAR';
-                }
-            }
-
-            raInput.addEventListener('input', atualizarModo);
-            atualizarModo();
-        }
-
-        async function registrar() {
-            console.log('🔐 Processando acesso...');
-            
-            const ra = document.getElementById('ra')?.value.trim();
-            const senha = document.getElementById('senha')?.value;
-            const nome = document.getElementById('nome')?.value.trim();
-            const serie = document.getElementById('serie')?.value.trim();
-            
-            const isCadastro = nome && serie;
-            const action = isCadastro ? 'cadastro' : 'login';
-            
-            console.log(`🎯 Ação: ${action}`, { ra, isCadastro });
-            
-            if (!ra || !senha) {
-                mostrarMensagem('❌ RA e senha são obrigatórios!', 'erro');
-                return;
-            }
-            
-            if (isCadastro && (!nome || !serie)) {
-                mostrarMensagem('❌ Para cadastro, preencha todos os campos!', 'erro');
-                return;
-            }
-            
-            mostrarLoading(true, isCadastro ? 'Cadastrando...' : 'Entrando...');
-            
-            try {
-                const requestBody = {
-                    ra: ra,
-                    senha: senha,
-                    action: action
-                };
-                
-                if (isCadastro) {
-                    requestBody.nome = nome;
-                    requestBody.serie = serie;
-                }
-                
-                console.log(`📤 Enviando ${action} para:`, CONFIG.API_URL + CONFIG.ENDPOINTS.LOGIN);
-                
-                const response = await fetch(CONFIG.API_URL + CONFIG.ENDPOINTS.LOGIN, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-                
-                const data = await response.json();
-                console.log('📨 Resposta:', data);
-                
-if (data.success) {
-    mostrarMensagem(`✅ ${data.message}`, 'sucesso');
+    }
     
-    localStorage.setItem('usuario', JSON.stringify(data.usuario));
+    const btnAcao = document.getElementById('btnAcao');
+    if (btnAcao) {
+        btnAcao.addEventListener('click', registrar);
+    }
     
-       window.location.href = '/menu';
-}, 1500);
-} else {
-                    mostrarMensagem(`❌ ${data.error}`, 'erro');
-                }
-                
-            } catch (error) {
-                console.error('💥 Erro na requisição:', error);
-                mostrarMensagem('❌ Erro de conexão com o servidor', 'erro');
-            } finally {
-                mostrarLoading(false);
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                registrar();
             }
-        }
+        });
+    });
+}
 
-        function mostrarMensagem(mensagem, tipo = 'info') {
-            console.log(`💬 Mensagem [${tipo}]: ${mensagem}`);
+function configurarModoFormulario() {
+    const raInput = document.getElementById('ra');
+    const nomeGroup = document.getElementById('nome-group');
+    const serieGroup = document.getElementById('serie-group');
+    const btnAcao = document.getElementById('btnAcao');
+    const modoInfo = document.getElementById('modoInfo');
+
+    function atualizarModo() {
+        const raPreenchido = raInput.value.trim().length > 0;
+        
+        if (raPreenchido) {
+            nomeGroup.style.display = 'block';
+            serieGroup.style.display = 'block';
+            btnAcao.textContent = 'Cadastrar';
+            modoInfo.textContent = '💡 Preencha todos os campos para CADASTRAR';
+        } else {
+            nomeGroup.style.display = 'none';
+            serieGroup.style.display = 'none';
+            btnAcao.textContent = 'Entrar';
+            modoInfo.textContent = '💡 Digite apenas RA e senha para ENTRAR';
+        }
+    }
+
+    raInput.addEventListener('input', atualizarModo);
+    atualizarModo();
+}
+
+async function registrar() {
+    console.log('🔐 Processando acesso...');
+    
+    const ra = document.getElementById('ra')?.value.trim();
+    const senha = document.getElementById('senha')?.value;
+    const nome = document.getElementById('nome')?.value.trim();
+    const serie = document.getElementById('serie')?.value.trim();
+    
+    const isCadastro = nome && serie;
+    const action = isCadastro ? 'cadastro' : 'login';
+    
+    console.log(`🎯 Ação: ${action}`, { ra, isCadastro });
+    
+    if (!ra || !senha) {
+        mostrarMensagem('❌ RA e senha são obrigatórios!', 'erro');
+        return;
+    }
+    
+    if (isCadastro && (!nome || !serie)) {
+        mostrarMensagem('❌ Para cadastro, preencha todos os campos!', 'erro');
+        return;
+    }
+    
+    mostrarLoading(true, isCadastro ? 'Cadastrando...' : 'Entrando...');
+    
+    try {
+        const requestBody = {
+            ra: ra,
+            senha: senha,
+            action: action
+        };
+        
+        if (isCadastro) {
+            requestBody.nome = nome;
+            requestBody.serie = serie;
+        }
+        
+        console.log(`📤 Enviando ${action} para:`, CONFIG.API_URL + CONFIG.ENDPOINTS.LOGIN);
+        
+        const response = await fetch(CONFIG.API_URL + CONFIG.ENDPOINTS.LOGIN, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        const data = await response.json();
+        console.log('📨 Resposta:', data);
+        
+        if (data.success) {
+            mostrarMensagem(`✅ ${data.message}`, 'sucesso');
             
-            let mensagemElement = document.getElementById('mensagemGlobal');
-            
-            if (!mensagemElement) {
-                mensagemElement = document.createElement('div');
-                mensagemElement.id = 'mensagemGlobal';
-                mensagemElement.className = 'mensagem';
-                document.body.appendChild(mensagemElement);
-            }
-            
-            mensagemElement.textContent = mensagem;
-            mensagemElement.className = `mensagem ${tipo}`;
-            mensagemElement.style.display = 'block';
+            localStorage.setItem('usuario', JSON.stringify(data.usuario));
             
             setTimeout(() => {
-                mensagemElement.style.display = 'none';
-            }, 5000);
+                window.location.href = '/menu';
+            }, 1500);
+        } else {
+            mostrarMensagem(`❌ ${data.error}`, 'erro');
         }
+        
+    } catch (error) {
+        console.error('💥 Erro na requisição:', error);
+        mostrarMensagem('❌ Erro de conexão com o servidor', 'erro');
+    } finally {
+        mostrarLoading(false);
+    }
+}
 
-        function mostrarLoading(mostrar, texto = 'Carregando...') {
-            let loadingElement = document.getElementById('loadingGlobal');
-            
-            if (mostrar) {
-                if (!loadingElement) {
-                    loadingElement = document.createElement('div');
-                    loadingElement.id = 'loadingGlobal';
-                    loadingElement.innerHTML = `
-                        <div class="spinner"></div>
-                        <div>${texto}</div>
-                    `;
-                    document.body.appendChild(loadingElement);
-                }
-                loadingElement.style.display = 'flex';
-            } else {
-                if (loadingElement) {
-                    loadingElement.style.display = 'none';
-                }
-            }
+function mostrarMensagem(mensagem, tipo = 'info') {
+    console.log(`💬 Mensagem [${tipo}]: ${mensagem}`);
+    
+    let mensagemElement = document.getElementById('mensagemGlobal');
+    
+    if (!mensagemElement) {
+        mensagemElement = document.createElement('div');
+        mensagemElement.id = 'mensagemGlobal';
+        mensagemElement.className = 'mensagem';
+        document.body.appendChild(mensagemElement);
+    }
+    
+    mensagemElement.textContent = mensagem;
+    mensagemElement.className = `mensagem ${tipo}`;
+    mensagemElement.style.display = 'block';
+    
+    setTimeout(() => {
+        mensagemElement.style.display = 'none';
+    }, 5000);
+}
+
+function mostrarLoading(mostrar, texto = 'Carregando...') {
+    let loadingElement = document.getElementById('loadingGlobal');
+    
+    if (mostrar) {
+        if (!loadingElement) {
+            loadingElement = document.createElement('div');
+            loadingElement.id = 'loadingGlobal';
+            loadingElement.innerHTML = `
+                <div class="spinner"></div>
+                <div>${texto}</div>
+            `;
+            document.body.appendChild(loadingElement);
         }
+        loadingElement.style.display = 'flex';
+    } else {
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
+    }
+}
 
-        console.log('🎯 Sistema Coliseum carregado com sucesso!');
-    </script>
+console.log('🎯 Sistema Coliseum carregado com sucesso!');
 </body>
 </html>
