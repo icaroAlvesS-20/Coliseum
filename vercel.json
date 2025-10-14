@@ -6,10 +6,6 @@
       "use": "@vercel/static"
     },
     {
-      "src": "**/*.js", 
-      "use": "@vercel/node"
-    },
-    {
       "src": "server.js",
       "use": "@vercel/node"
     }
@@ -18,10 +14,6 @@
     {
       "src": "/api/(.*)",
       "dest": "/server.js"
-    },
-    {
-      "src": "/(.*\\.html)",
-      "dest": "/$1"
     },
     {
       "src": "/login",
@@ -66,10 +58,10 @@
     {
       "src": "/",
       "dest": "/Login/index.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/Login/index.html"
     }
-  ]
+  ],
+  "functions": {
+    "**/*.js": { "include": false },
+    "server.js": { "include": true }
+  }
 }
