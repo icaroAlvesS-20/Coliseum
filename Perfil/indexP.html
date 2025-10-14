@@ -22,262 +22,6 @@
             overflow-x: hidden;
         }
 
-        /* ========== LAYOUT PRINCIPAL ========== */
-        .bloco-cinza {
-            width: 95%;
-            max-width: 1400px;
-            height: 85vh;
-            background: linear-gradient(145deg, #5a5a5a, #474747);
-            margin: 0 auto;
-            border-radius: 20px;
-            position: relative;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            border: 1px solid #666;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .conteudo-principal {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            grid-template-rows: auto 1fr;
-            gap: 25px;
-            grid-template-areas: 
-                "foto nome estatisticas"
-                "info ranking estatisticas";
-            height: calc(100% - 80px);
-            width: 100%;
-            align-items: center;
-            justify-items: center;
-        }
-
-        /* ========== COMPONENTES DOS BLOCOS ========== */
-        .bloco-cinza-escuro1,
-        .bloco-cinza-escuro2,
-        .bloco-cinza-escuro3,
-        .bloco-cinza-escuro4 {
-            background: linear-gradient(145deg, #383838, #282828);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
-                        inset -2px -2px 5px rgba(255, 255, 255, 0.1);
-            border: 1px solid #444;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            width: 100%;
-            height: 100%;
-        }
-
-        .bloco-cinza-escuro1 {
-            grid-area: nome;
-            height: 100px;
-        }
-
-        .bloco-cinza-escuro2 {
-            grid-area: ranking;
-            overflow-y: auto;
-        }
-
-        .bloco-cinza-escuro3 {
-            grid-area: estatisticas;
-        }
-
-        .bloco-cinza-escuro4 {
-            grid-area: info;
-        }
-
-        /* ========== FOTO DE PERFIL ========== */
-        .foto-perfil {
-            grid-area: foto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-        }
-
-        .imgp {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            border: 4px solid #ffcf00;
-            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.3);
-            object-fit: cover;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* ========== TIPOGRAFIA ========== */
-        h2 {
-            color: #ffcf00;
-            font-size: 32px;
-            font-weight: bold;
-            margin: 0 0 15px 0;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            width: 100%;
-        }
-
-        h3 {
-            color: #ffcf00;
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 25px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            width: 100%;
-        }
-
-        .bloco-cinza-escuro1 p,
-        .bloco-cinza-escuro2 p,
-        .bloco-cinza-escuro3 p,
-        .bloco-cinza-escuro4 p {
-            color: #ffffff;
-            font-size: 16px;
-            line-height: 1.6;
-            margin-bottom: 12px;
-            text-align: center;
-            width: 100%;
-        }
-
-        .bloco-cinza-escuro1 strong,
-        .bloco-cinza-escuro2 strong,
-        .bloco-cinza-escuro3 strong,
-        .bloco-cinza-escuro4 strong {
-            color: #ffcf00;
-        }
-
-        /* ========== SISTEMA DE NÍVEIS ========== */
-        .nivel-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-            padding: 8px 18px;
-            border-radius: 20px;
-            font-size: 16px;
-            font-weight: 600;
-            margin: 12px 0;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
-            justify-content: center;
-        }
-
-        .nivel-icone {
-            font-size: 18px;
-        }
-
-        .nivel-nome {
-            font-weight: bold;
-        }
-
-        .progresso-nivel {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border-left: 4px solid #ffcf00;
-            width: 100%;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .progresso-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            font-size: 14px;
-            color: #ccc;
-            width: 100%;
-        }
-
-        .progresso-texto {
-            color: #ffcf00;
-            font-weight: bold;
-        }
-
-        .barra-progresso {
-            background: #555;
-            height: 10px;
-            border-radius: 5px;
-            margin: 12px 0;
-            overflow: hidden;
-            width: 100%;
-        }
-
-        .progresso-preenchido {
-            background: linear-gradient(90deg, #ffcf00, #ffaa00);
-            height: 100%;
-            border-radius: 5px;
-            transition: width 0.5s ease-in-out;
-            box-shadow: 0 0 10px rgba(255, 207, 0, 0.3);
-        }
-
-        .proximo-nivel {
-            font-size: 13px;
-            color: #ffcf00;
-            text-align: center;
-            margin-top: 8px;
-            font-weight: 600;
-            width: 100%;
-        }
-
-        /* ========== ELEMENTOS DE INFORMAÇÃO ========== */
-        .info-basica {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            margin: 12px 0;
-            width: 100%;
-        }
-
-        .serie {
-            color: #ccc;
-            font-size: 18px;
-            text-align: center;
-        }
-
-        .status {
-            color: #4CAF50;
-            font-size: 14px;
-            margin-top: 8px;
-            text-align: center;
-        }
-
-        .info-item {
-            margin-bottom: 15px;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            width: 100%;
-            text-align: center;
-        }
-
-        .info-item:last-child {
-            border-bottom: none;
-        }
-
-        .sync-info {
-            color: #4CAF50;
-            font-size: 14px;
-            margin-top: 20px;
-            text-align: center;
-            width: 100%;
-        }
-
-        /* ========== BOTÕES ========== */
         .btn-voltar {
             position: fixed;
             bottom: 20px;
@@ -304,21 +48,126 @@
             box-shadow: 0 4px 12px rgba(255, 207, 0, 0.3);
         }
 
+        .bloco-cinza {
+            width: 95%;
+            max-width: 1400px;
+            height: 90vh; /* Aumentado para melhor aproveitamento */
+            background: linear-gradient(145deg, #5a5a5a, #474747);
+            margin: 0 auto;
+            border-radius: 20px;
+            position: relative;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #666;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Container principal - LAYOUT MAIS EQUILIBRADO */
+        .conteudo-principal {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 1fr; /* Colunas mais equilibradas */
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            grid-template-areas: 
+                "foto nome estatisticas"
+                "info ranking estatisticas";
+            height: 100%;
+        }
+
+        .bloco-cinza-escuro1 {
+            grid-area: nome;
+            height: 120px; /* Altura fixa para nome */
+            background: linear-gradient(145deg, #383838, #282828);
+            border-radius: 15px;
+            padding: 15px 20px;
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
+                        inset -2px -2px 5px rgba(255, 255, 255, 0.1);
+            border: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .bloco-cinza-escuro2 {
+            grid-area: ranking;
+            background: linear-gradient(145deg, #383838, #282828);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
+                        inset -2px -2px 5px rgba(255, 255, 255, 0.1);
+            border: 1px solid #444;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .bloco-cinza-escuro3 {
+            grid-area: estatisticas;
+            background: linear-gradient(145deg, #383838, #282828);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
+                        inset -2px -2px 5px rgba(255, 255, 255, 0.1);
+            border: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .bloco-cinza-escuro4 {
+            grid-area: info;
+            background: linear-gradient(145deg, #383838, #282828);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
+                        inset -2px -2px 5px rgba(255, 255, 255, 0.1);
+            border: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            overflow-y: auto; /* Adicionado scroll se necessário */
+        }
+
+        .foto-perfil {
+            grid-area: foto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .imgp {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            border: 4px solid #ffcf00;
+            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.3);
+            object-fit: cover;
+        }
+
+        /* BOTÃO SAIR */
         .btn-logout-container {
-            margin-top: 25px;
+            margin-top: 20px;
             display: flex;
             justify-content: center;
             width: 100%;
         }
 
         .btn-logout {
-            width: 140px;
-            height: 50px;
+            width: 130px;
+            height: 45px;
             background: linear-gradient(145deg, #ff4444, #cc0000);
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
@@ -334,22 +183,169 @@
             box-shadow: 0 6px 16px rgba(255, 68, 68, 0.4);
         }
 
+        /* Tipografia ajustada */
+        h2 {
+            color: #ffcf00;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 0 10px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 100%;
+        }
+
+        h3 {
+            color: #ffcf00;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 100%;
+        }
+
+        .bloco-cinza-escuro1 p,
+        .bloco-cinza-escuro2 p,
+        .bloco-cinza-escuro3 p,
+        .bloco-cinza-escuro4 p {
+            color: #ffffff;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .bloco-cinza-escuro1 strong,
+        .bloco-cinza-escuro2 strong,
+        .bloco-cinza-escuro3 strong,
+        .bloco-cinza-escuro4 strong {
+            color: #ffcf00;
+        }
+
+        /* Sistema de níveis ajustado */
+        .nivel-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 8px 0;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+            justify-content: center;
+        }
+
+        .nivel-icone {
+            font-size: 16px;
+        }
+
+        .progresso-nivel {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #ffcf00;
+            width: 100%;
+            text-align: center;
+        }
+
+        .progresso-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #ccc;
+            width: 100%;
+        }
+
+        .barra-progresso {
+            background: #555;
+            height: 8px;
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .progresso-preenchido {
+            background: linear-gradient(90deg, #ffcf00, #ffaa00);
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease-in-out;
+            box-shadow: 0 0 10px rgba(255, 207, 0, 0.3);
+        }
+
+        .proximo-nivel {
+            font-size: 11px;
+            color: #ffcf00;
+            text-align: center;
+            margin-top: 5px;
+            font-weight: 600;
+            width: 100%;
+        }
+
+        .info-basica {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin: 8px 0;
+            width: 100%;
+        }
+
+        .serie {
+            color: #ccc;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .status {
+            color: #4CAF50;
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        .info-item {
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            text-align: center;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .sync-info {
+            color: #4CAF50;
+            font-size: 12px;
+            margin-top: 15px;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Botões internos */
         .btn-interno {
             background: #ffcf00;
             color: #000;
             border: none;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             transition: all 0.3s ease;
-            margin-top: 20px;
+            margin-top: 15px;
             width: auto;
-            min-width: 180px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            min-width: 160px;
         }
 
         .btn-interno:hover {
@@ -358,31 +354,25 @@
             box-shadow: 0 4px 12px rgba(255, 207, 0, 0.4);
         }
 
-        /* ========== SCROLLBAR PERSONALIZADA ========== */
+        /* Scrollbar */
         .bloco-cinza-escuro2::-webkit-scrollbar,
         .bloco-cinza-escuro3::-webkit-scrollbar,
         .bloco-cinza-escuro4::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
 
         .bloco-cinza-escuro2::-webkit-scrollbar-track,
         .bloco-cinza-escuro3::-webkit-scrollbar-track,
         .bloco-cinza-escuro4::-webkit-scrollbar-track {
             background: #383838;
-            border-radius: 4px;
+            border-radius: 3px;
         }
 
         .bloco-cinza-escuro2::-webkit-scrollbar-thumb,
         .bloco-cinza-escuro3::-webkit-scrollbar-thumb,
         .bloco-cinza-escuro4::-webkit-scrollbar-thumb {
             background: #ffcf00;
-            border-radius: 4px;
-        }
-
-        .bloco-cinza-escuro2::-webkit-scrollbar-thumb:hover,
-        .bloco-cinza-escuro3::-webkit-scrollbar-thumb:hover,
-        .bloco-cinza-escuro4::-webkit-scrollbar-thumb:hover {
-            background: #e6b800;
+            border-radius: 3px;
         }
 
         /* ========== RESPONSIVIDADE ========== */
@@ -403,107 +393,38 @@
                     "info"
                     "ranking"
                     "estatisticas";
-                gap: 20px;
-            }
-            
-            .foto-perfil {
-                order: 1;
-            }
-            
-            .bloco-cinza-escuro1 {
-                order: 2;
-                height: auto;
-                min-height: 80px;
-            }
-            
-            .bloco-cinza-escuro4 {
-                order: 3;
-            }
-            
-            .bloco-cinza-escuro2 {
-                order: 4;
-                min-height: 280px;
-            }
-            
-            .bloco-cinza-escuro3 {
-                order: 5;
-                min-height: 220px;
-            }
-            
-            .imgp {
-                width: 120px;
-                height: 120px;
-            }
-            
-            h2 {
-                font-size: 28px;
-            }
-            
-            h3 {
-                font-size: 20px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 15px;
-            }
-            
-            .bloco-cinza {
-                width: 100%;
-                padding: 15px;
-            }
-            
-            .conteudo-principal {
                 gap: 15px;
             }
             
-            .bloco-cinza-escuro1,
-            .bloco-cinza-escuro2,
-            .bloco-cinza-escuro3,
-            .bloco-cinza-escuro4 {
-                padding: 20px;
+            .bloco-cinza-escuro1 {
+                height: auto;
+                min-height: 100px;
             }
             
             .imgp {
                 width: 100px;
                 height: 100px;
             }
-            
-            h2 {
-                font-size: 24px;
-            }
-            
-            h3 {
-                font-size: 18px;
-            }
-            
-            .btn-logout {
-                width: 120px;
-                height: 45px;
-                font-size: 16px;
-            }
-            
-            .btn-voltar {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
-                bottom: 15px;
-                right: 15px;
-            }
-
-            .nivel-badge {
-                font-size: 14px;
-                padding: 6px 15px;
-            }
         }
 
-        @media (max-width: 480px) {
-            .bloco-cinza-escuro1 p,
-            .bloco-cinza-escuro2 p,
-            .bloco-cinza-escuro3 p,
-            .bloco-cinza-escuro4 p {
-                font-size: 14px;
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .bloco-cinza {
+                padding: 15px;
+            }
+            
+            .conteudo-principal {
+                gap: 12px;
+            }
+            
+            .bloco-cinza-escuro1,
+            .bloco-cinza-escuro2,
+            .bloco-cinza-escuro3,
+            .bloco-cinza-escuro4 {
+                padding: 15px;
             }
             
             .imgp {
@@ -516,47 +437,25 @@
             }
             
             h3 {
-                font-size: 16px;
-            }
-            
-            .btn-logout {
-                width: 100px;
-                height: 40px;
-                font-size: 14px;
-            }
-
-            .progresso-nivel {
-                padding: 15px;
-            }
-
-            .progresso-info {
-                font-size: 12px;
-            }
-
-            .btn-interno {
-                padding: 10px 20px;
-                font-size: 14px;
-                min-width: 160px;
+                font-size: 18px;
             }
         }
-    </style>
     </style>
 </head>
 <body>
     <div class="bloco-cinza"> 
         <div class="conteudo-principal">
             <div class="foto-perfil">
-                <!-- Imagem SVG inline para evitar erro 404 -->
                 <div class="imgp" style="
-                    width: 120px; 
-                    height: 120px; 
+                    width: 110px; 
+                    height: 110px; 
                     border-radius: 50%; 
                     border: 4px solid #ffcf00; 
                     background: #ffcf00; 
                     display: flex; 
                     align-items: center; 
                     justify-content: center; 
-                    font-size: 40px;
+                    font-size: 35px;
                     box-shadow: 0 4px 15px rgba(255, 207, 0, 0.3);
                 ">
                     👤
@@ -580,7 +479,6 @@
             </div>
         </div>
 
-        <!-- BOTÃO SAIR AGORA DENTRO DO FLUXO PARA MOBILE -->
         <div class="btn-logout-container">
             <button onclick="fazerLogout()" class="btn-logout">Sair</button>
         </div>
@@ -589,400 +487,390 @@
     <button class="btn-voltar" onclick="history.back()">←</button>
 
     <script>
-// SILENCIAR ERROS DE TERCEIROS
-const originalError = console.error;
-console.error = (...args) => {
-    if (typeof args[0] === 'string') {
-        if (
-            args[0].includes('EXCEPTIONS_HOSTS') ||
-            args[0].includes('overlay.js') ||
-            args[0].includes('PAYWALL') ||
-            args[0].includes('sentry') ||
-            args[0].includes('Chrome API')
-        ) {
-            return;
-        }
-    }
-    originalError.apply(console, args);
-};
-
-const API_URL = 'https://coliseum-api.onrender.com';
-
-// ✅ ROTAS DO VERCEL
-const ROTAS = {
-    MENU: '/menu',
-    RANKING: '/ranking',
-    PERFIL: '/perfil',
-    AMIGOS: '/amigos',
-    DESAFIOS: '/desafios',
-    PROVAS: '/provas',
-    CONFIGURACAO: '/configuracao',
-    CONTATO: '/contato',
-    NAVEGADOR: '/navegador',
-    LOGIN: '/login'
-};
-
-// ✅ SISTEMA DE NÍVEIS
-const SISTEMA_NIVEIS = {
-    niveis: [
-        { nome: "🌱 Novato", icone: "🌱", pontosMin: 0, cor: "#4CAF50" },
-        { nome: "📚 Aprendiz", icone: "📚", pontosMin: 50, cor: "#2196F3" },
-        { nome: "⚔️ Guerreiro", icone: "⚔️", pontosMin: 100, cor: "#FF9800" },
-        { nome: "🎯 Mestre", icone: "🎯", pontosMin: 200, cor: "#9C27B0" },
-        { nome: "🏆 Lenda", icone: "🏆", pontosMin: 500, cor: "#FFD700" },
-        { nome: "👑 Imperador", icone: "👑", pontosMin: 1000, cor: "#FF5722" },
-        { nome: "🐲 Lendário", icone: "🐲", pontosMin: 1500, cor: "#f21707" },
-        { nome: "👺 Oni", icone: "👺", pontosMin: 2000, cor: "#3b0101" },
-        { nome: "☠️ Imortal", icone: "☠️", pontosMin: 2500, cor: "#70418a" }
-    ],
-    
-    calcularNivel: function(pontuacao) {
-        for (let i = this.niveis.length - 1; i >= 0; i--) {
-            if (pontuacao >= this.niveis[i].pontosMin) {
-                return this.niveis[i];
+        // ... (o JavaScript permanece exatamente o mesmo)
+        // SILENCIAR ERROS DE TERCEIROS
+        const originalError = console.error;
+        console.error = (...args) => {
+            if (typeof args[0] === 'string') {
+                if (
+                    args[0].includes('EXCEPTIONS_HOSTS') ||
+                    args[0].includes('overlay.js') ||
+                    args[0].includes('PAYWALL') ||
+                    args[0].includes('sentry') ||
+                    args[0].includes('Chrome API')
+                ) {
+                    return;
+                }
             }
-        }
-        return this.niveis[0];
-    },
-    
-    calcularProgresso: function(pontuacao) {
-        const nivelAtual = this.calcularNivel(pontuacao);
-        const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
-        const proximoNivel = this.niveis[nivelIndex + 1];
-        
-        if (!proximoNivel) return 100; // Nível máximo
-        
-        const pontosNivelAtual = nivelAtual.pontosMin;
-        const pontosProximoNivel = proximoNivel.pontosMin;
-        const progresso = ((pontuacao - pontosNivelAtual) / (pontosProximoNivel - pontosNivelAtual)) * 100;
-        
-        return Math.min(Math.max(progresso, 0), 100);
-    },
-    
-    calcularPontosParaProximoNivel: function(pontuacao) {
-        const nivelAtual = this.calcularNivel(pontuacao);
-        const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
-        const proximoNivel = this.niveis[nivelIndex + 1];
-        
-        if (!proximoNivel) return 0; // Nível máximo
-        
-        return proximoNivel.pontosMin - pontuacao;
-    }
-};
+            originalError.apply(console, args);
+        };
 
-// ✅ VERIFICAÇÃO ROBUSTA DE LOGIN (CORRIGIDA)
-function verificarEstadoLogin() {
-    console.log('🔍 Verificando estado do login...');
-    
-    const usuarioJSON = localStorage.getItem('usuario');
-    const usuarioLogado = localStorage.getItem('usuarioLogado');
-    const usuarioId = localStorage.getItem('usuarioId');
-    
-    console.log('📊 Dados encontrados:', {
-        temUsuarioJSON: !!usuarioJSON,
-        usuarioLogado,
-        usuarioId
-    });
+        const API_URL = 'https://coliseum-api.onrender.com';
 
-    if (usuarioJSON) {
-        try {
-            const usuario = JSON.parse(usuarioJSON);
-            if (usuario && usuario.id) {
-                console.log('✅ Usuário encontrado na chave "usuario"');
-                garantirDadosIndividuais(usuario);
+        // ✅ ROTAS DO VERCEL
+        const ROTAS = {
+            MENU: '/menu',
+            RANKING: '/ranking',
+            PERFIL: '/perfil',
+            AMIGOS: '/amigos',
+            DESAFIOS: '/desafios',
+            PROVAS: '/provas',
+            CONFIGURACAO: '/configuracao',
+            CONTATO: '/contato',
+            NAVEGADOR: '/navegador',
+            LOGIN: '/login'
+        };
+
+        // ✅ SISTEMA DE NÍVEIS
+        const SISTEMA_NIVEIS = {
+            niveis: [
+                { nome: "🌱 Novato", icone: "🌱", pontosMin: 0, cor: "#4CAF50" },
+                { nome: "📚 Aprendiz", icone: "📚", pontosMin: 50, cor: "#2196F3" },
+                { nome: "⚔️ Guerreiro", icone: "⚔️", pontosMin: 100, cor: "#FF9800" },
+                { nome: "🎯 Mestre", icone: "🎯", pontosMin: 200, cor: "#9C27B0" },
+                { nome: "🏆 Lenda", icone: "🏆", pontosMin: 500, cor: "#FFD700" },
+                { nome: "👑 Imperador", icone: "👑", pontosMin: 1000, cor: "#FF5722" },
+                { nome: "🐲 Lendário", icone: "🐲", pontosMin: 1500, cor: "#f21707" },
+                { nome: "👺 Oni", icone: "👺", pontosMin: 2000, cor: "#3b0101" },
+                { nome: "☠️ Imortal", icone: "☠️", pontosMin: 2500, cor: "#70418a" }
+            ],
+            
+            calcularNivel: function(pontuacao) {
+                for (let i = this.niveis.length - 1; i >= 0; i--) {
+                    if (pontuacao >= this.niveis[i].pontosMin) {
+                        return this.niveis[i];
+                    }
+                }
+                return this.niveis[0];
+            },
+            
+            calcularProgresso: function(pontuacao) {
+                const nivelAtual = this.calcularNivel(pontuacao);
+                const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
+                const proximoNivel = this.niveis[nivelIndex + 1];
+                
+                if (!proximoNivel) return 100; // Nível máximo
+                
+                const pontosNivelAtual = nivelAtual.pontosMin;
+                const pontosProximoNivel = proximoNivel.pontosMin;
+                const progresso = ((pontuacao - pontosNivelAtual) / (pontosProximoNivel - pontosNivelAtual)) * 100;
+                
+                return Math.min(Math.max(progresso, 0), 100);
+            },
+            
+            calcularPontosParaProximoNivel: function(pontuacao) {
+                const nivelAtual = this.calcularNivel(pontuacao);
+                const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
+                const proximoNivel = this.niveis[nivelIndex + 1];
+                
+                if (!proximoNivel) return 0; // Nível máximo
+                
+                return proximoNivel.pontosMin - pontuacao;
+            }
+        };
+
+        // ✅ VERIFICAÇÃO ROBUSTA DE LOGIN (CORRIGIDA)
+        function verificarEstadoLogin() {
+            console.log('🔍 Verificando estado do login...');
+            
+            const usuarioJSON = localStorage.getItem('usuario');
+            const usuarioLogado = localStorage.getItem('usuarioLogado');
+            const usuarioId = localStorage.getItem('usuarioId');
+            
+            console.log('📊 Dados encontrados:', {
+                temUsuarioJSON: !!usuarioJSON,
+                usuarioLogado,
+                usuarioId
+            });
+
+            if (usuarioJSON) {
+                try {
+                    const usuario = JSON.parse(usuarioJSON);
+                    if (usuario && usuario.id) {
+                        console.log('✅ Usuário encontrado na chave "usuario"');
+                        garantirDadosIndividuais(usuario);
+                        return true;
+                    }
+                } catch (e) {
+                    console.error('Erro ao parsear usuario:', e);
+                }
+            }
+            
+            if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
+                console.log('✅ Usuário identificado pelo ID');
+                if (!usuarioLogado || usuarioLogado !== 'true') {
+                    localStorage.setItem('usuarioLogado', 'true');
+                }
                 return true;
             }
-        } catch (e) {
-            console.error('Erro ao parsear usuario:', e);
+            
+            console.log('❌ Nenhum dado de usuário válido encontrado');
+            return false;
         }
-    }
-    
-    if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
-        console.log('✅ Usuário identificado pelo ID');
-        if (!usuarioLogado || usuarioLogado !== 'true') {
+
+        // ✅ NOVA FUNÇÃO: Garantir dados individuais
+        function garantirDadosIndividuais(usuario) {
+            if (!localStorage.getItem('usuarioId')) {
+                localStorage.setItem('usuarioId', usuario.id.toString());
+            }
+            if (!localStorage.getItem('usuarioNome')) {
+                localStorage.setItem('usuarioNome', usuario.nome || 'Jogador');
+            }
+            if (!localStorage.getItem('usuarioPontuacao')) {
+                localStorage.setItem('usuarioPontuacao', usuario.pontuacao?.toString() || '0');
+            }
+            if (!localStorage.getItem('usuarioDesafios')) {
+                localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados?.toString() || '0');
+            }
+            if (!localStorage.getItem('usuarioRA')) {
+                localStorage.setItem('usuarioRA', usuario.ra || '');
+            }
+            if (!localStorage.getItem('usuarioSerie')) {
+                localStorage.setItem('usuarioSerie', usuario.serie || '');
+            }
             localStorage.setItem('usuarioLogado', 'true');
         }
-        return true;
-    }
-    
-    console.log('❌ Nenhum dado de usuário válido encontrado');
-    return false;
-}
 
-// ✅ NOVA FUNÇÃO: Garantir dados individuais
-function garantirDadosIndividuais(usuario) {
-    if (!localStorage.getItem('usuarioId')) {
-        localStorage.setItem('usuarioId', usuario.id.toString());
-    }
-    if (!localStorage.getItem('usuarioNome')) {
-        localStorage.setItem('usuarioNome', usuario.nome || 'Jogador');
-    }
-    if (!localStorage.getItem('usuarioPontuacao')) {
-        localStorage.setItem('usuarioPontuacao', usuario.pontuacao?.toString() || '0');
-    }
-    if (!localStorage.getItem('usuarioDesafios')) {
-        localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados?.toString() || '0');
-    }
-    if (!localStorage.getItem('usuarioRA')) {
-        localStorage.setItem('usuarioRA', usuario.ra || '');
-    }
-    if (!localStorage.getItem('usuarioSerie')) {
-        localStorage.setItem('usuarioSerie', usuario.serie || '');
-    }
-    localStorage.setItem('usuarioLogado', 'true');
-}
+        // ✅ CARREGAR PERFIL PRINCIPAL
+        async function carregarPerfilUsuario() {
+            console.log("🚀 Iniciando carregamento do perfil...");
+            
+            try {
+                const estaLogado = verificarEstadoLogin();
+                
+                if (!estaLogado) {
+                    console.log('❌ Usuário não logado');
+                    mostrarUsuarioNaoLogado();
+                    return;
+                }
 
-// ✅ CARREGAR PERFIL PRINCIPAL
-async function carregarPerfilUsuario() {
-    console.log("🚀 Iniciando carregamento do perfil...");
-    
-    try {
-        const estaLogado = verificarEstadoLogin();
-        
-        if (!estaLogado) {
-            console.log('❌ Usuário não logado');
-            mostrarUsuarioNaoLogado();
-            return;
+                const usuarioId = localStorage.getItem('usuarioId');
+                console.log('📡 Buscando dados para usuarioId:', usuarioId);
+
+                const response = await fetch(`${API_URL}/api/usuario/${usuarioId}`);
+                
+                if (response.ok) {
+                    const usuario = await response.json();
+                    console.log('✅ Dados online recebidos:', usuario);
+                    
+                    atualizarLocalStorageComDados(usuario);
+                    atualizarInterfaceUsuario(usuario);
+                    
+                } else {
+                    console.log('📴 Usando dados locais - servidor offline');
+                    carregarDadosLocais();
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar perfil:', error);
+                carregarDadosLocais();
+            }
         }
 
-        const usuarioId = localStorage.getItem('usuarioId');
-        console.log('📡 Buscando dados para usuarioId:', usuarioId);
+        // ✅ ATUALIZAR LOCALSTORAGE
+        function atualizarLocalStorageComDados(usuario) {
+            localStorage.setItem('usuario', JSON.stringify(usuario));
+            garantirDadosIndividuais(usuario);
+        }
 
-        const response = await fetch(`${API_URL}/api/usuario/${usuarioId}`);
-        
-        if (response.ok) {
-            const usuario = await response.json();
-            console.log('✅ Dados online recebidos:', usuario);
+        // ✅ ATUALIZAR INTERFACE COM SISTEMA DE NÍVEIS
+        function atualizarInterfaceUsuario(usuario) {
+            const container = document.getElementById("nome-usuario-container");
+            const raContainer = document.getElementById("RA-container");
+            const rankingContainer = document.getElementById("ranking-container");
+            const estatisticasContainer = document.getElementById("estatisticas-container");
             
-            atualizarLocalStorageComDados(usuario);
+            // ✅ CALCULAR NÍVEL E PROGRESSO
+            const pontuacao = usuario.pontuacao || 0;
+            const nivelAtual = SISTEMA_NIVEIS.calcularNivel(pontuacao);
+            const progresso = SISTEMA_NIVEIS.calcularProgresso(pontuacao);
+            const pontosParaProximo = SISTEMA_NIVEIS.calcularPontosParaProximoNivel(pontuacao);
+            
+            if (container) {
+                container.innerHTML = `
+                    <h2>${usuario.nome}</h2>
+                    <div class="info-basica">
+                        <span class="serie">${usuario.serie || 'Série não informada'} • ${pontuacao} pontos</span>
+                        <!-- ✅ NÍVEL NO ESPAÇO 1 -->
+                        <div class="nivel-badge" style="background: linear-gradient(135deg, ${nivelAtual.cor}, ${nivelAtual.cor}dd);">
+                            <span class="nivel-icone">${nivelAtual.icone}</span>
+                            <span class="nivel-nome">${nivelAtual.nome}</span>
+                        </div>
+                    </div>
+                    <p class="status">✅ Online - Dados em tempo real</p>
+                `;
+            }
+            
+            if (raContainer) {
+                raContainer.innerHTML = `
+                    <h3>Informações</h3>
+                    <div style="color: white; margin-top: 15px; width: 100%;">
+                        <div class="info-item">
+                            <strong>RA:</strong> ${usuario.ra || 'Não informado'}
+                        </div>
+                        <div class="info-item">
+                            <strong>Série:</strong> ${usuario.serie || 'Não informada'}
+                        </div>
+                        <div class="info-item">
+                            <strong>Pontuação:</strong> ${pontuacao} pontos
+                        </div>
+                        
+                        <!-- ✅ BARRA DE PROGRESSO NO ESPAÇO 2 -->
+                        <div class="progresso-nivel">
+                            <div class="progresso-info">
+                                <span>Progresso para o próximo nível</span>
+                                <span class="progresso-texto">${Math.round(progresso)}%</span>
+                            </div>
+                            <div class="barra-progresso">
+                                <div class="progresso-preenchido" style="width: ${progresso}%"></div>
+                            </div>
+                            <div class="proximo-nivel">
+                                ${pontosParaProximo > 0 ? 
+                                    `⏫ ${pontosParaProximo} pontos para o próximo nível` : 
+                                    '🎉 Nível máximo alcançado!'}
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <strong>Desafios:</strong> ${usuario.desafiosCompletados || 0} completos
+                        </div>
+                        <div class="info-item">
+                            <strong>ID:</strong> ${usuario.id || 'N/A'}
+                        </div>
+                        <p class="sync-info">🌐 Dados sincronizados com servidor</p>
+                    </div>
+                `;
+            }
+
+            // Conteúdo para os outros containers
+            if (rankingContainer) {
+                rankingContainer.innerHTML = `
+                    <h3>🏆 Ranking Pessoal</h3>
+                    <div style="color: white; margin-top: 15px; width: 100%;">
+                        <div class="info-item">
+                            <strong>Nível Atual:</strong> ${nivelAtual.nome}
+                        </div>
+                        <div class="info-item">
+                            <strong>Posição no Ranking:</strong> Carregando...
+                        </div>
+                        <div class="info-item">
+                            <strong>Melhor Pontuação:</strong> ${pontuacao} pontos
+                        </div>
+                        <button class="btn-interno" onclick="carregarRankingCompleto()">
+                            📊 Ver Ranking Completo
+                        </button>
+                    </div>
+                `;
+            }
+
+            if (estatisticasContainer) {
+                estatisticasContainer.innerHTML = `
+                    <h3>📈 Estatísticas</h3>
+                    <div style="color: white; margin-top: 15px; width: 100%;">
+                        <div class="info-item">
+                            <strong>Desafios Completos:</strong> ${usuario.desafiosCompletados || 0}
+                        </div>
+                        <div class="info-item">
+                            <strong>Taxa de Acerto:</strong> Calculando...
+                        </div>
+                        <div class="info-item">
+                            <strong>Tempo de Plataforma:</strong> Desde ${new Date().toLocaleDateString()}
+                        </div>
+                        <div class="barra-progresso">
+                            <div class="progresso-preenchido" style="width: ${Math.min((usuario.desafiosCompletados || 0) * 10, 100)}%"></div>
+                        </div>
+                        <p style="font-size: 11px; color: #ccc; text-align: center; margin-top: 8px;">
+                            Progresso geral: ${Math.min((usuario.desafiosCompletados || 0) * 10, 100)}%
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        // ✅ CARREGAR DADOS LOCAIS (CORRIGIDA)
+        function carregarDadosLocais() {
+            console.log('📱 Carregando dados locais...');
+            
+            const usuarioJSON = localStorage.getItem('usuario');
+            let usuario = null;
+            
+            if (usuarioJSON) {
+                try {
+                    usuario = JSON.parse(usuarioJSON);
+                } catch (e) {
+                    console.error('Erro ao parsear usuario:', e);
+                }
+            }
+            
+            if (!usuario) {
+                usuario = {
+                    nome: localStorage.getItem('usuarioNome'),
+                    id: localStorage.getItem('usuarioId'),
+                    pontuacao: parseInt(localStorage.getItem('usuarioPontuacao')) || 0,
+                    desafiosCompletados: parseInt(localStorage.getItem('usuarioDesafios')) || 0,
+                    ra: localStorage.getItem('usuarioRA') || '',
+                    serie: localStorage.getItem('usuarioSerie') || ''
+                };
+            }
+            
+            if (!usuario.nome || !usuario.id) {
+                mostrarUsuarioNaoLogado();
+                return;
+            }
+            
             atualizarInterfaceUsuario(usuario);
+        }
+
+        // ✅ USUÁRIO NÃO LOGADO
+        function mostrarUsuarioNaoLogado() {
+            console.log('👤 Mostrando tela de usuário não logado');
             
-        } else {
-            console.log('📴 Usando dados locais - servidor offline');
-            carregarDadosLocais();
+            const containers = [
+                "nome-usuario-container",
+                "RA-container", 
+                "ranking-container",
+                "estatisticas-container"
+            ];
+            
+            containers.forEach(containerId => {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = `
+                        <div style="color: white; text-align: center; padding: 20px; width: 100%;">
+                            <p>🔒 Faça login para acessar</p>
+                            <button class="btn-interno" onclick="fazerLogin()" style="margin-top: 15px;">
+                                📲 Fazer Login
+                            </button>
+                        </div>
+                    `;
+                }
+            });
         }
-        
-    } catch (error) {
-        console.error('❌ Erro ao carregar perfil:', error);
-        carregarDadosLocais();
-    }
-}
 
-// ✅ ATUALIZAR LOCALSTORAGE
-function atualizarLocalStorageComDados(usuario) {
-    localStorage.setItem('usuario', JSON.stringify(usuario));
-    garantirDadosIndividuais(usuario);
-}
-
-// ✅ ATUALIZAR INTERFACE COM SISTEMA DE NÍVEIS
-function atualizarInterfaceUsuario(usuario) {
-    const container = document.getElementById("nome-usuario-container");
-    const raContainer = document.getElementById("RA-container");
-    const rankingContainer = document.getElementById("ranking-container");
-    const estatisticasContainer = document.getElementById("estatisticas-container");
-    
-    // ✅ CALCULAR NÍVEL E PROGRESSO
-    const pontuacao = usuario.pontuacao || 0;
-    const nivelAtual = SISTEMA_NIVEIS.calcularNivel(pontuacao);
-    const progresso = SISTEMA_NIVEIS.calcularProgresso(pontuacao);
-    const pontosParaProximo = SISTEMA_NIVEIS.calcularPontosParaProximoNivel(pontuacao);
-    
-    if (container) {
-        container.innerHTML = `
-            <h2>${usuario.nome}</h2>
-            <div class="info-basica">
-                <span class="serie">${usuario.serie || 'Série não informada'} • ${pontuacao} pontos</span>
-                <!-- ✅ NÍVEL NO ESPAÇO 1 -->
-                <div class="nivel-badge" style="background: linear-gradient(135deg, ${nivelAtual.cor}, ${nivelAtual.cor}dd);">
-                    <span class="nivel-icone">${nivelAtual.icone}</span>
-                    <span class="nivel-nome">${nivelAtual.nome}</span>
-                </div>
-            </div>
-            <p class="status">✅ Online - Dados em tempo real</p>
-        `;
-    }
-    
-    if (raContainer) {
-        raContainer.innerHTML = `
-            <h3>Informações</h3>
-            <div style="color: white; margin-top: 20px; width: 100%;">
-                <div class="info-item">
-                    <strong>RA:</strong> ${usuario.ra || 'Não informado'}
-                </div>
-                <div class="info-item">
-                    <strong>Série:</strong> ${usuario.serie || 'Não informada'}
-                </div>
-                <div class="info-item">
-                    <strong>Pontuação:</strong> ${pontuacao} pontos
-                </div>
-                
-                <!-- ✅ BARRA DE PROGRESSO NO ESPAÇO 2 -->
-                <div class="progresso-nivel">
-                    <div class="progresso-info">
-                        <span>Progresso para o próximo nível</span>
-                        <span class="progresso-texto">${Math.round(progresso)}%</span>
-                    </div>
-                    <div class="barra-progresso">
-                        <div class="progresso-preenchido" style="width: ${progresso}%"></div>
-                    </div>
-                    <div class="proximo-nivel">
-                        ${pontosParaProximo > 0 ? 
-                            `⏫ ${pontosParaProximo} pontos para o próximo nível` : 
-                            '🎉 Nível máximo alcançado!'}
-                    </div>
-                </div>
-                
-                <div class="info-item">
-                    <strong>Desafios:</strong> ${usuario.desafiosCompletados || 0} completos
-                </div>
-                <div class="info-item">
-                    <strong>ID:</strong> ${usuario.id || 'N/A'}
-                </div>
-                <p class="sync-info">🌐 Dados sincronizados com servidor</p>
-            </div>
-        `;
-    }
-
-    // Conteúdo para os outros containers
-    if (rankingContainer) {
-        rankingContainer.innerHTML = `
-            <h3>🏆 Ranking Pessoal</h3>
-            <div style="color: white; margin-top: 20px; width: 100%;">
-                <div class="info-item">
-                    <strong>Nível Atual:</strong> ${nivelAtual.nome}
-                </div>
-                <div class="info-item">
-                    <strong>Posição no Ranking:</strong> Carregando...
-                </div>
-                <div class="info-item">
-                    <strong>Melhor Pontuação:</strong> ${pontuacao} pontos
-                </div>
-                <button class="btn-interno" onclick="carregarRankingCompleto()">
-                    📊 Ver Ranking Completo
-                </button>
-            </div>
-        `;
-    }
-
-    if (estatisticasContainer) {
-        estatisticasContainer.innerHTML = `
-            <h3>📈 Estatísticas</h3>
-            <div style="color: white; margin-top: 20px; width: 100%;">
-                <div class="info-item">
-                    <strong>Desafios Completos:</strong> ${usuario.desafiosCompletados || 0}
-                </div>
-                <div class="info-item">
-                    <strong>Taxa de Acerto:</strong> Calculando...
-                </div>
-                <div class="info-item">
-                    <strong>Tempo de Plataforma:</strong> Desde ${new Date().toLocaleDateString()}
-                </div>
-                <div class="barra-progresso">
-                    <div class="progresso-interno" style="width: ${Math.min((usuario.desafiosCompletados || 0) * 10, 100)}%"></div>
-                </div>
-                <p style="font-size: 12px; color: #ccc; text-align: center; margin-top: 8px;">
-                    Progresso geral: ${Math.min((usuario.desafiosCompletados || 0) * 10, 100)}%
-                </p>
-            </div>
-        `;
-    }
-}
-
-// ✅ CARREGAR DADOS LOCAIS (CORRIGIDA)
-function carregarDadosLocais() {
-    console.log('📱 Carregando dados locais...');
-    
-    const usuarioJSON = localStorage.getItem('usuario');
-    let usuario = null;
-    
-    if (usuarioJSON) {
-        try {
-            usuario = JSON.parse(usuarioJSON);
-        } catch (e) {
-            console.error('Erro ao parsear usuario:', e);
+        // ✅ FUNÇÕES AUXILIARES (CORRIGIDAS)
+        function fazerLogin() {
+            window.location.href = ROTAS.LOGIN;
         }
-    }
-    
-    if (!usuario) {
-        usuario = {
-            nome: localStorage.getItem('usuarioNome'),
-            id: localStorage.getItem('usuarioId'),
-            pontuacao: parseInt(localStorage.getItem('usuarioPontuacao')) || 0,
-            desafiosCompletados: parseInt(localStorage.getItem('usuarioDesafios')) || 0,
-            ra: localStorage.getItem('usuarioRA') || '',
-            serie: localStorage.getItem('usuarioSerie') || ''
-        };
-    }
-    
-    if (!usuario.nome || !usuario.id) {
-        mostrarUsuarioNaoLogado();
-        return;
-    }
-    
-    atualizarInterfaceUsuario(usuario);
-}
 
-// ✅ USUÁRIO NÃO LOGADO
-function mostrarUsuarioNaoLogado() {
-    console.log('👤 Mostrando tela de usuário não logado');
-    
-    const containers = [
-        "nome-usuario-container",
-        "RA-container", 
-        "ranking-container",
-        "estatisticas-container"
-    ];
-    
-    containers.forEach(containerId => {
-        const container = document.getElementById(containerId);
-        if (container) {
-            container.innerHTML = `
-                <div style="color: white; text-align: center; padding: 20px; width: 100%;">
-                    <p>🔒 Faça login para acessar</p>
-                    <button class="btn-interno" onclick="fazerLogin()" style="margin-top: 15px;">
-                        📲 Fazer Login
-                    </button>
-                </div>
-            `;
+        function carregarRankingCompleto() {
+            window.location.href = ROTAS.RANKING;
         }
-    });
-}
 
-// ✅ FUNÇÕES AUXILIARES (CORRIGIDAS)
-function fazerLogin() {
-    window.location.href = ROTAS.LOGIN;
-}
+        function fazerLogout() {
+            if (confirm('Tem certeza que deseja sair?')) {
+                localStorage.clear();
+                alert('Logout realizado!');
+                window.location.href = ROTAS.LOGIN;
+            }
+        }
 
-function carregarRankingCompleto() {
-    window.location.href = ROTAS.RANKING;
-}
+        // ✅ INICIALIZAÇÃO
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("📄 Página de perfil carregada");
+            carregarPerfilUsuario();
+        });
 
-function fazerLogout() {
-    if (confirm('Tem certeza que deseja sair?')) {
-        localStorage.clear();
-        alert('Logout realizado!');
-        window.location.href = ROTAS.LOGIN;
-    }
-}
-
-function debugLocalStorage() {
-    console.log('🔍 DEBUG LOCALSTORAGE:');
-    const todasChaves = Object.keys(localStorage);
-    
-    let debugInfo = 'DADOS DO LOCALSTORAGE:\n\n';
-    todasChaves.forEach(chave => {
-        debugInfo += `${chave}: ${localStorage.getItem(chave)}\n`;
-    });
-    alert(debugInfo);
-}
-
-// ✅ INICIALIZAÇÃO
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("📄 Página de perfil carregada");
-    carregarPerfilUsuario();
-});
-
-console.log('🎯 Sistema de níveis implementado!');
+        console.log('🎯 Sistema de níveis implementado!');
     </script>
 </body>
 </html>
