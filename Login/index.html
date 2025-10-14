@@ -451,11 +451,7 @@
     localStorage.setItem('usuario', JSON.stringify(data.usuario));
     
     setTimeout(() => {
-        // ✅ CORREÇÃO: Use a URL ABSOLUTA com o nome correto do arquivo
-        window.location.href = 'https://coliseum-1aepcwffs-icaroass-projects.vercel.app/menu';
-        
-        // Ou se preferir relativo (teste ambas):
-        // window.location.href = '/menu';
+        window.location.href = 'https://coliseum-1aepcwffs-icaroass-projects.vercel.app/Menu';
     }, 1500);
 } else {
                     mostrarMensagem(`❌ ${data.error}`, 'erro');
