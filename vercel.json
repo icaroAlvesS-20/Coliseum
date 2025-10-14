@@ -4,15 +4,63 @@
     {
       "src": "**/*.html",
       "use": "@vercel/static"
+    },
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/server.js"
+    },
     {
       "src": "/menu",
       "dest": "/Menu/indexM.html"
     },
     {
+      "src": "/ranking",
+      "dest": "/Ranking/indexR.html"
+    },
+    {
+      "src": "/amigos",
+      "dest": "/Amigos/indexA.html"
+    },
+    {
+      "src": "/desafios",
+      "dest": "/Desafios/indexD.html"
+    },
+    {
+      "src": "/provas",
+      "dest": "/Provas/indexPr.html"
+    },
+    {
+      "src": "/configuracao",
+      "dest": "/Configuracao/indexC.html"
+    },
+    {
+      "src": "/perfil",
+      "dest": "/Perfil/indexP.html"
+    },
+    {
+      "src": "/contato",
+      "dest": "/Contato/indexCo.html"
+    },
+    {
+      "src": "/navegador",
+      "dest": "/Navegador/indexN.html"
+    },
+    {
+      "src": "/login",
+      "dest": "/Login/index.html"
+    },
+    {
       "src": "/",
+      "dest": "/Login/index.html"
+    },
+    {
+      "src": "/(.*)",
       "dest": "/Login/index.html"
     }
   ]
