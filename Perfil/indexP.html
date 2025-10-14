@@ -446,35 +446,90 @@
     <button class="btn-voltar" onclick="history.back()">←</button>
 
     <script>
-// ✅ NOVA FUNÇÃO: Sincronizar perfil com servidor
+// SILENCIAR ERROS DE TERCEIROS
+const originalError = console.error;
+console.error = (...args) => {
+    if (typeof args[0] === 'string') {
+        if (
+            args[0].includes('EXCEPTIONS_HOSTS') ||
+            args[0].includes('overlay.js') ||
+            args[0].includes('PAYWALL') ||
+            args[0].includes('sentry') ||
+            args[0].includes('Chrome API')
+        ) {
+            return;
+        }
+    }
+    originalError.apply(console, args);
+};
+
+const API_URL = 'https://coliseum-api.onrender.com';
+
+// ✅ FUNÇÃO MELHORADA: Sincronizar perfil com servidor
 async function sincronizarPerfilComServidor() {
     try {
         const usuarioId = localStorage.getItem('usuarioId');
         if (!usuarioId || usuarioId.includes('temp_')) {
             console.log('📴 Usuário offline ou temporário, usando dados locais');
-            return;
+            return null;
         }
 
         console.log('🔄 Sincronizando perfil com servidor...');
         
-        const response = await fetch(`https://coliseum-api.onrender.com/api/usuario/${usuarioId}`);
+        const response = await fetch(`${API_URL}/api/usuario/${usuarioId}`);
+        
         if (response.ok) {
             const usuario = await response.json();
             
-            // Atualizar localStorage com dados do servidor
-            localStorage.setItem('usuarioPontuacao', usuario.pontuacao);
-            localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados);
-            localStorage.setItem('usuarioNome', usuario.nome);
-            localStorage.setItem('usuarioRA', usuario.ra);
-            localStorage.setItem('usuarioSerie', usuario.serie);
+            // ✅ ATUALIZAR LOCALSTORAGE COM DADOS DO SERVIDOR
+            localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
+            localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
+            localStorage.setItem('usuarioNome', usuario.nome || 'Jogador');
+            localStorage.setItem('usuarioRA', usuario.ra || '');
+            localStorage.setItem('usuarioSerie', usuario.serie || '');
+            localStorage.setItem('usuarioId', usuario.id.toString());
             
-            console.log('✅ Perfil sincronizado com servidor:', usuario);
+            console.log('✅ Perfil sincronizado com servidor:', {
+                nome: usuario.nome,
+                pontuacao: usuario.pontuacao,
+                desafios: usuario.desafiosCompletados
+            });
+            
+            return usuario;
         } else {
             console.log('❌ Erro ao sincronizar perfil:', response.status);
+            return null;
         }
     } catch (error) {
         console.log('📴 Modo offline - usando dados locais');
+        return null;
     }
+}
+
+// ✅ FUNÇÃO PARA FORÇAR ATUALIZAÇÃO (chamada de outras páginas)
+window.atualizarPerfil = function() {
+    console.log('🔄 Forçando atualização do perfil...');
+    carregarPerfilUsuario();
+};
+
+// ✅ FUNÇÃO PARA LIMPAR DADOS DE USUÁRIOS ANTIGOS
+function limparDadosUsuariosAntigos() {
+    const usuarioAtualId = localStorage.getItem('usuarioId');
+    if (!usuarioAtualId) return;
+
+    // Lista de todas as chaves do localStorage
+    const todasChaves = Object.keys(localStorage);
+    
+    // Encontrar chaves de outros usuários
+    const chavesOutrosUsuarios = todasChaves.filter(key => {
+        return key.startsWith('user_') && !key.includes(usuarioAtualId);
+    });
+    
+    // Limpar dados de outros usuários
+    chavesOutrosUsuarios.forEach(key => {
+        localStorage.removeItem(key);
+        console.log('🧹 Limpando dados de usuário antigo:', key);
+    });
 }
 
 function carregarPerfilUsuario() {
@@ -485,16 +540,21 @@ function carregarPerfilUsuario() {
     const rankingContainer = document.getElementById("ranking-container");
     const estatisticasContainer = document.getElementById("estatisticas-container");
     
+    // ✅ LIMPAR DADOS DE USUÁRIOS ANTIGOS PRIMEIRO
+    limparDadosUsuariosAntigos();
+    
     // ✅ SINCRONIZAR PRIMEIRO COM SERVIDOR
-    sincronizarPerfilComServidor().then(() => {
+    sincronizarPerfilComServidor().then((usuarioSincronizado) => {
         // Buscar dados do usuário (agora atualizados)
         const usuarioNome = localStorage.getItem('usuarioNome');
         const usuarioRA = localStorage.getItem('usuarioRA');
         const usuarioSerie = localStorage.getItem('usuarioSerie');
         const usuarioPontuacao = parseInt(localStorage.getItem('usuarioPontuacao')) || 0;
         const usuarioDesafios = parseInt(localStorage.getItem('usuarioDesafios')) || 0;
+        const usuarioId = localStorage.getItem('usuarioId');
 
         console.log("📊 Dados carregados:", {
+            usuarioId,
             usuarioNome,
             usuarioRA,
             usuarioSerie,
@@ -502,33 +562,40 @@ function carregarPerfilUsuario() {
             usuarioDesafios
         });
         
-        if (usuarioNome) {
+        if (usuarioNome && usuarioId) {
             // Container do nome (bloco 1)
-            container.innerHTML = `
-                <h2>${usuarioNome}</h2>
-                <p style="color: #ccc; font-size: 16px; margin-top: 10px;">
-                    ${usuarioSerie || 'Série não informada'} • ${usuarioPontuacao} pontos
-                </p>
-            `;
+            if (container) {
+                container.innerHTML = `
+                    <h2>${usuarioNome}</h2>
+                    <p style="color: #ccc; font-size: 16px; margin-top: 10px;">
+                        ${usuarioSerie || 'Série não informada'} • ${usuarioPontuacao} pontos
+                    </p>
+                    ${usuarioSincronizado ? '<p style="color: #4CAF50; font-size: 12px; margin-top: 5px;">✅ Sincronizado</p>' : '<p style="color: #ff9800; font-size: 12px; margin-top: 5px;">📴 Modo offline</p>'}
+                `;
+            }
             
             // Container das credenciais (bloco 4)
-            raContainer.innerHTML = `
-                <h3>Informações</h3>
-                <div style="color: white; margin-top: 20px;">
-                    <p><strong>RA:</strong> ${usuarioRA || 'Não informado'}</p>
-                    <p><strong>Série:</strong> ${usuarioSerie || 'Não informada'}</p>
-                    <p><strong>Pontuação:</strong> ${usuarioPontuacao} pontos</p>
-                    <p><strong>Desafios:</strong> ${usuarioDesafios} completos</p>
-                    <p style="margin-top: 15px; color: #ffcf00; font-size: 12px;">
-                        🔐 Dados protegidos online
-                    </p>
-                </div>
-            `;
+            if (raContainer) {
+                raContainer.innerHTML = `
+                    <h3>Informações</h3>
+                    <div style="color: white; margin-top: 20px;">
+                        <p><strong>RA:</strong> ${usuarioRA || 'Não informado'}</p>
+                        <p><strong>Série:</strong> ${usuarioSerie || 'Não informada'}</p>
+                        <p><strong>Pontuação:</strong> ${usuarioPontuacao} pontos</p>
+                        <p><strong>Desafios:</strong> ${usuarioDesafios} completos</p>
+                        <p><strong>ID:</strong> ${usuarioId}</p>
+                        <p style="margin-top: 15px; color: #ffcf00; font-size: 12px;">
+                            🔐 Dados protegidos online
+                        </p>
+                    </div>
+                `;
+            }
 
             // Container do ranking (bloco 2)
             if (rankingContainer) {
                 const progresso = usuarioPontuacao % 100;
                 const nivel = Math.floor(usuarioPontuacao / 100) + 1;
+                const pontosProximoNivel = 100 - progresso;
                 
                 rankingContainer.innerHTML = `
                     <h3>Minha Posição</h3>
@@ -546,10 +613,10 @@ function carregarPerfilUsuario() {
                             <div class="progresso-interno" style="width: ${progresso}%"></div>
                         </div>
                         <p style="color: #ccc; font-size: 12px; text-align: center;">
-                            ${progresso}% • Faltam ${100 - progresso} pontos
+                            ${progresso}% • Faltam ${pontosProximoNivel} pontos
                         </p>
                     </div>
-                    <button class="btn-interno" onclick="carregarRankingCompleto()" style="width: 100%;">
+                    <button class="btn-interno" onclick="carregarRankingCompleto()" style="width: 100%; margin-top: 15px;">
                         📊 Ver Ranking Completo
                     </button>
                 `;
@@ -558,8 +625,26 @@ function carregarPerfilUsuario() {
             // Container de estatísticas (bloco 3)
             if (estatisticasContainer) {
                 const mediaPontos = usuarioDesafios > 0 ? (usuarioPontuacao / usuarioDesafios).toFixed(1) : '0';
-                const taxaConclusao = usuarioDesafios > 5 ? 'Alta' : usuarioDesafios > 2 ? 'Média' : 'Iniciante';
-                const status = usuarioPontuacao >= 300 ? 'Mestre' : usuarioPontuacao >= 150 ? 'Veterano' : 'Novato';
+                const taxaConclusao = usuarioDesafios > 10 ? 'Excelente' : 
+                                    usuarioDesafios > 5 ? 'Alta' : 
+                                    usuarioDesafios > 2 ? 'Média' : 'Iniciante';
+                
+                let status = 'Novato';
+                let corStatus = '#ffcf00';
+                
+                if (usuarioPontuacao >= 500) {
+                    status = 'Lenda 🏆';
+                    corStatus = '#ffd700';
+                } else if (usuarioPontuacao >= 300) {
+                    status = 'Mestre ⭐';
+                    corStatus = '#4CAF50';
+                } else if (usuarioPontuacao >= 150) {
+                    status = 'Veterano 🔥';
+                    corStatus = '#ff9800';
+                } else if (usuarioPontuacao >= 50) {
+                    status = 'Intermediário 💪';
+                    corStatus = '#2196F3';
+                }
                 
                 estatisticasContainer.innerHTML = `
                     <h3>Estatísticas</h3>
@@ -567,15 +652,20 @@ function carregarPerfilUsuario() {
                         <p><strong>Média de Pontos:</strong> ${mediaPontos} por desafio</p>
                         <p><strong>Taxa de Conclusão:</strong> ${taxaConclusao}</p>
                         <p><strong>Status:</strong> ${usuarioPontuacao >= 100 ? 'Avançado' : 'Iniciante'}</p>
-                        <div style="margin-top: 20px; padding: 15px; background: #333; border-radius: 10px;">
-                            <p style="color: #ffcf00; font-size: 16px; text-align: center; font-weight: bold;">
-                                🏅 ${status}
+                        <div style="margin-top: 20px; padding: 15px; background: #333; border-radius: 10px; border: 2px solid ${corStatus};">
+                            <p style="color: ${corStatus}; font-size: 18px; text-align: center; font-weight: bold; margin: 0;">
+                                ${status}
                             </p>
                         </div>
                     </div>
-                    <button class="btn-interno" onclick="atualizarPerfil()" style="width: 100%; margin-top: 15px;">
-                        🔄 Atualizar Dados
-                    </button>
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button class="btn-interno" onclick="atualizarPerfil()" style="flex: 1;">
+                            🔄 Atualizar
+                        </button>
+                        <button class="btn-interno" onclick="verificarDadosUsuario()" style="flex: 1;">
+                            🔍 Verificar Dados
+                        </button>
+                    </div>
                 `;
             }
 
@@ -583,51 +673,201 @@ function carregarPerfilUsuario() {
 
         } else {
             // Usuário não logado
-            container.innerHTML = `<h2>Usuário não identificado</h2>`;
-            raContainer.innerHTML = `<p style="color: white;">Faça login para ver suas informações</p>`;
+            if (container) {
+                container.innerHTML = `
+                    <h2>Usuário não identificado</h2>
+                    <p style="color: #ccc; margin-top: 10px;">Faça login para acessar seu perfil</p>
+                `;
+            }
+            
+            if (raContainer) {
+                raContainer.innerHTML = `
+                    <h3>Informações</h3>
+                    <div style="color: white; margin-top: 20px; text-align: center;">
+                        <p>🔒 Área restrita</p>
+                        <button class="btn-interno" onclick="fazerLogin()" style="margin-top: 15px;">
+                            📲 Fazer Login
+                        </button>
+                    </div>
+                `;
+            }
             
             if (rankingContainer) {
-                rankingContainer.innerHTML = `<p style="color: white; text-align: center; margin-top: 50px;">Faça login para ver seu ranking</p>`;
+                rankingContainer.innerHTML = `
+                    <div style="color: white; text-align: center; margin-top: 50px;">
+                        <p>Faça login para ver seu ranking</p>
+                    </div>
+                `;
             }
             
             if (estatisticasContainer) {
-                estatisticasContainer.innerHTML = `<p style="color: white;">Faça login para ver estatísticas</p>`;
+                estatisticasContainer.innerHTML = `
+                    <div style="color: white; text-align: center;">
+                        <p>Faça login para ver estatísticas</p>
+                    </div>
+                `;
             }
             
             console.log("❌ Usuário não encontrado no localStorage");
         }
+    }).catch(error => {
+        console.error('❌ Erro ao carregar perfil:', error);
+        
+        // Fallback: carregar apenas dados locais
+        carregarDadosLocais();
     });
 }
 
-// ✅ NOVA FUNÇÃO: Atualizar perfil manualmente
-function atualizarPerfil() {
-    console.log('🔄 Atualizando perfil manualmente...');
-    carregarPerfilUsuario();
+// ✅ FUNÇÃO FALLBACK: Carregar apenas dados locais
+function carregarDadosLocais() {
+    console.log('📴 Carregando dados locais...');
+    
+    const usuarioNome = localStorage.getItem('usuarioNome');
+    const usuarioRA = localStorage.getItem('usuarioRA');
+    const usuarioSerie = localStorage.getItem('usuarioSerie');
+    const usuarioPontuacao = parseInt(localStorage.getItem('usuarioPontuacao')) || 0;
+    const usuarioDesafios = parseInt(localStorage.getItem('usuarioDesafios')) || 0;
+    
+    const container = document.getElementById("nome-usuario-container");
+    const raContainer = document.getElementById("RA-container");
+    
+    if (container && usuarioNome) {
+        container.innerHTML = `
+            <h2>${usuarioNome}</h2>
+            <p style="color: #ccc; font-size: 16px; margin-top: 10px;">
+                ${usuarioSerie || 'Série não informada'} • ${usuarioPontuacao} pontos
+            </p>
+            <p style="color: #ff9800; font-size: 12px; margin-top: 5px;">📴 Dados locais</p>
+        `;
+    }
+    
+    if (raContainer) {
+        raContainer.innerHTML = `
+            <h3>Informações</h3>
+            <div style="color: white; margin-top: 20px;">
+                <p><strong>RA:</strong> ${usuarioRA || 'Não informado'}</p>
+                <p><strong>Série:</strong> ${usuarioSerie || 'Não informada'}</p>
+                <p><strong>Pontuação:</strong> ${usuarioPontuacao} pontos</p>
+                <p><strong>Desafios:</strong> ${usuarioDesafios} completos</p>
+                <p style="margin-top: 15px; color: #ff9800; font-size: 12px;">
+                    ⚠️ Modo offline - alguns dados podem estar desatualizados
+                </p>
+            </div>
+        `;
+    }
+}
+
+// ✅ NOVA FUNÇÃO: Verificar dados do usuário
+function verificarDadosUsuario() {
+    const usuarioId = localStorage.getItem('usuarioId');
+    const usuarioNome = localStorage.getItem('usuarioNome');
+    const usuarioPontuacao = localStorage.getItem('usuarioPontuacao');
+    const usuarioDesafios = localStorage.getItem('usuarioDesafios');
+    
+    const dados = {
+        'ID do Usuário': usuarioId,
+        'Nome': usuarioNome,
+        'Pontuação': usuarioPontuacao,
+        'Desafios Completos': usuarioDesafios,
+        'Série': localStorage.getItem('usuarioSerie'),
+        'RA': localStorage.getItem('usuarioRA'),
+        'Está Logado': localStorage.getItem('usuarioLogado')
+    };
+    
+    console.log('🔍 Dados do usuário:', dados);
+    
+    let mensagem = '🔍 DADOS DO USUÁRIO:\n\n';
+    for (const [chave, valor] of Object.entries(dados)) {
+        mensagem += `${chave}: ${valor || 'Não definido'}\n`;
+    }
+    
+    alert(mensagem);
+}
+
+// ✅ FUNÇÃO: Fazer login
+function fazerLogin() {
+    window.location.href = "../Login/index.html";
 }
 
 function carregarRankingCompleto() {
-    window.location.href = "/ranking";
+    window.location.href = "../Ranking/indexR.html";
 }
 
 function fazerLogout() {
     if (confirm('Tem certeza que deseja sair?')) {
-        const keysToRemove = [
-            'usuarioId', 'usuarioNome', 'usuarioRA', 'usuarioSerie',
-            'usuarioPontuacao', 'usuarioDesafios', 'usuarioLogado'
-        ];
+        console.log('🚪 Fazendo logout...');
         
-        keysToRemove.forEach(key => localStorage.removeItem(key));
+        // ✅ MANTER APENAS DADOS ESSENCIAIS PARA EVITAR CONFLITOS
+        const usuarioIdBackup = localStorage.getItem('usuarioId');
+        const deviceIdBackup = localStorage.getItem('deviceId');
         
+        // Limpar todas as chaves
+        localStorage.clear();
+        
+        // Restaurar backups se existirem
+        if (usuarioIdBackup) {
+            localStorage.setItem('usuarioId_backup', usuarioIdBackup);
+        }
+        if (deviceIdBackup) {
+            localStorage.setItem('deviceId', deviceIdBackup);
+        }
+        
+        console.log('✅ Logout realizado');
         alert('Logout realizado com sucesso!');
         window.location.href = "../Login/index.html";
     }
 }
 
+// ✅ FUNÇÃO: Debug completo do localStorage
+function debugLocalStorage() {
+    console.log('🔍 DEBUG COMPLETO DO LOCALSTORAGE:');
+    const todasChaves = Object.keys(localStorage);
+    
+    console.log('Chaves encontradas:', todasChaves);
+    
+    todasChaves.forEach(chave => {
+        console.log(`   ${chave}:`, localStorage.getItem(chave));
+    });
+}
+
 // Carregar perfil quando a página abrir
 document.addEventListener('DOMContentLoaded', function() {
     console.log("📄 Página de perfil carregada");
-    carregarPerfilUsuario();
+    
+    // ✅ VERIFICAR SE USUÁRIO ESTÁ LOGADO
+    const usuarioLogado = localStorage.getItem('usuarioLogado');
+    const usuarioId = localStorage.getItem('usuarioId');
+    
+    if (!usuarioLogado || usuarioLogado !== 'true' || !usuarioId) {
+        console.log('❌ Usuário não logado - mostrando tela de login');
+        // Não redirecionar automaticamente, apenas mostrar estado não logado
+    } else {
+        console.log('👤 Usuário logado:', localStorage.getItem('usuarioNome'));
+        carregarPerfilUsuario();
+    }
+    
+    // ✅ ADICIONAR BOTÃO DE DEBUG (apenas para desenvolvimento)
+    if (window.location.href.includes('localhost') || window.location.href.includes('127.0.0.1')) {
+        const debugBtn = document.createElement('button');
+        debugBtn.innerHTML = '🐛 Debug';
+        debugBtn.style.position = 'fixed';
+        debugBtn.style.top = '10px';
+        debugBtn.style.left = '10px';
+        debugBtn.style.zIndex = '10000';
+        debugBtn.style.background = '#ff4444';
+        debugBtn.style.color = 'white';
+        debugBtn.style.border = 'none';
+        debugBtn.style.padding = '5px 10px';
+        debugBtn.style.borderRadius = '5px';
+        debugBtn.style.cursor = 'pointer';
+        debugBtn.onclick = debugLocalStorage;
+        document.body.appendChild(debugBtn);
+    }
 });
+
+// ✅ EXPORTAR FUNÇÕES PARA USO EXTERNO
+window.sincronizarPerfilComServidor = sincronizarPerfilComServidor;
+window.carregarPerfilUsuario = carregarPerfilUsuario;
     </script>
 </body>
 </html>
