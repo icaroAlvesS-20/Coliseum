@@ -6,14 +6,18 @@
       "use": "@vercel/static"
     },
     {
-      "src": "server.js",
+      "src": "**/*.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "**/*.css",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/server.js"
+      "dest": "https://coliseum-api.onrender.com/api/$1"
     },
     {
       "src": "/",
@@ -63,5 +67,8 @@
       "src": "/(.*)",
       "dest": "/Login/index.html"
     }
-  ]
+  ],
+  "env": {
+    "API_BASE_URL": "https://coliseum-api.onrender.com"
+  }
 }
