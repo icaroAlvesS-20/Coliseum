@@ -85,6 +85,11 @@
             box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
                         inset -2px -2px 5px rgba(255, 255, 255, 0.1);
             border: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
         }
 
         .bloco-cinza-escuro2 {
@@ -96,6 +101,10 @@
                         inset -2px -2px 5px rgba(255, 255, 255, 0.1);
             border: 1px solid #444;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
 
         .bloco-cinza-escuro3 {
@@ -106,6 +115,10 @@
             box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
                         inset -2px -2px 5px rgba(255, 255, 255, 0.1);
             border: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
 
         .bloco-cinza-escuro4 {
@@ -116,6 +129,10 @@
             box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
                         inset -2px -2px 5px rgba(255, 255, 255, 0.1);
             border: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
 
         .foto-perfil {
@@ -170,16 +187,20 @@
             color: #ffcf00;
             font-size: 28px;
             font-weight: bold;
-            margin: 0;
+            margin: 0 0 10px 0;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 100%;
         }
 
         h3 {
             color: #ffcf00;
             font-size: 20px;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 100%;
         }
 
         /* Estilos para o texto dentro dos blocos */
@@ -191,6 +212,8 @@
             font-size: 14px;
             line-height: 1.5;
             margin-bottom: 8px;
+            text-align: center;
+            width: 100%;
         }
 
         .bloco-cinza-escuro1 strong,
@@ -207,17 +230,18 @@
             gap: 6px;
             background: linear-gradient(135deg, #4CAF50, #45a049);
             color: white;
-            padding: 4px 12px;
+            padding: 6px 15px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 600;
-            margin-left: 10px;
+            margin: 8px 0;
             border: 2px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+            justify-content: center;
         }
 
         .nivel-icone {
-            font-size: 14px;
+            font-size: 16px;
         }
 
         .nivel-nome {
@@ -230,6 +254,8 @@
             border-radius: 10px;
             margin: 15px 0;
             border-left: 4px solid #ffcf00;
+            width: 100%;
+            text-align: center;
         }
 
         .progresso-info {
@@ -239,6 +265,7 @@
             margin-bottom: 8px;
             font-size: 12px;
             color: #ccc;
+            width: 100%;
         }
 
         .progresso-texto {
@@ -252,6 +279,7 @@
             border-radius: 4px;
             margin: 8px 0;
             overflow: hidden;
+            width: 100%;
         }
 
         .progresso-preenchido {
@@ -268,31 +296,37 @@
             text-align: center;
             margin-top: 5px;
             font-weight: 600;
+            width: 100%;
         }
 
         .info-basica {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
             margin: 8px 0;
+            width: 100%;
         }
 
         .serie {
             color: #ccc;
             font-size: 16px;
+            text-align: center;
         }
 
         .status {
             color: #4CAF50;
             font-size: 12px;
             margin-top: 5px;
+            text-align: center;
         }
 
         .info-item {
-            margin-bottom: 10px;
-            padding: 5px 0;
+            margin-bottom: 12px;
+            padding: 8px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            text-align: center;
         }
 
         .info-item:last-child {
@@ -304,6 +338,7 @@
             font-size: 12px;
             margin-top: 15px;
             text-align: center;
+            width: 100%;
         }
 
         /* Barra de progresso */
@@ -313,6 +348,7 @@
             border-radius: 5px;
             margin: 10px 0;
             overflow: hidden;
+            width: 100%;
         }
 
         .progresso-interno {
@@ -327,18 +363,21 @@
             background: #ffcf00;
             color: #000;
             border: none;
-            padding: 8px 16px;
+            padding: 10px 20px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
             transition: all 0.3s ease;
-            margin-top: 10px;
+            margin-top: 15px;
+            width: auto;
+            min-width: 160px;
         }
 
         .btn-interno:hover {
             background: #e6b800;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 207, 0, 0.4);
         }
 
         /* Scrollbar personalizada */
@@ -425,16 +464,6 @@
             h3 {
                 font-size: 18px;
             }
-
-            .info-basica {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
-            }
-
-            .nivel-badge {
-                margin-left: 0;
-            }
         }
 
         @media (max-width: 768px) {
@@ -486,8 +515,8 @@
             }
 
             .nivel-badge {
-                font-size: 11px;
-                padding: 3px 10px;
+                font-size: 12px;
+                padding: 5px 12px;
             }
         }
 
@@ -524,6 +553,12 @@
 
             .progresso-info {
                 font-size: 11px;
+            }
+
+            .btn-interno {
+                padding: 8px 16px;
+                font-size: 12px;
+                min-width: 140px;
             }
         }
     </style>
@@ -788,7 +823,7 @@ function atualizarInterfaceUsuario(usuario) {
     if (raContainer) {
         raContainer.innerHTML = `
             <h3>Informações</h3>
-            <div style="color: white; margin-top: 20px;">
+            <div style="color: white; margin-top: 20px; width: 100%;">
                 <div class="info-item">
                     <strong>RA:</strong> ${usuario.ra || 'Não informado'}
                 </div>
@@ -830,10 +865,16 @@ function atualizarInterfaceUsuario(usuario) {
     if (rankingContainer) {
         rankingContainer.innerHTML = `
             <h3>🏆 Ranking Pessoal</h3>
-            <div style="color: white; margin-top: 20px;">
-                <p><strong>Nível Atual:</strong> ${nivelAtual.nome}</p>
-                <p><strong>Posição no Ranking:</strong> Carregando...</p>
-                <p><strong>Melhor Pontuação:</strong> ${pontuacao} pontos</p>
+            <div style="color: white; margin-top: 20px; width: 100%;">
+                <div class="info-item">
+                    <strong>Nível Atual:</strong> ${nivelAtual.nome}
+                </div>
+                <div class="info-item">
+                    <strong>Posição no Ranking:</strong> Carregando...
+                </div>
+                <div class="info-item">
+                    <strong>Melhor Pontuação:</strong> ${pontuacao} pontos
+                </div>
                 <button class="btn-interno" onclick="carregarRankingCompleto()">
                     📊 Ver Ranking Completo
                 </button>
@@ -844,15 +885,21 @@ function atualizarInterfaceUsuario(usuario) {
     if (estatisticasContainer) {
         estatisticasContainer.innerHTML = `
             <h3>📈 Estatísticas</h3>
-            <div style="color: white; margin-top: 20px;">
-                <p><strong>Desafios Completos:</strong> ${usuario.desafiosCompletados || 0}</p>
-                <p><strong>Taxa de Acerto:</strong> Calculando...</p>
-                <p><strong>Tempo de Plataforma:</strong> Desde ${new Date().toLocaleDateString()}</p>
-                <div class="barra-progresso">
-                    <div class="progresso-interno" style="width: ${(usuario.desafiosCompletados || 0) * 10}%"></div>
+            <div style="color: white; margin-top: 20px; width: 100%;">
+                <div class="info-item">
+                    <strong>Desafios Completos:</strong> ${usuario.desafiosCompletados || 0}
                 </div>
-                <p style="font-size: 12px; color: #ccc; text-align: center;">
-                    Progresso geral: ${(usuario.desafiosCompletados || 0) * 10}%
+                <div class="info-item">
+                    <strong>Taxa de Acerto:</strong> Calculando...
+                </div>
+                <div class="info-item">
+                    <strong>Tempo de Plataforma:</strong> Desde ${new Date().toLocaleDateString()}
+                </div>
+                <div class="barra-progresso">
+                    <div class="progresso-interno" style="width: ${Math.min((usuario.desafiosCompletados || 0) * 10, 100)}%"></div>
+                </div>
+                <p style="font-size: 12px; color: #ccc; text-align: center; margin-top: 8px;">
+                    Progresso geral: ${Math.min((usuario.desafiosCompletados || 0) * 10, 100)}%
                 </p>
             </div>
         `;
@@ -908,7 +955,7 @@ function mostrarUsuarioNaoLogado() {
         const container = document.getElementById(containerId);
         if (container) {
             container.innerHTML = `
-                <div style="color: white; text-align: center; padding: 20px;">
+                <div style="color: white; text-align: center; padding: 20px; width: 100%;">
                     <p>🔒 Faça login para acessar</p>
                     <button class="btn-interno" onclick="fazerLogin()" style="margin-top: 15px;">
                         📲 Fazer Login
