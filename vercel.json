@@ -24,6 +24,10 @@
       "dest": "/Login/index.html"
     },
     {
+      "src": "/login", 
+      "dest": "/Login/index.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/Login/index.html"
     }
