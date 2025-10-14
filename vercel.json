@@ -16,8 +16,12 @@
       "dest": "/server.js"
     },
     {
-      "src": "/Menu",
+      "src": "/menu",
       "dest": "/Menu/indexM.html"
+    },
+    {
+      "src": "/",
+      "dest": "/Login/index.html"
     },
     {
       "src": "/(.*)",
