@@ -48,6 +48,26 @@
       "dest": "/Login/index.html"
     },
     {
+      "src": "/estudo",
+      "dest": "/Estudo/indexEs.html"
+    },
+    {
+      "src": "/saeb",
+      "dest": "/EstudoSaeb/index.html"
+    },
+    {
+      "src": "/prova-brasil",
+      "dest": "/EstudoPB/index.html"
+    },
+    {
+      "src": "/saresp",
+      "dest": "/EstudoSaresp/index.html"
+    },
+    {
+      "src": "/etec",
+      "dest": "/EstudoEtec/index.html"
+    },
+    {
       "src": "/",
       "dest": "/Login/index.html"
     },
