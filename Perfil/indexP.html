@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Provas</title>
+    <title>Perfil - Coliseum</title>
     <style>
         * {
             margin: 0;
@@ -13,132 +13,21 @@
         }
 
         body {
-            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
             min-height: 100vh;
-            padding: 20px 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-        }
-
-        /* Imagem do topo */
-        #ImgTopo {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 25px;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
         }
 
-        #ImgTopo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        /* Container principal das provas */
-        .provas-container {
-            width: 100%;
-            max-width: 500px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            margin-bottom: 80px;
-        }
-
-        /* Cards de prova */
-        .prova-card {
-            position: relative;
-            background: #323232;
-            padding: 25px 20px;
-            border-radius: 20px;
-            border: 3px solid #444;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
-            text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .prova-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8);
-        }
-
-        /* Cabeçalho do card */
-        .card-header {
-            background: #242424;
-            padding: 15px;
-            border-radius: 15px 15px 0 0;
-            margin: -25px -20px 20px -20px;
-            border-bottom: 2px solid #ffcf00;
-        }
-
-        .text-prova {
-            color: #ffcf00;
-            font-size: 22px;
-            font-weight: bold;
-            margin: 0;
-        }
-
-        /* Conteúdo do card */
-        .card-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .info-prova {
-            color: white;
-            font-size: 16px;
-            text-align: center;
-        }
-
-        .data-prova {
-            color: #ffcf00;
-            font-size: 28px;
-            font-weight: bold;
-            margin-top: 5px;
-        }
-
-        .ProvaBrasil {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 12px;
-            border: 2px solid #ffcf00;
-            background: #2a2a2a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-        }
-
-        .btn-estudo {
-            padding: 12px 25px;
-            background: #ffcf00;
-            color: #000;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 80%;
-            max-width: 200px;
-        }
-
-        .btn-estudo:hover {
-            background: #e6b800;
-            transform: scale(1.05);
-        }
-
-        /* Botões de navegação */
-        .btn-voltar, .btn-proximo {
+        .btn-voltar {
             position: fixed;
-            width: 55px;
-            height: 55px;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             background: #ffcf00;
             color: #000;
@@ -148,344 +37,839 @@
             cursor: pointer;
             z-index: 1000;
             display: flex;
-            justify-content: center;
             align-items: center;
-            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.4);
+            justify-content: center;
             transition: all 0.3s ease;
         }
 
-        .btn-voltar {
-            bottom: 20px;
-            right: 20px;
-        }
-
-        .btn-proximo {
-            bottom: 20px;
-            left: 20px;
-        }
-
-        .btn-voltar:hover, .btn-proximo:hover {
+        .btn-voltar:hover {
             background: #e6b800;
             transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(255, 207, 0, 0.6);
+            box-shadow: 0 4px 12px rgba(255, 207, 0, 0.3);
         }
 
-        /* Cores específicas para cada prova */
-        .prova-saeb .card-header {
-            border-bottom-color: #4CAF50;
+        .bloco-cinza {
+            width: 95%;
+            max-width: 1400px;
+            height: 90vh;
+            background: linear-gradient(145deg, #5a5a5a, #474747);
+            margin: 0 auto;
+            border-radius: 20px;
+            position: relative;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #666;
+            display: flex;
+            flex-direction: column;
         }
 
-        .prova-brasil .card-header {
-            border-bottom-color: #2196F3;
+        /* Container principal - LAYOUT MAIS EQUILIBRADO */
+        .conteudo-principal {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 1fr;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            grid-template-areas: 
+                "foto nome estatisticas"
+                "info ranking estatisticas";
+            height: 100%;
         }
 
-        .prova-saresp .card-header {
-            border-bottom-color: #FF9800;
+        .bloco-cinza-escuro1 {
+            grid-area: nome;
+            height: 120px;
+            background: linear-gradient(145deg, #383838, #282828);
+            border-radius: 15px;
+            padding: 15px 20px;
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
+                        inset -2px -2px 5px rgba(255, 255, 255, 0.1);
+            border: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
         }
 
-        .prova-etec .card-header {
-            border-bottom-color: #9C27B0;
+        .bloco-cinza-escuro2 {
+            grid-area: ranking;
+            background: linear-gradient(145deg, #383838, #282828);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
+                        inset -2px -2px 5px rgba(255, 255, 255, 0.1);
+            border: 1px solid #444;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
 
-        /* Media Queries para tablets */
-        @media (min-width: 768px) {
-            body {
-                padding: 30px 20px;
-                justify-content: center;
-            }
-            
-            #ImgTopo {
-                width: 120px;
-                height: 120px;
-                margin-bottom: 30px;
-            }
-            
-            .provas-container {
-                max-width: 700px;
-                gap: 25px;
-            }
-            
-            .prova-card {
-                padding: 30px 25px;
-                border-radius: 25px;
-            }
-            
-            .card-header {
-                padding: 18px;
-                margin: -30px -25px 25px -25px;
-            }
-            
-            .text-prova {
-                font-size: 24px;
-            }
-            
-            .data-prova {
-                font-size: 32px;
-            }
-            
-            .ProvaBrasil {
-                width: 120px;
-                height: 120px;
-                font-size: 50px;
-            }
-            
-            .btn-estudo {
-                padding: 14px 30px;
-                font-size: 17px;
-            }
-            
-            .btn-voltar, .btn-proximo {
-                width: 60px;
-                height: 60px;
-                font-size: 26px;
-            }
+        .bloco-cinza-escuro3 {
+            grid-area: estatisticas;
+            background: linear-gradient(145deg, #383838, #282828);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
+                        inset -2px -2px 5px rgba(255, 255, 255, 0.1);
+            border: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
 
-        /* Media Queries para desktop */
-        @media (min-width: 1024px) {
-            .provas-container {
-                max-width: 900px;
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 30px;
-            }
-            
-            .prova-card {
-                padding: 35px 30px;
-            }
-            
-            .card-header {
+        .bloco-cinza-escuro4 {
+            grid-area: info;
+            background: linear-gradient(145deg, #383838, #282828);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
+                        inset -2px -2px 5px rgba(255, 255, 255, 0.1);
+            border: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            overflow-y: auto;
+        }
+
+        .foto-perfil {
+            grid-area: foto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .imgp {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            border: 4px solid #ffcf00;
+            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.3);
+            object-fit: cover;
+        }
+
+        /* BOTÃO SAIR */
+        .btn-logout-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .btn-logout {
+            width: 130px;
+            height: 45px;
+            background: linear-gradient(145deg, #ff4444, #cc0000);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+        }
+
+        .btn-logout:hover {
+            background: linear-gradient(145deg, #cc0000, #aa0000);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 68, 68, 0.4);
+        }
+
+        /* Tipografia ajustada */
+        h2 {
+            color: #ffcf00;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 0 10px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 100%;
+        }
+
+        h3 {
+            color: #ffcf00;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 100%;
+        }
+
+        .bloco-cinza-escuro1 p,
+        .bloco-cinza-escuro2 p,
+        .bloco-cinza-escuro3 p,
+        .bloco-cinza-escuro4 p {
+            color: #ffffff;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .bloco-cinza-escuro1 strong,
+        .bloco-cinza-escuro2 strong,
+        .bloco-cinza-escuro3 strong,
+        .bloco-cinza-escuro4 strong {
+            color: #ffcf00;
+        }
+
+        /* Sistema de níveis ajustado */
+        .nivel-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 8px 0;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+            justify-content: center;
+        }
+
+        .nivel-icone {
+            font-size: 16px;
+        }
+
+        .progresso-nivel {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #ffcf00;
+            width: 100%;
+            text-align: center;
+        }
+
+        .progresso-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #ccc;
+            width: 100%;
+        }
+
+        .barra-progresso {
+            background: #555;
+            height: 8px;
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .progresso-preenchido {
+            background: linear-gradient(90deg, #ffcf00, #ffaa00);
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease-in-out;
+            box-shadow: 0 0 10px rgba(255, 207, 0, 0.3);
+        }
+
+        .proximo-nivel {
+            font-size: 11px;
+            color: #ffcf00;
+            text-align: center;
+            margin-top: 5px;
+            font-weight: 600;
+            width: 100%;
+        }
+
+        .info-basica {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin: 8px 0;
+            width: 100%;
+        }
+
+        .serie {
+            color: #ccc;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .status {
+            color: #4CAF50;
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        .info-item {
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            text-align: center;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .sync-info {
+            color: #4CAF50;
+            font-size: 12px;
+            margin-top: 15px;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Botões internos */
+        .btn-interno {
+            background: #ffcf00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            width: auto;
+            min-width: 160px;
+        }
+
+        .btn-interno:hover {
+            background: #e6b800;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 207, 0, 0.4);
+        }
+
+        /* Scrollbar */
+        .bloco-cinza-escuro2::-webkit-scrollbar,
+        .bloco-cinza-escuro3::-webkit-scrollbar,
+        .bloco-cinza-escuro4::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .bloco-cinza-escuro2::-webkit-scrollbar-track,
+        .bloco-cinza-escuro3::-webkit-scrollbar-track,
+        .bloco-cinza-escuro4::-webkit-scrollbar-track {
+            background: #383838;
+            border-radius: 3px;
+        }
+
+        .bloco-cinza-escuro2::-webkit-scrollbar-thumb,
+        .bloco-cinza-escuro3::-webkit-scrollbar-thumb,
+        .bloco-cinza-escuro4::-webkit-scrollbar-thumb {
+            background: #ffcf00;
+            border-radius: 3px;
+        }
+
+        /* ========== RESPONSIVIDADE ========== */
+        @media (max-width: 1024px) {
+            .bloco-cinza {
+                width: 98%;
+                height: auto;
+                min-height: 90vh;
                 padding: 20px;
-                margin: -35px -30px 30px -30px;
             }
             
-            .text-prova {
-                font-size: 26px;
-            }
-            
-            .data-prova {
-                font-size: 36px;
-            }
-        }
-
-        /* Melhorias para telas muito pequenas */
-        @media (max-width: 360px) {
-            body {
-                padding: 15px 10px;
-            }
-            
-            #ImgTopo {
-                width: 80px;
-                height: 80px;
-                margin-bottom: 20px;
-            }
-            
-            .provas-container {
+            .conteudo-principal {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto auto auto;
+                grid-template-areas: 
+                    "foto"
+                    "nome"
+                    "info"
+                    "ranking"
+                    "estatisticas";
                 gap: 15px;
             }
             
-            .prova-card {
-                padding: 20px 15px;
-                border-radius: 15px;
+            .bloco-cinza-escuro1 {
+                height: auto;
+                min-height: 100px;
             }
             
-            .card-header {
-                padding: 12px;
-                margin: -20px -15px 15px -15px;
+            .imgp {
+                width: 100px;
+                height: 100px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
             }
             
-            .text-prova {
-                font-size: 18px;
+            .bloco-cinza {
+                padding: 15px;
             }
             
-            .info-prova {
-                font-size: 14px;
+            .conteudo-principal {
+                gap: 12px;
             }
             
-            .data-prova {
-                font-size: 24px;
+            .bloco-cinza-escuro1,
+            .bloco-cinza-escuro2,
+            .bloco-cinza-escuro3,
+            .bloco-cinza-escuro4 {
+                padding: 15px;
             }
             
-            .ProvaBrasil {
+            .imgp {
                 width: 80px;
                 height: 80px;
-                font-size: 35px;
             }
             
-            .btn-estudo {
-                padding: 10px 20px;
-                font-size: 14px;
-                width: 90%;
-            }
-            
-            .btn-voltar, .btn-proximo {
-                width: 50px;
-                height: 50px;
+            h2 {
                 font-size: 20px;
-                bottom: 15px;
             }
             
-            .btn-voltar {
-                right: 15px;
-            }
-            
-            .btn-proximo {
-                left: 15px;
+            h3 {
+                font-size: 18px;
             }
         }
-
-        /* Animações */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .prova-card {
-            animation: fadeInUp 0.6s ease-out;
-        }
-
-        .prova-card:nth-child(1) { animation-delay: 0.1s; }
-        .prova-card:nth-child(2) { animation-delay: 0.2s; }
-        .prova-card:nth-child(3) { animation-delay: 0.3s; }
-        .prova-card:nth-child(4) { animation-delay: 0.4s; }
     </style>
 </head>
 <body>
-
-    <div id="ImgTopo" class="aba-container">
-        <svg width="100" height="100" viewBox="0 0 100 100">
-            <rect width="100" height="100" fill="#ffcf00" rx="15"/>
-            <text x="50" y="45" text-anchor="middle" fill="#000" font-size="14" font-weight="bold">PROVAS</text>
-            <text x="50" y="65" text-anchor="middle" fill="#000" font-size="10">COLISEUM</text>
-            <path d="M30 75 L50 85 L70 75" stroke="#000" stroke-width="3" fill="none"/>
-            <circle cx="50" cy="30" r="8" fill="#000"/>
-        </svg>
-    </div>
-
-    <div class="provas-container">
-        <!-- SAEB -->
-        <div class="prova-card prova-saeb">
-            <div class="card-header">
-                <p class="text-prova">PROVA.SAEB</p>
+    <div class="bloco-cinza"> 
+        <div class="conteudo-principal">
+            <div class="foto-perfil">
+                <div class="imgp" style="
+                    width: 110px; 
+                    height: 110px; 
+                    border-radius: 50%; 
+                    border: 4px solid #ffcf00; 
+                    background: #ffcf00; 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    font-size: 35px;
+                    box-shadow: 0 4px 15px rgba(255, 207, 0, 0.3);
+                ">
+                    👤
+                </div>
             </div>
-            <div class="card-content">
-                <div class="info-prova">
-                    <p>Ocorrerá no dia:</p>
-                    <p class="data-prova">25/10</p>
-                </div>
-                <div class="ProvaBrasil">
-                    <svg width="80" height="80" viewBox="0 0 80 80">
-                        <rect width="80" height="80" fill="#4CAF50" rx="10"/>
-                        <text x="40" y="35" text-anchor="middle" fill="white" font-size="12" font-weight="bold">SAEB</text>
-                        <text x="40" y="50" text-anchor="middle" fill="white" font-size="8">AVALIAÇÃO</text>
-                        <path d="M20 60 L40 70 L60 60" stroke="white" stroke-width="2" fill="none"/>
-                        <circle cx="40" cy="25" r="5" fill="white"/>
-                    </svg>
-                </div>
-                <button class="btn-estudo" onclick="mostrarSB()">Estude Agora!</button>
+
+            <div class="bloco-cinza-escuro1" id="nome-usuario-container">
+                <!-- Nome será carregado pelo JavaScript -->
+            </div>
+
+            <div class="bloco-cinza-escuro4" id="RA-container">
+                <!-- Informações serão carregadas pelo JavaScript -->
+            </div>
+
+            <div class="bloco-cinza-escuro2" id="ranking-container">
+                <!-- Ranking será carregado pelo JavaScript -->
+            </div>
+
+            <div class="bloco-cinza-escuro3" id="estatisticas-container">
+                <!-- Estatísticas serão carregadas pelo JavaScript -->
             </div>
         </div>
 
-        <!-- PROVA BRASIL -->
-        <div class="prova-card prova-brasil">
-            <div class="card-header">
-                <p class="text-prova">PROVA.BRASIL</p>
-            </div>
-            <div class="card-content">
-                <div class="info-prova">
-                    <p>Ocorrerá no dia:</p>
-                    <p class="data-prova">27/10</p>
-                </div>
-                <div class="ProvaBrasil">
-                    <svg width="80" height="80" viewBox="0 0 80 80">
-                        <rect width="80" height="80" fill="#2196F3" rx="10"/>
-                        <text x="40" y="30" text-anchor="middle" fill="white" font-size="10" font-weight="bold">PROVA</text>
-                        <text x="40" y="45" text-anchor="middle" fill="white" font-size="10" font-weight="bold">BRASIL</text>
-                        <path d="M25 55 L40 65 L55 55" stroke="white" stroke-width="2" fill="none"/>
-                        <rect x="30" y="20" width="20" height="10" fill="white" rx="2"/>
-                    </svg>
-                </div>
-                <button class="btn-estudo" onclick="mostrarPB()">Estude Agora!</button>
-            </div>
-        </div>
-
-        <!-- SARESP -->
-        <div class="prova-card prova-saresp">
-            <div class="card-header">
-                <p class="text-prova">PROVA.SARESP</p>
-            </div>
-            <div class="card-content">
-                <div class="info-prova">
-                    <p>Ocorrerá no dia:</p>
-                    <p class="data-prova">3/11</p>
-                </div>
-                <div class="ProvaBrasil">
-                    <svg width="80" height="80" viewBox="0 0 80 80">
-                        <rect width="80" height="80" fill="#FF9800" rx="10"/>
-                        <text x="40" y="35" text-anchor="middle" fill="white" font-size="12" font-weight="bold">SARESP</text>
-                        <text x="40" y="50" text-anchor="middle" fill="white" font-size="8">SÃO PAULO</text>
-                        <path d="M25 60 L40 55 L55 60" stroke="white" stroke-width="2" fill="none"/>
-                        <polygon points="40,20 50,35 30,35" fill="white"/>
-                    </svg>
-                </div>
-                <button class="btn-estudo" onclick="mostrarSR()">Estude Agora!</button>
-            </div>
-        </div>
-
-        <!-- ETEC -->
-        <div class="prova-card prova-etec">
-            <div class="card-header">
-                <p class="text-prova">PROVA.ETEC</p>
-            </div>
-            <div class="card-content">
-                <div class="info-prova">
-                    <p>Ocorrerá no dia:</p>
-                    <p class="data-prova">30/11</p>
-                </div>
-                <div class="ProvaBrasil">
-                    <svg width="80" height="80" viewBox="0 0 80 80">
-                        <rect width="80" height="80" fill="#9C27B0" rx="10"/>
-                        <text x="40" y="35" text-anchor="middle" fill="white" font-size="12" font-weight="bold">ETEC</text>
-                        <text x="40" y="50" text-anchor="middle" fill="white" font-size="8">TÉCNICO</text>
-                        <path d="M30 60 L40 65 L50 60" stroke="white" stroke-width="2" fill="none"/>
-                        <rect x="35" y="20" width="10" height="15" fill="white" rx="2"/>
-                    </svg>
-                </div>
-                <button class="btn-estudo" onclick="mostrarPE()">Estude Agora!</button>
-            </div>
+        <div class="btn-logout-container">
+            <button onclick="fazerLogout()" class="btn-logout">Sair</button>
         </div>
     </div>
 
     <button class="btn-voltar" onclick="history.back()">←</button>
-    <button class="btn-proximo" onclick="mostrarEstudo()">→</button>
 
     <script>
-        function mostrarSB() {
-            window.location.href = "EstudoSaeb/indexSB.html";
-        }
-        
-        function mostrarPB() {
-            window.location.href = "EstudoPB/indexPB.html";
-        }
-        
-        function mostrarPE() {
-            window.location.href = "EstudoEtec/indexPE.html";
-        }
-        
-        function mostrarSR() {
-            window.location.href = "EstudoSaresp/indexSR.html";
-        }
-        
-        function mostrarEstudo() {
-            window.location.href = "../Estudo/indexEs.html";
-        }
-    </script>
+        // SILENCIAR ERROS DE TERCEIROS
+        const originalError = console.error;
+        console.error = (...args) => {
+            if (typeof args[0] === 'string') {
+                if (
+                    args[0].includes('EXCEPTIONS_HOSTS') ||
+                    args[0].includes('overlay.js') ||
+                    args[0].includes('PAYWALL') ||
+                    args[0].includes('sentry') ||
+                    args[0].includes('Chrome API')
+                ) {
+                    return;
+                }
+            }
+            originalError.apply(console, args);
+        };
 
+        const API_URL = 'https://coliseum-api.onrender.com';
+
+        // ✅ ROTAS DO VERCEL
+        const ROTAS = {
+            MENU: '/menu',
+            RANKING: '/ranking',
+            PERFIL: '/perfil',
+            AMIGOS: '/amigos',
+            DESAFIOS: '/desafios',
+            PROVAS: '/provas',
+            CONFIGURACAO: '/configuracao',
+            CONTATO: '/contato',
+            NAVEGADOR: '/navegador',
+            LOGIN: '/login'
+        };
+
+        // ✅ SISTEMA DE NÍVEIS
+        const SISTEMA_NIVEIS = {
+            niveis: [
+                { nome: "🌱 Novato", icone: "🌱", pontosMin: 0, cor: "#4CAF50" },
+                { nome: "📚 Aprendiz", icone: "📚", pontosMin: 50, cor: "#2196F3" },
+                { nome: "⚔️ Guerreiro", icone: "⚔️", pontosMin: 100, cor: "#FF9800" },
+                { nome: "🎯 Mestre", icone: "🎯", pontosMin: 200, cor: "#9C27B0" },
+                { nome: "🏆 Lenda", icone: "🏆", pontosMin: 500, cor: "#FFD700" },
+                { nome: "👑 Imperador", icone: "👑", pontosMin: 1000, cor: "#FF5722" },
+                { nome: "🐲 Lendário", icone: "🐲", pontosMin: 1500, cor: "#f21707" },
+                { nome: "👺 Oni", icone: "👺", pontosMin: 2000, cor: "#3b0101" },
+                { nome: "☠️ Imortal", icone: "☠️", pontosMin: 2500, cor: "#70418a" }
+            ],
+            
+            calcularNivel: function(pontuacao) {
+                for (let i = this.niveis.length - 1; i >= 0; i--) {
+                    if (pontuacao >= this.niveis[i].pontosMin) {
+                        return this.niveis[i];
+                    }
+                }
+                return this.niveis[0];
+            },
+            
+            calcularProgresso: function(pontuacao) {
+                const nivelAtual = this.calcularNivel(pontuacao);
+                const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
+                const proximoNivel = this.niveis[nivelIndex + 1];
+                
+                if (!proximoNivel) return 100; // Nível máximo
+                
+                const pontosNivelAtual = nivelAtual.pontosMin;
+                const pontosProximoNivel = proximoNivel.pontosMin;
+                const progresso = ((pontuacao - pontosNivelAtual) / (pontosProximoNivel - pontosNivelAtual)) * 100;
+                
+                return Math.min(Math.max(progresso, 0), 100);
+            },
+            
+            calcularPontosParaProximoNivel: function(pontuacao) {
+                const nivelAtual = this.calcularNivel(pontuacao);
+                const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
+                const proximoNivel = this.niveis[nivelIndex + 1];
+                
+                if (!proximoNivel) return 0; // Nível máximo
+                
+                return proximoNivel.pontosMin - pontuacao;
+            }
+        };
+
+        // ✅ VERIFICAÇÃO ROBUSTA DE LOGIN (CORRIGIDA)
+        function verificarEstadoLogin() {
+            console.log('🔍 Verificando estado do login...');
+            
+            const usuarioJSON = localStorage.getItem('usuario');
+            const usuarioLogado = localStorage.getItem('usuarioLogado');
+            const usuarioId = localStorage.getItem('usuarioId');
+            
+            console.log('📊 Dados encontrados:', {
+                temUsuarioJSON: !!usuarioJSON,
+                usuarioLogado,
+                usuarioId
+            });
+
+            if (usuarioJSON) {
+                try {
+                    const usuario = JSON.parse(usuarioJSON);
+                    if (usuario && usuario.id) {
+                        console.log('✅ Usuário encontrado na chave "usuario"');
+                        garantirDadosIndividuais(usuario);
+                        return true;
+                    }
+                } catch (e) {
+                    console.error('Erro ao parsear usuario:', e);
+                }
+            }
+            
+            if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
+                console.log('✅ Usuário identificado pelo ID');
+                if (!usuarioLogado || usuarioLogado !== 'true') {
+                    localStorage.setItem('usuarioLogado', 'true');
+                }
+                return true;
+            }
+            
+            console.log('❌ Nenhum dado de usuário válido encontrado');
+            return false;
+        }
+
+        // ✅ NOVA FUNÇÃO: Garantir dados individuais
+        function garantirDadosIndividuais(usuario) {
+            if (!localStorage.getItem('usuarioId')) {
+                localStorage.setItem('usuarioId', usuario.id.toString());
+            }
+            if (!localStorage.getItem('usuarioNome')) {
+                localStorage.setItem('usuarioNome', usuario.nome || 'Jogador');
+            }
+            if (!localStorage.getItem('usuarioPontuacao')) {
+                localStorage.setItem('usuarioPontuacao', usuario.pontuacao?.toString() || '0');
+            }
+            if (!localStorage.getItem('usuarioDesafios')) {
+                localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados?.toString() || '0');
+            }
+            if (!localStorage.getItem('usuarioRA')) {
+                localStorage.setItem('usuarioRA', usuario.ra || '');
+            }
+            if (!localStorage.getItem('usuarioSerie')) {
+                localStorage.setItem('usuarioSerie', usuario.serie || '');
+            }
+            localStorage.setItem('usuarioLogado', 'true');
+        }
+
+        // ✅ CARREGAR PERFIL PRINCIPAL
+        async function carregarPerfilUsuario() {
+            console.log("🚀 Iniciando carregamento do perfil...");
+            
+            try {
+                const estaLogado = verificarEstadoLogin();
+                
+                if (!estaLogado) {
+                    console.log('❌ Usuário não logado');
+                    mostrarUsuarioNaoLogado();
+                    return;
+                }
+
+                const usuarioId = localStorage.getItem('usuarioId');
+                console.log('📡 Buscando dados para usuarioId:', usuarioId);
+
+                const response = await fetch(`${API_URL}/api/usuario/${usuarioId}`);
+                
+                if (response.ok) {
+                    const usuario = await response.json();
+                    console.log('✅ Dados online recebidos:', usuario);
+                    
+                    atualizarLocalStorageComDados(usuario);
+                    atualizarInterfaceUsuario(usuario);
+                    
+                } else {
+                    console.log('📴 Usando dados locais - servidor offline');
+                    carregarDadosLocais();
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar perfil:', error);
+                carregarDadosLocais();
+            }
+        }
+
+        // ✅ ATUALIZAR LOCALSTORAGE
+        function atualizarLocalStorageComDados(usuario) {
+            localStorage.setItem('usuario', JSON.stringify(usuario));
+            garantirDadosIndividuais(usuario);
+        }
+
+        // ✅ ATUALIZAR INTERFACE COM SISTEMA DE NÍVEIS
+        function atualizarInterfaceUsuario(usuario) {
+            const container = document.getElementById("nome-usuario-container");
+            const raContainer = document.getElementById("RA-container");
+            const rankingContainer = document.getElementById("ranking-container");
+            const estatisticasContainer = document.getElementById("estatisticas-container");
+            
+            // ✅ CALCULAR NÍVEL E PROGRESSO
+            const pontuacao = usuario.pontuacao || 0;
+            const nivelAtual = SISTEMA_NIVEIS.calcularNivel(pontuacao);
+            const progresso = SISTEMA_NIVEIS.calcularProgresso(pontuacao);
+            const pontosParaProximo = SISTEMA_NIVEIS.calcularPontosParaProximoNivel(pontuacao);
+            
+            if (container) {
+                container.innerHTML = `
+                    <h2>${usuario.nome}</h2>
+                    <div class="info-basica">
+                        <span class="serie">${usuario.serie || 'Série não informada'} • ${pontuacao} pontos</span>
+                        <!-- ✅ NÍVEL NO ESPAÇO 1 -->
+                        <div class="nivel-badge" style="background: linear-gradient(135deg, ${nivelAtual.cor}, ${nivelAtual.cor}dd);">
+                            <span class="nivel-icone">${nivelAtual.icone}</span>
+                            <span class="nivel-nome">${nivelAtual.nome}</span>
+                        </div>
+                    </div>
+                    <p class="status">✅ Online - Dados em tempo real</p>
+                `;
+            }
+            
+            if (raContainer) {
+                raContainer.innerHTML = `
+                    <h3>Informações</h3>
+                    <div style="color: white; margin-top: 15px; width: 100%;">
+                        <div class="info-item">
+                            <strong>RA:</strong> ${usuario.ra || 'Não informado'}
+                        </div>
+                        <div class="info-item">
+                            <strong>Série:</strong> ${usuario.serie || 'Não informada'}
+                        </div>
+                        <div class="info-item">
+                            <strong>Pontuação:</strong> ${pontuacao} pontos
+                        </div>
+                        
+                        <!-- ✅ BARRA DE PROGRESSO NO ESPAÇO 2 -->
+                        <div class="progresso-nivel">
+                            <div class="progresso-info">
+                                <span>Progresso para o próximo nível</span>
+                                <span class="progresso-texto">${Math.round(progresso)}%</span>
+                            </div>
+                            <div class="barra-progresso">
+                                <div class="progresso-preenchido" style="width: ${progresso}%"></div>
+                            </div>
+                            <div class="proximo-nivel">
+                                ${pontosParaProximo > 0 ? 
+                                    `⏫ ${pontosParaProximo} pontos para o próximo nível` : 
+                                    '🎉 Nível máximo alcançado!'}
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <strong>Desafios:</strong> ${usuario.desafiosCompletados || 0} completos
+                        </div>
+                        <div class="info-item">
+                            <strong>ID:</strong> ${usuario.id || 'N/A'}
+                        </div>
+                        <p class="sync-info">🌐 Dados sincronizados com servidor</p>
+                    </div>
+                `;
+            }
+
+            // Conteúdo para os outros containers
+            if (rankingContainer) {
+                rankingContainer.innerHTML = `
+                    <h3>🏆 Ranking Pessoal</h3>
+                    <div style="color: white; margin-top: 15px; width: 100%;">
+                        <div class="info-item">
+                            <strong>Nível Atual:</strong> ${nivelAtual.nome}
+                        </div>
+                        <div class="info-item">
+                            <strong>Posição no Ranking:</strong> Carregando...
+                        </div>
+                        <div class="info-item">
+                            <strong>Melhor Pontuação:</strong> ${pontuacao} pontos
+                        </div>
+                        <button class="btn-interno" onclick="carregarRankingCompleto()">
+                            📊 Ver Ranking Completo
+                        </button>
+                    </div>
+                `;
+            }
+
+            if (estatisticasContainer) {
+                estatisticasContainer.innerHTML = `
+                    <h3>📈 Estatísticas</h3>
+                    <div style="color: white; margin-top: 15px; width: 100%;">
+                        <div class="info-item">
+                            <strong>Desafios Completos:</strong> ${usuario.desafiosCompletados || 0}
+                        </div>
+                        <div class="info-item">
+                            <strong>Taxa de Acerto:</strong> Calculando...
+                        </div>
+                        <div class="info-item">
+                            <strong>Tempo de Plataforma:</strong> Desde ${new Date().toLocaleDateString()}
+                        </div>
+                        <div class="barra-progresso">
+                            <div class="progresso-preenchido" style="width: ${Math.min((usuario.desafiosCompletados || 0) * 10, 100)}%"></div>
+                        </div>
+                        <p style="font-size: 11px; color: #ccc; text-align: center; margin-top: 8px;">
+                            Progresso geral: ${Math.min((usuario.desafiosCompletados || 0) * 10, 100)}%
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        // ✅ CARREGAR DADOS LOCAIS (CORRIGIDA)
+        function carregarDadosLocais() {
+            console.log('📱 Carregando dados locais...');
+            
+            const usuarioJSON = localStorage.getItem('usuario');
+            let usuario = null;
+            
+            if (usuarioJSON) {
+                try {
+                    usuario = JSON.parse(usuarioJSON);
+                } catch (e) {
+                    console.error('Erro ao parsear usuario:', e);
+                }
+            }
+            
+            if (!usuario) {
+                usuario = {
+                    nome: localStorage.getItem('usuarioNome'),
+                    id: localStorage.getItem('usuarioId'),
+                    pontuacao: parseInt(localStorage.getItem('usuarioPontuacao')) || 0,
+                    desafiosCompletados: parseInt(localStorage.getItem('usuarioDesafios')) || 0,
+                    ra: localStorage.getItem('usuarioRA') || '',
+                    serie: localStorage.getItem('usuarioSerie') || ''
+                };
+            }
+            
+            if (!usuario.nome || !usuario.id) {
+                mostrarUsuarioNaoLogado();
+                return;
+            }
+            
+            atualizarInterfaceUsuario(usuario);
+        }
+
+        // ✅ USUÁRIO NÃO LOGADO
+        function mostrarUsuarioNaoLogado() {
+            console.log('👤 Mostrando tela de usuário não logado');
+            
+            const containers = [
+                "nome-usuario-container",
+                "RA-container", 
+                "ranking-container",
+                "estatisticas-container"
+            ];
+            
+            containers.forEach(containerId => {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = `
+                        <div style="color: white; text-align: center; padding: 20px; width: 100%;">
+                            <p>🔒 Faça login para acessar</p>
+                            <button class="btn-interno" onclick="fazerLogin()" style="margin-top: 15px;">
+                                📲 Fazer Login
+                            </button>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        // ✅ FUNÇÕES AUXILIARES (CORRIGIDAS)
+        function fazerLogin() {
+            window.location.href = ROTAS.LOGIN;
+        }
+
+        function carregarRankingCompleto() {
+            window.location.href = ROTAS.RANKING;
+        }
+
+        function fazerLogout() {
+            if (confirm('Tem certeza que deseja sair?')) {
+                localStorage.clear();
+                alert('Logout realizado!');
+                window.location.href = ROTAS.LOGIN;
+            }
+        }
+
+        // ✅ INICIALIZAÇÃO
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("📄 Página de perfil carregada");
+            carregarPerfilUsuario();
+        });
+
+        console.log('🎯 Sistema de níveis implementado!');
+    </script>
 </body>
 </html>
