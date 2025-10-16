@@ -285,7 +285,7 @@
 
             <button class="nav-btn" onclick="mostrarEstudo()">
                 <div class="nav-icon">📖</div>
-                <div class="nav-label">Estudos</div>
+                <div class="nav-label">Estudo</div>
             </button>
 
             <button class="nav-btn" onclick="mostrarContato()">
@@ -313,7 +313,7 @@ const ROTAS = {
     CONTATO: '/contato',
     NAVEGADOR: '/navegador',
     LOGIN: '/login',
-    ESTUDOS: '/estudos'
+    ESTUDO: '/estudo'
 };
 
 // ✅ FUNÇÕES DE REDIRECIONAMENTO SIMPLES
@@ -357,8 +357,8 @@ function mostrarNavegador() {
     window.location.href = ROTAS.NAVEGADOR;
 }
   function mostrarEstudo() { 
-    console.log('👤 Redirecionando para Esudos...');
-    window.location.href = ROTAS.ESTUDOS;
+    console.log('📖 Redirecionando para Esudo...');
+    window.location.href = ROTAS.ESTUDO;
 }  
 
 // ✅ FUNÇÃO PARA CARREGAR DADOS DO USUÁRIO (CORRIGIDA)
