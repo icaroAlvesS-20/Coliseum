@@ -29,7 +29,7 @@
     },
     {
       "src": "/configuracao",
-      "dest": "/Configuracao/indexC.html"
+      "dest": "/Configuração/indexC.html"
     },
     {
       "src": "/perfil",
@@ -53,19 +53,35 @@
     },
     {
       "src": "/saeb",
-      "dest": "/EstudoSaeb/indexSB.html"
+      "dest": "/EstudoSaeb/index.html"
     },
     {
       "src": "/prova-brasil",
-      "dest": "/EstudoPB/indexPB.html"
+      "dest": "/EstudoPB/index.html"
     },
     {
       "src": "/saresp",
-      "dest": "/EstudoSaresp/indexSR.html"
+      "dest": "/Estudosaresp/index.html"
     },
     {
       "src": "/etec",
-      "dest": "/EstudoEtec/indexPE.html"
+      "dest": "/EstudoEtec/index.html"
+    },
+    {
+      "src": "/matematica",
+      "dest": "/Matemática/indexMT.html"
+    },
+    {
+      "src": "/portugues",
+      "dest": "/LinguaPortuguesa/indexLP.html"
+    },
+    {
+      "src": "/ciencias-humanas",
+      "dest": "/CSH/indexCSH.html"
+    },
+    {
+      "src": "/ciencias-natureza",
+      "dest": "/GSN/indexCSN.html"
     },
     {
       "src": "/",
