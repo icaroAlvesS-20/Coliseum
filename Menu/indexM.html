@@ -283,9 +283,9 @@
                 <div class="nav-label">Config</div>
             </button>
 
-            <button class="nav-btn" onclick="mostrarPerfil()">
+            <button class="nav-btn" onclick="mostrarEstudo()">
                 <div class="nav-icon">👤</div>
-                <div class="nav-label">Perfil</div>
+                <div class="nav-label">Estudos</div>
             </button>
 
             <button class="nav-btn" onclick="mostrarContato()">
@@ -312,7 +312,8 @@ const ROTAS = {
     CONFIGURACAO: '/configuracao',
     CONTATO: '/contato',
     NAVEGADOR: '/navegador',
-    LOGIN: '/login'
+    LOGIN: '/login',
+    ESTUDOS: '/estudos'
 };
 
 // ✅ FUNÇÕES DE REDIRECIONAMENTO SIMPLES
@@ -355,6 +356,10 @@ function mostrarNavegador() {
     console.log('🌐 Redirecionando para Navegador...');
     window.location.href = ROTAS.NAVEGADOR;
 }
+  function mostrarPerfil() { 
+    console.log('👤 Redirecionando para Esudos...');
+    window.location.href = ROTAS.ESTUDOS;
+}  
 
 // ✅ FUNÇÃO PARA CARREGAR DADOS DO USUÁRIO (CORRIGIDA)
 function carregarDadosUsuario() {
