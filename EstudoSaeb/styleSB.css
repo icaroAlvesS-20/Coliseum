@@ -1,0 +1,260 @@
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Container principal */
+        .bloco-estudo {
+            width: 100%;
+            max-width: 500px;
+            background-color: #323232;
+            border-radius: 20px;
+            padding: 25px 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 2px solid #444;
+            margin-bottom: 80px;
+        }
+
+        /* Título */
+        h2 {
+            color: #ffcf00;
+            font-size: 24px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(255, 207, 0, 0.3);
+        }
+
+        /* Cards de estudo */
+        .bloco-text-estudo {
+            background: #242424;
+            width: 100%;
+            padding: 20px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+            border-left: 4px solid #ffcf00;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .bloco-text-estudo:hover {
+            transform: translateY(-3px);
+            background: #2a2a2a;
+            border-left-color: #ffdd44;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .bloco-text-estudo a {
+            color: #ffcf00;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            width: 100%;
+            padding: 10px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .bloco-text-estudo a:hover {
+            color: #ffffff;
+            transform: scale(1.05);
+        }
+
+        /* Ícones para os links */
+        .bloco-text-estudo a::before {
+            content: "📚";
+            font-size: 20px;
+        }
+
+        .bloco-text-estudo:nth-child(2) a::before {
+            content: "🌐";
+        }
+
+        .bloco-text-estudo:nth-child(3) a::before {
+            content: "📝";
+        }
+
+        .bloco-text-estudo:nth-child(4) a::before {
+            content: "📖";
+        }
+
+        .bloco-text-estudo:nth-child(5) a::before {
+            content: "🎯";
+        }
+
+        /* Botão voltar */
+        .btn-voltar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: #ffcf00;
+            color: #000;
+            font-size: 24px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-voltar:hover {
+            background: #e6b800;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(255, 207, 0, 0.6);
+        }
+
+        /* Media Queries para tablets */
+        @media (min-width: 768px) {
+            body {
+                padding: 30px 20px;
+                justify-content: center;
+            }
+            
+            .bloco-estudo {
+                max-width: 600px;
+                padding: 35px 30px;
+                border-radius: 25px;
+            }
+            
+            h2 {
+                font-size: 28px;
+                margin-bottom: 30px;
+            }
+            
+            .bloco-text-estudo {
+                padding: 25px;
+                margin: 18px 0;
+                border-radius: 18px;
+            }
+            
+            .bloco-text-estudo a {
+                font-size: 20px;
+            }
+            
+            .btn-voltar {
+                width: 60px;
+                height: 60px;
+                font-size: 26px;
+            }
+        }
+
+        /* Media Queries para desktop */
+        @media (min-width: 1024px) {
+            .bloco-estudo {
+                max-width: 700px;
+                padding: 40px 35px;
+            }
+            
+            h2 {
+                font-size: 32px;
+            }
+            
+            .bloco-text-estudo {
+                padding: 30px;
+                margin: 20px 0;
+            }
+            
+            .bloco-text-estudo a {
+                font-size: 22px;
+            }
+        }
+
+        /* Melhorias para telas muito pequenas */
+        @media (max-width: 360px) {
+            body {
+                padding: 15px 10px;
+            }
+            
+            .bloco-estudo {
+                padding: 20px 15px;
+                border-radius: 15px;
+            }
+            
+            h2 {
+                font-size: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .bloco-text-estudo {
+                padding: 15px;
+                margin: 12px 0;
+                border-radius: 12px;
+            }
+            
+            .bloco-text-estudo a {
+                font-size: 16px;
+            }
+            
+            .btn-voltar {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+
+        /* Animações */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .bloco-estudo {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .bloco-text-estudo {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .bloco-text-estudo:nth-child(2) { animation-delay: 0.1s; }
+        .bloco-text-estudo:nth-child(3) { animation-delay: 0.2s; }
+        .bloco-text-estudo:nth-child(4) { animation-delay: 0.3s; }
+        .bloco-text-estudo:nth-child(5) { animation-delay: 0.4s; }
+
+        /* Efeito de foco para acessibilidade */
+        .bloco-text-estudo a:focus {
+            outline: 2px solid #ffcf00;
+            outline-offset: 2px;
+            border-radius: 8px;
+        }
+
+        /* Indicador de link externo */
+        .bloco-text-estudo a::after {
+            content: " ↗";
+            font-size: 0.9em;
+            opacity: 0.7;
+        }
