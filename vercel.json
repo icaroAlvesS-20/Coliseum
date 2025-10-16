@@ -53,19 +53,19 @@
     },
     {
       "src": "/saeb",
-      "dest": "Provas/EstudoSaeb/index.html"
+      "dest": "/Provas/EstudoSaeb/index.html"
     },
     {
       "src": "/prova-brasil",
-      "dest": "Provas/EstudoPB/index.html"
+      "dest": "/Provas/EstudoPB/index.html"
     },
     {
       "src": "/saresp",
-      "dest": "Provas/EstudoSaresp/index.html"
+      "dest": "/Provas/EstudoSaresp/index.html"
     },
     {
       "src": "/etec",
-      "dest": "Provas/EstudoEtec/index.html"
+      "dest": "/Provas/EstudoEtec/index.html"
     },
     {
       "src": "/",
