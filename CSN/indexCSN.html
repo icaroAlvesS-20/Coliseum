@@ -789,17 +789,23 @@
             </div>
         </div>
 
-        <div class="bloco-videos">
-            <div class="videos-titulo">
-                🎬 Biblioteca de Vídeos
+   <div class="bloco-videos">
+    <div class="videos-titulo">
+        🎬 Biblioteca de Vídeos - Ciências da Natureza
+    </div>
+    
+    <div class="videos-lista">
+        <!-- SEÇÃO DE BIOLOGIA -->
+        <div class="materia-secao">
+            <div class="materia-titulo">
+                🧬 Biologia
             </div>
-            
-            <div class="videos-lista">
-                <!-- Vídeo 1 - Biologia -->
+            <div class="videos-grid">
+                <!-- Vídeo 1 - Biologia Celular -->
                 <div class="video-item" onclick="abrirVideo('biologia-celular')">
                     <div class="video-thumbnail" style="background: linear-gradient(45deg, #4CAF50, #2196F3);"></div>
                     <div class="video-info">
-                        <div class="video-categoria">🧬 Biologia</div>
+                        <div class="video-categoria">🔬 Biologia Celular</div>
                         <div class="video-nome">Biologia Celular: Estrutura e Função</div>
                         <div class="video-descricao">Aula completa sobre organelas celulares e seus processos</div>
                         <div class="video-metadata">
@@ -808,33 +814,7 @@
                     </div>
                 </div>
 
-                <!-- Vídeo 2 - Química -->
-                <div class="video-item" onclick="abrirVideo('quimica-organica')">
-                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF9800, #4CAF50);"></div>
-                    <div class="video-info">
-                        <div class="video-categoria">⚗️ Química</div>
-                        <div class="video-nome">Química Orgânica: Funções e Reações</div>
-                        <div class="video-descricao">Principais funções orgânicas e mecanismos de reação</div>
-                        <div class="video-metadata">
-                            <span class="video-duracao">⏱️ 32 min</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Vídeo 3 - Física -->
-                <div class="video-item" onclick="abrirVideo('fisica-mecanica')">
-                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #9C27B0, #E91E63);"></div>
-                    <div class="video-info">
-                        <div class="video-categoria">⚛️ Física</div>
-                        <div class="video-nome">Mecânica: Cinemática e Dinâmica</div>
-                        <div class="video-descricao">Conceitos fundamentais de movimento e forças</div>
-                        <div class="video-metadata">
-                            <span class="video-duracao">⏱️ 35 min</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Vídeo 4 - Genética -->
+                <!-- Vídeo 2 - Genética -->
                 <div class="video-item" onclick="abrirVideo('genetica-molecular')">
                     <div class="video-thumbnail" style="background: linear-gradient(45deg, #2196F3, #03A9F4);"></div>
                     <div class="video-info">
@@ -843,6 +823,40 @@
                         <div class="video-descricao">Replicação, transcrição e tradução do material genético</div>
                         <div class="video-metadata">
                             <span class="video-duracao">⏱️ 25 min</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vídeo 3 - Ecologia -->
+                <div class="video-item" onclick="abrirVideo('ecologia-biosfera')">
+                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #8BC34A, #CDDC39);"></div>
+                    <div class="video-info">
+                        <div class="video-categoria">🌿 Ecologia</div>
+                        <div class="video-nome">Ecologia e Sustentabilidade</div>
+                        <div class="video-descricao">Relações ecológicas e conservação ambiental</div>
+                        <div class="video-metadata">
+                            <span class="video-duracao">⏱️ 20 min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEÇÃO DE QUÍMICA -->
+        <div class="materia-secao">
+            <div class="materia-titulo">
+                ⚗️ Química
+            </div>
+            <div class="videos-grid">
+                <!-- Vídeo 4 - Química Orgânica -->
+                <div class="video-item" onclick="abrirVideo('quimica-organica')">
+                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF9800, #4CAF50);"></div>
+                    <div class="video-info">
+                        <div class="video-categoria">🔬 Química Orgânica</div>
+                        <div class="video-nome">Química Orgânica: Funções e Reações</div>
+                        <div class="video-descricao">Principais funções orgânicas e mecanismos de reação</div>
+                        <div class="video-metadata">
+                            <span class="video-duracao">⏱️ 32 min</span>
                         </div>
                     </div>
                 </div>
@@ -874,6 +888,54 @@
                 </div>
             </div>
         </div>
+
+        <!-- SEÇÃO DE FÍSICA -->
+        <div class="materia-secao">
+            <div class="materia-titulo">
+                ⚛️ Física
+            </div>
+            <div class="videos-grid">
+                <!-- Vídeo 7 - Física Mecânica -->
+                <div class="video-item" onclick="abrirVideo('fisica-mecanica')">
+                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #9C27B0, #E91E63);"></div>
+                    <div class="video-info">
+                        <div class="video-categoria">📐 Mecânica</div>
+                        <div class="video-nome">Mecânica: Cinemática e Dinâmica</div>
+                        <div class="video-descricao">Conceitos fundamentais de movimento e forças</div>
+                        <div class="video-metadata">
+                            <span class="video-duracao">⏱️ 35 min</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vídeo 8 - Óptica -->
+                <div class="video-item" onclick="abrirVideo('optica-fisica')">
+                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #E91E63, #9C27B0);"></div>
+                    <div class="video-info">
+                        <div class="video-categoria">🔍 Óptica</div>
+                        <div class="video-nome">Óptica Geométrica e Física</div>
+                        <div class="video-descricao">Reflexão, refração e formação de imagens</div>
+                        <div class="video-metadata">
+                            <span class="video-duracao">⏱️ 28 min</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vídeo 9 - Eletromagnetismo -->
+                <div class="video-item" onclick="abrirVideo('eletromagnetismo')">
+                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #673AB7, #3F51B5);"></div>
+                    <div class="video-info">
+                        <div class="video-categoria">🧲 Eletromagnetismo</div>
+                        <div class="video-nome">Eletromagnetismo: Campos e Forças</div>
+                        <div class="video-descricao">Campo elétrico, magnético e indução eletromagnética</div>
+                        <div class="video-metadata">
+                            <span class="video-duracao">⏱️ 30 min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
     </div>
 
     <button class="btn-voltar" onclick="window.history.back()">←</button>
@@ -886,4 +948,5 @@
     </script>
 </body>
 </html>
+
 
