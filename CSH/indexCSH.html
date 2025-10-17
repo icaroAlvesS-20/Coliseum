@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="styleCSH.css">
     <title>Ciências Humanas</title>
 <style>
-        * {
+            * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -67,9 +67,149 @@
             padding: 20px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             border: 2px solid #444;
-            margin-bottom: 80px;
+            margin-bottom: 20px;
             max-height: 70vh;
             overflow-y: auto;
+        }
+
+        /* NOVO BLOCO DE VÍDEOS */
+        .bloco-videos {
+            width: 100%;
+            max-width: 600px;
+            background-color: #323232;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 2px solid #ffcf00;
+            margin-bottom: 80px;
+        }
+
+        .videos-titulo {
+            color: #ffcf00;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ffcf00;
+            padding-bottom: 10px;
+        }
+
+        .videos-lista {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .video-item {
+            background: #242424;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #444;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .video-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 207, 0, 0.3);
+            border-color: #ffcf00;
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: 160px;
+            background: linear-gradient(45deg, #ffcf00, #ff6b00);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-thumbnail::before {
+            content: '▶';
+            color: white;
+            font-size: 40px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .video-info {
+            padding: 15px;
+        }
+
+        .video-categoria {
+            color: #ffcf00;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .video-nome {
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .video-descricao {
+            color: #ccc;
+            font-size: 13px;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        .video-metadata {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #ffcf00;
+        }
+
+        .video-duracao {
+            background: rgba(255, 207, 0, 0.2);
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+
+        .video-views {
+            color: #ccc;
+        }
+
+        /* Player de Vídeo Principal */
+        .video-container {
+            width: 100%;
+            margin: 20px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .video-player {
+            width: 100%;
+            height: 200px;
+            background: #000;
+            border: none;
+        }
+
+        .video-info-principal {
+            background: #242424;
+            padding: 15px;
+            border-top: 2px solid #ffcf00;
+        }
+
+        .video-title {
+            color: #ffcf00;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .video-description-principal {
+            color: #fff;
+            font-size: 14px;
+            opacity: 0.8;
         }
 
         /* Navegação por matérias */
@@ -234,10 +374,27 @@
                 height: 100px;
             }
             
-            .bloco-cinza {
+            .bloco-cinza, .bloco-videos {
                 padding: 30px 25px;
                 border-radius: 25px;
                 max-height: 65vh;
+            }
+            
+            .videos-lista {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 20px;
+            }
+            
+            .video-thumbnail {
+                height: 180px;
+            }
+            
+            .video-player {
+                height: 300px;
+            }
+            
+            .video-title {
+                font-size: 18px;
             }
             
             .materias-navigation {
@@ -279,13 +436,21 @@
 
         /* Media Queries para desktop */
         @media (min-width: 1024px) {
-            .bloco-cinza {
+            .bloco-cinza, .bloco-videos {
                 max-width: 800px;
                 padding: 35px 30px;
             }
             
             h2 {
                 font-size: 32px;
+            }
+            
+            .videos-lista {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .video-player {
+                height: 350px;
             }
             
             .materia-btn {
@@ -309,9 +474,46 @@
                 height: 70px;
             }
             
-            .bloco-cinza {
+            .bloco-cinza, .bloco-videos {
                 padding: 15px;
                 border-radius: 15px;
+            }
+            
+            .videos-lista {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .video-thumbnail {
+                height: 140px;
+            }
+            
+            .video-info {
+                padding: 12px;
+            }
+            
+            .video-nome {
+                font-size: 14px;
+            }
+            
+            .video-descricao {
+                font-size: 12px;
+            }
+            
+            .video-player {
+                height: 180px;
+            }
+            
+            .video-info-principal {
+                padding: 10px;
+            }
+            
+            .video-title {
+                font-size: 14px;
+            }
+            
+            .video-description-principal {
+                font-size: 12px;
             }
             
             .materias-navigation {
@@ -355,7 +557,7 @@
         }
 
         /* Animações suaves */
-        .formula {
+        .formula, .video-item {
             transition: transform 0.3s ease, background 0.3s ease;
         }
 
@@ -984,6 +1186,124 @@
 </div>
 
     </div>
+       <div class="bloco-videos">
+        <div class="videos-titulo">
+            🎬 Biblioteca de Vídeos
+        </div>
+        
+        <div class="videos-lista">
+            <!-- Vídeo 1 - História -->
+            <div class="video-item" onclick="abrirVideo('historia-geral')">
+                <div class="video-thumbnail" style="background: linear-gradient(45deg, #4CAF50, #2196F3);"></div>
+                <div class="video-info">
+                    <div class="video-categoria">📜 História</div>
+                    <div class="video-nome">História Geral: Da Pré-História à Idade Contemporânea</div>
+                    <div class="video-descricao">Aula completa sobre os principais períodos da história mundial</div>
+                    <div class="video-metadata">
+                        <span class="video-duracao">⏱️ 25 min</span>
+                        <span class="video-views">👁️ 2.5K views</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vídeo 2 - Geografia -->
+            <div class="video-item" onclick="abrirVideo('geografia-fisica')">
+                <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF9800, #4CAF50);"></div>
+                <div class="video-info">
+                    <div class="video-categoria">🗺️ Geografia</div>
+                    <div class="video-nome">Geografia Física: Relevo, Clima e Hidrografia</div>
+                    <div class="video-descricao">Entenda os elementos naturais que compõem o planeta Terra</div>
+                    <div class="video-metadata">
+                        <span class="video-duracao">⏱️ 18 min</span>
+                        <span class="video-views">👁️ 1.8K views</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vídeo 3 - Filosofia -->
+            <div class="video-item" onclick="abrirVideo('filosofia-antiga')">
+                <div class="video-thumbnail" style="background: linear-gradient(45deg, #9C27B0, #E91E63);"></div>
+                <div class="video-info">
+                    <div class="video-categoria">💭 Filosofia</div>
+                    <div class="video-nome">Filosofia Antiga: Sócrates, Platão e Aristóteles</div>
+                    <div class="video-descricao">Os pilares do pensamento filosófico ocidental</div>
+                    <div class="video-metadata">
+                        <span class="video-duracao">⏱️ 22 min</span>
+                        <span class="video-views">👁️ 1.2K views</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vídeo 4 - Sociologia -->
+            <div class="video-item" onclick="abrirVideo('sociologia-classica')">
+                <div class="video-thumbnail" style="background: linear-gradient(45deg, #2196F3, #03A9F4);"></div>
+                <div class="video-info">
+                    <div class="video-categoria">👥 Sociologia</div>
+                    <div class="video-nome">Sociologia Clássica: Durkheim, Weber e Marx</div>
+                    <div class="video-descricao">Os fundadores da sociologia e suas teorias</div>
+                    <div class="video-metadata">
+                        <span class="video-duracao">⏱️ 30 min</span>
+                        <span class="video-views">👁️ 3.1K views</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vídeo 5 - Atualidades -->
+            <div class="video-item" onclick="abrirVideo('atualidades-enem')">
+                <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF5722, #FF9800);"></div>
+                <div class="video-info">
+                    <div class="video-categoria">📰 Atualidades</div>
+                    <div class="video-nome">Atualidades para o ENEM 2024</div>
+                    <div class="video-descricao">Principais temas que podem cair na prova</div>
+                    <div class="video-metadata">
+                        <span class="video-duracao">⏱️ 15 min</span>
+                        <span class="video-views">👁️ 4.2K views</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vídeo 6 - Brasil Colônia -->
+            <div class="video-item" onclick="abrirVideo('brasil-colonia')">
+                <div class="video-thumbnail" style="background: linear-gradient(45deg, #795548, #8BC34A);"></div>
+                <div class="video-info">
+                    <div class="video-categoria">🇧🇷 História do Brasil</div>
+                    <div class="video-nome">Brasil Colônia: Economia e Sociedade</div>
+                    <div class="video-descricao">Do descobrimento às vésperas da independência</div>
+                    <div class="video-metadata">
+                        <span class="video-duracao">⏱️ 20 min</span>
+                        <span class="video-views">👁️ 2.8K views</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <button class="btn-voltar" onclick="history.back()">←</button>
+
+        <script>
+        function abrirVideo(videoId) {
+            // Aqui você pode implementar a lógica para abrir o vídeo
+            // Por exemplo, mostrar um modal ou redirecionar para a página do vídeo
+            alert(`Abrindo vídeo: ${videoId}\n\nEm uma implementação real, este vídeo seria carregado em um player.`);
+            
+            // Exemplo de como poderia ser implementado:
+            // const videoUrl = obterUrlVideo(videoId);
+            // document.getElementById('videoPlayer').src = videoUrl;
+            // document.getElementById('videoModal').style.display = 'block';
+        }
+
+        function obterUrlVideo(videoId) {
+            // Mapeia os IDs dos vídeos para URLs reais do YouTube
+            const videos = {
+                'historia-geral': 'https://www.youtube.com/embed/CODIGO_HISTORIA',
+                'geografia-fisica': 'https://www.youtube.com/embed/CODIGO_GEOGRAFIA',
+                'filosofia-antiga': 'https://www.youtube.com/embed/CODIGO_FILOSOFIA',
+                'sociologia-classica': 'https://www.youtube.com/embed/CODIGO_SOCIOLOGIA',
+                'atualidades-enem': 'https://www.youtube.com/embed/CODIGO_ATUALIDADES',
+                'brasil-colonia': 'https://www.youtube.com/embed/CODIGO_BRASIL'
+            };
+            return videos[videoId] || 'https://www.youtube.com/embed/VIDEO_PADRAO';
+        }
+    </script>
 </body>
 </html>
+
