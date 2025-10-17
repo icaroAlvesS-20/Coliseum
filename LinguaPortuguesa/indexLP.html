@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Língua Portuguesa</title>
     <style>
-        * {
+      * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -40,13 +40,13 @@
             text-shadow: 0 2px 4px rgba(255, 207, 0, 0.3);
         }
 
-        /* Container principal - LAYOUT PARA PC */
+        /* Container principal - LAYOUT VERTICAL */
         .conteudo-principal {
             width: 100%;
             max-width: 1200px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
             margin-bottom: 40px;
         }
 
@@ -57,11 +57,9 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             border: 2px solid #444;
             height: fit-content;
-            max-height: 80vh;
-            overflow-y: auto;
         }
 
-        /* BLOCO DE VÍDEOS - LAYOUT PARA PC */
+        /* BLOCO DE VÍDEOS - AGORA EMBAIXO */
         .bloco-videos {
             background-color: #323232;
             border-radius: 20px;
@@ -81,10 +79,31 @@
             padding-bottom: 12px;
         }
 
-        .videos-lista {
+        /* SEÇÕES POR MATÉRIA */
+        .materia-secao {
+            margin-bottom: 30px;
+            border: 1px solid #444;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #2a2a2a;
+        }
+
+        .materia-titulo {
+            background: linear-gradient(135deg, #ffcf00, #ff6b00);
+            color: #000;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .videos-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 20px;
+            gap: 15px;
+            padding: 20px;
         }
 
         .video-item {
@@ -209,6 +228,93 @@
             font-weight: 600;
         }
 
+        /* MODAL DO VÍDEO */
+        .video-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .video-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 900px;
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(255, 207, 0, 0.3);
+            border: 2px solid #ffcf00;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            background: #ffcf00;
+            color: #000;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: #e6b800;
+            transform: scale(1.1);
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* Proporção 16:9 */
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .video-title {
+            color: #ffcf00;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 15px 0 10px 0;
+            text-align: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         /* Botão voltar */
         .btn-voltar {
             position: fixed;
@@ -259,8 +365,6 @@
         /* ========== MEDIA QUERIES PARA TABLET ========== */
         @media (max-width: 1024px) {
             .conteudo-principal {
-                grid-template-columns: 1fr;
-                gap: 25px;
                 max-width: 800px;
             }
             
@@ -272,9 +376,14 @@
                 font-size: 28px;
             }
             
-            .videos-lista {
+            .videos-grid {
                 grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
                 gap: 15px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 15px;
             }
         }
 
@@ -285,7 +394,7 @@
             }
             
             .conteudo-principal {
-                gap: 20px;
+                gap: 30px;
             }
             
             .bloco-cinza, .bloco-videos {
@@ -303,7 +412,7 @@
                 margin-bottom: 20px;
             }
             
-            .videos-lista {
+            .videos-grid {
                 grid-template-columns: 1fr;
                 gap: 15px;
             }
@@ -344,6 +453,28 @@
                 bottom: 20px;
                 right: 20px;
             }
+            
+            .close-modal {
+                top: -10px;
+                right: -10px;
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+            
+            .video-title {
+                font-size: 18px;
+            }
+            
+            .materia-titulo {
+                padding: 12px 15px;
+                font-size: 16px;
+            }
+            
+            .videos-grid {
+                padding: 15px;
+                gap: 12px;
+            }
         }
 
         /* ========== MEDIA QUERIES PARA TELAS MUITO PEQUENAS ========== */
@@ -371,22 +502,20 @@
             .video-thumbnail::before {
                 font-size: 24px;
             }
+            
+            .modal-content {
+                padding: 10px;
+            }
         }
 
         /* ========== MEDIA QUERIES PARA TELAS GRANDES (PC) ========== */
         @media (min-width: 1200px) {
             .conteudo-principal {
                 max-width: 1400px;
-                grid-template-columns: 2fr 1fr;
-                gap: 40px;
             }
             
-            .bloco-cinza {
-                max-height: 85vh;
-            }
-            
-            .videos-lista {
-                grid-template-columns: 1fr;
+            .videos-grid {
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             }
             
             .video-thumbnail {
@@ -398,15 +527,10 @@
         @media (min-width: 1600px) {
             .conteudo-principal {
                 max-width: 1600px;
-                grid-template-columns: 3fr 1fr;
             }
             
             .bloco-cinza, .bloco-videos {
                 padding: 40px;
-            }
-            
-            .videos-lista {
-                grid-template-columns: 1fr;
             }
         }
 
@@ -419,6 +543,7 @@
             transform: translateX(5px);
             background: rgba(255, 207, 0, 0.2);
         }
+
     </style>
 </head>
 <body>
@@ -536,80 +661,128 @@
             </div>
             
             <div class="videos-lista">
-                <!-- Vídeo 1 - Gramática -->
-                <div class="video-item" onclick="abrirVideo('gramatica-basica')">
-                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #4CAF50, #2196F3);"></div>
-                    <div class="video-info">
-                        <div class="video-categoria">📚 Gramática</div>
-                        <div class="video-nome">Gramática Básica: Classes de Palavras</div>
-                        <div class="video-descricao">Aprenda as 10 classes gramaticais do português</div>
-                        <div class="video-metadata">
-                            <span class="video-duracao">⏱️ 18 min</span>
+                <!-- SEÇÃO DE GRAMÁTICA -->
+                <div class="materia-secao">
+                    <div class="materia-titulo">
+                        📚 Gramática
+                    </div>
+                    <div class="videos-grid">
+                        <!-- Vídeo 1 - Gramática -->
+                        <div class="video-item" onclick="abrirVideo('gramatica-basica')">
+                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #4CAF50, #2196F3);"></div>
+                            <div class="video-info">
+                                <div class="video-categoria">🔤 Gramática Básica</div>
+                                <div class="video-nome">Gramática Básica: Classes de Palavras</div>
+                                <div class="video-descricao">Aprenda as 10 classes gramaticais do português</div>
+                                <div class="video-metadata">
+                                    <span class="video-duracao">⏱️ 17 min</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Vídeo 2 - Sintaxe -->
-                <div class="video-item" onclick="abrirVideo('sintaxe-avancada')">
-                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF9800, #4CAF50);"></div>
-                    <div class="video-info">
-                        <div class="video-categoria">📝 Sintaxe</div>
-                        <div class="video-nome">Sintaxe Avançada: Análise Sintática</div>
-                        <div class="video-descricao">Domine a análise de períodos simples e compostos</div>
-                        <div class="video-metadata">
-                            <span class="video-duracao">⏱️ 25 min</span>
+                <!-- SEÇÃO DE SINTAXE -->
+                <div class="materia-secao">
+                    <div class="materia-titulo">
+                        📝 Sintaxe
+                    </div>
+                    <div class="videos-grid">
+                        <!-- Vídeo 2 - Sintaxe -->
+                        <div class="video-item" onclick="abrirVideo('sintaxe-avancada')">
+                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF9800, #4CAF50);"></div>
+                            <div class="video-info">
+                                <div class="video-categoria">📊 Análise Sintática</div>
+                                <div class="video-nome">Sintaxe Avançada: Análise Sintática</div>
+                                <div class="video-descricao">Domine a análise de períodos simples e compostos</div>
+                                <div class="video-metadata">
+                                    <span class="video-duracao">⏱️ 9 min</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Vídeo 3 - Literatura -->
-                <div class="video-item" onclick="abrirVideo('literatura-brasileira')">
-                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #9C27B0, #E91E63);"></div>
-                    <div class="video-info">
-                        <div class="video-categoria">📖 Literatura</div>
-                        <div class="video-nome">Literatura Brasileira: Principais Autores</div>
-                        <div class="video-descricao">Do Romantismo ao Modernismo brasileiro</div>
-                        <div class="video-metadata">
-                            <span class="video-duracao">⏱️ 30 min</span>
+                <!-- SEÇÃO DE LITERATURA -->
+                <div class="materia-secao">
+                    <div class="materia-titulo">
+                        📖 Literatura
+                    </div>
+                    <div class="videos-grid">
+                        <!-- Vídeo 3 - Literatura -->
+                        <div class="video-item" onclick="abrirVideo('literatura-brasileira')">
+                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #9C27B0, #E91E63);"></div>
+                            <div class="video-info">
+                                <div class="video-categoria">🇧🇷 Literatura Brasileira</div>
+                                <div class="video-nome">Literatura Brasileira: Principais Autores</div>
+                                <div class="video-descricao">Do Romantismo ao Modernismo brasileiro</div>
+                                <div class="video-metadata">
+                                    <span class="video-duracao">⏱️ 33 min</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Vídeo 4 - Redação -->
-                <div class="video-item" onclick="abrirVideo('redacao-enem')">
-                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #2196F3, #03A9F4);"></div>
-                    <div class="video-info">
-                        <div class="video-categoria">✍️ Redação</div>
-                        <div class="video-nome">Redação ENEM: Estrutura da Dissertação</div>
-                        <div class="video-descricao">Aprenda a construir uma redação nota 1000</div>
-                        <div class="video-metadata">
-                            <span class="video-duracao">⏱️ 22 min</span>
+                <!-- SEÇÃO DE REDAÇÃO -->
+                <div class="materia-secao">
+                    <div class="materia-titulo">
+                        ✍️ Redação
+                    </div>
+                    <div class="videos-grid">
+                        <!-- Vídeo 4 - Redação -->
+                        <div class="video-item" onclick="abrirVideo('redacao-enem')">
+                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #2196F3, #03A9F4);"></div>
+                            <div class="video-info">
+                                <div class="video-categoria">📝 Redação ENEM</div>
+                                <div class="video-nome">Redação ENEM: Estrutura da Dissertação</div>
+                                <div class="video-descricao">Aprenda a construir uma redação nota 1000</div>
+                                <div class="video-metadata">
+                                    <span class="video-duracao">⏱️ 11 min</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Vídeo 5 - Interpretação -->
-                <div class="video-item" onclick="abrirVideo('interpretacao-textual')">
-                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF5722, #FF9800);"></div>
-                    <div class="video-info">
-                        <div class="video-categoria">🔍 Interpretação</div>
-                        <div class="video-nome">Interpretação Textual: Técnicas Avançadas</div>
-                        <div class="video-descricao">Como interpretar textos complexos com eficiência</div>
-                        <div class="video-metadata">
-                            <span class="video-duracao">⏱️ 20 min</span>
+                <!-- SEÇÃO DE INTERPRETAÇÃO -->
+                <div class="materia-secao">
+                    <div class="materia-titulo">
+                        🔍 Interpretação
+                    </div>
+                    <div class="videos-grid">
+                        <!-- Vídeo 5 - Interpretação -->
+                        <div class="video-item" onclick="abrirVideo('interpretacao-textual')">
+                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF5722, #FF9800);"></div>
+                            <div class="video-info">
+                                <div class="video-categoria">📖 Interpretação Textual</div>
+                                <div class="video-nome">Interpretação Textual: Técnicas Avançadas</div>
+                                <div class="video-descricao">Como interpretar textos complexos com eficiência</div>
+                                <div class="video-metadata">
+                                    <span class="video-duracao">⏱️ 13 min</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Vídeo 6 - Figuras de Linguagem -->
-                <div class="video-item" onclick="abrirVideo('figuras-linguagem')">
-                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #795548, #8BC34A);"></div>
-                    <div class="video-info">
-                        <div class="video-categoria">🎭 Figuras</div>
-                        <div class="video-nome">Figuras de Linguagem: Guia Completo</div>
-                        <div class="video-descricao">Domine as principais figuras de linguagem</div>
-                        <div class="video-metadata">
-                            <span class="video-duracao">⏱️ 15 min</span>
+                <!-- SEÇÃO DE FIGURAS DE LINGUAGEM -->
+                <div class="materia-secao">
+                    <div class="materia-titulo">
+                        🎭 Figuras de Linguagem
+                    </div>
+                    <div class="videos-grid">
+                        <!-- Vídeo 6 - Figuras de Linguagem -->
+                        <div class="video-item" onclick="abrirVideo('figuras-linguagem')">
+                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #795548, #8BC34A);"></div>
+                            <div class="video-info">
+                                <div class="video-categoria">💬 Figuras de Linguagem</div>
+                                <div class="video-nome">Figuras de Linguagem: Guia Completo</div>
+                                <div class="video-descricao">Domine as principais figuras de linguagem</div>
+                                <div class="video-metadata">
+                                    <span class="video-duracao">⏱️ 11 min</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -617,13 +790,96 @@
         </div>
     </div>
 
+    <!-- MODAL DO VÍDEO -->
+    <div class="video-modal" id="videoModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="fecharVideo()">×</button>
+            <div class="video-container" id="videoContainer">
+                <!-- O vídeo será inserido aqui via JavaScript -->
+            </div>
+            <div class="video-title" id="videoTitle">
+                <!-- O título será inserido aqui via JavaScript -->
+            </div>
+        </div>
+    </div>
+
     <button class="btn-voltar" onclick="history.back()">←</button>
 
     <script>
-        function abrirVideo(videoId) {
-            alert(`Abrindo vídeo: ${videoId}`);
-            // Aqui você implementaria a lógica para abrir o vídeo
+      const videos = {
+        'gramatica-basica': {
+            embedUrl: 'https://www.youtube.com/embed/CG0F824bI-Y',
+            title: 'Gramática Básica: Classes de Palavras'
+        },
+        'sintaxe-avancada': {
+            embedUrl: 'https://www.youtube.com/embed/ZR_Ou01WsK0',
+            title: 'Sintaxe Avançada: Análise Sintática'
+        },
+        'literatura-brasileira': {
+            embedUrl: 'https://www.youtube.com/embed/jq3LBXYLZWY',
+            title: 'Literatura Brasileira: Principais Autores'
+        },
+        'redacao-enem': {
+            embedUrl: 'https://www.youtube.com/embed/SOnJEL3ZuqA',
+            title: 'Redação ENEM: Estrutura da Dissertação'
+        },
+        'interpretacao-textual': {
+            embedUrl: 'https://www.youtube.com/embed/OxTNN-IKcEQ',
+            title: 'Interpretação Textual: Técnicas Avançadas'
+        },
+        'figuras-linguagem': {
+            embedUrl: 'https://www.youtube.com/embed/iJ3yzYMwpPg',
+            title: 'Figuras de Linguagem: Guia Completo'
         }
-    </script>
+    };
+
+    function abrirVideo(videoId) {
+        const video = videos[videoId];
+        if (video) {
+            const modal = document.getElementById('videoModal');
+            const container = document.getElementById('videoContainer');
+            const title = document.getElementById('videoTitle');
+            
+            // Limpar conteúdo anterior
+            container.innerHTML = '';
+            
+            // Criar iframe do vídeo
+            const iframe = document.createElement('iframe');
+            iframe.src = video.embedUrl;
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            iframe.allowFullscreen = true;
+            
+            container.appendChild(iframe);
+            title.textContent = video.title;
+            
+            // Mostrar modal
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function fecharVideo() {
+        const modal = document.getElementById('videoModal');
+        const container = document.getElementById('videoContainer');
+        
+        container.innerHTML = '';
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Fechar modal ao clicar fora
+    document.getElementById('videoModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            fecharVideo();
+        }
+    });
+
+    // Fechar modal com ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            fecharVideo();
+        }
+    });
 </body>
 </html>
+
