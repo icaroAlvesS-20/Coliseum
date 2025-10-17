@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styleMT.css">
-<style>
+    <title>Matemática</title>
+    <style>
         * {
             margin: 0;
             padding: 0;
@@ -164,10 +164,7 @@
         }
 
         /* Conteúdo das matérias */
-        .conteudo-historia,
-        .conteudo-geografia,
-        .conteudo-filosofia,
-        .conteudo-sociologia {
+        .conteudo-matematica {
             color: #ffcf00;
             font-size: 16px;
             line-height: 1.6;
@@ -210,6 +207,15 @@
         .formula strong {
             color: #ffcf00;
             font-weight: 600;
+        }
+
+        .exemplo {
+            background: rgba(255, 207, 0, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 3px solid #ffcf00;
+            font-style: italic;
         }
 
         /* Botão voltar */
@@ -422,327 +428,345 @@
             transform: translateX(5px);
             background: rgba(255, 207, 0, 0.2);
         }
-</style>
-    <title>Matemática</title>
-    <link rel="icon" href="imgmat/Matematicacopy_icon.png" type="image/x-icon">
+    </style>
 </head>
 <body>
     <h2>Conteúdos de Matemática</h2>
-    <div class="bloco-cinza">
-    <div class="conteudo-matematica">
-   <h3 class="titulo-secao">1. Números Inteiros e Racionais</h3>
 
-    <p><strong>Operações com inteiros:</strong></p>
-    <p>Adição/subtração: Sinais iguais → soma e repete o sinal; sinais diferentes → subtrai e repete o sinal do maior.</p>
-    <p><strong>Multiplicação/divisão:</strong> Sinais iguais → resultado positivo; sinais diferentes → resultado negativo.</p>
-    
-    <h3 class="titulo-secao">2. Introdução à Álgebra</h3>
-    <p><strong>Expressões algébricas:</strong></p>
-    <p>Termos semelhantes: podem ser somados/subtraídos (ex: 3x + 5x = 8x).</p>
-    
-    <h3 class="titulo-secao">3. Geometria Plana</h3>
-    <p><strong>Ângulos:</strong></p>
-    <p>Classificação: agudo (<90°), reto (=90°), obtuso (>90°), raso (=180°).</p>
-    
-    <h3 class="titulo-secao">4. Razão, Proporção e Porcentagem</h3>
-    <p><strong>Razão:</strong> Comparação entre grandezas (ex: 3/5).</p>
+    <div class="conteudo-principal">
+        <div class="bloco-cinza">
+            <div class="conteudo-matematica">
+                <h3 class="titulo-secao">1. Números Inteiros e Racionais</h3>
+                <div class="formula">
+                    <p><strong>Operações com inteiros:</strong></p>
+                    <p>Adição/subtração: Sinais iguais → soma e repete o sinal; sinais diferentes → subtrai e repete o sinal do maior.</p>
+                    <p><strong>Multiplicação/divisão:</strong> Sinais iguais → resultado positivo; sinais diferentes → resultado negativo.</p>
+                </div>
 
-      <h4 class="titulo-subsecao">Produtos notáveis:</h4>
-    <div class="formula">
-        <p>Quadrado da soma: (a + b)² = a² + 2ab + b²</p>
-        <p>Quadrado da diferença: (a - b)² = a² - 2ab + b²</p>
-    </div>
+                <h3 class="titulo-secao">2. Introdução à Álgebra</h3>
+                <div class="formula">
+                    <p><strong>Expressões algébricas:</strong></p>
+                    <p>Termos semelhantes: podem ser somados/subtraídos (ex: 3x + 5x = 8x).</p>
+                </div>
 
-    <h4 class="titulo-subsecao">Sistemas de equações:</h4>
-    <div class="exemplo">
-        <p>Exemplo: { 2x + y = 10 ; x - y = 2 }</p>
-        <p>Soma: 3x = 12 ⇒ x = 4, y = 2</p>
-    </div>
+                <h3 class="titulo-secao">3. Geometria Plana</h3>
+                <div class="formula">
+                    <p><strong>Ângulos:</strong></p>
+                    <p>Classificação: agudo (&lt;90°), reto (=90°), obtuso (&gt;90°), raso (=180°).</p>
+                </div>
 
-    <h4 class="titulo-subsecao">Geometria - Áreas e volumes:</h4>
-    <div class="formula">
-        <p>Cubo: A = 6l², V = l³</p>
-        <p>Paralelepípedo: A = 2(ab + ac + bc), V = a × b × c</p>
-        <p>Cilindro: A_total = 2πr(h + r), V = πr²h</p>
-    </div>
+                <h3 class="titulo-secao">4. Razão, Proporção e Porcentagem</h3>
+                <div class="formula">
+                    <p><strong>Razão:</strong> Comparação entre grandezas (ex: 3/5).</p>
+                </div>
 
-    <h4 class="titulo-subsecao">Estatística - Medidas centrais:</h4>
-    <div class="formula">
-        <p>Mediana: Valor central em conjunto ordenado</p>
-        <p>Moda: Valor que mais se repete</p>
-    </div>
-     <h3 class="titulo-secao">5. Funções</h3>
-    
-    <h4 class="titulo-subsecao">Função Afim: f(x) = ax + b</h4>
-    <div class="formula">
-        <p><strong>Gráfico:</strong> reta</p>
-        <p><strong>Coeficiente angular (a):</strong> inclinação da reta</p>
-        <p><strong>Coeficiente linear (b):</strong> ponto onde corta o eixo y</p>
-    </div>
+                <h4 class="titulo-subsecao">Produtos notáveis:</h4>
+                <div class="formula">
+                    <p>Quadrado da soma: (a + b)² = a² + 2ab + b²</p>
+                    <p>Quadrado da diferença: (a - b)² = a² - 2ab + b²</p>
+                </div>
 
-    <h4 class="titulo-subsecao">Função Quadrática: f(x) = ax² + bx + c</h4>
-    <div class="formula">
-        <p><strong>Gráfico:</strong> parábola</p>
-        <p><strong>Vértice:</strong> xv = -b/2a, yv = -Δ/4a</p>
-        <p><strong>Concavidade:</strong> para cima se a > 0; para baixo se a < 0</p>
-    </div>
+                <h4 class="titulo-subsecao">Sistemas de equações:</h4>
+                <div class="exemplo">
+                    <p>Exemplo: { 2x + y = 10 ; x - y = 2 }</p>
+                    <p>Soma: 3x = 12 ⇒ x = 4, y = 2</p>
+                </div>
 
-    <h3 class="titulo-secao">6. Geometria Avançada</h3>
-    
-    <h4 class="titulo-subsecao">Circunferência:</h4>
-    <div class="formula">
-        <p><strong>Comprimento:</strong> C = 2πr</p>
-        <p><strong>Área:</strong> A = πr²</p>
-    </div>
+                <h4 class="titulo-subsecao">Geometria - Áreas e volumes:</h4>
+                <div class="formula">
+                    <p>Cubo: A = 6l², V = l³</p>
+                    <p>Paralelepípedo: A = 2(ab + ac + bc), V = a × b × c</p>
+                    <p>Cilindro: A_total = 2πr(h + r), V = πr²h</p>
+                </div>
 
-    <h4 class="titulo-subsecao">Sólidos Geométricos:</h4>
-    <div class="formula">
-        <p><strong>Cone:</strong> V = 1/3 πr²h</p>
-        <p><strong>Esfera:</strong> V = 4/3 πr³, A = 4πr²</p>
-    </div>
+                <h4 class="titulo-subsecao">Estatística - Medidas centrais:</h4>
+                <div class="formula">
+                    <p>Mediana: Valor central em conjunto ordenado</p>
+                    <p>Moda: Valor que mais se repete</p>
+                </div>
 
-    <h3 class="titulo-secao">7. Probabilidade</h3>
-    <div class="formula">
-        <p><strong>Espaço amostral (U):</strong> conjunto de resultados possíveis</p>
-        <p><strong>Probabilidade:</strong> P(A) = n(A) / n(U)</p>
-    </div>
+                <h3 class="titulo-secao">5. Funções</h3>
+                
+                <h4 class="titulo-subsecao">Função Afim: f(x) = ax + b</h4>
+                <div class="formula">
+                    <p><strong>Gráfico:</strong> reta</p>
+                    <p><strong>Coeficiente angular (a):</strong> inclinação da reta</p>
+                    <p><strong>Coeficiente linear (b):</strong> ponto onde corta o eixo y</p>
+                </div>
 
-    <h3 class="titulo-secao">8. Trigonometria</h3>
-    
-    <h4 class="titulo-subsecao">Razões Trigonométricas:</h4>
-    <div class="formula">
-        <p>sen = cateto oposto / hipotenusa</p>
-        <p>cos = cateto adjacente / hipotenusa</p>
-        <p>tan = cateto oposto / cateto adjacente</p>
-    </div>
+                <h4 class="titulo-subsecao">Função Quadrática: f(x) = ax² + bx + c</h4>
+                <div class="formula">
+                    <p><strong>Gráfico:</strong> parábola</p>
+                    <p><strong>Vértice:</strong> xv = -b/2a, yv = -Δ/4a</p>
+                    <p><strong>Concavidade:</strong> para cima se a &gt; 0; para baixo se a &lt; 0</p>
+                </div>
 
-    <h4 class="titulo-subsecao">Ângulos Notáveis:</h4>
-    <div class="formula">
-        <p><strong>30°:</strong> sen=1/2, cos=√3/2, tan=√3/3</p>
-        <p><strong>45°:</strong> sen=√2/2, cos=√2/2, tan=1</p>
-        <p><strong>60°:</strong> sen=√3/2, cos=1/2, tan=√3</p>
-            <h3 class="titulo-secao">9. Conjuntos Numéricos</h3>
-    <div class="formula">
-        <p><strong>Naturais (N):</strong> {0, 1, 2, 3, ...}</p>
-        <p><strong>Inteiros (Z):</strong> {..., -2, -1, 0, 1, 2, ...}</p>
-        <p><strong>Racionais (Q):</strong> {a/b | a,b ∈ Z, b ≠ 0}</p>
-        <p><strong>Irracionais (I):</strong> π, √2, e</p>
-        <p><strong>Reais (R):</strong> Q ∪ I</p>
-    </div>
+                <h3 class="titulo-secao">6. Geometria Avançada</h3>
+                
+                <h4 class="titulo-subsecao">Circunferência:</h4>
+                <div class="formula">
+                    <p><strong>Comprimento:</strong> C = 2πr</p>
+                    <p><strong>Área:</strong> A = πr²</p>
+                </div>
 
-    <h3 class="titulo-secao">10. Funções - Conceitos Avançados</h3>
-    <div class="formula">
-        <p><strong>Domínio:</strong> valores que x pode assumir</p>
-        <p><strong>Contradomínio:</strong> valores possíveis para f(x)</p>
-        <p><strong>Imagem:</strong> valores que f(x) realmente assume</p>
-        <p><strong>Função composta:</strong> f(g(x))</p>
-        <p><strong>Função inversa:</strong> f⁻¹(y) = x</p>
-    </div>
+                <h4 class="titulo-subsecao">Sólidos Geométricos:</h4>
+                <div class="formula">
+                    <p><strong>Cone:</strong> V = 1/3 πr²h</p>
+                    <p><strong>Esfera:</strong> V = 4/3 πr³, A = 4πr²</p>
+                </div>
 
-    <h3 class="titulo-secao">11. Progressões</h3>
-    
-    <h4 class="titulo-subsecao">Progressão Aritmética (PA):</h4>
-    <div class="formula">
-        <p><strong>Termo geral:</strong> aₙ = a₁ + (n-1)r</p>
-        <p><strong>Soma:</strong> Sₙ = (a₁ + aₙ)n/2</p>
-    </div>
+                <h3 class="titulo-secao">7. Probabilidade</h3>
+                <div class="formula">
+                    <p><strong>Espaço amostral (U):</strong> conjunto de resultados possíveis</p>
+                    <p><strong>Probabilidade:</strong> P(A) = n(A) / n(U)</p>
+                </div>
 
-    <h4 class="titulo-subsecao">Progressão Geométrica (PG):</h4>
-    <div class="formula">
-        <p><strong>Termo geral:</strong> aₙ = a₁ ⋅ qⁿ⁻¹</p>
-        <p><strong>Soma:</strong> Sₙ = a₁(qⁿ - 1)/(q - 1)</p>
-    </div>
+                <h3 class="titulo-secao">8. Trigonometria</h3>
+                
+                <h4 class="titulo-subsecao">Razões Trigonométricas:</h4>
+                <div class="formula">
+                    <p>sen = cateto oposto / hipotenusa</p>
+                    <p>cos = cateto adjacente / hipotenusa</p>
+                    <p>tan = cateto oposto / cateto adjacente</p>
+                </div>
 
-    <h3 class="titulo-secao">12. Trigonometria Avançada</h3>
-    
-    <h4 class="titulo-subsecao">Círculo Trigonométrico:</h4>
-    <div class="formula">
-        <p><strong>Seno:</strong> coordenada y</p>
-        <p><strong>Cosseno:</strong> coordenada x</p>
-        <p><strong>Tangente:</strong> sen/cos</p>
-    </div>
+                <h4 class="titulo-subsecao">Ângulos Notáveis:</h4>
+                <div class="formula">
+                    <p><strong>30°:</strong> sen=1/2, cos=√3/2, tan=√3/3</p>
+                    <p><strong>45°:</strong> sen=√2/2, cos=√2/2, tan=1</p>
+                    <p><strong>60°:</strong> sen=√3/2, cos=1/2, tan=√3</p>
+                </div>
 
-    <h4 class="titulo-subsecao">Relações Fundamentais:</h4>
-    <div class="formula">
-        <p>sen²x + cos²x = 1</p>
-        <p>1 + tan²x = sec²x</p>
-        <p>1 + cot²x = csc²x</p>
-    </div>
- <h3 class="titulo-secao">13. Matrizes e Determinantes</h3>
-    
-    <h4 class="titulo-subsecao">Matrizes:</h4>
-    <div class="formula">
-        <p><strong>Igualdade:</strong> mesma ordem e elementos correspondentes iguais</p>
-        <p><strong>Multiplicação:</strong> nº colunas 1ª = nº linhas 2ª</p>
-    </div>
+                <h3 class="titulo-secao">9. Conjuntos Numéricos</h3>
+                <div class="formula">
+                    <p><strong>Naturais (N):</strong> {0, 1, 2, 3, ...}</p>
+                    <p><strong>Inteiros (Z):</strong> {..., -2, -1, 0, 1, 2, ...}</p>
+                    <p><strong>Racionais (Q):</strong> {a/b | a,b ∈ Z, b ≠ 0}</p>
+                    <p><strong>Irracionais (I):</strong> π, √2, e</p>
+                    <p><strong>Reais (R):</strong> Q ∪ I</p>
+                </div>
 
-    <h4 class="titulo-subsecao">Determinantes:</h4>
-    <div class="formula">
-        <p><strong>Matriz 2x2:</strong> det = ad - bc</p>
-        <p><strong>Matriz 3x3:</strong> Regra de Sarrus</p>
-    </div>
+                <h3 class="titulo-secao">10. Funções - Conceitos Avançados</h3>
+                <div class="formula">
+                    <p><strong>Domínio:</strong> valores que x pode assumir</p>
+                    <p><strong>Contradomínio:</strong> valores possíveis para f(x)</p>
+                    <p><strong>Imagem:</strong> valores que f(x) realmente assume</p>
+                    <p><strong>Função composta:</strong> f(g(x))</p>
+                    <p><strong>Função inversa:</strong> f⁻¹(y) = x</p>
+                </div>
 
-    <h3 class="titulo-secao">14. Geometria Analítica</h3>
-    
-    <div class="formula">
-        <p><strong>Distância entre pontos:</strong> d = √[(x₂-x₁)² + (y₂-y₁)²]</p>
-        <p><strong>Equação da reta:</strong> y = mx + n (reduzida)</p>
-        <p><strong>Circunferência:</strong> (x - a)² + (y - b)² = r²</p>
-    </div>
+                <h3 class="titulo-secao">11. Progressões</h3>
+                
+                <h4 class="titulo-subsecao">Progressão Aritmética (PA):</h4>
+                <div class="formula">
+                    <p><strong>Termo geral:</strong> aₙ = a₁ + (n-1)r</p>
+                    <p><strong>Soma:</strong> Sₙ = (a₁ + aₙ)n/2</p>
+                </div>
 
-    <h3 class="titulo-secao">15. Função Exponencial e Logarítmica</h3>
-    
-    <h4 class="titulo-subsecao">Função Exponencial:</h4>
-    <div class="formula">
-        <p>f(x) = aˣ (a > 0, a ≠ 1)</p>
-    </div>
+                <h4 class="titulo-subsecao">Progressão Geométrica (PG):</h4>
+                <div class="formula">
+                    <p><strong>Termo geral:</strong> aₙ = a₁ ⋅ qⁿ⁻¹</p>
+                    <p><strong>Soma:</strong> Sₙ = a₁(qⁿ - 1)/(q - 1)</p>
+                </div>
 
-    <h4 class="titulo-subsecao">Logaritmos:</h4>
-    <div class="formula">
-        <p>log₈ a = c ⇔ bᶜ = a</p>
-        <p><strong>Propriedades:</strong></p>
-        <p>log(a⋅b) = log a + log b</p>
-        <p>log(a/b) = log a - log b</p>
-        <p>log aᵇ = b ⋅ log a</p>
-    </div>
+                <h3 class="titulo-secao">12. Trigonometria Avançada</h3>
+                
+                <h4 class="titulo-subsecao">Círculo Trigonométrico:</h4>
+                <div class="formula">
+                    <p><strong>Seno:</strong> coordenada y</p>
+                    <p><strong>Cosseno:</strong> coordenada x</p>
+                    <p><strong>Tangente:</strong> sen/cos</p>
+                </div>
 
-    <h3 class="titulo-secao">16. Análise Combinatória</h3>
-    
-    <div class="formula">
-        <p><strong>Permutação:</strong> Pₙ = n!</p>
-        <p><strong>Arranjo:</strong> Aₙ,ₚ = n!/(n-p)!</p>
-        <p><strong>Combinação:</strong> Cₙ,ₚ = n!/[p!(n-p)!]</p>
-    </div>
-      <h3 class="titulo-secao">17. Números Complexos</h3>
-    
-    <div class="formula">
-        <p><strong>Forma algébrica:</strong> z = a + bi</p>
-        <p><strong>Conjugado:</strong> z̅ = a - bi</p>
-        <p><strong>Operações:</strong> adição, subtração, multiplicação, divisão</p>
-    </div>
+                <h4 class="titulo-subsecao">Relações Fundamentais:</h4>
+                <div class="formula">
+                    <p>sen²x + cos²x = 1</p>
+                    <p>1 + tan²x = sec²x</p>
+                    <p>1 + cot²x = csc²x</p>
+                </div>
 
-    <h3 class="titulo-secao">18. Polinômios</h3>
-    
-    <div class="formula">
-        <p><strong>Grau:</strong> maior expoente da variável</p>
-        <p><strong>Raiz:</strong> valor de x que torna P(x) = 0</p>
-        <p><strong>Divisão:</strong> método da chave ou Briot-Ruffini</p>
-    </div>
+                <h3 class="titulo-secao">13. Matrizes e Determinantes</h3>
+                
+                <h4 class="titulo-subsecao">Matrizes:</h4>
+                <div class="formula">
+                    <p><strong>Igualdade:</strong> mesma ordem e elementos correspondentes iguais</p>
+                    <p><strong>Multiplicação:</strong> nº colunas 1ª = nº linhas 2ª</p>
+                </div>
 
-    <h3 class="titulo-secao">19. Probabilidade Avançada</h3>
-    
-    <div class="formula">
-        <p><strong>Probabilidade condicional:</strong> P(A|B) = P(A∩B)/P(B)</p>
-        <p><strong>Eventos independentes:</strong> P(A∩B) = P(A)⋅P(B)</p>
-    </div>
+                <h4 class="titulo-subsecao">Determinantes:</h4>
+                <div class="formula">
+                    <p><strong>Matriz 2x2:</strong> det = ad - bc</p>
+                    <p><strong>Matriz 3x3:</strong> Regra de Sarrus</p>
+                </div>
 
-    <h3 class="titulo-secao">20. Limites e Derivadas</h3>
-    
-    <h4 class="titulo-subsecao">Limites:</h4>
-    <div class="formula">
-        <p>Comportamento da função quando x se aproxima de um valor</p>
-    </div>
+                <h3 class="titulo-secao">14. Geometria Analítica</h3>
+                
+                <div class="formula">
+                    <p><strong>Distância entre pontos:</strong> d = √[(x₂-x₁)² + (y₂-y₁)²]</p>
+                    <p><strong>Equação da reta:</strong> y = mx + n (reduzida)</p>
+                    <p><strong>Circunferência:</strong> (x - a)² + (y - b)² = r²</p>
+                </div>
 
-    <h4 class="titulo-subsecao">Derivadas:</h4>
-    <div class="formula">
-        <p><strong>Taxa de variação instantânea</strong></p>
-        <p><strong>Regras:</strong></p>
-        <p>constante → 0</p>
-        <p>xⁿ → nxⁿ⁻¹</p>
-        <p>sen x → cos x</p>
-        <p>cos x → -sen x</p>
-    </div>
-    </div>
-         </div>
+                <h3 class="titulo-secao">15. Função Exponencial e Logarítmica</h3>
+                
+                <h4 class="titulo-subsecao">Função Exponencial:</h4>
+                <div class="formula">
+                    <p>f(x) = aˣ (a &gt; 0, a ≠ 1)</p>
+                </div>
+
+                <h4 class="titulo-subsecao">Logaritmos:</h4>
+                <div class="formula">
+                    <p>log₈ a = c ⇔ bᶜ = a</p>
+                    <p><strong>Propriedades:</strong></p>
+                    <p>log(a⋅b) = log a + log b</p>
+                    <p>log(a/b) = log a - log b</p>
+                    <p>log aᵇ = b ⋅ log a</p>
+                </div>
+
+                <h3 class="titulo-secao">16. Análise Combinatória</h3>
+                
+                <div class="formula">
+                    <p><strong>Permutação:</strong> Pₙ = n!</p>
+                    <p><strong>Arranjo:</strong> Aₙ,ₚ = n!/(n-p)!</p>
+                    <p><strong>Combinação:</strong> Cₙ,ₚ = n!/[p!(n-p)!]</p>
+                </div>
+
+                <h3 class="titulo-secao">17. Números Complexos</h3>
+                
+                <div class="formula">
+                    <p><strong>Forma algébrica:</strong> z = a + bi</p>
+                    <p><strong>Conjugado:</strong> z̅ = a - bi</p>
+                    <p><strong>Operações:</strong> adição, subtração, multiplicação, divisão</p>
+                </div>
+
+                <h3 class="titulo-secao">18. Polinômios</h3>
+                
+                <div class="formula">
+                    <p><strong>Grau:</strong> maior expoente da variável</p>
+                    <p><strong>Raiz:</strong> valor de x que torna P(x) = 0</p>
+                    <p><strong>Divisão:</strong> método da chave ou Briot-Ruffini</p>
+                </div>
+
+                <h3 class="titulo-secao">19. Probabilidade Avançada</h3>
+                
+                <div class="formula">
+                    <p><strong>Probabilidade condicional:</strong> P(A|B) = P(A∩B)/P(B)</p>
+                    <p><strong>Eventos independentes:</strong> P(A∩B) = P(A)⋅P(B)</p>
+                </div>
+
+                <h3 class="titulo-secao">20. Limites e Derivadas</h3>
+                
+                <h4 class="titulo-subsecao">Limites:</h4>
+                <div class="formula">
+                    <p>Comportamento da função quando x se aproxima de um valor</p>
+                </div>
+
+                <h4 class="titulo-subsecao">Derivadas:</h4>
+                <div class="formula">
+                    <p><strong>Taxa de variação instantânea</strong></p>
+                    <p><strong>Regras:</strong></p>
+                    <p>constante → 0</p>
+                    <p>xⁿ → nxⁿ⁻¹</p>
+                    <p>sen x → cos x</p>
+                    <p>cos x → -sen x</p>
+                </div>
+            </div>
+        </div>
+
         <div class="bloco-videos">
-        <div class="videos-titulo">
-            🎬 Biblioteca de Vídeos
+            <div class="videos-titulo">
+                🎬 Biblioteca de Vídeos
+            </div>
+            
+            <div class="videos-lista">
+                <!-- Vídeo 1 - Álgebra -->
+                <div class="video-item" onclick="abrirVideo('algebra-basica')">
+                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #4CAF50, #2196F3);"></div>
+                    <div class="video-info">
+                        <div class="video-categoria">📊 Álgebra</div>
+                        <div class="video-nome">Álgebra Básica: Equações e Expressões</div>
+                        <div class="video-descricao">Domine os fundamentos da álgebra e resolução de equações</div>
+                        <div class="video-metadata">
+                            <span class="video-duracao">⏱️ 22 min</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vídeo 2 - Geometria -->
+                <div class="video-item" onclick="abrirVideo('geometria-plana')">
+                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF9800, #4CAF50);"></div>
+                    <div class="video-info">
+                        <div class="video-categoria">📐 Geometria</div>
+                        <div class="video-nome">Geometria Plana: Ângulos e Polígonos</div>
+                        <div class="video-descricao">Aprenda sobre ângulos, triângulos e polígonos</div>
+                        <div class="video-metadata">
+                            <span class="video-duracao">⏱️ 25 min</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vídeo 3 - Trigonometria -->
+                <div class="video-item" onclick="abrirVideo('trigonometria-basica')">
+                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #9C27B0, #E91E63);"></div>
+                    <div class="video-info">
+                        <div class="video-categoria">📏 Trigonometria</div>
+                        <div class="video-nome">Trigonometria: Seno, Cosseno e Tangente</div>
+                        <div class="video-descricao">Entenda as razões trigonométricas fundamentais</div>
+                        <div class="video-metadata">
+                            <span class="video-duracao">⏱️ 28 min</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vídeo 4 - Funções -->
+                <div class="video-item" onclick="abrirVideo('funcoes-matematicas')">
+                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #2196F3, #03A9F4);"></div>
+                    <div class="video-info">
+                        <div class="video-categoria">📈 Funções</div>
+                        <div class="video-nome">Funções: Afim, Quadrática e Exponencial</div>
+                        <div class="video-descricao">Estudo completo das principais funções matemáticas</div>
+                        <div class="video-metadata">
+                            <span class="video-duracao">⏱️ 35 min</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vídeo 5 - Probabilidade -->
+                <div class="video-item" onclick="abrirVideo('probabilidade-estatistica')">
+                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF5722, #FF9800);"></div>
+                    <div class="video-info">
+                        <div class="video-categoria">🎲 Probabilidade</div>
+                        <div class="video-nome">Probabilidade e Estatística Básica</div>
+                        <div class="video-descricao">Conceitos fundamentais de probabilidade e análise de dados</div>
+                        <div class="video-metadata">
+                            <span class="video-duracao">⏱️ 20 min</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vídeo 6 - Cálculo -->
+                <div class="video-item" onclick="abrirVideo('calculo-diferencial')">
+                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #795548, #8BC34A);"></div>
+                    <div class="video-info">
+                        <div class="video-categoria">📚 Cálculo</div>
+                        <div class="video-nome">Introdução ao Cálculo Diferencial</div>
+                        <div class="video-descricao">Limites, derivadas e suas aplicações</div>
+                        <div class="video-metadata">
+                            <span class="video-duracao">⏱️ 30 min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div class="videos-lista">
-            <!-- Vídeo 1 - História -->
-            <div class="video-item" onclick="abrirVideo('historia-geral')">
-                <div class="video-thumbnail" style="background: linear-gradient(45deg, #4CAF50, #2196F3);"></div>
-                <div class="video-info">
-                    <div class="video-categoria">📜 História</div>
-                    <div class="video-nome">História Geral: Da Pré-História à Idade Contemporânea</div>
-                    <div class="video-descricao">Aula completa sobre os principais períodos da história mundial</div>
-                    <div class="video-metadata">
-                        <span class="video-duracao">⏱️ 25 min</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Vídeo 2 - Geografia -->
-            <div class="video-item" onclick="abrirVideo('geografia-fisica')">
-                <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF9800, #4CAF50);"></div>
-                <div class="video-info">
-                    <div class="video-categoria">🗺️ Geografia</div>
-                    <div class="video-nome">Geografia Física: Relevo, Clima e Hidrografia</div>
-                    <div class="video-descricao">Entenda os elementos naturais que compõem o planeta Terra</div>
-                    <div class="video-metadata">
-                        <span class="video-duracao">⏱️ 18 min</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Vídeo 3 - Filosofia -->
-            <div class="video-item" onclick="abrirVideo('filosofia-antiga')">
-                <div class="video-thumbnail" style="background: linear-gradient(45deg, #9C27B0, #E91E63);"></div>
-                <div class="video-info">
-                    <div class="video-categoria">💭 Filosofia</div>
-                    <div class="video-nome">Filosofia Antiga: Sócrates, Platão e Aristóteles</div>
-                    <div class="video-descricao">Os pilares do pensamento filosófico ocidental</div>
-                    <div class="video-metadata">
-                        <span class="video-duracao">⏱️ 22 min</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Vídeo 4 - Sociologia -->
-            <div class="video-item" onclick="abrirVideo('sociologia-classica')">
-                <div class="video-thumbnail" style="background: linear-gradient(45deg, #2196F3, #03A9F4);"></div>
-                <div class="video-info">
-                    <div class="video-categoria">👥 Sociologia</div>
-                    <div class="video-nome">Sociologia Clássica: Durkheim, Weber e Marx</div>
-                    <div class="video-descricao">Os fundadores da sociologia e suas teorias</div>
-                    <div class="video-metadata">
-                        <span class="video-duracao">⏱️ 30 min</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Vídeo 5 - Atualidades -->
-            <div class="video-item" onclick="abrirVideo('atualidades-enem')">
-                <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF5722, #FF9800);"></div>
-                <div class="video-info">
-                    <div class="video-categoria">📰 Atualidades</div>
-                    <div class="video-nome">Atualidades para o ENEM 2024</div>
-                    <div class="video-descricao">Principais temas que podem cair na prova</div>
-                    <div class="video-metadata">
-                        <span class="video-duracao">⏱️ 15 min</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Vídeo 6 - Brasil Colônia -->
-            <div class="video-item" onclick="abrirVideo('brasil-colonia')">
-                <div class="video-thumbnail" style="background: linear-gradient(45deg, #795548, #8BC34A);"></div>
-                <div class="video-info">
-                    <div class="video-categoria">🇧🇷 História do Brasil</div>
-                    <div class="video-nome">Brasil Colônia: Economia e Sociedade</div>
-                    <div class="video-descricao">Do descobrimento às vésperas da independência</div>
-                    <div class="video-metadata">
-                        <span class="video-duracao">⏱️ 20 min</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    <button class="btn-voltar" onclick="history.back()">←</button>
-</div>
     </div>
+
+    <button class="btn-voltar" onclick="history.back()">←</button>
+
+    <script>
+        function abrirVideo(videoId) {
+            alert(`Abrindo vídeo: ${videoId}`);
+            // Aqui você implementaria a lógica para abrir o vídeo
+        }
+    </script>
 </body>
 </html>
-
-
-
