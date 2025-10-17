@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="styleCSN.css">
     <title>Ciências da natureza</title>
 <style>       
-    * {
+ * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -16,7 +16,7 @@
         body {
             background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
             min-height: 100vh;
-            padding: 20px 15px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -27,130 +27,148 @@
         /* Cabeçalho */
         .header-container {
             width: 100%;
-            max-width: 600px;
+            max-width: 1200px;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             position: relative;
         }
 
         h2 {
             color: #ffcf00;
-            font-size: 24px;
-            margin-bottom: 15px;
+            font-size: 32px;
+            margin-bottom: 20px;
             font-weight: bold;
             text-shadow: 0 2px 4px rgba(255, 207, 0, 0.3);
-            text-align: center;
         }
 
-        .header-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 15px auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .header-icon img {
+        /* Container principal - LAYOUT PARA PC */
+        .conteudo-principal {
             width: 100%;
-            height: 100%;
-            object-fit: contain;
-            border-radius: 10px;
-            border: 2px solid #ffcf00;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
         }
 
-        /* Container principal */
         .bloco-cinza {
-            width: 100%;
-            max-width: 600px;
             background-color: #323232;
             border-radius: 20px;
-            padding: 20px;
+            padding: 30px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             border: 2px solid #444;
-            margin-bottom: 80px;
-            max-height: 70vh;
+            height: fit-content;
+            max-height: 80vh;
             overflow-y: auto;
         }
 
-        /* Navegação por matérias */
-        .materias-navigation {
+        /* BLOCO DE VÍDEOS - LAYOUT PARA PC */
+        .bloco-videos {
+            background-color: #323232;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 2px solid #ffcf00;
+            height: fit-content;
+        }
+
+        .videos-titulo {
+            color: #ffcf00;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #ffcf00;
+            padding-bottom: 12px;
+        }
+
+        .videos-lista {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .video-item {
+            background: #242424;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #444;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 207, 0, 0.3);
+            border-color: #ffcf00;
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(45deg, #ffcf00, #ff6b00);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-thumbnail::before {
+            content: '▶';
+            color: white;
+            font-size: 30px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .video-info {
+            padding: 15px;
+            flex: 1;
+        }
+
+        .video-categoria {
+            color: #ffcf00;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .video-nome {
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .video-descricao {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .video-metadata {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .materia-btn {
-            flex: 1;
-            min-width: 120px;
-            padding: 12px 8px;
-            background: #242424;
+            align-items: center;
+            font-size: 12px;
             color: #ffcf00;
-            border: 2px solid #ffcf00;
+        }
+
+        .video-duracao {
+            background: rgba(255, 207, 0, 0.2);
+            padding: 4px 10px;
             border-radius: 10px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .materia-btn:hover,
-        .materia-btn.active {
-            background: #ffcf00;
-            color: #000;
-            transform: translateY(-2px);
-        }
-
-        /* Cores específicas para cada matéria */
-        .materia-btn[data-materia="biologia"] {
-            border-color: #4CAF50;
-        }
-
-        .materia-btn[data-materia="quimica"] {
-            border-color: #2196F3;
-        }
-
-        .materia-btn[data-materia="fisica"] {
-            border-color: #FF9800;
-        }
-
-        .materia-btn[data-materia="biologia"].active {
-            background: #4CAF50;
-            border-color: #4CAF50;
-        }
-
-        .materia-btn[data-materia="quimica"].active {
-            background: #2196F3;
-            border-color: #2196F3;
-        }
-
-        .materia-btn[data-materia="fisica"].active {
-            background: #FF9800;
-            border-color: #FF9800;
         }
 
         /* Conteúdo das matérias */
-        .materia-content {
-            display: none;
-        }
-
-        .materia-content.active {
-            display: block;
-            animation: fadeIn 0.5s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Estilos comuns para o conteúdo */
-        .conteudo-biologia,
-        .conteudo-quimica,
-        .conteudo-fisica {
+        .conteudo-historia,
+        .conteudo-geografia,
+        .conteudo-filosofia,
+        .conteudo-sociologia {
             color: #ffcf00;
             font-size: 16px;
             line-height: 1.6;
@@ -159,7 +177,7 @@
 
         .titulo-secao {
             color: #ffcf00;
-            font-size: 20px;
+            font-size: 22px;
             margin: 25px 0 15px 0;
             border-bottom: 2px solid #ffcf00;
             padding-bottom: 5px;
@@ -195,29 +213,13 @@
             font-weight: 600;
         }
 
-        /* Destaques específicos por matéria */
-        .conteudo-biologia .formula {
-            border-left-color: #4CAF50;
-            background: rgba(76, 175, 80, 0.15);
-        }
-
-        .conteudo-quimica .formula {
-            border-left-color: #2196F3;
-            background: rgba(33, 150, 243, 0.15);
-        }
-
-        .conteudo-fisica .formula {
-            border-left-color: #FF9800;
-            background: rgba(255, 152, 0, 0.15);
-        }
-
         /* Botão voltar */
         .btn-voltar {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 55px;
-            height: 55px;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             background: #ffcf00;
             color: #000;
@@ -258,124 +260,76 @@
             background: #ffdd44;
         }
 
-        /* Media Queries para tablets */
-        @media (min-width: 768px) {
-            body {
-                padding: 30px 20px;
-                justify-content: center;
+        /* ========== MEDIA QUERIES PARA TABLET ========== */
+        @media (max-width: 1024px) {
+            .conteudo-principal {
+                grid-template-columns: 1fr;
+                gap: 25px;
+                max-width: 800px;
             }
             
-            .header-container {
-                margin-bottom: 30px;
+            .bloco-cinza, .bloco-videos {
+                padding: 25px;
             }
             
             h2 {
                 font-size: 28px;
             }
             
-            .header-icon {
-                width: 100px;
-                height: 100px;
-            }
-            
-            .bloco-cinza {
-                padding: 30px 25px;
-                border-radius: 25px;
-                max-height: 65vh;
-            }
-            
-            .materias-navigation {
+            .videos-lista {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
                 gap: 15px;
-                margin-bottom: 25px;
-            }
-            
-            .materia-btn {
-                padding: 15px 10px;
-                font-size: 16px;
-            }
-            
-            .conteudo-biologia,
-            .conteudo-quimica,
-            .conteudo-fisica {
-                font-size: 17px;
-            }
-            
-            .titulo-secao {
-                font-size: 22px;
-            }
-            
-            .titulo-subsecao {
-                font-size: 19px;
-            }
-            
-            .formula {
-                padding: 18px;
-                font-size: 16px;
-            }
-            
-            .btn-voltar {
-                width: 60px;
-                height: 60px;
-                font-size: 26px;
             }
         }
 
-        /* Media Queries para desktop */
-        @media (min-width: 1024px) {
-            .bloco-cinza {
-                max-width: 800px;
-                padding: 35px 30px;
-            }
-            
-            h2 {
-                font-size: 32px;
-            }
-            
-            .materia-btn {
-                min-width: 140px;
-                font-size: 17px;
-            }
-        }
-
-        /* Melhorias para telas muito pequenas */
-        @media (max-width: 360px) {
+        /* ========== MEDIA QUERIES PARA MOBILE ========== */
+        @media (max-width: 768px) {
             body {
-                padding: 15px 10px;
-            }
-            
-            h2 {
-                font-size: 20px;
-            }
-            
-            .header-icon {
-                width: 70px;
-                height: 70px;
-            }
-            
-            .bloco-cinza {
                 padding: 15px;
+            }
+            
+            .conteudo-principal {
+                gap: 20px;
+            }
+            
+            .bloco-cinza, .bloco-videos {
+                padding: 20px;
                 border-radius: 15px;
             }
             
-            .materias-navigation {
-                flex-direction: column;
-                gap: 8px;
+            h2 {
+                font-size: 24px;
+                margin-bottom: 15px;
             }
             
-            .materia-btn {
-                min-width: 100%;
-                padding: 10px;
-                font-size: 13px;
+            .videos-titulo {
+                font-size: 20px;
+                margin-bottom: 20px;
             }
             
-            .conteudo-biologia,
-            .conteudo-quimica,
-            .conteudo-fisica {
+            .videos-lista {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .video-thumbnail {
+                height: 100px;
+            }
+            
+            .video-info {
+                padding: 12px;
+            }
+            
+            .video-nome {
                 font-size: 14px;
             }
             
+            .video-descricao {
+                font-size: 12px;
+            }
+            
             .titulo-secao {
-                font-size: 18px;
+                font-size: 20px;
             }
             
             .titulo-subsecao {
@@ -391,32 +345,84 @@
                 width: 50px;
                 height: 50px;
                 font-size: 20px;
-                bottom: 15px;
-                right: 15px;
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+
+        /* ========== MEDIA QUERIES PARA TELAS MUITO PEQUENAS ========== */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .bloco-cinza, .bloco-videos {
+                padding: 15px;
+            }
+            
+            h2 {
+                font-size: 20px;
+            }
+            
+            .videos-titulo {
+                font-size: 18px;
+            }
+            
+            .video-thumbnail {
+                height: 80px;
+            }
+            
+            .video-thumbnail::before {
+                font-size: 24px;
+            }
+        }
+
+        /* ========== MEDIA QUERIES PARA TELAS GRANDES (PC) ========== */
+        @media (min-width: 1200px) {
+            .conteudo-principal {
+                max-width: 1400px;
+                grid-template-columns: 2fr 1fr;
+                gap: 40px;
+            }
+            
+            .bloco-cinza {
+                max-height: 85vh;
+            }
+            
+            .videos-lista {
+                grid-template-columns: 1fr;
+            }
+            
+            .video-thumbnail {
+                height: 140px;
+            }
+        }
+
+        /* ========== MEDIA QUERIES PARA TELAS MUITO GRANDES ========== */
+        @media (min-width: 1600px) {
+            .conteudo-principal {
+                max-width: 1600px;
+                grid-template-columns: 3fr 1fr;
+            }
+            
+            .bloco-cinza, .bloco-videos {
+                padding: 40px;
+            }
+            
+            .videos-lista {
+                grid-template-columns: 1fr;
             }
         }
 
         /* Animações suaves */
-        .formula {
+        .formula, .video-item {
             transition: transform 0.3s ease, background 0.3s ease;
         }
 
         .formula:hover {
             transform: translateX(5px);
+            background: rgba(255, 207, 0, 0.2);
         }
-
-        .conteudo-biologia .formula:hover {
-            background: rgba(76, 175, 80, 0.25);
-        }
-
-        .conteudo-quimica .formula:hover {
-            background: rgba(33, 150, 243, 0.25);
-        }
-
-        .conteudo-fisica .formula:hover {
-            background: rgba(255, 152, 0, 0.25);
-        }
-
 </style>
 </head>
 <body>
@@ -661,3 +667,4 @@
     <button class="btn-voltar" onclick="window.history.back()">←</button>      
 </body>
 </html>
+
