@@ -1100,117 +1100,118 @@
 
     <button class="btn-voltar" onclick="history.back()">←</button>
 
-    <script>
-        const videos = {
-            'historia-geral': {
-                embedUrl: 'https://www.youtube.com/embed/rQMY-Ib-t8s',
-                title: 'História Geral: Pré-História à Contemporânea'
-            },
-            'brasil-colonia': {
-                embedUrl: 'https://youtu.be/Uq7opea_7J0?si=32CZ-hFic5OMTOYL',
-                title: 'Brasil Colônia: Economia e Sociedade'
-            },
-            'idade-media': {
-                embedUrl: 'https://youtu.be/Q4E3vPl-KkY?si=S93U4Llr7aaQcR9c',
-                title: 'Idade Média: Feudalismo e Cruzadas'
-            },
-            'geografia-fisica': {
-                embedUrl: 'https://youtu.be/yFFSphpiBuE?si=-t7849JAhyy7_FLN',
-                title: 'Geografia Física: Relevo, Clima e Hidrografia'
-            },
-            'geografia-humana': {
-                embedUrl: 'https://youtu.be/jPZyKuMrAj4?si=1zoTcbQphzulIN5c',
-                title: 'Geografia Humana: População e Urbanização'
-            },
-            'geografia-brasil': {
-                embedUrl: 'https://youtu.be/6AecFxxHPlo?si=Ju-5M2pIMouBEQHB',
-                title: 'Geografia do Brasil: Regiões e Biomas'
-            },
-            'filosofia-antiga': {
-                embedUrl: 'https://youtu.be/MqCZSGWydXA?si=vj5E5d5KIUGdcv8C',
-                title: 'Filosofia Antiga: Sócrates, Platão e Aristóteles'
-            },
-            'filosofia-moderna': {
-                embedUrl: 'https://youtu.be/dq9NU31PqwU?si=ljUka3SykoKy7vnJ',
-                title: 'Filosofia Moderna: Descartes e Kant'
-            },
-            'filosofia-contemporanea': {
-                embedUrl: 'https://youtu.be/r1YjaQn3Wao?si=FuSQUIh97HedjpQt',
-                title: 'Filosofia Contemporânea: Nietzsche e Foucault'
-            },
-            'sociologia-classica': {
-                embedUrl: 'https://youtu.be/T_tUOFvGEWg?si=qyzOHVPrM3riJ1bq',
-                title: 'Sociologia Clássica: Durkheim, Weber e Marx'
-            },
-            'sociologia-brasileira': {
-                embedUrl: 'https://youtu.be/YFSnf7TzQbM?si=rRfoidhhS07vW4An',
-                title: 'Sociologia no Brasil: Pensadores Nacionais'
-            },
-            'sociologia-contemporanea': {
-                embedUrl: 'https://youtu.be/eFr8EhbnWkc?si=MYfku9UImURMsQK1',
-                title: 'Sociologia Contemporânea: Globalização'
-            },
-            'atualidades-enem': {
-                embedUrl: 'https://youtu.be/-qMB3e-d-Ow?si=ctW_2kJTW2ELaKic',
-                title: 'Atualidades para o ENEM 2024'
-            },
-            'geopolitica-atual': {
-                embedUrl: 'https://youtu.be/WcjoERdBBTM?si=ef81sZm3NmYAgmj_',
-                title: 'Geopolítica Mundial Atual'
-            }
-        };
-
-        function abrirVideo(videoId) {
-            const video = videos[videoId];
-            if (video) {
-                const modal = document.getElementById('videoModal');
-                const container = document.getElementById('videoContainer');
-                const title = document.getElementById('videoTitle');
-                
-                // Limpar conteúdo anterior
-                container.innerHTML = '';
-                
-                // Criar iframe do vídeo
-                const iframe = document.createElement('iframe');
-                iframe.src = video.embedUrl;
-                iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-                iframe.allowFullscreen = true;
-                
-                container.appendChild(iframe);
-                title.textContent = video.title;
-                
-                // Mostrar modal
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden'; // Prevenir scroll
-            }
+<script>
+    const videos = {
+        'historia-geral': {
+            embedUrl: 'https://www.youtube.com/embed/rQMY-Ib-t8s',
+            title: 'História Geral: Pré-História à Contemporânea'
+        },
+        'brasil-colonia': {
+            embedUrl: 'https://www.youtube.com/embed/Uq7opea_7J0',
+            title: 'Brasil Colônia: Economia e Sociedade'
+        },
+        'idade-media': {
+            embedUrl: 'https://www.youtube.com/embed/Q4E3vPl-KkY',
+            title: 'Idade Média: Feudalismo e Cruzadas'
+        },
+        'geografia-fisica': {
+            embedUrl: 'https://www.youtube.com/embed/yFFSphpiBuE',
+            title: 'Geografia Física: Relevo, Clima e Hidrografia'
+        },
+        'geografia-humana': {
+            embedUrl: 'https://www.youtube.com/embed/jPZyKuMrAj4',
+            title: 'Geografia Humana: População e Urbanização'
+        },
+        'geografia-brasil': {
+            embedUrl: 'https://www.youtube.com/embed/6AecFxxHPlo',
+            title: 'Geografia do Brasil: Regiões e Biomas'
+        },
+        'filosofia-antiga': {
+            embedUrl: 'https://www.youtube.com/embed/MqCZSGWydXA',
+            title: 'Filosofia Antiga: Sócrates, Platão e Aristóteles'
+        },
+        'filosofia-moderna': {
+            embedUrl: 'https://www.youtube.com/embed/dq9NU31PqwU',
+            title: 'Filosofia Moderna: Descartes e Kant'
+        },
+        'filosofia-contemporanea': {
+            embedUrl: 'https://www.youtube.com/embed/r1YjaQn3Wao',
+            title: 'Filosofia Contemporânea: Nietzsche e Foucault'
+        },
+        'sociologia-classica': {
+            embedUrl: 'https://www.youtube.com/embed/T_tUOFvGEWg',
+            title: 'Sociologia Clássica: Durkheim, Weber e Marx'
+        },
+        'sociologia-brasileira': {
+            embedUrl: 'https://www.youtube.com/embed/YFSnf7TzQbM',
+            title: 'Sociologia no Brasil: Pensadores Nacionais'
+        },
+        'sociologia-contemporanea': {
+            embedUrl: 'https://www.youtube.com/embed/eFr8EhbnWkc',
+            title: 'Sociologia Contemporânea: Globalização'
+        },
+        'atualidades-enem': {
+            embedUrl: 'https://www.youtube.com/embed/-qMB3e-d-Ow',
+            title: 'Atualidades para o ENEM 2024'
+        },
+        'geopolitica-atual': {
+            embedUrl: 'https://www.youtube.com/embed/WcjoERdBBTM',
+            title: 'Geopolítica Mundial Atual'
         }
+    };
 
-        function fecharVideo() {
+    function abrirVideo(videoId) {
+        const video = videos[videoId];
+        if (video) {
             const modal = document.getElementById('videoModal');
             const container = document.getElementById('videoContainer');
+            const title = document.getElementById('videoTitle');
             
-            // Limpar o vídeo
+            // Limpar conteúdo anterior
             container.innerHTML = '';
             
-            // Fechar modal
-            modal.classList.remove('active');
-            document.body.style.overflow = 'auto'; // Restaurar scroll
+            // Criar iframe do vídeo
+            const iframe = document.createElement('iframe');
+            iframe.src = video.embedUrl;
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            iframe.allowFullscreen = true;
+            
+            container.appendChild(iframe);
+            title.textContent = video.title;
+            
+            // Mostrar modal
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevenir scroll
         }
+    }
 
-        // Fechar modal ao clicar fora
-        document.getElementById('videoModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                fecharVideo();
-            }
-        });
+    function fecharVideo() {
+        const modal = document.getElementById('videoModal');
+        const container = document.getElementById('videoContainer');
+        
+        // Limpar o vídeo
+        container.innerHTML = '';
+        
+        // Fechar modal
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto'; // Restaurar scroll
+    }
 
-        // Fechar modal com ESC
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                fecharVideo();
-            }
-        });
-    </script>
+    // Fechar modal ao clicar fora
+    document.getElementById('videoModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            fecharVideo();
+        }
+    });
+
+    // Fechar modal com ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            fecharVideo();
+        }
+    });
+</script>
 </body>
 </html>
+
 
