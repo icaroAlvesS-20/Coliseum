@@ -5,7 +5,571 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ciências Humanas</title>
     <style>
-                * {
+       * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            color: #fff;
+        }
+
+        /* Cabeçalho */
+        .header-container {
+            width: 100%;
+            max-width: 1200px;
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        h2 {
+            color: #ffcf00;
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(255, 207, 0, 0.3);
+        }
+
+        /* Container principal - LAYOUT VERTICAL */
+        .conteudo-principal {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .bloco-cinza {
+            background-color: #323232;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 2px solid #444;
+            height: fit-content;
+        }
+
+        /* BLOCO DE VÍDEOS - AGORA EMBAIXO */
+        .bloco-videos {
+            background-color: #323232;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 2px solid #ffcf00;
+            height: fit-content;
+        }
+
+        .videos-titulo {
+            color: #ffcf00;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #ffcf00;
+            padding-bottom: 12px;
+        }
+
+        /* SEÇÕES POR MATÉRIA */
+        .materia-secao {
+            margin-bottom: 30px;
+            border: 1px solid #444;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #2a2a2a;
+        }
+
+        .materia-titulo {
+            background: linear-gradient(135deg, #ffcf00, #ff6b00);
+            color: #000;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .videos-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .video-item {
+            background: #242424;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #444;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 207, 0, 0.3);
+            border-color: #ffcf00;
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(45deg, #ffcf00, #ff6b00);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-thumbnail::before {
+            content: '▶';
+            color: white;
+            font-size: 30px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .video-info {
+            padding: 15px;
+            flex: 1;
+        }
+
+        .video-categoria {
+            color: #ffcf00;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .video-nome {
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .video-descricao {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .video-metadata {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #ffcf00;
+        }
+
+        .video-duracao {
+            background: rgba(255, 207, 0, 0.2);
+            padding: 4px 10px;
+            border-radius: 10px;
+        }
+
+        /* Conteúdo das matérias */
+        .conteudo-historia,
+        .conteudo-geografia,
+        .conteudo-filosofia,
+        .conteudo-sociologia {
+            color: #ffcf00;
+            font-size: 16px;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .titulo-secao {
+            color: #ffcf00;
+            font-size: 22px;
+            margin: 25px 0 15px 0;
+            border-bottom: 2px solid #ffcf00;
+            padding-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .titulo-subsecao {
+            color: #ffcf00;
+            font-size: 18px;
+            margin: 20px 0 10px 0;
+            font-weight: bold;
+        }
+
+        .formula {
+            background: rgba(255, 207, 0, 0.15);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 12px 0;
+            border-left: 4px solid #ffcf00;
+            font-size: 15px;
+        }
+
+        .formula p {
+            margin-bottom: 8px;
+        }
+
+        .formula p:last-child {
+            margin-bottom: 0;
+        }
+
+        .formula strong {
+            color: #ffcf00;
+            font-weight: 600;
+        }
+
+        /* MODAL DO VÍDEO */
+        .video-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .video-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 900px;
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(255, 207, 0, 0.3);
+            border: 2px solid #ffcf00;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            background: #ffcf00;
+            color: #000;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: #e6b800;
+            transform: scale(1.1);
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* Proporção 16:9 */
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .video-title {
+            color: #ffcf00;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 15px 0 10px 0;
+            text-align: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Botão voltar */
+        .btn-voltar {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #ffcf00;
+            color: #000;
+            font-size: 24px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-voltar:hover {
+            background: #e6b800;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(255, 207, 0, 0.6);
+        }
+
+        /* Scrollbar personalizada */
+        .bloco-cinza::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .bloco-cinza::-webkit-scrollbar-track {
+            background: #242424;
+            border-radius: 4px;
+        }
+
+        .bloco-cinza::-webkit-scrollbar-thumb {
+            background: #ffcf00;
+            border-radius: 4px;
+        }
+
+        .bloco-cinza::-webkit-scrollbar-thumb:hover {
+            background: #ffdd44;
+        }
+
+        /* ========== MEDIA QUERIES PARA TABLET ========== */
+        @media (max-width: 1024px) {
+            .conteudo-principal {
+                max-width: 800px;
+            }
+            
+            .bloco-cinza, .bloco-videos {
+                padding: 25px;
+            }
+            
+            h2 {
+                font-size: 28px;
+            }
+            
+            .videos-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 15px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 15px;
+            }
+        }
+
+        /* ========== MEDIA QUERIES PARA MOBILE ========== */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .conteudo-principal {
+                gap: 30px;
+            }
+            
+            .bloco-cinza, .bloco-videos {
+                padding: 20px;
+                border-radius: 15px;
+            }
+            
+            h2 {
+                font-size: 24px;
+                margin-bottom: 15px;
+            }
+            
+            .videos-titulo {
+                font-size: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .videos-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .video-thumbnail {
+                height: 100px;
+            }
+            
+            .video-info {
+                padding: 12px;
+            }
+            
+            .video-nome {
+                font-size: 14px;
+            }
+            
+            .video-descricao {
+                font-size: 12px;
+            }
+            
+            .titulo-secao {
+                font-size: 20px;
+            }
+            
+            .titulo-subsecao {
+                font-size: 16px;
+            }
+            
+            .formula {
+                padding: 12px;
+                font-size: 14px;
+            }
+            
+            .btn-voltar {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .close-modal {
+                top: -10px;
+                right: -10px;
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+            
+            .video-title {
+                font-size: 18px;
+            }
+            
+            .materia-titulo {
+                padding: 12px 15px;
+                font-size: 16px;
+            }
+            
+            .videos-grid {
+                padding: 15px;
+                gap: 12px;
+            }
+        }
+
+        /* ========== MEDIA QUERIES PARA TELAS MUITO PEQUENAS ========== */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .bloco-cinza, .bloco-videos {
+                padding: 15px;
+            }
+            
+            h2 {
+                font-size: 20px;
+            }
+            
+            .videos-titulo {
+                font-size: 18px;
+            }
+            
+            .video-thumbnail {
+                height: 80px;
+            }
+            
+            .video-thumbnail::before {
+                font-size: 24px;
+            }
+            
+            .modal-content {
+                padding: 10px;
+            }
+        }
+
+        /* ========== MEDIA QUERIES PARA TELAS GRANDES (PC) ========== */
+        @media (min-width: 1200px) {
+            .conteudo-principal {
+                max-width: 1400px;
+            }
+            
+            .videos-grid {
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            }
+            
+            .video-thumbnail {
+                height: 140px;
+            }
+        }
+
+        /* ========== MEDIA QUERIES PARA TELAS MUITO GRANDES ========== */
+        @media (min-width: 1600px) {
+            .conteudo-principal {
+                max-width: 1600px;
+            }
+            
+            .bloco-cinza, .bloco-videos {
+                padding: 40px;
+            }
+        }
+
+        /* Animações suaves */
+        .formula, .video-item {
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        .formula:hover {
+            transform: translateX(5px);
+            background: rgba(255, 207, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <h2>Conteúdos de Ciências Humanas</h2>
+
+    <div class="conteudo-principal">
+        <!-- BLOCO DE CONTEÚDO (ACIMA) -->
+        <div class="bloco-cinza">
+            <div class="conteudo-historia">
+                <h3 class="titulo-secao">HISTÓRIA GERAL</h3>
+                
+                <h4 class="titulo-subsecao">Pré-História</h
+URL do primeiro video:https://youtu.be/rQMY-Ib-t8s?si=RoyXKkIEv6X7XH2R
+Perfeito! Vou implementar o primeiro vídeo real e criar a estrutura para os demais. Aqui está o código atualizado com o modal funcionando:
+
+html
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciências Humanas</title>
+    <style>
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -865,18 +1429,18 @@
                 📜 História
             </div>
             <div class="videos-grid">
-                <!-- Vídeo 1 - História Geral -->
-                <div class="video-item" onclick="abrirVideo('historia-geral')">
-                    <div class="video-thumbnail" style="background: linear-gradient(45deg, #4CAF50, #2196F3);"></div>
-                    <div class="video-info">
-                        <div class="video-categoria">🌍 História Mundial</div>
-                        <div class="video-nome">História Geral: Da Pré-História à Idade Contemporânea</div>
-                        <div class="video-descricao">Aula completa sobre os principais períodos da história mundial</div>
-                        <div class="video-metadata">
-                            <span class="video-duracao">⏱️ 25 min</span>
+                                <div class="video-item" onclick="abrirVideo('historia-geral')">
+                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #4CAF50, #2196F3);"></div>
+                            <div class="video-info">
+                                <div class="video-categoria">🌍 História Mundial</div>
+                                <div class="video-nome">História Geral: Pré-História à Contemporânea</div>
+                                <div class="video-descricao">Aula completa sobre os períodos históricos</div>
+                                <div class="video-metadata">
+                                    <span class="video-duracao">⏱️ 15 min</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
+
 
                 <!-- Vídeo 2 - Brasil Colônia -->
                 <div class="video-item" onclick="abrirVideo('brasil-colonia')">
@@ -1085,13 +1649,83 @@
     <button class="btn-voltar" onclick="history.back()">←</button>
 
     <script>
+        const videos = {
+            'historia-geral': {
+                embedUrl: 'https://www.youtube.com/embed/rQMY-Ib-t8s',
+                title: 'História Geral: Pré-História à Contemporânea'
+            },
+            'brasil-colonia': {
+                embedUrl: 'https://www.youtube.com/embed/CODIGO_BRASIL',
+                title: 'Brasil Colônia: Economia e Sociedade'
+            },
+            'geografia-fisica': {
+                embedUrl: 'https://www.youtube.com/embed/CODIGO_GEOGRAFIA',
+                title: 'Geografia Física: Relevo, Clima e Hidrografia'
+            },
+            'filosofia-antiga': {
+                embedUrl: 'https://www.youtube.com/embed/CODIGO_FILOSOFIA',
+                title: 'Filosofia Antiga: Sócrates, Platão e Aristóteles'
+            },
+            'sociologia-classica': {
+                embedUrl: 'https://www.youtube.com/embed/CODIGO_SOCIOLOGIA',
+                title: 'Sociologia Clássica: Durkheim, Weber e Marx'
+            }
+        };
+
         function abrirVideo(videoId) {
-            alert(`Abrindo vídeo: ${videoId}`);
-            // Aqui você implementaria a lógica para abrir o vídeo
+            const video = videos[videoId];
+            if (video) {
+                const modal = document.getElementById('videoModal');
+                const container = document.getElementById('videoContainer');
+                const title = document.getElementById('videoTitle');
+                
+                // Limpar conteúdo anterior
+                container.innerHTML = '';
+                
+                // Criar iframe do vídeo
+                const iframe = document.createElement('iframe');
+                iframe.src = video.embedUrl;
+                iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                iframe.allowFullscreen = true;
+                
+                container.appendChild(iframe);
+                title.textContent = video.title;
+                
+                // Mostrar modal
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevenir scroll
+            }
         }
+
+        function fecharVideo() {
+            const modal = document.getElementById('videoModal');
+            const container = document.getElementById('videoContainer');
+            
+            // Limpar o vídeo
+            container.innerHTML = '';
+            
+            // Fechar modal
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto'; // Restaurar scroll
+        }
+
+        // Fechar modal ao clicar fora
+        document.getElementById('videoModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharVideo();
+            }
+        });
+
+        // Fechar modal com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                fecharVideo();
+            }
+        });
     </script>
 </body>
 </html>
+
 
 
 
