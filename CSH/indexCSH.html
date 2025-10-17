@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ciências Humanas</title>
     <style>
-        * {
+                * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -40,13 +40,13 @@
             text-shadow: 0 2px 4px rgba(255, 207, 0, 0.3);
         }
 
-        /* Container principal - LAYOUT PARA PC */
+        /* Container principal - LAYOUT VERTICAL */
         .conteudo-principal {
             width: 100%;
             max-width: 1200px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
             margin-bottom: 40px;
         }
 
@@ -57,11 +57,9 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             border: 2px solid #444;
             height: fit-content;
-            max-height: 80vh;
-            overflow-y: auto;
         }
 
-        /* BLOCO DE VÍDEOS - LAYOUT PARA PC */
+        /* BLOCO DE VÍDEOS - AGORA EMBAIXO */
         .bloco-videos {
             background-color: #323232;
             border-radius: 20px;
@@ -81,10 +79,31 @@
             padding-bottom: 12px;
         }
 
-        .videos-lista {
+        /* SEÇÕES POR MATÉRIA */
+        .materia-secao {
+            margin-bottom: 30px;
+            border: 1px solid #444;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #2a2a2a;
+        }
+
+        .materia-titulo {
+            background: linear-gradient(135deg, #ffcf00, #ff6b00);
+            color: #000;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .videos-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 20px;
+            gap: 15px;
+            padding: 20px;
         }
 
         .video-item {
@@ -212,6 +231,93 @@
             font-weight: 600;
         }
 
+        /* MODAL DO VÍDEO */
+        .video-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .video-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 900px;
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(255, 207, 0, 0.3);
+            border: 2px solid #ffcf00;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            background: #ffcf00;
+            color: #000;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: #e6b800;
+            transform: scale(1.1);
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* Proporção 16:9 */
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .video-title {
+            color: #ffcf00;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 15px 0 10px 0;
+            text-align: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         /* Botão voltar */
         .btn-voltar {
             position: fixed;
@@ -258,36 +364,10 @@
         .bloco-cinza::-webkit-scrollbar-thumb:hover {
             background: #ffdd44;
         }
-.materia-secao {
-    margin-bottom: 30px;
-    border: 1px solid #444;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #2a2a2a;
-}
 
-.materia-titulo {
-    background: linear-gradient(135deg, #ffcf00, #ff6b00);
-    color: #000;
-    padding: 15px 20px;
-    font-size: 18px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.videos-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
-    padding: 20px;
-}
         /* ========== MEDIA QUERIES PARA TABLET ========== */
         @media (max-width: 1024px) {
             .conteudo-principal {
-                grid-template-columns: 1fr;
-                gap: 25px;
                 max-width: 800px;
             }
             
@@ -299,9 +379,14 @@
                 font-size: 28px;
             }
             
-            .videos-lista {
+            .videos-grid {
                 grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
                 gap: 15px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 15px;
             }
         }
 
@@ -312,7 +397,7 @@
             }
             
             .conteudo-principal {
-                gap: 20px;
+                gap: 30px;
             }
             
             .bloco-cinza, .bloco-videos {
@@ -330,7 +415,7 @@
                 margin-bottom: 20px;
             }
             
-            .videos-lista {
+            .videos-grid {
                 grid-template-columns: 1fr;
                 gap: 15px;
             }
@@ -371,10 +456,28 @@
                 bottom: 20px;
                 right: 20px;
             }
-        }
-           .videos-grid {
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+            
+            .close-modal {
+                top: -10px;
+                right: -10px;
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+            
+            .video-title {
+                font-size: 18px;
+            }
+            
+            .materia-titulo {
+                padding: 12px 15px;
+                font-size: 16px;
+            }
+            
+            .videos-grid {
+                padding: 15px;
+                gap: 12px;
+            }
         }
 
         /* ========== MEDIA QUERIES PARA TELAS MUITO PEQUENAS ========== */
@@ -402,31 +505,20 @@
             .video-thumbnail::before {
                 font-size: 24px;
             }
-          
-             .materia-titulo {
-        padding: 12px 15px;
-        font-size: 16px;
-    }
-    
-    .videos-grid {
-        padding: 15px;
-        gap: 12px;
-    }
-  }
+            
+            .modal-content {
+                padding: 10px;
+            }
+        }
+
         /* ========== MEDIA QUERIES PARA TELAS GRANDES (PC) ========== */
         @media (min-width: 1200px) {
             .conteudo-principal {
                 max-width: 1400px;
-                grid-template-columns: 2fr 1fr;
-                gap: 40px;
             }
             
-            .bloco-cinza {
-                max-height: 85vh;
-            }
-            
-            .videos-lista {
-                grid-template-columns: 1fr;
+            .videos-grid {
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             }
             
             .video-thumbnail {
@@ -438,15 +530,10 @@
         @media (min-width: 1600px) {
             .conteudo-principal {
                 max-width: 1600px;
-                grid-template-columns: 3fr 1fr;
             }
             
             .bloco-cinza, .bloco-videos {
                 padding: 40px;
-            }
-            
-            .videos-lista {
-                grid-template-columns: 1fr;
             }
         }
 
@@ -1005,5 +1092,6 @@
     </script>
 </body>
 </html>
+
 
 
