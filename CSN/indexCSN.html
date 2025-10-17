@@ -789,7 +789,7 @@
             </div>
         </div>
 
-   <div class="bloco-videos">
+ <div class="bloco-videos">
     <div class="videos-titulo">
         🎬 Biblioteca de Vídeos - Ciências da Natureza
     </div>
@@ -935,18 +935,114 @@
                 </div>
             </div>
         </div>
-</div>
     </div>
+</div>
 
-    <button class="btn-voltar" onclick="window.history.back()">←</button>
+<!-- MODAL DO VÍDEO (ADICIONE ESTA PARTE) -->
+<div class="video-modal" id="videoModal">
+    <div class="modal-content">
+        <button class="close-modal" onclick="fecharVideo()">×</button>
+        <div class="video-container" id="videoContainer">
+            <!-- O vídeo será inserido aqui via JavaScript -->
+        </div>
+        <div class="video-title" id="videoTitle">
+            <!-- O título será inserido aqui via JavaScript -->
+        </div>
+    </div>
+</div>
 
-    <script>
-        function abrirVideo(videoId) {
-            alert(`Abrindo vídeo: ${videoId}`);
-            // Aqui você implementaria a lógica para abrir o vídeo
+<button class="btn-voltar" onclick="window.history.back()">←</button>
+
+<script>
+    const videos = {
+        'biologia-celular': {
+            embedUrl: 'https://www.youtube.com/embed/VIDEO_BIOLOGIA_CELULAR',
+            title: 'Biologia Celular: Estrutura e Função'
+        },
+        'genetica-molecular': {
+            embedUrl: 'https://www.youtube.com/embed/VIDEO_GENETICA',
+            title: 'Genética Molecular: DNA e RNA'
+        },
+        'ecologia-biosfera': {
+            embedUrl: 'https://www.youtube.com/embed/VIDEO_ECOLOGIA',
+            title: 'Ecologia e Sustentabilidade'
+        },
+        'quimica-organica': {
+            embedUrl: 'https://www.youtube.com/embed/VIDEO_QUIMICA_ORGANICA',
+            title: 'Química Orgânica: Funções e Reações'
+        },
+        'termodinamica-quimica': {
+            embedUrl: 'https://www.youtube.com/embed/VIDEO_TERMODINAMICA',
+            title: 'Termodinâmica Química e Física'
+        },
+        'eletroquimica-avancada': {
+            embedUrl: 'https://www.youtube.com/embed/VIDEO_ELETROQUIMICA',
+            title: 'Eletroquímica: Pilhas e Eletrólise'
+        },
+        'fisica-mecanica': {
+            embedUrl: 'https://www.youtube.com/embed/VIDEO_MECANICA',
+            title: 'Mecânica: Cinemática e Dinâmica'
+        },
+        'optica-fisica': {
+            embedUrl: 'https://www.youtube.com/embed/VIDEO_OPTICA',
+            title: 'Óptica Geométrica e Física'
+        },
+        'eletromagnetismo': {
+            embedUrl: 'https://www.youtube.com/embed/VIDEO_ELETROMAGNETISMO',
+            title: 'Eletromagnetismo: Campos e Forças'
         }
+    };
+
+    function abrirVideo(videoId) {
+        const video = videos[videoId];
+        if (video) {
+            const modal = document.getElementById('videoModal');
+            const container = document.getElementById('videoContainer');
+            const title = document.getElementById('videoTitle');
+            
+            // Limpar conteúdo anterior
+            container.innerHTML = '';
+            
+            // Criar iframe do vídeo
+            const iframe = document.createElement('iframe');
+            iframe.src = video.embedUrl;
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            iframe.allowFullscreen = true;
+            
+            container.appendChild(iframe);
+            title.textContent = video.title;
+            
+            // Mostrar modal
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function fecharVideo() {
+        const modal = document.getElementById('videoModal');
+        const container = document.getElementById('videoContainer');
+        
+        container.innerHTML = '';
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Fechar modal ao clicar fora
+    document.getElementById('videoModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            fecharVideo();
+        }
+    });
+
+    // Fechar modal com ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            fecharVideo();
+        }
+    });
     </script>
 </body>
 </html>
+
 
 
