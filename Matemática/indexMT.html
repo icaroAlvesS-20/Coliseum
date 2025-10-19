@@ -799,135 +799,24 @@
 
         <div class="bloco-videos">
             <div class="videos-titulo">
-                🎬 Biblioteca de Vídeos
+                🎬 Biblioteca de Vídeos - Matemática
             </div>
             
-            <div class="videos-lista">
-                <!-- SEÇÃO DE ÁLGEBRA -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        📊 Álgebra
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Vídeo 1 - Álgebra -->
-                        <div class="video-item" onclick="abrirVideo('algebra-basica')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #4CAF50, #2196F3);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">🔢 Álgebra Básica</div>
-                                <div class="video-nome">Álgebra Básica: Equações e Expressões</div>
-                                <div class="video-descricao">Domine os fundamentos da álgebra e resolução de equações</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 9 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Loading State -->
+            <div id="videos-loading" class="loading-videos">
+                <div class="spinner"></div>
+                <p>Carregando vídeos...</p>
+            </div>
 
-                <!-- SEÇÃO DE GEOMETRIA -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        📐 Geometria
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Vídeo 2 - Geometria -->
-                        <div class="video-item" onclick="abrirVideo('geometria-plana')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF9800, #4CAF50);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">📏 Geometria Plana</div>
-                                <div class="video-nome">Geometria Plana: Ângulos e Polígonos</div>
-                                <div class="video-descricao">Aprenda sobre ângulos, triângulos e polígonos</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 34 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Error State -->
+            <div id="videos-error" class="error-message" style="display: none;">
+                <p>Erro ao carregar vídeos. Verifique sua conexão.</p>
+                <button class="retry-btn" onclick="carregarVideos()">Tentar Novamente</button>
+            </div>
 
-                <!-- SEÇÃO DE TRIGONOMETRIA -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        📏 Trigonometria
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Vídeo 3 - Trigonometria -->
-                        <div class="video-item" onclick="abrirVideo('trigonometria-basica')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #9C27B0, #E91E63);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">📐 Trigonometria</div>
-                                <div class="video-nome">Trigonometria: Seno, Cosseno e Tangente</div>
-                                <div class="video-descricao">Entenda as razões trigonométricas fundamentais</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 13 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SEÇÃO DE FUNÇÕES -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        📈 Funções
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Vídeo 4 - Funções -->
-                        <div class="video-item" onclick="abrirVideo('funcoes-matematicas')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #2196F3, #03A9F4);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">📊 Funções Matemáticas</div>
-                                <div class="video-nome">Funções: Afim, Quadrática e Exponencial</div>
-                                <div class="video-descricao">Estudo completo das principais funções matemáticas</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 8 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SEÇÃO DE PROBABILIDADE -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        🎲 Probabilidade
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Vídeo 5 - Probabilidade -->
-                        <div class="video-item" onclick="abrirVideo('probabilidade-estatistica')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF5722, #FF9800);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">📊 Probabilidade</div>
-                                <div class="video-nome">Probabilidade e Estatística Básica</div>
-                                <div class="video-descricao">Conceitos fundamentais de probabilidade e análise de dados</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 13 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SEÇÃO DE CÁLCULO -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        📚 Cálculo
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Vídeo 6 - Cálculo -->
-                        <div class="video-item" onclick="abrirVideo('calculo-diferencial')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #795548, #8BC34A);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">📈 Cálculo Diferencial</div>
-                                <div class="video-nome">Introdução ao Cálculo Diferencial</div>
-                                <div class="video-descricao">Limites, derivadas e suas aplicações</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 7 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Container dos Vídeos (será preenchido via JavaScript) -->
+            <div id="videos-container" class="videos-lista" style="display: none;">
+                <!-- Os vídeos serão carregados aqui dinamicamente -->
             </div>
         </div>
     </div>
@@ -948,63 +837,311 @@
     <button class="btn-voltar" onclick="history.back()">←</button>
 
  <script>
- const videos = {
-  'algebra-basica': {
-            embedUrl: 'https://www.youtube.com/embed/8NNA-8rimNs',
-            title: 'Álgebra Básica: Equações e Expressões'
-        },
-        'geometria-plana': {
-            embedUrl: 'https://www.youtube.com/embed/0CnUdzmpO8E',
-            title: 'Geometria Plana: Ângulos e Polígonos'
-        },
-        'trigonometria-basica': {
-            embedUrl: 'https://www.youtube.com/embed/C7NrVLmEYcs',
-            title: 'Trigonometria: Seno, Cosseno e Tangente'
-        },
-        'funcoes-matematicas': {
-            embedUrl: 'https://www.youtube.com/embed/4q2N2HzSivA',
-            title: 'Funções: Afim, Quadrática e Exponencial'
-        },
-        'probabilidade-estatistica': {
-            embedUrl: 'https://www.youtube.com/embed/iNCkGogNtKI',
-            title: 'Probabilidade e Estatística Básica'
-        },
-        'calculo-diferencial': {
-            embedUrl: 'https://www.youtube.com/embed/LdOcGyjLy2E',
-            title: 'Introdução ao Cálculo Diferencial'
-        }
-        };
+  const API_BASE_URL = 'https://coliseum-api.onrender.com';
+        let todosVideos = [];
 
-        function abrirVideo(videoId) {
-            const video = videos[videoId];
-            if (video) {
-                const modal = document.getElementById('videoModal');
-                const container = document.getElementById('videoContainer');
-                const title = document.getElementById('videoTitle');
+        // INICIALIZAR AO CARREGAR A PÁGINA
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Iniciando página de Matemática...');
+            carregarVideos();
+        });
+
+        // CARREGAR VÍDEOS DA API
+        async function carregarVideos() {
+            try {
+                mostrarLoading(true);
+                mostrarErro(false);
+                esconderVideos();
+
+                console.log('📹 Buscando vídeos da API...');
                 
-                // Limpar conteúdo anterior
-                container.innerHTML = '';
+                const response = await fetch(`${API_BASE_URL}/api/videos`);
                 
-                // Criar iframe do vídeo
-                const iframe = document.createElement('iframe');
-                iframe.src = video.embedUrl;
-                iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-                iframe.allowFullscreen = true;
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
                 
-                container.appendChild(iframe);
-                title.textContent = video.title;
+                const videos = await response.json();
+                console.log('✅ Vídeos carregados:', videos);
                 
-                // Mostrar modal
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden';
+                todosVideos = videos;
+                organizarEExibirVideos(videos);
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar vídeos:', error);
+                mostrarErro(true);
+                mostrarLoading(false);
             }
+        }
+
+        // ORGANIZAR VÍDEOS POR CATEGORIA E EXIBIR
+        function organizarEExibirVideos(videos) {
+            if (!videos || videos.length === 0) {
+                exibirMensagemVazia();
+                return;
+            }
+
+            // Filtrar apenas vídeos de Matemática
+            const materiasMatematica = ['matematica', 'algebra', 'geometria', 'trigonometria', 'calculo'];
+            const videosFiltrados = videos.filter(video => 
+                materiasMatematica.includes(video.materia)
+            );
+
+            if (videosFiltrados.length === 0) {
+                exibirMensagemVazia();
+                return;
+            }
+
+            // Agrupar vídeos por categoria
+            const videosPorCategoria = agruparPorCategoria(videosFiltrados);
+            
+            // Gerar HTML
+            const html = gerarHTMLVideos(videosPorCategoria);
+            
+            // Inserir no DOM
+            document.getElementById('videos-container').innerHTML = html;
+            
+            // Mostrar container
+            mostrarVideos();
+            mostrarLoading(false);
+        }
+
+        // AGRUPAR VÍDEOS POR CATEGORIA
+        function agruparPorCategoria(videos) {
+            const categorias = {
+                'algebra': { titulo: '📊 Álgebra', videos: [] },
+                'geometria': { titulo: '📐 Geometria', videos: [] },
+                'trigonometria': { titulo: '📏 Trigonometria', videos: [] },
+                'funcoes': { titulo: '📈 Funções', videos: [] },
+                'probabilidade': { titulo: '🎲 Probabilidade', videos: [] },
+                'calculo': { titulo: '📚 Cálculo', videos: [] },
+                'matematica': { titulo: '🔢 Matemática Geral', videos: [] }
+            };
+
+            videos.forEach(video => {
+                // Determinar categoria baseada na matéria ou categoria do vídeo
+                let categoria = 'matematica'; // padrão
+                
+                if (video.categoria) {
+                    const catLower = video.categoria.toLowerCase();
+                    if (catLower.includes('álgebra') || catLower.includes('algebra')) categoria = 'algebra';
+                    else if (catLower.includes('geometria')) categoria = 'geometria';
+                    else if (catLower.includes('trigonometria')) categoria = 'trigonometria';
+                    else if (catLower.includes('funções') || catLower.includes('funcoes')) categoria = 'funcoes';
+                    else if (catLower.includes('probabilidade')) categoria = 'probabilidade';
+                    else if (catLower.includes('cálculo') || catLower.includes('calculo')) categoria = 'calculo';
+                }
+                
+                if (categorias[categoria]) {
+                    categorias[categoria].videos.push(video);
+                } else {
+                    categorias.matematica.videos.push(video);
+                }
+            });
+
+            return categorias;
+        }
+
+        // GERAR HTML DOS VÍDEOS
+        function gerarHTMLVideos(videosPorCategoria) {
+            let html = '';
+            
+            // Álgebra
+            if (videosPorCategoria.algebra.videos.length > 0) {
+                html += criarSecaoCategoria(videosPorCategoria.algebra.titulo, videosPorCategoria.algebra.videos);
+            }
+            
+            // Geometria
+            if (videosPorCategoria.geometria.videos.length > 0) {
+                html += criarSecaoCategoria(videosPorCategoria.geometria.titulo, videosPorCategoria.geometria.videos);
+            }
+            
+            // Trigonometria
+            if (videosPorCategoria.trigonometria.videos.length > 0) {
+                html += criarSecaoCategoria(videosPorCategoria.trigonometria.titulo, videosPorCategoria.trigonometria.videos);
+            }
+            
+            // Funções
+            if (videosPorCategoria.funcoes.videos.length > 0) {
+                html += criarSecaoCategoria(videosPorCategoria.funcoes.titulo, videosPorCategoria.funcoes.videos);
+            }
+            
+            // Probabilidade
+            if (videosPorCategoria.probabilidade.videos.length > 0) {
+                html += criarSecaoCategoria(videosPorCategoria.probabilidade.titulo, videosPorCategoria.probabilidade.videos);
+            }
+            
+            // Cálculo
+            if (videosPorCategoria.calculo.videos.length > 0) {
+                html += criarSecaoCategoria(videosPorCategoria.calculo.titulo, videosPorCategoria.calculo.videos);
+            }
+            
+            // Matemática Geral (fallback)
+            if (videosPorCategoria.matematica.videos.length > 0) {
+                html += criarSecaoCategoria(videosPorCategoria.matematica.titulo, videosPorCategoria.matematica.videos);
+            }
+
+            return html;
+        }
+
+        // CRIAR SEÇÃO DE CATEGORIA
+        function criarSecaoCategoria(titulo, videos) {
+            return `
+                <div class="materia-secao">
+                    <div class="materia-titulo">
+                        ${titulo}
+                    </div>
+                    <div class="videos-grid">
+                        ${videos.map(video => criarCardVideo(video)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // CRIAR CARD DE VÍDEO INDIVIDUAL
+        function criarCardVideo(video) {
+            const cores = {
+                'algebra': ['#4CAF50', '#2196F3'],
+                'geometria': ['#FF9800', '#4CAF50'],
+                'trigonometria': ['#9C27B0', '#E91E63'],
+                'funcoes': ['#2196F3', '#03A9F4'],
+                'probabilidade': ['#FF5722', '#FF9800'],
+                'calculo': ['#795548', '#8BC34A'],
+                'matematica': ['#607D8B', '#9E9E9E']
+            };
+
+            // Determinar cor baseada na categoria
+            let corCategoria = 'matematica';
+            if (video.categoria) {
+                const catLower = video.categoria.toLowerCase();
+                if (catLower.includes('álgebra') || catLower.includes('algebra')) corCategoria = 'algebra';
+                else if (catLower.includes('geometria')) corCategoria = 'geometria';
+                else if (catLower.includes('trigonometria')) corCategoria = 'trigonometria';
+                else if (catLower.includes('funções') || catLower.includes('funcoes')) corCategoria = 'funcoes';
+                else if (catLower.includes('probabilidade')) corCategoria = 'probabilidade';
+                else if (catLower.includes('cálculo') || catLower.includes('calculo')) corCategoria = 'calculo';
+            }
+            
+            const cor = cores[corCategoria] || ['#ffcf00', '#ff6b00'];
+            
+            // Garantir que a URL seja embed
+            const embedUrl = garantirUrlEmbed(video.url);
+            
+            return `
+                <div class="video-item" onclick="abrirVideo('${embedUrl}', '${video.titulo.replace(/'/g, "\\'")}')">
+                    <div class="video-thumbnail" style="background: linear-gradient(45deg, ${cor[0]}, ${cor[1]});"></div>
+                    <div class="video-info">
+                        <div class="video-categoria">${obterEmojiCategoria(corCategoria)} ${formatarCategoria(video.categoria || 'Matemática')}</div>
+                        <div class="video-nome">${video.titulo}</div>
+                        <div class="video-descricao">${video.descricao || 'Assista este vídeo para aprender mais sobre o conteúdo.'}</div>
+                        <div class="video-metadata">
+                            <span class="video-duracao">⏱️ ${video.duracao || '?'} min</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // FUNÇÕES AUXILIARES
+        function garantirUrlEmbed(url) {
+            if (!url) return '';
+            
+            // Se já é uma URL embed, retorna como está
+            if (url.includes('embed')) return url;
+            
+            // Se é URL normal do YouTube, converte para embed
+            if (url.includes('youtube.com/watch?v=')) {
+                const videoId = url.split('v=')[1]?.split('&')[0];
+                return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+            }
+            
+            // Se é youtu.be
+            if (url.includes('youtu.be/')) {
+                const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+                return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+            }
+            
+            return url;
+        }
+
+        function obterEmojiCategoria(categoria) {
+            const emojis = {
+                'algebra': '🔢',
+                'geometria': '📐',
+                'trigonometria': '📏',
+                'funcoes': '📈',
+                'probabilidade': '🎲',
+                'calculo': '📚',
+                'matematica': '🧮'
+            };
+            return emojis[categoria] || '🎬';
+        }
+
+        function formatarCategoria(categoria) {
+            if (!categoria) return 'MATEMÁTICA';
+            return categoria.toUpperCase();
+        }
+
+        // CONTROLE DE ESTADOS DA UI
+        function mostrarLoading(mostrar) {
+            document.getElementById('videos-loading').style.display = mostrar ? 'block' : 'none';
+        }
+
+        function mostrarErro(mostrar) {
+            document.getElementById('videos-error').style.display = mostrar ? 'block' : 'none';
+        }
+
+        function mostrarVideos() {
+            document.getElementById('videos-container').style.display = 'block';
+        }
+
+        function esconderVideos() {
+            document.getElementById('videos-container').style.display = 'none';
+        }
+
+        function exibirMensagemVazia() {
+            document.getElementById('videos-container').innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #888;">
+                    <i class="fas fa-video-slash" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                    <h3>Nenhum vídeo disponível</h3>
+                    <p>Os vídeos de Matemática serão adicionados em breve.</p>
+                </div>
+            `;
+            mostrarVideos();
+            mostrarLoading(false);
+        }
+
+        // FUNÇÕES DO MODAL
+        function abrirVideo(embedUrl, titulo) {
+            const modal = document.getElementById('videoModal');
+            const container = document.getElementById('videoContainer');
+            const titleElement = document.getElementById('videoTitle');
+            
+            // Limpar conteúdo anterior
+            container.innerHTML = '';
+            
+            // Criar iframe do vídeo
+            const iframe = document.createElement('iframe');
+            iframe.src = embedUrl;
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            iframe.allowFullscreen = true;
+            
+            container.appendChild(iframe);
+            titleElement.textContent = titulo;
+            
+            // Mostrar modal
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
 
         function fecharVideo() {
             const modal = document.getElementById('videoModal');
             const container = document.getElementById('videoContainer');
             
+            // Limpar o vídeo
             container.innerHTML = '';
+            
+            // Fechar modal
             modal.classList.remove('active');
             document.body.style.overflow = 'auto';
         }
@@ -1025,6 +1162,7 @@
     </script>
 </body>
 </html>
+
 
 
 
