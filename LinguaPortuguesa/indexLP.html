@@ -657,135 +657,24 @@
 
         <div class="bloco-videos">
             <div class="videos-titulo">
-                🎬 Biblioteca de Vídeos
+                🎬 Biblioteca de Vídeos - Língua Portuguesa
             </div>
             
-            <div class="videos-lista">
-                <!-- SEÇÃO DE GRAMÁTICA -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        📚 Gramática
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Vídeo 1 - Gramática -->
-                        <div class="video-item" onclick="abrirVideo('gramatica-basica')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #4CAF50, #2196F3);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">🔤 Gramática Básica</div>
-                                <div class="video-nome">Gramática Básica: Classes de Palavras</div>
-                                <div class="video-descricao">Aprenda as 10 classes gramaticais do português</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 17 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Loading State -->
+            <div id="videos-loading" class="loading-videos">
+                <div class="spinner"></div>
+                <p>Carregando vídeos...</p>
+            </div>
 
-                <!-- SEÇÃO DE SINTAXE -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        📝 Sintaxe
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Vídeo 2 - Sintaxe -->
-                        <div class="video-item" onclick="abrirVideo('sintaxe-avancada')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF9800, #4CAF50);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">📊 Análise Sintática</div>
-                                <div class="video-nome">Sintaxe Avançada: Análise Sintática</div>
-                                <div class="video-descricao">Domine a análise de períodos simples e compostos</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 9 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Error State -->
+            <div id="videos-error" class="error-message" style="display: none;">
+                <p>Erro ao carregar vídeos. Verifique sua conexão.</p>
+                <button class="retry-btn" onclick="carregarVideos()">Tentar Novamente</button>
+            </div>
 
-                <!-- SEÇÃO DE LITERATURA -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        📖 Literatura
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Vídeo 3 - Literatura -->
-                        <div class="video-item" onclick="abrirVideo('literatura-brasileira')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #9C27B0, #E91E63);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">🇧🇷 Literatura Brasileira</div>
-                                <div class="video-nome">Literatura Brasileira: Principais Autores</div>
-                                <div class="video-descricao">Do Romantismo ao Modernismo brasileiro</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 33 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SEÇÃO DE REDAÇÃO -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        ✍️ Redação
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Vídeo 4 - Redação -->
-                        <div class="video-item" onclick="abrirVideo('redacao-enem')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #2196F3, #03A9F4);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">📝 Redação ENEM</div>
-                                <div class="video-nome">Redação ENEM: Estrutura da Dissertação</div>
-                                <div class="video-descricao">Aprenda a construir uma redação nota 1000</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 11 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SEÇÃO DE INTERPRETAÇÃO -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        🔍 Interpretação
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Vídeo 5 - Interpretação -->
-                        <div class="video-item" onclick="abrirVideo('interpretacao-textual')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF5722, #FF9800);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">📖 Interpretação Textual</div>
-                                <div class="video-nome">Interpretação Textual: Técnicas Avançadas</div>
-                                <div class="video-descricao">Como interpretar textos complexos com eficiência</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 13 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SEÇÃO DE FIGURAS DE LINGUAGEM -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        🎭 Figuras de Linguagem
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Vídeo 6 - Figuras de Linguagem -->
-                        <div class="video-item" onclick="abrirVideo('figuras-linguagem')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #795548, #8BC34A);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">💬 Figuras de Linguagem</div>
-                                <div class="video-nome">Figuras de Linguagem: Guia Completo</div>
-                                <div class="video-descricao">Domine as principais figuras de linguagem</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 11 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Container dos Vídeos (será preenchido via JavaScript) -->
+            <div id="videos-container" class="videos-lista" style="display: none;">
+                <!-- Os vídeos serão carregados aqui dinamicamente -->
             </div>
         </div>
     </div>
@@ -806,83 +695,331 @@
     <button class="btn-voltar" onclick="history.back()">←</button>
 
     <script>
-      const videos = {
-        'gramatica-basica': {
-            embedUrl: 'https://www.youtube.com/embed/CG0F824bI-Y',
-            title: 'Gramática Básica: Classes de Palavras'
-        },
-        'sintaxe-avancada': {
-            embedUrl: 'https://www.youtube.com/embed/ZR_Ou01WsK0',
-            title: 'Sintaxe Avançada: Análise Sintática'
-        },
-        'literatura-brasileira': {
-            embedUrl: 'https://www.youtube.com/embed/jq3LBXYLZWY',
-            title: 'Literatura Brasileira: Principais Autores'
-        },
-        'redacao-enem': {
-            embedUrl: 'https://www.youtube.com/embed/SOnJEL3ZuqA',
-            title: 'Redação ENEM: Estrutura da Dissertação'
-        },
-        'interpretacao-textual': {
-            embedUrl: 'https://www.youtube.com/embed/OxTNN-IKcEQ',
-            title: 'Interpretação Textual: Técnicas Avançadas'
-        },
-        'figuras-linguagem': {
-            embedUrl: 'https://www.youtube.com/embed/iJ3yzYMwpPg',
-            title: 'Figuras de Linguagem: Guia Completo'
-        }
-    };
+        const API_BASE_URL = 'https://coliseum-api.onrender.com';
+        let todosVideos = [];
 
-    function abrirVideo(videoId) {
-        const video = videos[videoId];
-        if (video) {
+        // INICIALIZAR AO CARREGAR A PÁGINA
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Iniciando página de Língua Portuguesa...');
+            carregarVideos();
+        });
+
+        // CARREGAR VÍDEOS DA API
+        async function carregarVideos() {
+            try {
+                mostrarLoading(true);
+                mostrarErro(false);
+                esconderVideos();
+
+                console.log('📹 Buscando vídeos da API...');
+                
+                const response = await fetch(`${API_BASE_URL}/api/videos`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+                
+                const videos = await response.json();
+                console.log('✅ Vídeos carregados:', videos);
+                
+                todosVideos = videos;
+                organizarEExibirVideos(videos);
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar vídeos:', error);
+                mostrarErro(true);
+                mostrarLoading(false);
+            }
+        }
+
+        // ORGANIZAR VÍDEOS POR CATEGORIA E EXIBIR
+        function organizarEExibirVideos(videos) {
+            if (!videos || videos.length === 0) {
+                exibirMensagemVazia();
+                return;
+            }
+
+            // Filtrar apenas vídeos de Língua Portuguesa
+            const materiasPortugues = ['portugues', 'gramatica', 'literatura', 'redacao'];
+            const videosFiltrados = videos.filter(video => 
+                materiasPortugues.includes(video.materia)
+            );
+
+            if (videosFiltrados.length === 0) {
+                exibirMensagemVazia();
+                return;
+            }
+
+            // Agrupar vídeos por categoria
+            const videosPorCategoria = agruparPorCategoria(videosFiltrados);
+            
+            // Gerar HTML
+            const html = gerarHTMLVideos(videosPorCategoria);
+            
+            // Inserir no DOM
+            document.getElementById('videos-container').innerHTML = html;
+            
+            // Mostrar container
+            mostrarVideos();
+            mostrarLoading(false);
+        }
+
+        // AGRUPAR VÍDEOS POR CATEGORIA
+        function agruparPorCategoria(videos) {
+            const categorias = {
+                'gramatica': { titulo: '📚 Gramática', videos: [] },
+                'sintaxe': { titulo: '📝 Sintaxe', videos: [] },
+                'literatura': { titulo: '📖 Literatura', videos: [] },
+                'redacao': { titulo: '✍️ Redação', videos: [] },
+                'interpretacao': { titulo: '🔍 Interpretação', videos: [] },
+                'figuras': { titulo: '🎭 Figuras de Linguagem', videos: [] },
+                'portugues': { titulo: '📚 Português Geral', videos: [] }
+            };
+
+            videos.forEach(video => {
+                // Determinar categoria baseada na matéria ou categoria do vídeo
+                let categoria = 'portugues'; // padrão
+                
+                if (video.categoria) {
+                    const catLower = video.categoria.toLowerCase();
+                    if (catLower.includes('gramática') || catLower.includes('gramatica')) categoria = 'gramatica';
+                    else if (catLower.includes('sintaxe')) categoria = 'sintaxe';
+                    else if (catLower.includes('literatura')) categoria = 'literatura';
+                    else if (catLower.includes('redação') || catLower.includes('redacao')) categoria = 'redacao';
+                    else if (catLower.includes('interpretação') || catLower.includes('interpretacao')) categoria = 'interpretacao';
+                    else if (catLower.includes('figuras')) categoria = 'figuras';
+                }
+                
+                if (categorias[categoria]) {
+                    categorias[categoria].videos.push(video);
+                } else {
+                    categorias.portugues.videos.push(video);
+                }
+            });
+
+            return categorias;
+        }
+
+        // GERAR HTML DOS VÍDEOS
+        function gerarHTMLVideos(videosPorCategoria) {
+            let html = '';
+            
+            // Gramática
+            if (videosPorCategoria.gramatica.videos.length > 0) {
+                html += criarSecaoCategoria(videosPorCategoria.gramatica.titulo, videosPorCategoria.gramatica.videos);
+            }
+            
+            // Sintaxe
+            if (videosPorCategoria.sintaxe.videos.length > 0) {
+                html += criarSecaoCategoria(videosPorCategoria.sintaxe.titulo, videosPorCategoria.sintaxe.videos);
+            }
+            
+            // Literatura
+            if (videosPorCategoria.literatura.videos.length > 0) {
+                html += criarSecaoCategoria(videosPorCategoria.literatura.titulo, videosPorCategoria.literatura.videos);
+            }
+            
+            // Redação
+            if (videosPorCategoria.redacao.videos.length > 0) {
+                html += criarSecaoCategoria(videosPorCategoria.redacao.titulo, videosPorCategoria.redacao.videos);
+            }
+            
+            // Interpretação
+            if (videosPorCategoria.interpretacao.videos.length > 0) {
+                html += criarSecaoCategoria(videosPorCategoria.interpretacao.titulo, videosPorCategoria.interpretacao.videos);
+            }
+            
+            // Figuras de Linguagem
+            if (videosPorCategoria.figuras.videos.length > 0) {
+                html += criarSecaoCategoria(videosPorCategoria.figuras.titulo, videosPorCategoria.figuras.videos);
+            }
+            
+            // Português Geral (fallback)
+            if (videosPorCategoria.portugues.videos.length > 0) {
+                html += criarSecaoCategoria(videosPorCategoria.portugues.titulo, videosPorCategoria.portugues.videos);
+            }
+
+            return html;
+        }
+
+        // CRIAR SEÇÃO DE CATEGORIA
+        function criarSecaoCategoria(titulo, videos) {
+            return `
+                <div class="materia-secao">
+                    <div class="materia-titulo">
+                        ${titulo}
+                    </div>
+                    <div class="videos-grid">
+                        ${videos.map(video => criarCardVideo(video)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // CRIAR CARD DE VÍDEO INDIVIDUAL
+        function criarCardVideo(video) {
+            const cores = {
+                'gramatica': ['#4CAF50', '#2196F3'],
+                'sintaxe': ['#FF9800', '#4CAF50'],
+                'literatura': ['#9C27B0', '#E91E63'],
+                'redacao': ['#2196F3', '#03A9F4'],
+                'interpretacao': ['#FF5722', '#FF9800'],
+                'figuras': ['#795548', '#8BC34A'],
+                'portugues': ['#607D8B', '#9E9E9E']
+            };
+
+            // Determinar cor baseada na categoria
+            let corCategoria = 'portugues';
+            if (video.categoria) {
+                const catLower = video.categoria.toLowerCase();
+                if (catLower.includes('gramática') || catLower.includes('gramatica')) corCategoria = 'gramatica';
+                else if (catLower.includes('sintaxe')) corCategoria = 'sintaxe';
+                else if (catLower.includes('literatura')) corCategoria = 'literatura';
+                else if (catLower.includes('redação') || catLower.includes('redacao')) corCategoria = 'redacao';
+                else if (catLower.includes('interpretação') || catLower.includes('interpretacao')) corCategoria = 'interpretacao';
+                else if (catLower.includes('figuras')) corCategoria = 'figuras';
+            }
+            
+            const cor = cores[corCategoria] || ['#ffcf00', '#ff6b00'];
+            
+            // Garantir que a URL seja embed
+            const embedUrl = garantirUrlEmbed(video.url);
+            
+            return `
+                <div class="video-item" onclick="abrirVideo('${embedUrl}', '${video.titulo.replace(/'/g, "\\'")}')">
+                    <div class="video-thumbnail" style="background: linear-gradient(45deg, ${cor[0]}, ${cor[1]});"></div>
+                    <div class="video-info">
+                        <div class="video-categoria">${obterEmojiCategoria(corCategoria)} ${formatarCategoria(video.categoria || 'Português')}</div>
+                        <div class="video-nome">${video.titulo}</div>
+                        <div class="video-descricao">${video.descricao || 'Assista este vídeo para aprender mais sobre o conteúdo.'}</div>
+                        <div class="video-metadata">
+                            <span class="video-duracao">⏱️ ${video.duracao || '?'} min</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // FUNÇÕES AUXILIARES
+        function garantirUrlEmbed(url) {
+            if (!url) return '';
+            
+            // Se já é uma URL embed, retorna como está
+            if (url.includes('embed')) return url;
+            
+            // Se é URL normal do YouTube, converte para embed
+            if (url.includes('youtube.com/watch?v=')) {
+                const videoId = url.split('v=')[1]?.split('&')[0];
+                return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+            }
+            
+            // Se é youtu.be
+            if (url.includes('youtu.be/')) {
+                const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+                return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+            }
+            
+            return url;
+        }
+
+        function obterEmojiCategoria(categoria) {
+            const emojis = {
+                'gramatica': '🔤',
+                'sintaxe': '📊',
+                'literatura': '📖',
+                'redacao': '✍️',
+                'interpretacao': '🔍',
+                'figuras': '💬',
+                'portugues': '📚'
+            };
+            return emojis[categoria] || '🎬';
+        }
+
+        function formatarCategoria(categoria) {
+            if (!categoria) return 'PORTUGUÊS';
+            return categoria.toUpperCase();
+        }
+
+        // CONTROLE DE ESTADOS DA UI
+        function mostrarLoading(mostrar) {
+            document.getElementById('videos-loading').style.display = mostrar ? 'block' : 'none';
+        }
+
+        function mostrarErro(mostrar) {
+            document.getElementById('videos-error').style.display = mostrar ? 'block' : 'none';
+        }
+
+        function mostrarVideos() {
+            document.getElementById('videos-container').style.display = 'block';
+        }
+
+        function esconderVideos() {
+            document.getElementById('videos-container').style.display = 'none';
+        }
+
+        function exibirMensagemVazia() {
+            document.getElementById('videos-container').innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #888;">
+                    <i class="fas fa-video-slash" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                    <h3>Nenhum vídeo disponível</h3>
+                    <p>Os vídeos de Língua Portuguesa serão adicionados em breve.</p>
+                </div>
+            `;
+            mostrarVideos();
+            mostrarLoading(false);
+        }
+
+        // FUNÇÕES DO MODAL
+        function abrirVideo(embedUrl, titulo) {
             const modal = document.getElementById('videoModal');
             const container = document.getElementById('videoContainer');
-            const title = document.getElementById('videoTitle');
+            const titleElement = document.getElementById('videoTitle');
             
             // Limpar conteúdo anterior
             container.innerHTML = '';
             
             // Criar iframe do vídeo
             const iframe = document.createElement('iframe');
-            iframe.src = video.embedUrl;
+            iframe.src = embedUrl;
             iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
             iframe.allowFullscreen = true;
             
             container.appendChild(iframe);
-            title.textContent = video.title;
+            titleElement.textContent = titulo;
             
             // Mostrar modal
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
-    }
 
-    function fecharVideo() {
-        const modal = document.getElementById('videoModal');
-        const container = document.getElementById('videoContainer');
-        
-        container.innerHTML = '';
-        modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
-    }
-
-    // Fechar modal ao clicar fora
-    document.getElementById('videoModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            fecharVideo();
+        function fecharVideo() {
+            const modal = document.getElementById('videoModal');
+            const container = document.getElementById('videoContainer');
+            
+            // Limpar o vídeo
+            container.innerHTML = '';
+            
+            // Fechar modal
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
         }
-    });
 
-    // Fechar modal com ESC
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            fecharVideo();
-        }
-    });
+        // Fechar modal ao clicar fora
+        document.getElementById('videoModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharVideo();
+            }
+        });
+
+        // Fechar modal com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                fecharVideo();
+            }
+        });
     </script>
-
 </body>
 </html>
+
 
 
