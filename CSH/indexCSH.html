@@ -855,237 +855,31 @@
         </div>
 
         <!-- BLOCO DE VÍDEOS -->
-        <div class="bloco-videos">
+         <div class="bloco-videos">
             <div class="videos-titulo">
                 🎬 Biblioteca de Vídeos
             </div>
             
-            <div class="videos-lista">
-                <!-- SEÇÃO DE HISTÓRIA -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        📜 História
-                    </div>
-                    <div class="videos-grid">
-                        <div class="video-item" onclick="abrirVideo('historia-geral')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #4CAF50, #2196F3);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">🌍 História Mundial</div>
-                                <div class="video-nome">História Geral: Pré-História à Contemporânea</div>
-                                <div class="video-descricao">Aula completa sobre os períodos históricos</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 3 min</span>
-                                </div>
-                            </div>
-                        </div>
+            <!-- Loading State -->
+            <div id="videos-loading" class="loading-videos">
+                <div class="spinner"></div>
+                <p>Carregando vídeos...</p>
+            </div>
 
-                        <!-- Vídeo 2 - Brasil Colônia -->
-                        <div class="video-item" onclick="abrirVideo('brasil-colonia')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #795548, #8BC34A);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">🇧🇷 História do Brasil</div>
-                                <div class="video-nome">Brasil Colônia: Economia e Sociedade</div>
-                                <div class="video-descricao">Do descobrimento às vésperas da independência</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 14 min</span>
-                                </div>
-                            </div>
-                        </div>
+            <!-- Error State -->
+            <div id="videos-error" class="error-message" style="display: none;">
+                <p>Erro ao carregar vídeos. Verifique sua conexão.</p>
+                <button class="retry-btn" onclick="carregarVideos()">Tentar Novamente</button>
+            </div>
 
-                        <!-- Vídeo 3 - Idade Média -->
-                        <div class="video-item" onclick="abrirVideo('idade-media')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #8BC34A, #CDDC39);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">🏰 História Medieval</div>
-                                <div class="video-nome">Idade Média: Feudalismo e Cruzadas</div>
-                                <div class="video-descricao">A organização feudal e as expedições religiosas</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 16 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SEÇÃO DE GEOGRAFIA -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        🗺️ Geografia
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Vídeo 4 - Geografia Física -->
-                        <div class="video-item" onclick="abrirVideo('geografia-fisica')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF9800, #4CAF50);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">🌋 Geografia Física</div>
-                                <div class="video-nome">Geografia Física: Relevo, Clima e Hidrografia</div>
-                                <div class="video-descricao">Entenda os elementos naturais que compõem o planeta Terra</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 32 min</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Vídeo 5 - Geografia Humana -->
-                        <div class="video-item" onclick="abrirVideo('geografia-humana')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF9800, #FF5722);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">👥 Geografia Humana</div>
-                                <div class="video-nome">Geografia Humana: População e Urbanização</div>
-                                <div class="video-descricao">Demografia, migrações e processos urbanos</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 44 min</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Vídeo 6 - Geografia do Brasil -->
-                        <div class="video-item" onclick="abrirVideo('geografia-brasil')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #4CAF50, #2196F3);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">🇧🇷 Geografia do Brasil</div>
-                                <div class="video-nome">Geografia do Brasil: Regiões e Biomas</div>
-                                <div class="video-descricao">Características regionais e diversidade ambiental</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 10 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SEÇÃO DE FILOSOFIA -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        💭 Filosofia
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Vídeo 7 - Filosofia Antiga -->
-                        <div class="video-item" onclick="abrirVideo('filosofia-antiga')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #9C27B0, #E91E63);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">🏛️ Filosofia Antiga</div>
-                                <div class="video-nome">Filosofia Antiga: Sócrates, Platão e Aristóteles</div>
-                                <div class="video-descricao">Os pilares do pensamento filosófico ocidental</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 6 min</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Vídeo 8 - Filosofia Moderna -->
-                        <div class="video-item" onclick="abrirVideo('filosofia-moderna')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #E91E63, #9C27B0);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">🔬 Filosofia Moderna</div>
-                                <div class="video-nome">Filosofia Moderna: Descartes e Kant</div>
-                                <div class="video-descricao">Racionalismo, empirismo e o criticismo kantiano</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 10 min</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Vídeo 9 - Filosofia Contemporânea -->
-                        <div class="video-item" onclick="abrirVideo('filosofia-contemporanea')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #673AB7, #3F51B5);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">💡 Filosofia Contemporânea</div>
-                                <div class="video-nome">Filosofia Contemporânea: Nietzsche e Foucault</div>
-                                <div class="video-descricao">Crítica à modernidade e pensamento pós-estruturalista</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 8 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SEÇÃO DE SOCIOLOGIA -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        👥 Sociologia
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Vídeo 10 - Sociologia Clássica -->
-                        <div class="video-item" onclick="abrirVideo('sociologia-classica')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #2196F3, #03A9F4);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">📚 Sociologia Clássica</div>
-                                <div class="video-nome">Sociologia Clássica: Durkheim, Weber e Marx</div>
-                                <div class="video-descricao">Os fundadores da sociologia e suas teorias</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 17 min</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Vídeo 11 - Sociologia Brasileira -->
-                        <div class="video-item" onclick="abrirVideo('sociologia-brasileira')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #03A9F4, #00BCD4);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">🇧🇷 Sociologia Brasileira</div>
-                                <div class="video-nome">Sociologia no Brasil: Pensadores Nacionais</div>
-                                <div class="video-descricao">Gilberto Freyre, Sérgio Buarque e Florestan Fernandes</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 8 min</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Vídeo 12 - Sociologia Contemporânea -->
-                        <div class="video-item" onclick="abrirVideo('sociologia-contemporanea')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #00BCD4, #009688);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">🌐 Sociologia Contemporânea</div>
-                                <div class="video-nome">Sociologia Contemporânea: Globalização</div>
-                                <div class="video-descricao">Mudanças sociais na era da globalização</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 14 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SEÇÃO DE ATUALIDADES -->
-                <div class="materia-secao">
-                    <div class="materia-titulo">
-                        📰 Atualidades
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Vídeo 13 - Atualidades ENEM -->
-                        <div class="video-item" onclick="abrirVideo('atualidades-enem')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF5722, #FF9800);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">📝 ENEM 2024</div>
-                                <div class="video-nome">Atualidades para o ENEM 2024</div>
-                                <div class="video-descricao">Principais temas que podem cair na prova</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 24 min</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Vídeo 14 - Geopolítica -->
-                        <div class="video-item" onclick="abrirVideo('geopolitica-atual')">
-                            <div class="video-thumbnail" style="background: linear-gradient(45deg, #FF9800, #FFC107);"></div>
-                            <div class="video-info">
-                                <div class="video-categoria">🌍 Geopolítica</div>
-                                <div class="video-nome">Geopolítica Mundial Atual</div>
-                                <div class="video-descricao">Conflitos e relações internacionais contemporâneas</div>
-                                <div class="video-metadata">
-                                    <span class="video-duracao">⏱️ 8 min</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Container dos Vídeos (será preenchido via JavaScript) -->
+            <div id="videos-container" class="videos-lista" style="display: none;">
+                <!-- Os vídeos serão carregados aqui dinamicamente -->
             </div>
         </div>
     </div>
 
-    <!-- MODAL DO VÍDEO (CORRIGIDO) -->
+    <!-- MODAL DO VÍDEO -->
     <div class="video-modal" id="videoModal">
         <div class="modal-content">
             <button class="close-modal" onclick="fecharVideo()">×</button>
@@ -1101,117 +895,295 @@
     <button class="btn-voltar" onclick="history.back()">←</button>
 
 <script>
-    const videos = {
-        'historia-geral': {
-            embedUrl: 'https://www.youtube.com/embed/rQMY-Ib-t8s',
-            title: 'História Geral: Pré-História à Contemporânea'
-        },
-        'brasil-colonia': {
-            embedUrl: 'https://www.youtube.com/embed/Uq7opea_7J0',
-            title: 'Brasil Colônia: Economia e Sociedade'
-        },
-        'idade-media': {
-            embedUrl: 'https://www.youtube.com/embed/Q4E3vPl-KkY',
-            title: 'Idade Média: Feudalismo e Cruzadas'
-        },
-        'geografia-fisica': {
-            embedUrl: 'https://www.youtube.com/embed/yFFSphpiBuE',
-            title: 'Geografia Física: Relevo, Clima e Hidrografia'
-        },
-        'geografia-humana': {
-            embedUrl: 'https://www.youtube.com/embed/jPZyKuMrAj4',
-            title: 'Geografia Humana: População e Urbanização'
-        },
-        'geografia-brasil': {
-            embedUrl: 'https://www.youtube.com/embed/6AecFxxHPlo',
-            title: 'Geografia do Brasil: Regiões e Biomas'
-        },
-        'filosofia-antiga': {
-            embedUrl: 'https://www.youtube.com/embed/MqCZSGWydXA',
-            title: 'Filosofia Antiga: Sócrates, Platão e Aristóteles'
-        },
-        'filosofia-moderna': {
-            embedUrl: 'https://www.youtube.com/embed/dq9NU31PqwU',
-            title: 'Filosofia Moderna: Descartes e Kant'
-        },
-        'filosofia-contemporanea': {
-            embedUrl: 'https://www.youtube.com/embed/r1YjaQn3Wao',
-            title: 'Filosofia Contemporânea: Nietzsche e Foucault'
-        },
-        'sociologia-classica': {
-            embedUrl: 'https://www.youtube.com/embed/T_tUOFvGEWg',
-            title: 'Sociologia Clássica: Durkheim, Weber e Marx'
-        },
-        'sociologia-brasileira': {
-            embedUrl: 'https://www.youtube.com/embed/YFSnf7TzQbM',
-            title: 'Sociologia no Brasil: Pensadores Nacionais'
-        },
-        'sociologia-contemporanea': {
-            embedUrl: 'https://www.youtube.com/embed/eFr8EhbnWkc',
-            title: 'Sociologia Contemporânea: Globalização'
-        },
-        'atualidades-enem': {
-            embedUrl: 'https://www.youtube.com/embed/-qMB3e-d-Ow',
-            title: 'Atualidades para o ENEM 2024'
-        },
-        'geopolitica-atual': {
-            embedUrl: 'https://www.youtube.com/embed/WcjoERdBBTM',
-            title: 'Geopolítica Mundial Atual'
-        }
-    };
+      const API_BASE_URL = 'https://coliseum-api.onrender.com';
+        let todosVideos = [];
 
-    function abrirVideo(videoId) {
-        const video = videos[videoId];
-        if (video) {
+        // INICIALIZAR AO CARREGAR A PÁGINA
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Iniciando página de Ciências Humanas...');
+            carregarVideos();
+        });
+
+        // CARREGAR VÍDEOS DA API
+        async function carregarVideos() {
+            try {
+                mostrarLoading(true);
+                mostrarErro(false);
+                esconderVideos();
+
+                console.log('📹 Buscando vídeos da API...');
+                
+                const response = await fetch(`${API_BASE_URL}/api/videos`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+                
+                const videos = await response.json();
+                console.log('✅ Vídeos carregados:', videos);
+                
+                todosVideos = videos;
+                organizarEExibirVideos(videos);
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar vídeos:', error);
+                mostrarErro(true);
+                mostrarLoading(false);
+            }
+        }
+
+        // ORGANIZAR VÍDEOS POR MATÉRIA E EXIBIR
+        function organizarEExibirVideos(videos) {
+            if (!videos || videos.length === 0) {
+                exibirMensagemVazia();
+                return;
+            }
+
+            // Filtrar apenas vídeos de Ciências Humanas
+            const materiasHumanas = ['historia', 'geografia', 'filosofia', 'sociologia', 'atualidades'];
+            const videosFiltrados = videos.filter(video => 
+                materiasHumanas.includes(video.materia)
+            );
+
+            if (videosFiltrados.length === 0) {
+                exibirMensagemVazia();
+                return;
+            }
+
+            // Agrupar vídeos por matéria
+            const videosPorMateria = agruparPorMateria(videosFiltrados);
+            
+            // Gerar HTML
+            const html = gerarHTMLVideos(videosPorMateria);
+            
+            // Inserir no DOM
+            document.getElementById('videos-container').innerHTML = html;
+            
+            // Mostrar container
+            mostrarVideos();
+            mostrarLoading(false);
+        }
+
+        // AGRUPAR VÍDEOS POR MATÉRIA
+        function agruparPorMateria(videos) {
+            const grupos = {
+                'historia': [],
+                'geografia': [],
+                'filosofia': [],
+                'sociologia': [],
+                'atualidades': []
+            };
+
+            videos.forEach(video => {
+                if (grupos[video.materia]) {
+                    grupos[video.materia].push(video);
+                }
+            });
+
+            return grupos;
+        }
+
+        // GERAR HTML DOS VÍDEOS
+        function gerarHTMLVideos(videosPorMateria) {
+            let html = '';
+            
+            // História
+            if (videosPorMateria.historia.length > 0) {
+                html += criarSecaoMateria('historia', '📜 História', videosPorMateria.historia);
+            }
+            
+            // Geografia
+            if (videosPorMateria.geografia.length > 0) {
+                html += criarSecaoMateria('geografia', '🗺️ Geografia', videosPorMateria.geografia);
+            }
+            
+            // Filosofia
+            if (videosPorMateria.filosofia.length > 0) {
+                html += criarSecaoMateria('filosofia', '💭 Filosofia', videosPorMateria.filosofia);
+            }
+            
+            // Sociologia
+            if (videosPorMateria.sociologia.length > 0) {
+                html += criarSecaoMateria('sociologia', '👥 Sociologia', videosPorMateria.sociologia);
+            }
+            
+            // Atualidades
+            if (videosPorMateria.atualidades.length > 0) {
+                html += criarSecaoMateria('atualidades', '📰 Atualidades', videosPorMateria.atualidades);
+            }
+
+            return html;
+        }
+
+        // CRIAR SEÇÃO DE MATÉRIA
+        function criarSecaoMateria(materia, titulo, videos) {
+            return `
+                <div class="materia-secao">
+                    <div class="materia-titulo">
+                        ${titulo}
+                    </div>
+                    <div class="videos-grid">
+                        ${videos.map(video => criarCardVideo(video)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // CRIAR CARD DE VÍDEO INDIVIDUAL
+        function criarCardVideo(video) {
+            const cores = {
+                'historia': ['#4CAF50', '#2196F3'],
+                'geografia': ['#FF9800', '#4CAF50'],
+                'filosofia': ['#9C27B0', '#E91E63'],
+                'sociologia': ['#2196F3', '#03A9F4'],
+                'atualidades': ['#FF5722', '#FF9800']
+            };
+
+            const cor = cores[video.materia] || ['#ffcf00', '#ff6b00'];
+            
+            // Garantir que a URL seja embed
+            const embedUrl = garantirUrlEmbed(video.url);
+            
+            return `
+                <div class="video-item" onclick="abrirVideo('${embedUrl}', '${video.titulo.replace(/'/g, "\\'")}')">
+                    <div class="video-thumbnail" style="background: linear-gradient(45deg, ${cor[0]}, ${cor[1]});"></div>
+                    <div class="video-info">
+                        <div class="video-categoria">${obterEmojiMateria(video.materia)} ${formatarMateria(video.materia)}</div>
+                        <div class="video-nome">${video.titulo}</div>
+                        <div class="video-descricao">${video.descricao || 'Assista este vídeo para aprender mais sobre o conteúdo.'}</div>
+                        <div class="video-metadata">
+                            <span class="video-duracao">⏱️ ${video.duracao || '?'} min</span>
+                            ${video.categoria ? `<span style="color: #ccc; font-size: 11px;">${video.categoria}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // FUNÇÕES AUXILIARES
+        function garantirUrlEmbed(url) {
+            if (!url) return '';
+            
+            // Se já é uma URL embed, retorna como está
+            if (url.includes('embed')) return url;
+            
+            // Se é URL normal do YouTube, converte para embed
+            if (url.includes('youtube.com/watch?v=')) {
+                const videoId = url.split('v=')[1]?.split('&')[0];
+                return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+            }
+            
+            // Se é youtu.be
+            if (url.includes('youtu.be/')) {
+                const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+                return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+            }
+            
+            return url;
+        }
+
+        function obterEmojiMateria(materia) {
+            const emojis = {
+                'historia': '📜',
+                'geografia': '🗺️',
+                'filosofia': '💭',
+                'sociologia': '👥',
+                'atualidades': '📰'
+            };
+            return emojis[materia] || '🎬';
+        }
+
+        function formatarMateria(materia) {
+            const nomes = {
+                'historia': 'HISTÓRIA',
+                'geografia': 'GEOGRAFIA',
+                'filosofia': 'FILOSOFIA',
+                'sociologia': 'SOCIOLOGIA',
+                'atualidades': 'ATUALIDADES'
+            };
+            return nomes[materia] || materia.toUpperCase();
+        }
+
+        // CONTROLE DE ESTADOS DA UI
+        function mostrarLoading(mostrar) {
+            document.getElementById('videos-loading').style.display = mostrar ? 'block' : 'none';
+        }
+
+        function mostrarErro(mostrar) {
+            document.getElementById('videos-error').style.display = mostrar ? 'block' : 'none';
+        }
+
+        function mostrarVideos() {
+            document.getElementById('videos-container').style.display = 'block';
+        }
+
+        function esconderVideos() {
+            document.getElementById('videos-container').style.display = 'none';
+        }
+
+        function exibirMensagemVazia() {
+            document.getElementById('videos-container').innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #888;">
+                    <i class="fas fa-video-slash" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                    <h3>Nenhum vídeo disponível</h3>
+                    <p>Os vídeos de Ciências Humanas serão adicionados em breve.</p>
+                </div>
+            `;
+            mostrarVideos();
+            mostrarLoading(false);
+        }
+
+        // FUNÇÕES DO MODAL (MANTIDAS DO SEU CÓDIGO)
+        function abrirVideo(embedUrl, titulo) {
             const modal = document.getElementById('videoModal');
             const container = document.getElementById('videoContainer');
-            const title = document.getElementById('videoTitle');
+            const titleElement = document.getElementById('videoTitle');
             
             // Limpar conteúdo anterior
             container.innerHTML = '';
             
             // Criar iframe do vídeo
             const iframe = document.createElement('iframe');
-            iframe.src = video.embedUrl;
+            iframe.src = embedUrl;
             iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
             iframe.allowFullscreen = true;
             
             container.appendChild(iframe);
-            title.textContent = video.title;
+            titleElement.textContent = titulo;
             
             // Mostrar modal
             modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Prevenir scroll
+            document.body.style.overflow = 'hidden';
         }
-    }
 
-    function fecharVideo() {
-        const modal = document.getElementById('videoModal');
-        const container = document.getElementById('videoContainer');
-        
-        // Limpar o vídeo
-        container.innerHTML = '';
-        
-        // Fechar modal
-        modal.classList.remove('active');
-        document.body.style.overflow = 'auto'; // Restaurar scroll
-    }
-
-    // Fechar modal ao clicar fora
-    document.getElementById('videoModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            fecharVideo();
+        function fecharVideo() {
+            const modal = document.getElementById('videoModal');
+            const container = document.getElementById('videoContainer');
+            
+            // Limpar o vídeo
+            container.innerHTML = '';
+            
+            // Fechar modal
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
         }
-    });
 
-    // Fechar modal com ESC
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            fecharVideo();
-        }
-    });
+        // Fechar modal ao clicar fora
+        document.getElementById('videoModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharVideo();
+            }
+        });
+
+        // Fechar modal com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                fecharVideo();
+            }
+        });
 </script>
 </body>
 </html>
+
 
 
