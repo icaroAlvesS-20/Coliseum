@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Arial', sans-serif;
-        background: linear-gradient(135deg, #000000 0%, #2d2d2d 100%);
+            background: linear-gradient(135deg, #000000 0%, #2d2d2d 100%);
             color: #fff;
             min-height: 100vh;
             padding: 15px;
@@ -550,6 +550,88 @@
                 right: 15px;
             }
         }
+
+        /* Novos estilos para detalhes de pontuação */
+        .pontuacao-detalhes {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-size: 0.85em;
+        }
+
+        .detalhes-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            color: #ffd700;
+            font-weight: 600;
+        }
+
+        .detalhes-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+        }
+
+        .detalhe-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detalhe-item:last-child {
+            border-bottom: none;
+        }
+
+        .detalhe-label {
+            color: #aaa;
+        }
+
+        .detalhe-valor {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .desafio-completo {
+            color: #4fc3f7;
+        }
+
+        .pontuacao-alta {
+            color: #4caf50;
+        }
+
+        .pontuacao-media {
+            color: #ff9800;
+        }
+
+        .pontuacao-baixa {
+            color: #f44336;
+        }
+
+        .expandir-detalhes {
+            background: none;
+            border: none;
+            color: #ffd700;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .expandir-detalhes:hover {
+            text-decoration: underline;
+        }
+
+        /* Destaque para o usuário atual */
+        .ranking-item-destaque {
+            background: rgba(255, 215, 0, 0.15) !important;
+            border: 2px solid #ffd700 !important;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
@@ -716,6 +798,9 @@ class RankingManager {
             const isUsuarioAtual = user.id && user.id.toString() === usuarioAtualId;
             const highlightClass = isUsuarioAtual ? 'ranking-item-destaque' : '';
             
+            // Gerar dados de exemplo para demonstração
+            const detalhesPontuacao = this.gerarDetalhesPontuacao(user);
+            
             return `
                 <div class="ranking-item ${highlightClass}" style="${isUsuarioAtual ? 'background: rgba(255, 215, 0, 0.2); border: 2px solid #ffd700;' : ''}">
                     <div class="ranking-item-header">
@@ -745,9 +830,82 @@ class RankingManager {
                             <div class="stat-value pontuacao-value">${user.pontuacao || 0}</div>
                         </div>
                     </div>
+                    
+                    <!-- Detalhes de pontuação expandíveis -->
+                    <div class="pontuacao-detalhes" id="detalhes-${user.id}" style="display: none;">
+                        <div class="detalhes-header">
+                            <span>📊 Detalhes de Pontuação</span>
+                            <span>Total: ${user.pontuacao || 0} pts</span>
+                        </div>
+                        <div class="detalhes-grid">
+                            <div class="detalhe-item">
+                                <span class="detalhe-label">Desafios Completos:</span>
+                                <span class="detalhe-valor desafio-completo">${user.desafiosCompletados || 0}</span>
+                            </div>
+                            <div class="detalhe-item">
+                                <span class="detalhe-label">Média por Desafio:</span>
+                                <span class="detalhe-valor ${this.getClassPontuacaoMedia(user)}">
+                                    ${this.calcularMediaPontuacao(user)} pts
+                                </span>
+                            </div>
+                            <div class="detalhe-item">
+                                <span class="detalhe-label">Melhor Pontuação:</span>
+                                <span class="detalhe-valor pontuacao-alta">${detalhesPontuacao.melhorPontuacao} pts</span>
+                            </div>
+                            <div class="detalhe-item">
+                                <span class="detalhe-label">Desafios 100%:</span>
+                                <span class="detalhe-valor pontuacao-alta">${detalhesPontuacao.desafiosPerfeitos}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="expandir-detalhes" onclick="this.toggleDetalhes('${user.id}')">
+                        <i class="fas fa-chevron-down"></i> Ver detalhes
+                    </button>
                 </div>
             `;
         }).join('');
+        
+        // Adicionar funcionalidade de toggle aos botões
+        this.adicionarFuncionalidadeToggle();
+    }
+
+    // Gerar dados de exemplo para demonstração
+    gerarDetalhesPontuacao(user) {
+        // Em um sistema real, estes dados viriam da API
+        return {
+            melhorPontuacao: Math.min(20, Math.floor((user.pontuacao || 0) / (user.desafiosCompletados || 1) * 1.5)),
+            desafiosPerfeitos: Math.floor((user.desafiosCompletados || 0) * 0.3),
+            mediaAcertos: Math.floor((user.pontuacao || 0) / (user.desafiosCompletados || 1) / 20 * 100)
+        };
+    }
+
+    calcularMediaPontuacao(user) {
+        if (!user.desafiosCompletados || user.desafiosCompletados === 0) return 0;
+        return (user.pontuacao / user.desafiosCompletados).toFixed(1);
+    }
+
+    getClassPontuacaoMedia(user) {
+        const media = this.calcularMediaPontuacao(user);
+        if (media >= 15) return 'pontuacao-alta';
+        if (media >= 10) return 'pontuacao-media';
+        return 'pontuacao-baixa';
+    }
+
+    adicionarFuncionalidadeToggle() {
+        // Adicionar funcionalidade de toggle aos botões de detalhes
+        window.toggleDetalhes = function(userId) {
+            const detalhes = document.getElementById(`detalhes-${userId}`);
+            const botao = event.target.closest('.expandir-detalhes');
+            
+            if (detalhes.style.display === 'none') {
+                detalhes.style.display = 'block';
+                botao.innerHTML = '<i class="fas fa-chevron-up"></i> Ocultar detalhes';
+            } else {
+                detalhes.style.display = 'none';
+                botao.innerHTML = '<i class="fas fa-chevron-down"></i> Ver detalhes';
+            }
+        };
     }
 
     atualizarEstatisticas(ranking) {
