@@ -910,44 +910,25 @@
 
         // Load cursos from API
         async function loadCursos() {
-            try {
-                showLoading();
-                console.log('📚 Buscando cursos da API...');
-
-                const response = await fetch(`${API_BASE_URL}/api/cursos`);
-                
-                console.log('📡 Resposta da API:', response.status, response.statusText);
-
-                if (response.ok) {
-                    const cursosData = await response.json();
-                    console.log('✅ Cursos recebidos da API:', cursosData);
-                    
-                    cursos = Array.isArray(cursosData) ? cursosData : [];
-                    filteredCursos = [...cursos];
-                    
-                    displayCursos();
-                    updateStats();
-                    
-                    console.log(`🎉 ${cursos.length} cursos carregados com sucesso!`);
-                    
-                } else {
-                    const errorText = await response.text();
-                    console.error('❌ Erro na resposta da API:', errorText);
-                    throw new Error(`Erro ${response.status}: ${errorText}`);
-                }
-
-            } catch (error) {
-                console.error('❌ Erro ao carregar cursos:', error);
-                showAlert(`Erro ao carregar cursos: ${error.message}`, 'error');
-                
-                cursos = getSampleCursos();
-                filteredCursos = [...cursos];
-                displayCursos();
-                updateStats();
-                console.log('🔄 Usando dados de exemplo como fallback');
-            }
+    try {
+        showLoading();
+        
+        const response = await fetch(`${API_BASE_URL}/api/cursos`);
+        
+        if (response.ok) {
+            cursos = await response.json();
+        } else {
+            throw new Error(`HTTP ${response.status}`);
         }
-
+    } catch (error) {
+        console.warn('Usando dados locais:', error);
+        cursos = getSampleCursos(); // Dados de exemplo
+    } finally {
+        filteredCursos = [...cursos];
+        displayCursos();
+        updateStats();
+    }
+}
         // Sample data para demonstração
         function getSampleCursos() {
             return [
@@ -1210,57 +1191,29 @@
         }
 
         // Update progress in API
-        async function atualizarProgresso(usuarioId, cursoId, progresso) {
-            try {
-                if (!usuarioId) {
-                    console.log('⚠️ ID do usuário não disponível para atualizar progresso');
-                    showAlert('Faça login para salvar seu progresso', 'error');
-                    return;
-                }
-
-                console.log(`📈 Atualizando progresso - Usuário: ${usuarioId}, Curso: ${cursoId}, Progresso: ${progresso}%`);
-                
-                const response = await fetch(`${API_BASE_URL}/api/progresso`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        usuarioId: usuarioId,
-                        cursoId: cursoId,
-                        progresso: progresso
-                    })
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log('✅ Progresso atualizado com sucesso:', result);
-                    
-                    const existingProgress = userProgress.find(p => p.cursoId === cursoId);
-                    if (existingProgress) {
-                        existingProgress.progresso = progresso;
-                    } else {
-                        userProgress.push({
-                            cursoId: cursoId,
-                            progresso: progresso,
-                            concluido: progresso >= 100
-                        });
-                    }
-                    
-                    localStorage.setItem(`progresso_${usuarioId}`, JSON.stringify(userProgress));
-                    
-                    displayCursos();
-                    
-                } else {
-                    const errorText = await response.text();
-                    console.error('❌ Erro ao atualizar progresso na API:', errorText);
-                    showAlert('Erro ao salvar progresso', 'error');
-                }
-            } catch (error) {
-                console.error('❌ Erro ao atualizar progresso:', error);
-                showAlert('Erro de conexão ao salvar progresso', 'error');
-            }
+      async function atualizarProgresso(usuarioId, cursoId, progresso) {
+    try {
+        if (!usuarioId) {
+            // Fallback para localStorage se não tiver usuário logado
+            const progressoLocal = JSON.parse(localStorage.getItem('progresso_guest') || '{}');
+            progressoLocal[cursoId] = progresso;
+            localStorage.setItem('progresso_guest', JSON.stringify(progressoLocal));
+            return;
         }
+
+        const response = await fetch(`${API_BASE_URL}/api/progresso`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ usuarioId, cursoId, progresso })
+        });
+
+        if (response.ok) {
+            await loadUserProgress(); // Recarrega o progresso
+        }
+    } catch (error) {
+        console.error('Erro ao salvar progresso:', error);
+    }
+}
 
         // Loading state
         function showLoading() {
