@@ -756,145 +756,97 @@
     <button class="btn-voltar" onclick="voltarParaMenu()">←</button>
 
     <script>
-        const API_BASE_URL = 'https://coliseum-api.onrender.com';
+const API_BASE_URL = 'https://coliseum-api.onrender.com';
 
-        // State
-        let cursos = [];
-        let userData = {};
-        let filteredCursos = [];
-        let userProgress = [];
+// State
+let cursos = [];
+let userData = {};
+let filteredCursos = [];
+let userProgress = [];
 
-        // DOM Elements
-        const coursesContainer = document.getElementById('courses-container');
-        const filterButtons = document.querySelectorAll('.filter-btn');
-        const searchInput = document.getElementById('course-search');
-        const alertContainer = document.getElementById('alert-container');
+// DOM Elements
+const coursesContainer = document.getElementById('courses-container');
+const filterButtons = document.querySelectorAll('.filter-btn');
+const searchInput = document.getElementById('course-search');
+const alertContainer = document.getElementById('alert-container');
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🚀 Inicializando página de Cursos Extras...');
-            
-            await loadUserData();
-            await loadCursos();
-            setupEventListeners();
-            
-            console.log('🎯 Página de cursos inicializada com sucesso!');
+// Initialize
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 Inicializando página de Cursos Extras...');
+    
+    await loadUserData();
+    await loadCursos();
+    setupEventListeners();
+    
+    console.log('🎯 Página de cursos inicializada com sucesso!');
+});
+
+// Função para voltar ao menu
+function voltarParaMenu() {
+    if (document.referrer && document.referrer.includes(window.location.hostname)) {
+        window.history.back();
+    } else {
+        window.location.href = '../Menu/index.html';
+    }
+}
+
+// Event Listeners
+function setupEventListeners() {
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            filterButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            filterCursos(this.dataset.filter);
         });
+    });
 
-        // Função para voltar ao menu
-        function voltarParaMenu() {
-            if (document.referrer && document.referrer.includes(window.location.hostname)) {
-                window.history.back();
-            } else {
-                window.location.href = '../Menu/index.html';
+    searchInput.addEventListener('input', function() {
+        filterCursos();
+    });
+}
+
+// Load user data from localStorage
+async function loadUserData() {
+    try {
+        const userDataStr = localStorage.getItem('userData');
+        if (userDataStr) {
+            userData = JSON.parse(userDataStr);
+            updateUserInterface();
+        } else {
+            userData = { nome: 'Aluno', serie: '1º Ano', pontuacao: 0 };
+            updateUserInterface();
+        }
+        await loadUserProgress();
+    } catch (error) {
+        console.error('❌ Erro ao carregar dados do usuário:', error);
+        userData = { nome: 'Aluno', serie: '--', pontuacao: 0 };
+        updateUserInterface();
+    }
+}
+
+// Load user progress from API
+async function loadUserProgress() {
+    try {
+        if (userData && userData.id) {
+            const response = await fetch(`${API_BASE_URL}/api/progresso/${userData.id}`);
+            if (response.ok) {
+                const data = await response.json();
+                userProgress = data.progressos || [];
             }
         }
+    } catch (error) {
+        console.error('❌ Erro ao carregar progresso:', error);
+        userProgress = [];
+    }
+}
 
-        // Test API connection
-        async function testAPIConnection() {
-            try {
-                console.log('🔗 Testando conexão com a API...');
-                const response = await fetch(`${API_BASE_URL}/api/health`);
-                if (response.ok) {
-                    const health = await response.json();
-                    console.log('✅ API conectada:', health);
-                    return true;
-                }
-                return false;
-            } catch (error) {
-                console.error('❌ Falha na conexão com API:', error);
-                return false;
-            }
-        }
+function updateUserInterface() {
+    // Esta função parece faltar elementos no HTML atual
+    // Implementação básica
+    console.log('User data:', userData);
+}
 
-        // Event Listeners
-        function setupEventListeners() {
-            filterButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    filterButtons.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    filterCursos(this.dataset.filter);
-                });
-            });
-
-            searchInput.addEventListener('input', function() {
-                filterCursos();
-            });
-        }
-
-        // Load user data from localStorage
-        async function loadUserData() {
-            try {
-                const userDataStr = localStorage.getItem('userData');
-                if (userDataStr) {
-                    userData = JSON.parse(userDataStr);
-                    updateUserInterface();
-                    console.log('✅ Dados do usuário carregados:', userData);
-                } else {
-                    userData = {
-                        nome: 'Aluno',
-                        serie: '1º Ano',
-                        pontuacao: 0
-                    };
-                    updateUserInterface();
-                    console.log('⚠️ Usando dados padrão do usuário');
-                }
-
-                await loadUserProgress();
-            } catch (error) {
-                console.error('❌ Erro ao carregar dados do usuário:', error);
-                userData = {
-                    nome: 'Aluno',
-                    serie: '--',
-                    pontuacao: 0
-                };
-                updateUserInterface();
-            }
-        }
-
-        // Load user progress from API
-        async function loadUserProgress() {
-            try {
-                if (userData && userData.id) {
-                    console.log(`📊 Carregando progresso do usuário ${userData.id}...`);
-                    const response = await fetch(`${API_BASE_URL}/api/progresso/${userData.id}`);
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        userProgress = data.progressos || [];
-                        console.log(`✅ Progresso carregado: ${userProgress.length} cursos com progresso`);
-                    } else {
-                        console.log('⚠️ Não foi possível carregar progresso do usuário');
-                        userProgress = [];
-                        
-                        const progressoLocal = localStorage.getItem(`progresso_${userData.id}`);
-                        if (progressoLocal) {
-                            userProgress = JSON.parse(progressoLocal);
-                            console.log('📁 Progresso carregado do localStorage');
-                        }
-                    }
-                } else {
-                    console.log('⚠️ ID do usuário não disponível para carregar progresso');
-                    userProgress = [];
-                }
-            } catch (error) {
-                console.error('❌ Erro ao carregar progresso:', error);
-                userProgress = [];
-            }
-        }
-
-        function updateUserInterface() {
-            document.getElementById('user-name').textContent = userData.nome || 'Aluno';
-            document.getElementById('user-serie').textContent = `Série: ${userData.serie || '--'}`;
-            
-            const avatar = document.getElementById('user-avatar');
-            if (userData.nome) {
-                avatar.textContent = userData.nome.charAt(0).toUpperCase();
-            }
-        }
-
-        // Load cursos from API
-       // ✅ FUNÇÃO LOADCURSOS CORRIGIDA E COMPLETA
+// ✅ FUNÇÃO PRINCIPAL CORRIGIDA - LOAD CURSOS
 async function loadCursos() {
     try {
         showLoading();
@@ -910,31 +862,26 @@ async function loadCursos() {
         }
     } catch (error) {
         console.warn('❌ Erro ao carregar cursos, usando dados locais:', error);
-        cursos = getSampleCursos(); // Dados de exemplo
+        cursos = getSampleCursos();
         showAlert('⚠️ Usando dados de exemplo - API offline', 'warning');
     } finally {
         filteredCursos = [...cursos];
         displayCursos();
         updateStats();
         console.log(`🎯 ${cursos.length} cursos processados`);
+        
+        // Debug
+        diagnosticoCompleto();
     }
 }
 
-
-      function filterCursos(filter = 'all') {
+// ✅ FILTRO CORRIGIDO
+function filterCursos(filter = 'all') {
     const searchTerm = searchInput.value.toLowerCase();
-    
-    console.log('🔍 Aplicando filtro:', { 
-        filter, 
-        searchTerm, 
-        totalCursos: cursos.length,
-        cursosDisponiveis: cursos.map(c => ({ titulo: c.titulo, materia: c.materia, ativo: c.ativo }))
-    });
     
     filteredCursos = cursos.filter(curso => {
         // CORREÇÃO: Mostrar cursos mesmo se ativo for undefined ou true
         if (curso.ativo === false) {
-            console.log(`❌ Curso ${curso.titulo} está explicitamente inativo`);
             return false;
         }
         
@@ -943,144 +890,170 @@ async function loadCursos() {
                             (curso.descricao && curso.descricao.toLowerCase().includes(searchTerm)) ||
                             (curso.categoria && curso.categoria.toLowerCase().includes(searchTerm));
         
-        const shouldShow = matchesFilter && matchesSearch;
-        
-        if (shouldShow) {
-            console.log(`✅ Mostrando: ${curso.titulo} (${curso.materia}, ativo: ${curso.ativo})`);
-        } else {
-            console.log(`🚫 Ocultando: ${curso.titulo} - filtro: ${filter}, busca: ${searchTerm}`);
-        }
-        
-        return shouldShow;
+        return matchesFilter && matchesSearch;
     });
     
-    console.log(`📊 Resultado: ${filteredCursos.length} de ${cursos.length} cursos após filtro`);
     displayCursos();
 }
-        // Display cursos
-        function displayCursos() {
-            coursesContainer.innerHTML = '';
 
-            if (filteredCursos.length === 0) {
-                coursesContainer.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-graduation-cap"></i>
-                        <h3>Nenhum curso encontrado</h3>
-                        <p>Tente ajustar os filtros ou termos de busca</p>
-                    </div>
-                `;
-                return;
-            }
+// Display cursos
+function displayCursos() {
+    coursesContainer.innerHTML = '';
 
-            filteredCursos.forEach(curso => {
-                const courseCard = createCourseCard(curso);
-                coursesContainer.appendChild(courseCard);
-            });
+    if (filteredCursos.length === 0) {
+        coursesContainer.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-graduation-cap"></i>
+                <h3>Nenhum curso encontrado</h3>
+                <p>Tente ajustar os filtros ou termos de busca</p>
+            </div>
+        `;
+        return;
+    }
 
-            console.log(`🎨 ${filteredCursos.length} cursos exibidos na tela`);
-        }
+    filteredCursos.forEach(curso => {
+        const courseCard = createCourseCard(curso);
+        coursesContainer.appendChild(courseCard);
+    });
+}
 
-        // Create course card
-        function createCourseCard(curso) {
-            const card = document.createElement('div');
-            card.className = 'course-card';
+// Create course card (mantida igual)
+function createCourseCard(curso) {
+    const card = document.createElement('div');
+    card.className = 'course-card';
+    
+    const materiaNome = getMateriaNome(curso.materia);
+    const nivelNome = getNivelNome(curso.nivel);
+    const progresso = getProgressoCurso(curso.id);
+
+    const imagemUrl = curso.imagem || `https://via.placeholder.com/400x200/323232/ffffff?text=${encodeURIComponent(curso.titulo)}`;
+
+    card.innerHTML = `
+        <div class="course-image">
+            <img src="${imagemUrl}" alt="${curso.titulo}" onerror="this.src='https://via.placeholder.com/400x200/323232/ffffff?text=${encodeURIComponent(curso.titulo)}'">
+            <div class="course-badge badge-${curso.materia}">${materiaNome}</div>
+            <div class="course-level level-${curso.nivel}">${nivelNome}</div>
+        </div>
+        
+        <div class="course-content">
+            <h3 class="course-title">${curso.titulo}</h3>
+            <p class="course-description">${curso.descricao || 'Descrição não disponível.'}</p>
             
-            const materiaNome = getMateriaNome(curso.materia);
-            const nivelNome = getNivelNome(curso.nivel);
-            const progresso = getProgressoCurso(curso.id);
-
-            const imagemUrl = curso.imagem || `https://via.placeholder.com/400x200/323232/ffffff?text=${encodeURIComponent(curso.titulo)}`;
-
-            card.innerHTML = `
-                <div class="course-image">
-                    <img src="${imagemUrl}" alt="${curso.titulo}" onerror="this.src='https://via.placeholder.com/400x200/323232/ffffff?text=${encodeURIComponent(curso.titulo)}'">
-                    <div class="course-badge badge-${curso.materia}">${materiaNome}</div>
-                    <div class="course-level level-${curso.nivel}">${nivelNome}</div>
+            <div class="course-meta">
+                <div class="meta-item">
+                    <div class="meta-value">${curso.duracao}h</div>
+                    <div class="meta-label">Duração</div>
                 </div>
+                <div class="meta-item">
+                    <div class="meta-value">${curso.modulos}</div>
+                    <div class="meta-label">Módulos</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-value">${curso.alunos || 0}</div>
+                    <div class="meta-label">Alunos</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-value">${curso.avaliacao || 'N/A'}</div>
+                    <div class="meta-label">Avaliação</div>
+                </div>
+            </div>
+            
+            <div class="course-category">
+                <small>Categoria: ${getCategoriaNome(curso.categoria)}</small>
+            </div>
+            
+            ${progresso > 0 ? `
+            <div class="course-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${progresso}%"></div>
+                </div>
+                <div class="progress-text">
+                    <span>Progresso</span>
+                    <span>${progresso}%</span>
+                </div>
+            </div>
+            ` : ''}
+            
+            <div class="course-actions">
+                ${progresso > 0 ? `
+                    <button class="btn btn-primary" onclick="continuarCurso(${curso.id})">
+                        <i class="fas fa-play"></i> Continuar
+                    </button>
+                ` : `
+                    <button class="btn btn-primary" onclick="iniciarCurso(${curso.id})">
+                        <i class="fas fa-play"></i> Começar
+                    </button>
+                `}
                 
-                <div class="course-content">
-                    <h3 class="course-title">${curso.titulo}</h3>
-                    <p class="course-description">${curso.descricao || 'Descrição não disponível.'}</p>
-                    
-                    <div class="course-meta">
-                        <div class="meta-item">
-                            <div class="meta-value">${curso.duracao}h</div>
-                            <div class="meta-label">Duração</div>
-                        </div>
-                        <div class="meta-item">
-                            <div class="meta-value">${curso.modulos}</div>
-                            <div class="meta-label">Módulos</div>
-                        </div>
-                        <div class="meta-item">
-                            <div class="meta-value">${curso.alunos || 0}</div>
-                            <div class="meta-label">Alunos</div>
-                        </div>
-                        <div class="meta-item">
-                            <div class="meta-value">${curso.avaliacao || 'N/A'}</div>
-                            <div class="meta-label">Avaliação</div>
-                        </div>
-                    </div>
-                    
-                    <div class="course-category">
-                        <small>Categoria: ${getCategoriaNome(curso.categoria)}</small>
-                    </div>
-                    
-                    ${progresso > 0 ? `
-                    <div class="course-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${progresso}%"></div>
-                        </div>
-                        <div class="progress-text">
-                            <span>Progresso</span>
-                            <span>${progresso}%</span>
-                        </div>
-                    </div>
-                    ` : ''}
-                    
-                    <div class="course-actions">
-                        ${progresso > 0 ? `
-                            <button class="btn btn-primary" onclick="continuarCurso(${curso.id})">
-                                <i class="fas fa-play"></i> Continuar
-                            </button>
-                        ` : `
-                            <button class="btn btn-primary" onclick="iniciarCurso(${curso.id})">
-                                <i class="fas fa-play"></i> Começar
-                            </button>
-                        `}
-                        
-                        <button class="btn btn-secondary" onclick="verDetalhes(${curso.id})">
-                            <i class="fas fa-info-circle"></i> Detalhes
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            return card;
-        }
+                <button class="btn btn-secondary" onclick="verDetalhes(${curso.id})">
+                    <i class="fas fa-info-circle"></i> Detalhes
+                </button>
+            </div>
+        </div>
+    `;
+    
+    return card;
+}
 
-        // Get user progress for a specific course
-        function getProgressoCurso(cursoId) {
-            if (!userProgress || userProgress.length === 0) return 0;
-            
-            const progresso = userProgress.find(p => p.cursoId === cursoId);
-            return progresso ? progresso.progresso : 0;
-        }
+// ✅ HELPER FUNCTIONS CORRIGIDAS
+function getMateriaNome(materia) {
+    const nomes = {
+        'matematica': 'Matemática',
+        'csn': 'CSN',
+        'csh': 'CSH',
+        'portugues': 'Português',
+        'programacao': 'Programação'
+    };
+    return nomes[materia] || materia;
+}
 
-        // Update stats
-       function updateStats() {
+function getCategoriaNome(categoria) {
+    const nomes = {
+        'algebra': 'Álgebra',
+        'geometria': 'Geometria',
+        'quimica': 'Química',
+        'fisica': 'Física',
+        'historia': 'História',
+        'geografia': 'Geografia',
+        'gramatica': 'Gramática',
+        'interpretacao': 'Interpretação',
+        'php': 'Python',
+        'js': 'JavaScript',
+        'react': 'React',
+        'python': 'Python'
+    };
+    return nomes[categoria] || categoria;
+}
+
+function getNivelNome(nivel) {
+    const nomes = {
+        'fundamental': 'Fundamental',
+        'medio': 'Ensino Médio',
+        'vestibular': 'Vestibular'
+    };
+    return nomes[nivel] || nivel;
+}
+
+function getProgressoCurso(cursoId) {
+    if (!userProgress || userProgress.length === 0) return 0;
+    const progresso = userProgress.find(p => p.cursoId === cursoId);
+    return progresso ? progresso.progresso : 0;
+}
+
+// ✅ UPDATE STATS CORRIGIDO
+function updateStats() {
     const totalCursos = cursos.length;
     const cursosMatematica = cursos.filter(c => c.materia === 'matematica').length;
     const cursosCsn = cursos.filter(c => c.materia === 'csn').length;
     const cursosCsh = cursos.filter(c => c.materia === 'csh').length;
     const cursosPortugues = cursos.filter(c => c.materia === 'portugues').length;
-    const cursosProgramacao = cursos.filter(c => c.materia === 'programacao').length; 
+    const cursosProgramacao = cursos.filter(c => c.materia === 'programacao').length;
 
     document.getElementById('total-cursos').textContent = totalCursos;
     document.getElementById('cursos-matematica').textContent = cursosMatematica;
     document.getElementById('cursos-csn').textContent = cursosCsn;
     document.getElementById('cursos-csh').textContent = cursosCsh;
     document.getElementById('cursos-portugues').textContent = cursosPortugues;
-    document.getElementById('cursos-programacao').textContent = cursosProgramacao; // ← DESCOMENTE SE TIVER ESTE ELEMENTO
 
     console.log('📊 Estatísticas atualizadas:', {
         total: totalCursos,
@@ -1092,171 +1065,125 @@ async function loadCursos() {
     });
 }
 
-        // Helper functions
-        function getMateriaNome(materia) {
-            const nomes = {
-                'matematica': 'Matemática',
-                'csn': 'CSN',
-                'csh': 'CSH',
-                'portugues': 'Português',
-                'programacao': 'Programação'
-
-            };
-            return nomes[materia] || materia;
+// ✅ DADOS DE EXEMPLO
+function getSampleCursos() {
+    return [
+        {
+            id: 1,
+            titulo: 'Álgebra Básica',
+            descricao: 'Domine os conceitos fundamentais da álgebra.',
+            materia: 'matematica',
+            categoria: 'algebra',
+            nivel: 'fundamental',
+            duracao: 15,
+            modulos: 4,
+            ativo: true,
+            alunos: 150,
+            avaliacao: 4.8
+        },
+        {
+            id: 2,
+            titulo: 'Química Geral',
+            descricao: 'Introdução aos conceitos básicos da química.',
+            materia: 'csn',
+            categoria: 'quimica',
+            nivel: 'medio',
+            duracao: 18,
+            modulos: 5,
+            ativo: true,
+            alunos: 95,
+            avaliacao: 4.7
+        },
+        {
+            id: 3,
+            titulo: 'Programação Python',
+            descricao: 'Aprenda programação do zero com Python.',
+            materia: 'programacao',
+            categoria: 'python',
+            nivel: 'medio',
+            duracao: 25,
+            modulos: 8,
+            ativo: true,
+            alunos: 200,
+            avaliacao: 4.9
         }
+    ];
+}
 
-        function getCategoriaNome(categoria) {
-            const nomes = {
-                'algebra': 'Álgebra',
-                'geometria': 'Geometria',
-                'quimica': 'Química',
-                'fisica': 'Física',
-                'historia': 'História',
-                'geografia': 'Geografia',
-                'gramatica': 'Gramática',
-                'interpretacao': 'Interpretação',
-                'php': 'Pyton',
-                'js': 'JavaScript',
-                'react': 'react'
-            };
-            return nomes[categoria] || categoria;
+// Course actions (mantidas)
+function iniciarCurso(cursoId) {
+    const curso = cursos.find(c => c.id === cursoId);
+    if (curso) {
+        alert(`Iniciando curso: ${curso.titulo}`);
+        if (userData && userData.id) {
+            atualizarProgresso(userData.id, cursoId, 10);
         }
+    }
+}
 
-        function getNivelNome(nivel) {
-            const nomes = {
-                'fundamental': 'Fundamental',
-                'medio': 'Ensino Médio',
-                'vestibular': 'Vestibular'
-            };
-            return nomes[nivel] || nivel;
-        }
+function continuarCurso(cursoId) {
+    const curso = cursos.find(c => c.id === cursoId);
+    if (curso) {
+        const progresso = getProgressoCurso(cursoId);
+        alert(`Continuando curso: ${curso.titulo} (${progresso}% completo)`);
+    }
+}
 
-        // Course actions
-        function iniciarCurso(cursoId) {
-            const curso = cursos.find(c => c.id === cursoId);
-            if (curso) {
-                console.log(`🎯 Iniciando curso: ${curso.titulo}`);
-                
-                alert(`Iniciando curso: ${curso.titulo}`);
-                
-                if (userData && userData.id) {
-                    atualizarProgresso(userData.id, cursoId, 10);
-                }
-            }
-        }
+function verDetalhes(cursoId) {
+    const curso = cursos.find(c => c.id === cursoId);
+    if (curso) {
+        alert(`Detalhes do curso: ${curso.titulo}\n\nMatéria: ${getMateriaNome(curso.materia)}\nCategoria: ${getCategoriaNome(curso.categoria)}\nNível: ${getNivelNome(curso.nivel)}\n\n${curso.descricao}`);
+    }
+}
 
-        function continuarCurso(cursoId) {
-            const curso = cursos.find(c => c.id === cursoId);
-            if (curso) {
-                const progresso = getProgressoCurso(cursoId);
-                console.log(`▶️ Continuando curso: ${curso.titulo} (${progresso}% completo)`);
-                alert(`Continuando curso: ${curso.titulo} (${progresso}% completo)`);
-            }
-        }
-
-        function verDetalhes(cursoId) {
-            const curso = cursos.find(c => c.id === cursoId);
-            if (curso) {
-                console.log(`🔍 Visualizando detalhes do curso: ${curso.titulo}`);
-                alert(`Detalhes do curso: ${curso.titulo}\n\nMatéria: ${getMateriaNome(curso.materia)}\nCategoria: ${getCategoriaNome(curso.categoria)}\nNível: ${getNivelNome(curso.nivel)}\n\n${curso.descricao}`);
-            }
-        }
-
-        // Update progress in API
-      async function atualizarProgresso(usuarioId, cursoId, progresso) {
+async function atualizarProgresso(usuarioId, cursoId, progresso) {
     try {
         if (!usuarioId) {
-            // Fallback para localStorage se não tiver usuário logado
             const progressoLocal = JSON.parse(localStorage.getItem('progresso_guest') || '{}');
             progressoLocal[cursoId] = progresso;
             localStorage.setItem('progresso_guest', JSON.stringify(progressoLocal));
             return;
         }
-
         const response = await fetch(`${API_BASE_URL}/api/progresso`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ usuarioId, cursoId, progresso })
         });
-
         if (response.ok) {
-            await loadUserProgress(); // Recarrega o progresso
+            await loadUserProgress();
         }
     } catch (error) {
         console.error('Erro ao salvar progresso:', error);
     }
 }
 
-        // Loading state
-        function showLoading() {
-            coursesContainer.innerHTML = `
-                <div class="loading">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p>Carregando cursos...</p>
-                </div>
-            `;
-        }
+function showLoading() {
+    coursesContainer.innerHTML = `
+        <div class="loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Carregando cursos...</p>
+        </div>
+    `;
+}
 
-        // Alert function
-        function showAlert(message, type = 'error') {
-            if (!alertContainer) return;
+function showAlert(message, type = 'error') {
+    if (!alertContainer) return;
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type}`;
+    alert.innerHTML = `<span>${message}</span><button class="alert-close">&times;</button>`;
+    alertContainer.appendChild(alert);
+    setTimeout(() => alert.remove(), 5000);
+    alert.querySelector('.alert-close').addEventListener('click', function() {
+        alert.remove();
+    });
+}
 
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.innerHTML = `
-                <span>${message}</span>
-                <button class="alert-close">&times;</button>
-            `;
-
-            alertContainer.appendChild(alert);
-
-            setTimeout(() => {
-                alert.remove();
-            }, 5000);
-
-            alert.querySelector('.alert-close').addEventListener('click', function() {
-                alert.remove();
-            });
-        }
-
-        // Debug function para verificar dados
-        // ✅ FUNÇÃO DE DIAGNÓSTICO COMPLETO
+// ✅ DIAGNÓSTICO
 function diagnosticoCompleto() {
-    console.log('🔍 DIAGNÓSTICO COMPLETO - CURSOS EXTRAS');
-    console.log('API Base:', API_BASE_URL);
+    console.log('🔍 DIAGNÓSTICO COMPLETO');
     console.log('Cursos carregados:', cursos);
     console.log('Cursos filtrados:', filteredCursos);
     console.log('User Data:', userData);
-    
-    // Verifica cada curso individualmente
-    cursos.forEach((curso, index) => {
-        console.log(`Curso ${index + 1}:`, {
-            id: curso.id,
-            titulo: curso.titulo,
-            materia: curso.materia,
-            ativo: curso.ativo,
-            categoria: curso.categoria,
-            temDescricao: !!curso.descricao,
-            temImagem: !!curso.imagem
-        });
-    });
-    
-    // Testa a API diretamente
-    testAPIDirect();
-}
-
-// ✅ TESTE DIRETO DA API
-async function testAPIDirect() {
-    try {
-        console.log('🧪 Testando API diretamente...');
-        const response = await fetch(`${API_BASE_URL}/api/cursos`);
-        console.log('Status:', response.status);
-        const data = await response.json();
-        console.log('Dados da API:', data);
-        return data;
-    } catch (error) {
-        console.error('❌ Erro no teste da API:', error);
-    }
 }
 
 window.diagnostico = diagnosticoCompleto;
