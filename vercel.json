@@ -40,8 +40,8 @@
       "dest": "/Contato/indexCo.html"
     },
     {
-      "src": "/navegador",
-      "dest": "/Navegador/indexN.html"
+      "src": "/extras",
+      "dest": "/CursosExtras/indexEX.html"
     },
     {
       "src": "/login",
