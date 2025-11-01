@@ -7,7 +7,7 @@
     <meta name="description" content="Cursos extras para complementar seus estudos">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
+              * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -48,7 +48,6 @@
             border-bottom: 3px solid var(--primary);
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
             position: relative;
-            min-height: 140px;
         }
 
         .header-content {
@@ -58,7 +57,6 @@
             flex-wrap: wrap;
             gap: 15px;
             position: relative;
-            min-height: 80px;
         }
 
         .logo {
@@ -147,31 +145,32 @@
             text-overflow: ellipsis;
         }
 
-        /* Botão Voltar - POSIÇÃO ATUALIZADA */
+        /* Botão Voltar - NOVO ESTILO */
         .btn-voltar {
-            position: absolute;
-            right: 20px;
-            bottom: 15px;
-            background: var(--primary);
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #ffcf00;
             color: #000;
-            border: none;
-            border-radius: 10px;
-            padding: 10px 15px;
-            font-size: 1rem;
+            font-size: 24px;
             font-weight: bold;
+            border: none;
             cursor: pointer;
-            transition: all 0.3s ease;
+            z-index: 1000;
             display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 5px;
-            box-shadow: 0 3px 10px rgba(255, 207, 0, 0.3);
-            z-index: 10;
-            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.4);
+            transition: all 0.3s ease;
         }
 
         .btn-voltar:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 207, 0, 0.4);
+            background: #e6b800;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(255, 207, 0, 0.6);
         }
 
         /* Main Content */
@@ -644,14 +643,12 @@
 
             .header {
                 padding: 12px 0;
-                min-height: 120px;
             }
 
             .header-content {
                 flex-direction: column;
                 text-align: center;
                 gap: 12px;
-                min-height: auto;
             }
 
             .logo {
@@ -681,14 +678,11 @@
 
             /* Botão Voltar - RESPONSIVE */
             .btn-voltar {
-                position: relative;
-                left: auto;
-                bottom: auto;
-                margin: 10px auto 0 auto;
-                align-self: center;
-                font-size: 0.9rem;
-                padding: 8px 12px;
-                order: 3;
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                bottom: 20px;
+                right: 20px;
             }
 
             .page-title h2 {
@@ -760,10 +754,6 @@
                 padding: 10px;
             }
 
-            .header {
-                min-height: 110px;
-            }
-
             .logo-text h1 {
                 font-size: 1.3rem;
             }
@@ -786,10 +776,13 @@
                 font-size: 0.9rem;
             }
 
+            /* Botão Voltar - MOBILE */
             .btn-voltar {
-                padding: 6px 10px;
-                font-size: 0.85rem;
-                margin-top: 5px;
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+                bottom: 15px;
+                right: 15px;
             }
 
             .page-title h2 {
@@ -872,10 +865,6 @@
 
         /* Mobile muito pequeno */
         @media (max-width: 360px) {
-            .header {
-                min-height: 100px;
-            }
-
             .logo-emoji {
                 width: 45px;
                 height: 45px;
@@ -909,51 +898,6 @@
             }
         }
 
-        /* Acessibilidade - Tamanho de fonte maior */
-        @media (max-width: 768px) and (min-height: 700px) {
-            body {
-                font-size: 16px;
-            }
-            
-            .btn {
-                min-height: 50px;
-            }
-        }
-
-        /* Orientação paisagem em mobile */
-        @media (max-height: 500px) and (orientation: landscape) {
-            .header {
-                padding: 8px 0;
-                min-height: 80px;
-            }
-            
-            .header-content {
-                flex-direction: row;
-                min-height: 60px;
-            }
-            
-            .logo {
-                order: 1;
-                flex: 1;
-                justify-content: flex-start;
-            }
-            
-            .user-info {
-                order: 2;
-                width: auto;
-            }
-            
-            .btn-voltar {
-                order: 3;
-                margin: 0;
-                position: static;
-            }
-            
-            .page-title {
-                margin-bottom: 20px;
-            }
-        }
-
         /* Melhorias de toque para dispositivos móveis */
         @media (hover: none) and (pointer: coarse) {
             .btn:hover,
@@ -969,6 +913,14 @@
             
             .course-card:active {
                 transform: scale(0.99);
+            }
+
+            .btn-voltar:hover {
+                transform: none;
+            }
+            
+            .btn-voltar:active {
+                transform: scale(1.1);
             }
         }
     </style>
