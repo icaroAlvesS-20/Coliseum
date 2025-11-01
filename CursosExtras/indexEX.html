@@ -1055,31 +1055,30 @@
         }
 
         // Update stats
-        function updateStats() {
-            const totalCursos = cursos.length;
-            const cursosMatematica = cursos.filter(c => c.materia === 'matematica').length;
-            const cursosCsn = cursos.filter(c => c.materia === 'csn').length;
-            const cursosCsh = cursos.filter(c => c.materia === 'csh').length;
-            const cursosPortugues = cursos.filter(c => c.materia === 'portugues').length;
+       function updateStats() {
+    const totalCursos = cursos.length;
+    const cursosMatematica = cursos.filter(c => c.materia === 'matematica').length;
+    const cursosCsn = cursos.filter(c => c.materia === 'csn').length;
+    const cursosCsh = cursos.filter(c => c.materia === 'csh').length;
+    const cursosPortugues = cursos.filter(c => c.materia === 'portugues').length;
+    const cursosProgramacao = cursos.filter(c => c.materia === 'programacao').length; 
 
-            document.getElementById('total-cursos').textContent = totalCursos;
-            document.getElementById('cursos-matematica').textContent = cursosMatematica;
-            document.getElementById('cursos-csn').textContent = cursosCsn;
-            document.getElementById('cursos-csh').textContent = cursosCsh;
-            document.getElementById('cursos-portugues').textContent = cursosPortugues;
-            document.getElementById('cursos-programação').textContent = cursosProgramacao;
+    document.getElementById('total-cursos').textContent = totalCursos;
+    document.getElementById('cursos-matematica').textContent = cursosMatematica;
+    document.getElementById('cursos-csn').textContent = cursosCsn;
+    document.getElementById('cursos-csh').textContent = cursosCsh;
+    document.getElementById('cursos-portugues').textContent = cursosPortugues;
+    document.getElementById('cursos-programacao').textContent = cursosProgramacao; // ← DESCOMENTE SE TIVER ESTE ELEMENTO
 
-
-            console.log('📊 Estatísticas atualizadas:', {
-                total: totalCursos,
-                matematica: cursosMatematica,
-                csn: cursosCsn,
-                csh: cursosCsh,
-                portugues: cursosPortugues,
-                programacao: cursosProgramacao
-                
-            });
-        }
+    console.log('📊 Estatísticas atualizadas:', {
+        total: totalCursos,
+        matematica: cursosMatematica,
+        csn: cursosCsn,
+        csh: cursosCsh,
+        portugues: cursosPortugues,
+        programacao: cursosProgramacao
+    });
+}
 
         // Helper functions
         function getMateriaNome(materia) {
