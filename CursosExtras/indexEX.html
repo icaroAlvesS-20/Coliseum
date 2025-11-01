@@ -752,6 +752,9 @@
             <button class="filter-btn" data-filter="portugues">
                 <i class="fas fa-book"></i> Português
             </button>
+              <button class="filter-btn" data-filter="programacao">
+                <i class="fas fa-book"></i> Programação
+            </button>
         </div>
 
         <!-- Search -->
@@ -929,55 +932,7 @@
         updateStats();
     }
 }
-        // Sample data para demonstração
-        function getSampleCursos() {
-            return [
-                {
-                    id: 1,
-                    titulo: 'Álgebra Básica',
-                    descricao: 'Domine os conceitos fundamentais da álgebra incluindo equações, expressões e funções matemáticas.',
-                    materia: 'matematica',
-                    categoria: 'algebra',
-                    nivel: 'fundamental',
-                    duracao: 15,
-                    modulos: 4,
-                    imagem: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400',
-                    ativo: true,
-                    alunos: 150,
-                    avaliacao: 4.8
-                },
-                {
-                    id: 2,
-                    titulo: 'Geometria Plana',
-                    descricao: 'Aprenda sobre formas geométricas, ângulos, perímetros e áreas de figuras planas.',
-                    materia: 'matematica',
-                    categoria: 'geometria',
-                    nivel: 'fundamental',
-                    duracao: 12,
-                    modulos: 3,
-                    imagem: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400',
-                    ativo: true,
-                    alunos: 120,
-                    avaliacao: 4.6
-                },
-                {
-                    id: 3,
-                    titulo: 'Química Geral',
-                    descricao: 'Introdução aos conceitos básicos da química: elementos, compostos e reações químicas.',
-                    materia: 'csn',
-                    categoria: 'quimica',
-                    nivel: 'medio',
-                    duracao: 18,
-                    modulos: 5,
-                    imagem: 'https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=400',
-                    ativo: true,
-                    alunos: 95,
-                    avaliacao: 4.7
-                }
-            ];
-        }
-
-        // Filter cursos
+      
         function filterCursos(filter = 'all') {
             const searchTerm = searchInput.value.toLowerCase();
             
@@ -1115,13 +1070,17 @@
             document.getElementById('cursos-csn').textContent = cursosCsn;
             document.getElementById('cursos-csh').textContent = cursosCsh;
             document.getElementById('cursos-portugues').textContent = cursosPortugues;
+            document.getElementById('cursos-programação').textContent = cursosProgramacao;
+
 
             console.log('📊 Estatísticas atualizadas:', {
                 total: totalCursos,
                 matematica: cursosMatematica,
                 csn: cursosCsn,
                 csh: cursosCsh,
-                portugues: cursosPortugues
+                portugues: cursosPortugues,
+                programacao: cursosProgramacao
+                
             });
         }
 
@@ -1132,6 +1091,8 @@
                 'csn': 'CSN',
                 'csh': 'CSH',
                 'portugues': 'Português'
+                'programacao': 'Programação'
+
             };
             return nomes[materia] || materia;
         }
@@ -1145,7 +1106,10 @@
                 'historia': 'História',
                 'geografia': 'Geografia',
                 'gramatica': 'Gramática',
-                'interpretacao': 'Interpretação'
+                'interpretacao': 'Interpretação',
+                'php': 'Pyton',
+                'js': 'JavaScript',
+                'react': 'react'
             };
             return nomes[categoria] || categoria;
         }
