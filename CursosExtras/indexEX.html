@@ -14,23 +14,37 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
+        :root {
+            --primary: #ffcf00;
+            --secondary: #383838;
+            --dark: #282828;
+            --text: #ffffff;
+            --text-secondary: #cccccc;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+        }
+
         body {
             background: linear-gradient(135deg, #000000 0%, #2d2d2d 100%);
             min-height: 100vh;
-            color: #ffffff;
-        }
-
-        .header {
-            background: linear-gradient(145deg, #383838, #282828);
-            padding: 25px 0;
-            border-bottom: 3px solid #ffcf00;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            color: var(--text);
+            padding: 0;
+            margin: 0;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: linear-gradient(145deg, var(--secondary), var(--dark));
+            padding: 15px 0;
+            border-bottom: 3px solid var(--primary);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
         }
 
         .header-content {
@@ -38,20 +52,20 @@
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 15px;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
         }
 
         .logo-emoji {
-            font-size: 3rem;
-            background: #ffcf00;
-            width: 70px;
-            height: 70px;
+            font-size: 2.5rem;
+            background: var(--primary);
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -60,130 +74,200 @@
             box-shadow: 0 0 20px rgba(255, 207, 0, 0.5);
         }
 
-        .logo-text {
-            display: flex;
-            flex-direction: column;
-        }
-
         .logo-text h1 {
-            color: #ffcf00;
-            font-size: 2.2rem;
+            color: var(--primary);
+            font-size: 1.8rem;
             font-weight: bold;
             margin: 0;
             text-shadow: 0 2px 10px rgba(255, 207, 0, 0.3);
         }
 
         .logo-text span {
-            color: #ccc;
-            font-size: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
 
         .user-info {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
             background: rgba(255, 207, 0, 0.1);
-            padding: 12px 20px;
-            border-radius: 15px;
+            padding: 10px 15px;
+            border-radius: 12px;
             border: 1px solid #555;
         }
 
         .user-avatar {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: #ffcf00;
+            background: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
             color: #000;
             font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .user-details h3 {
-            color: #ffcf00;
-            margin-bottom: 3px;
             font-size: 1.1rem;
         }
 
+        .user-details h3 {
+            color: var(--primary);
+            margin-bottom: 2px;
+            font-size: 1rem;
+        }
+
         .user-details p {
-            color: #aaa;
-            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
             margin: 0;
         }
 
-        .main-content {
-            padding: 40px 0;
+        /* Navigation */
+        .nav-container {
+            background: linear-gradient(145deg, var(--secondary), var(--dark));
+            border-bottom: 1px solid #555;
+            margin-bottom: 20px;
         }
 
+        .nav-menu {
+            display: flex;
+            gap: 5px;
+            padding: 10px 0;
+            overflow-x: auto;
+        }
+
+        .nav-btn {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #555;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+        }
+
+        /* Main Content */
         .page-title {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .page-title h2 {
-            color: #ffcf00;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            color: var(--primary);
+            font-size: 2.2rem;
+            margin-bottom: 8px;
             text-shadow: 0 2px 10px rgba(255, 207, 0, 0.3);
         }
 
         .page-title p {
-            color: #ccc;
-            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
             max-width: 600px;
             margin: 0 auto;
         }
 
+        /* Stats Section */
+        .stats-section {
+            background: linear-gradient(145deg, var(--secondary), var(--dark));
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid #555;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid #555;
+        }
+
+        .stat-value {
+            color: var(--primary);
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* Filters */
         .filters {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-bottom: 30px;
+            gap: 12px;
+            margin-bottom: 25px;
             flex-wrap: wrap;
         }
 
         .filter-btn {
-            padding: 12px 25px;
+            padding: 10px 20px;
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid #555;
-            border-radius: 12px;
-            color: #ccc;
+            border-radius: 10px;
+            color: var(--text-secondary);
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 600;
+            font-size: 0.9rem;
         }
 
         .filter-btn.active,
         .filter-btn:hover {
-            background: #ffcf00;
+            background: var(--primary);
             color: #000;
-            border-color: #ffcf00;
+            border-color: var(--primary);
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255, 207, 0, 0.3);
         }
 
+        /* Search */
         .search-box {
             max-width: 500px;
-            margin: 0 auto 40px auto;
+            margin: 0 auto 30px auto;
             position: relative;
         }
 
         .search-box input {
             width: 100%;
-            padding: 18px 25px;
+            padding: 15px 20px;
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid #555;
-            border-radius: 15px;
-            color: #fff;
+            border-radius: 12px;
+            color: var(--text);
             font-size: 1rem;
             transition: all 0.3s ease;
         }
 
         .search-box input:focus {
             outline: none;
-            border-color: #ffcf00;
+            border-color: var(--primary);
             box-shadow: 0 0 20px rgba(255, 207, 0, 0.3);
         }
 
@@ -193,40 +277,41 @@
 
         .search-icon {
             position: absolute;
-            right: 20px;
+            right: 15px;
             top: 50%;
             transform: translateY(-50%);
-            color: #ffcf00;
-            font-size: 1.2rem;
+            color: var(--primary);
+            font-size: 1.1rem;
         }
 
+        /* Courses Grid */
         .courses-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
-            margin-bottom: 50px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
         }
 
         .course-card {
-            background: linear-gradient(145deg, #383838, #282828);
-            border-radius: 20px;
+            background: linear-gradient(145deg, var(--secondary), var(--dark));
+            border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
             border: 1px solid #555;
             transition: all 0.3s ease;
             position: relative;
         }
 
         .course-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-            border-color: #ffcf00;
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            border-color: var(--primary);
         }
 
         .course-image {
             width: 100%;
-            height: 200px;
-            background: linear-gradient(135deg, #ffcf00, #ff9800);
+            height: 180px;
+            background: linear-gradient(135deg, var(--primary), #ff9800);
             position: relative;
             overflow: hidden;
         }
@@ -239,52 +324,51 @@
 
         .course-badge {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            top: 12px;
+            right: 12px;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
             font-weight: bold;
             text-transform: uppercase;
         }
 
         .badge-matematica { background: #4361ee; color: white; }
-        .badge-ciencias { background: #4cc9f0; color: white; }
-        .badge-humanas { background: #f72585; color: white; }
-        .badge-linguagens { background: #ffcf00; color: black; }
-        .badge-preparatorio { background: #7209b7; color: white; }
+        .badge-csn { background: #4cc9f0; color: white; }
+        .badge-csh { background: #f72585; color: white; }
+        .badge-portugues { background: var(--primary); color: black; }
 
         .course-level {
             position: absolute;
-            top: 15px;
-            left: 15px;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 0.7rem;
+            top: 12px;
+            left: 12px;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 0.65rem;
             font-weight: bold;
             background: rgba(0, 0, 0, 0.7);
             color: white;
         }
 
-        .level-iniciante { background: #4caf50; }
-        .level-intermediario { background: #ff9800; }
-        .level-avancado { background: #f44336; }
+        .level-fundamental { background: var(--success); }
+        .level-medio { background: var(--warning); }
+        .level-vestibular { background: var(--danger); }
 
         .course-content {
-            padding: 25px;
+            padding: 20px;
         }
 
         .course-title {
-            color: #ffcf00;
-            font-size: 1.4rem;
-            margin-bottom: 10px;
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 8px;
             font-weight: bold;
         }
 
         .course-description {
-            color: #ccc;
-            margin-bottom: 20px;
-            line-height: 1.5;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            line-height: 1.4;
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
@@ -294,8 +378,8 @@
         .course-meta {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
             border-bottom: 1px solid #444;
         }
 
@@ -307,34 +391,43 @@
         }
 
         .meta-value {
-            color: #ffcf00;
+            color: var(--primary);
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
 
         .meta-label {
             color: #888;
+            font-size: 0.75rem;
+            margin-top: 2px;
+        }
+
+        .course-category {
+            margin-bottom: 12px;
+        }
+
+        .course-category small {
+            color: var(--primary);
             font-size: 0.8rem;
-            margin-top: 3px;
         }
 
         .course-progress {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .progress-bar {
             width: 100%;
-            height: 8px;
+            height: 6px;
             background: #444;
-            border-radius: 4px;
+            border-radius: 3px;
             overflow: hidden;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #ffcf00, #ff9800);
-            border-radius: 4px;
+            background: linear-gradient(90deg, var(--primary), #ff9800);
+            border-radius: 3px;
             transition: width 0.3s ease;
         }
 
@@ -342,36 +435,37 @@
             display: flex;
             justify-content: space-between;
             color: #aaa;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
 
         .course-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
         .btn {
             flex: 1;
-            padding: 12px;
+            padding: 10px;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
+            font-size: 0.85rem;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #ffcf00, #ff9800);
+            background: linear-gradient(135deg, var(--primary), #ff9800);
             color: #000;
         }
 
         .btn-secondary {
             background: rgba(255, 255, 255, 0.1);
-            color: #fff;
+            color: var(--text);
             border: 1px solid #555;
         }
 
@@ -384,63 +478,36 @@
             box-shadow: 0 5px 15px rgba(255, 207, 0, 0.4);
         }
 
+        /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 50px 20px;
             color: #888;
+            grid-column: 1 / -1;
         }
 
         .empty-state i {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            color: #ffcf00;
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            color: var(--primary);
         }
 
         .empty-state h3 {
-            color: #ffcf00;
-            margin-bottom: 10px;
-            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 1.3rem;
         }
 
-        .stats-section {
-            background: linear-gradient(145deg, #383838, #282828);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 40px;
-            border: 1px solid #555;
+        .empty-state p {
+            color: var(--text-secondary);
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .stat-card {
-            text-align: center;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            border: 1px solid #555;
-        }
-
-        .stat-value {
-            color: #ffcf00;
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: #aaa;
-            font-size: 0.9rem;
-        }
-
+        /* Footer */
         .footer {
-            background: linear-gradient(145deg, #282828, #1a1a1a);
-            padding: 30px 0;
+            background: linear-gradient(145deg, var(--dark), #1a1a1a);
+            padding: 25px 0;
             border-top: 1px solid #555;
-            margin-top: 50px;
+            margin-top: 40px;
         }
 
         .footer-content {
@@ -448,34 +515,40 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 15px;
         }
 
         .footer-logo {
             display: flex;
             align-items: center;
-            gap: 10px;
-            color: #ffcf00;
+            gap: 8px;
+            color: var(--primary);
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
 
         .footer-links {
             display: flex;
-            gap: 20px;
+            gap: 15px;
         }
 
         .footer-links a {
-            color: #ccc;
+            color: var(--text-secondary);
             text-decoration: none;
             transition: color 0.3s ease;
+            font-size: 0.9rem;
         }
 
         .footer-links a:hover {
-            color: #ffcf00;
+            color: var(--primary);
         }
 
+        /* Responsive */
         @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
             .header-content {
                 flex-direction: column;
                 text-align: center;
@@ -485,6 +558,16 @@
                 justify-content: center;
             }
 
+            .logo-emoji {
+                width: 50px;
+                height: 50px;
+                font-size: 1.8rem;
+            }
+
+            .logo-text h1 {
+                font-size: 1.5rem;
+            }
+
             .courses-grid {
                 grid-template-columns: 1fr;
             }
@@ -492,7 +575,7 @@
             .filters {
                 justify-content: flex-start;
                 overflow-x: auto;
-                padding-bottom: 10px;
+                padding-bottom: 8px;
             }
 
             .filter-btn {
@@ -511,34 +594,54 @@
             .footer-links {
                 justify-content: center;
             }
+
+            .nav-menu {
+                gap: 3px;
+            }
+
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
         }
 
         @media (max-width: 480px) {
-            .container {
-                padding: 0 15px;
-            }
-
-            .logo-emoji {
-                width: 50px;
-                height: 50px;
-                font-size: 2rem;
-            }
-
-            .logo-text h1 {
+            .page-title h2 {
                 font-size: 1.8rem;
             }
 
-            .page-title h2 {
-                font-size: 2rem;
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            .stat-value {
+                font-size: 1.8rem;
             }
 
             .course-content {
-                padding: 20px;
+                padding: 15px;
             }
 
             .course-title {
-                font-size: 1.2rem;
+                font-size: 1.1rem;
             }
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--primary);
+            grid-column: 1 / -1;
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -565,13 +668,42 @@
         </div>
     </header>
 
+    <!-- Navigation Menu -->
+    <nav class="nav-container">
+        <div class="container">
+            <div class="nav-menu">
+                <a href="../Menu/index.html" class="nav-btn">
+                    <i class="fas fa-home"></i> Início
+                </a>
+                <a href="../Estudo/index.html" class="nav-btn">
+                    <i class="fas fa-book"></i> Estudo
+                </a>
+                <a href="../Desafios/index.html" class="nav-btn">
+                    <i class="fas fa-flag"></i> Desafios
+                </a>
+                <a href="../Ranking/index.html" class="nav-btn">
+                    <i class="fas fa-trophy"></i> Ranking
+                </a>
+                <a href="../Provas/index.html" class="nav-btn">
+                    <i class="fas fa-file-alt"></i> Provas
+                </a>
+                <a href="index.html" class="nav-btn active">
+                    <i class="fas fa-graduation-cap"></i> Cursos
+                </a>
+                <a href="../Perfil/index.html" class="nav-btn">
+                    <i class="fas fa-user"></i> Perfil
+                </a>
+            </div>
+        </div>
+    </nav>
+
     <!-- Main Content -->
     <main class="main-content">
         <div class="container">
             <!-- Page Title -->
             <div class="page-title">
-                <h2>Cursos Extras</h2>
-                <p>Amplie seus conhecimentos com nossos cursos complementares</p>
+                <h2>Cursos por Matéria</h2>
+                <p>Aprimore seus conhecimentos específicos em cada área</p>
             </div>
 
             <!-- Stats Section -->
@@ -579,36 +711,49 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-value" id="total-cursos">0</div>
-                        <div class="stat-label">Cursos Disponíveis</div>
+                        <div class="stat-label">Total de Cursos</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="cursos-andamento">0</div>
-                        <div class="stat-label">Cursos em Andamento</div>
+                        <div class="stat-value" id="cursos-matematica">0</div>
+                        <div class="stat-label">Matemática</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="cursos-concluidos">0</div>
-                        <div class="stat-label">Cursos Concluídos</div>
+                        <div class="stat-value" id="cursos-csn">0</div>
+                        <div class="stat-label">CSN</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="horas-estudadas">0h</div>
-                        <div class="stat-label">Horas Estudadas</div>
+                        <div class="stat-value" id="cursos-csh">0</div>
+                        <div class="stat-label">CSH</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="cursos-portugues">0</div>
+                        <div class="stat-label">Português</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Filters -->
+            <!-- Filtros por Matéria -->
             <div class="filters">
-                <button class="filter-btn active" data-filter="all">Todos os Cursos</button>
-                <button class="filter-btn" data-filter="matematica">Matemática</button>
-                <button class="filter-btn" data-filter="ciencias">Ciências</button>
-                <button class="filter-btn" data-filter="humanas">Humanas</button>
-                <button class="filter-btn" data-filter="linguagens">Linguagens</button>
-                <button class="filter-btn" data-filter="preparatorio">Preparatório</button>
+                <button class="filter-btn active" data-filter="all">
+                    <i class="fas fa-layer-group"></i> Todas as Matérias
+                </button>
+                <button class="filter-btn" data-filter="matematica">
+                    <i class="fas fa-calculator"></i> Matemática
+                </button>
+                <button class="filter-btn" data-filter="csn">
+                    <i class="fas fa-flask"></i> CSN
+                </button>
+                <button class="filter-btn" data-filter="csh">
+                    <i class="fas fa-globe-americas"></i> CSH
+                </button>
+                <button class="filter-btn" data-filter="portugues">
+                    <i class="fas fa-book"></i> Português
+                </button>
             </div>
 
             <!-- Search -->
             <div class="search-box">
-                <input type="text" id="course-search" placeholder="Buscar cursos...">
+                <input type="text" id="course-search" placeholder="Buscar cursos por título, descrição...">
                 <div class="search-icon">
                     <i class="fas fa-search"></i>
                 </div>
@@ -617,13 +762,6 @@
             <!-- Courses Grid -->
             <div class="courses-grid" id="courses-container">
                 <!-- Cursos serão carregados aqui -->
-            </div>
-
-            <!-- Empty State -->
-            <div class="empty-state" id="empty-state" style="display: none;">
-                <i class="fas fa-graduation-cap"></i>
-                <h3>Nenhum curso encontrado</h3>
-                <p>Tente ajustar os filtros ou termos de busca</p>
             </div>
         </div>
     </main>
@@ -637,10 +775,9 @@
                     <span>Coliseum Educação</span>
                 </div>
                 <div class="footer-links">
-                    <a href="#">Início</a>
-                    <a href="#">Vídeos</a>
-                    <a href="#">Ranking</a>
-                    <a href="#">Suporte</a>
+                    <a href="../Configuração/index.html">Configurações</a>
+                    <a href="../Contato/index.html">Suporte</a>
+                    <a href="../Amigos/index.html">Comunidade</a>
                 </div>
             </div>
         </div>
@@ -653,10 +790,10 @@
         let cursos = [];
         let userData = {};
         let filteredCursos = [];
+        let userProgress = [];
 
         // DOM Elements
         const coursesContainer = document.getElementById('courses-container');
-        const emptyState = document.getElementById('empty-state');
         const filterButtons = document.querySelectorAll('.filter-btn');
         const searchInput = document.getElementById('course-search');
 
@@ -669,7 +806,6 @@
 
         // Event Listeners
         function setupEventListeners() {
-            // Filter buttons
             filterButtons.forEach(btn => {
                 btn.addEventListener('click', function() {
                     filterButtons.forEach(b => b.classList.remove('active'));
@@ -678,32 +814,55 @@
                 });
             });
 
-            // Search input
             searchInput.addEventListener('input', function() {
                 filterCursos();
             });
         }
 
-        // Load user data
+        // Load user data from localStorage (compatible with your app structure)
         async function loadUserData() {
             try {
-                // Em um sistema real, você obteria o ID do usuário logado
-                const userId = localStorage.getItem('userId') || 1;
-                
-                const response = await fetch(`${API_BASE_URL}/api/usuarios/${userId}`);
-                if (response.ok) {
-                    userData = await response.json();
+                // Tenta obter dados do usuário do localStorage
+                const userDataStr = localStorage.getItem('userData');
+                if (userDataStr) {
+                    userData = JSON.parse(userDataStr);
+                    updateUserInterface();
+                } else {
+                    // Se não encontrar, usa dados padrão
+                    userData = {
+                        nome: 'Aluno',
+                        serie: '1º Ano',
+                        pontuacao: 0
+                    };
                     updateUserInterface();
                 }
+
+                // Carrega progresso do usuário
+                await loadUserProgress();
             } catch (error) {
                 console.error('Erro ao carregar dados do usuário:', error);
-                // Dados padrão para demonstração
                 userData = {
-                    nome: 'Aluno Demo',
-                    serie: '9º Ano',
-                    pontuacao: 1250
+                    nome: 'Aluno',
+                    serie: '--',
+                    pontuacao: 0
                 };
                 updateUserInterface();
+            }
+        }
+
+        // Load user progress from API
+        async function loadUserProgress() {
+            try {
+                if (userData && userData.id) {
+                    const response = await fetch(`${API_BASE_URL}/api/progresso/${userData.id}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        userProgress = data.progressos || [];
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao carregar progresso:', error);
+                userProgress = [];
             }
         }
 
@@ -711,38 +870,32 @@
             document.getElementById('user-name').textContent = userData.nome || 'Aluno';
             document.getElementById('user-serie').textContent = `Série: ${userData.serie || '--'}`;
             
-            // Criar inicial do nome para o avatar
             const avatar = document.getElementById('user-avatar');
             if (userData.nome) {
                 avatar.textContent = userData.nome.charAt(0).toUpperCase();
             }
         }
 
-        // Load cursos
+        // Load cursos from API
         async function loadCursos() {
             try {
                 showLoading();
 
-                // Em um sistema real, você teria um endpoint específico para cursos
-                const cursosData = await fetch(`${API_BASE_URL}/api/cursos`)
-                    .then(response => {
-                        if (response.ok) return response.json();
-                        throw new Error('Endpoint de cursos não disponível');
-                    })
-                    .catch(() => {
-                        // Dados de exemplo para demonstração
-                        return getSampleCursos();
-                    });
-
-                cursos = cursosData;
-                filteredCursos = [...cursos];
-                
-                displayCursos();
-                updateStats();
+                const response = await fetch(`${API_BASE_URL}/api/cursos`);
+                if (response.ok) {
+                    const cursosData = await response.json();
+                    cursos = cursosData;
+                    filteredCursos = [...cursos];
+                    
+                    displayCursos();
+                    updateStats();
+                } else {
+                    throw new Error('Erro ao carregar cursos');
+                }
 
             } catch (error) {
                 console.error('Erro ao carregar cursos:', error);
-                // Usar dados de exemplo em caso de erro
+                // Fallback para dados de exemplo se a API falhar
                 cursos = getSampleCursos();
                 filteredCursos = [...cursos];
                 displayCursos();
@@ -755,87 +908,115 @@
             return [
                 {
                     id: 1,
-                    titulo: 'Matemática Básica',
-                    descricao: 'Curso completo de matemática básica para iniciantes, cobrindo operações fundamentais, frações, porcentagens e álgebra inicial.',
-                    categoria: 'matematica',
-                    nivel: 'iniciante',
-                    duracao: 20,
-                    modulos: 5,
+                    titulo: 'Álgebra Básica',
+                    descricao: 'Domine os conceitos fundamentais da álgebra incluindo equações, expressões e funções matemáticas.',
+                    materia: 'matematica',
+                    categoria: 'algebra',
+                    nivel: 'fundamental',
+                    duracao: 15,
+                    modulos: 4,
                     imagem: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400',
                     ativo: true,
                     alunos: 150,
-                    avaliacao: 4.8,
-                    progresso: 65
+                    avaliacao: 4.8
                 },
                 {
                     id: 2,
-                    titulo: 'História do Brasil',
-                    descricao: 'Aprenda sobre a história do Brasil desde o descobrimento até os dias atuais, com foco nos principais eventos e personagens.',
-                    categoria: 'humanas',
-                    nivel: 'intermediario',
-                    duracao: 15,
-                    modulos: 4,
-                    imagem: 'https://images.unsplash.com/photo-1580137189272-c9379f8864fd?w=400',
+                    titulo: 'Geometria Plana',
+                    descricao: 'Aprenda sobre formas geométricas, ângulos, perímetros e áreas de figuras planas.',
+                    materia: 'matematica',
+                    categoria: 'geometria',
+                    nivel: 'fundamental',
+                    duracao: 12,
+                    modulos: 3,
+                    imagem: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400',
                     ativo: true,
-                    alunos: 89,
-                    avaliacao: 4.5,
-                    progresso: 30
+                    alunos: 120,
+                    avaliacao: 4.6
                 },
                 {
                     id: 3,
-                    titulo: 'Gramática Avançada',
-                    descricao: 'Domine as regras gramaticais mais complexas da língua portuguesa e melhore sua escrita e interpretação de textos.',
-                    categoria: 'linguagens',
-                    nivel: 'avancado',
-                    duracao: 25,
-                    modulos: 6,
-                    imagem: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400',
-                    ativo: true,
-                    alunos: 67,
-                    avaliacao: 4.7,
-                    progresso: 0
-                },
-                {
-                    id: 4,
-                    titulo: 'Física Moderna',
-                    descricao: 'Explore os conceitos da física moderna incluindo relatividade, mecânica quântica e suas aplicações no mundo contemporâneo.',
-                    categoria: 'ciencias',
-                    nivel: 'avancado',
-                    duracao: 30,
-                    modulos: 8,
-                    imagem: 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400',
-                    ativo: true,
-                    alunos: 45,
-                    avaliacao: 4.9,
-                    progresso: 10
-                },
-                {
-                    id: 5,
-                    titulo: 'Preparatório ENEM',
-                    descricao: 'Curso completo de preparação para o ENEM com todas as matérias, simulados e dicas de redação.',
-                    categoria: 'preparatorio',
-                    nivel: 'intermediario',
-                    duracao: 40,
-                    modulos: 10,
-                    imagem: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400',
-                    ativo: true,
-                    alunos: 234,
-                    avaliacao: 4.8,
-                    progresso: 0
-                },
-                {
-                    id: 6,
-                    titulo: 'Química Orgânica',
-                    descricao: 'Aprenda os fundamentos da química orgânica, estrutura molecular, reações químicas e aplicações práticas.',
-                    categoria: 'ciencias',
-                    nivel: 'intermediario',
+                    titulo: 'Química Geral',
+                    descricao: 'Introdução aos conceitos básicos da química: elementos, compostos e reações químicas.',
+                    materia: 'csn',
+                    categoria: 'quimica',
+                    nivel: 'medio',
                     duracao: 18,
                     modulos: 5,
                     imagem: 'https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=400',
                     ativo: true,
+                    alunos: 95,
+                    avaliacao: 4.7
+                },
+                {
+                    id: 4,
+                    titulo: 'Física Mecânica',
+                    descricao: 'Conceitos de movimento, forças, energia e as leis de Newton aplicadas.',
+                    materia: 'csn',
+                    categoria: 'fisica',
+                    nivel: 'medio',
+                    duracao: 20,
+                    modulos: 6,
+                    imagem: 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400',
+                    ativo: true,
+                    alunos: 85,
+                    avaliacao: 4.5
+                },
+                {
+                    id: 5,
+                    titulo: 'História do Brasil',
+                    descricao: 'Panorama completo da história brasileira desde o descobrimento até a atualidade.',
+                    materia: 'csh',
+                    categoria: 'historia',
+                    nivel: 'medio',
+                    duracao: 16,
+                    modulos: 4,
+                    imagem: 'https://images.unsplash.com/photo-1580137189272-c9379f8864fd?w=400',
+                    ativo: true,
+                    alunos: 110,
+                    avaliacao: 4.8
+                },
+                {
+                    id: 6,
+                    titulo: 'Geografia Mundial',
+                    descricao: 'Estudo dos continentes, países, clima e aspectos físicos do planeta.',
+                    materia: 'csh',
+                    categoria: 'geografia',
+                    nivel: 'fundamental',
+                    duracao: 14,
+                    modulos: 4,
+                    imagem: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=400',
+                    ativo: true,
                     alunos: 78,
-                    avaliacao: 4.6,
-                    progresso: 0
+                    avaliacao: 4.4
+                },
+                {
+                    id: 7,
+                    titulo: 'Gramática Completa',
+                    descricao: 'Domine todas as regras gramaticais da língua portuguesa.',
+                    materia: 'portugues',
+                    categoria: 'gramatica',
+                    nivel: 'medio',
+                    duracao: 22,
+                    modulos: 6,
+                    imagem: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400',
+                    ativo: true,
+                    alunos: 145,
+                    avaliacao: 4.9
+                },
+                {
+                    id: 8,
+                    titulo: 'Interpretação de Texto',
+                    descricao: 'Técnicas avançadas para compreensão e análise de textos diversos.',
+                    materia: 'portugues',
+                    categoria: 'interpretacao',
+                    nivel: 'medio',
+                    duracao: 10,
+                    modulos: 3,
+                    imagem: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400',
+                    ativo: true,
+                    alunos: 132,
+                    avaliacao: 4.7
                 }
             ];
         }
@@ -845,9 +1026,10 @@
             const searchTerm = searchInput.value.toLowerCase();
             
             filteredCursos = cursos.filter(curso => {
-                const matchesFilter = filter === 'all' || curso.categoria === filter;
+                const matchesFilter = filter === 'all' || curso.materia === filter;
                 const matchesSearch = curso.titulo.toLowerCase().includes(searchTerm) ||
-                                    curso.descricao.toLowerCase().includes(searchTerm);
+                                    curso.descricao.toLowerCase().includes(searchTerm) ||
+                                    curso.categoria.toLowerCase().includes(searchTerm);
                 
                 return matchesFilter && matchesSearch;
             });
@@ -860,11 +1042,15 @@
             coursesContainer.innerHTML = '';
 
             if (filteredCursos.length === 0) {
-                emptyState.style.display = 'block';
+                coursesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-graduation-cap"></i>
+                        <h3>Nenhum curso encontrado</h3>
+                        <p>Tente ajustar os filtros ou termos de busca</p>
+                    </div>
+                `;
                 return;
             }
-
-            emptyState.style.display = 'none';
 
             filteredCursos.forEach(curso => {
                 const courseCard = createCourseCard(curso);
@@ -877,14 +1063,14 @@
             const card = document.createElement('div');
             card.className = 'course-card';
             
-            const categoriaNome = getCategoriaNome(curso.categoria);
+            const materiaNome = getMateriaNome(curso.materia);
             const nivelNome = getNivelNome(curso.nivel);
-            const progresso = curso.progresso || 0;
+            const progresso = getProgressoCurso(curso.id);
 
             card.innerHTML = `
                 <div class="course-image">
-                    <img src="${curso.imagem}" alt="${curso.titulo}" onerror="this.src='https://via.placeholder.com/400x200/383838/ffcf00?text=${encodeURIComponent(curso.titulo)}'">
-                    <div class="course-badge badge-${curso.categoria}">${categoriaNome}</div>
+                    <img src="${curso.imagem}" alt="${curso.titulo}" onerror="this.src='https://via.placeholder.com/400x200/383838/ffffff?text=${encodeURIComponent(curso.titulo)}'">
+                    <div class="course-badge badge-${curso.materia}">${materiaNome}</div>
                     <div class="course-level level-${curso.nivel}">${nivelNome}</div>
                 </div>
                 
@@ -909,6 +1095,10 @@
                             <div class="meta-value">${curso.avaliacao}</div>
                             <div class="meta-label">Avaliação</div>
                         </div>
+                    </div>
+                    
+                    <div class="course-category">
+                        <small>${getCategoriaNome(curso.categoria)}</small>
                     </div>
                     
                     ${progresso > 0 ? `
@@ -944,38 +1134,59 @@
             return card;
         }
 
+        // Get user progress for a specific course
+        function getProgressoCurso(cursoId) {
+            if (!userProgress || userProgress.length === 0) return 0;
+            
+            const progresso = userProgress.find(p => p.cursoId === cursoId);
+            return progresso ? progresso.progresso : 0;
+        }
+
         // Update stats
         function updateStats() {
             const totalCursos = cursos.length;
-            const cursosAndamento = cursos.filter(c => c.progresso > 0 && c.progresso < 100).length;
-            const cursosConcluidos = cursos.filter(c => c.progresso === 100).length;
-            const horasEstudadas = cursos.reduce((total, curso) => {
-                return total + (curso.duracao * (curso.progresso || 0) / 100);
-            }, 0);
+            const cursosMatematica = cursos.filter(c => c.materia === 'matematica').length;
+            const cursosCsn = cursos.filter(c => c.materia === 'csn').length;
+            const cursosCsh = cursos.filter(c => c.materia === 'csh').length;
+            const cursosPortugues = cursos.filter(c => c.materia === 'portugues').length;
 
             document.getElementById('total-cursos').textContent = totalCursos;
-            document.getElementById('cursos-andamento').textContent = cursosAndamento;
-            document.getElementById('cursos-concluidos').textContent = cursosConcluidos;
-            document.getElementById('horas-estudadas').textContent = `${Math.round(horasEstudadas)}h`;
+            document.getElementById('cursos-matematica').textContent = cursosMatematica;
+            document.getElementById('cursos-csn').textContent = cursosCsn;
+            document.getElementById('cursos-csh').textContent = cursosCsh;
+            document.getElementById('cursos-portugues').textContent = cursosPortugues;
         }
 
         // Helper functions
-        function getCategoriaNome(categoria) {
+        function getMateriaNome(materia) {
             const nomes = {
                 'matematica': 'Matemática',
-                'ciencias': 'Ciências',
-                'humanas': 'Humanas',
-                'linguagens': 'Linguagens',
-                'preparatorio': 'Preparatório'
+                'csn': 'CSN',
+                'csh': 'CSH',
+                'portugues': 'Português'
+            };
+            return nomes[materia] || materia;
+        }
+
+        function getCategoriaNome(categoria) {
+            const nomes = {
+                'algebra': 'Álgebra',
+                'geometria': 'Geometria',
+                'quimica': 'Química',
+                'fisica': 'Física',
+                'historia': 'História',
+                'geografia': 'Geografia',
+                'gramatica': 'Gramática',
+                'interpretacao': 'Interpretação'
             };
             return nomes[categoria] || categoria;
         }
 
         function getNivelNome(nivel) {
             const nomes = {
-                'iniciante': 'Iniciante',
-                'intermediario': 'Intermediário',
-                'avancado': 'Avançado'
+                'fundamental': 'Fundamental',
+                'medio': 'Ensino Médio',
+                'vestibular': 'Vestibular'
             };
             return nomes[nivel] || nivel;
         }
@@ -984,37 +1195,63 @@
         function iniciarCurso(cursoId) {
             const curso = cursos.find(c => c.id === cursoId);
             if (curso) {
-                alert(`Iniciando curso: ${curso.titulo}`);
                 // Em um sistema real, você redirecionaria para a página do curso
-                // ou iniciaria o primeiro módulo
+                alert(`Iniciando curso: ${curso.titulo}`);
                 
-                // Simular progresso
-                curso.progresso = 10;
-                displayCursos();
-                updateStats();
+                // Simula início do curso
+                if (userData && userData.id) {
+                    atualizarProgresso(userData.id, cursoId, 10);
+                }
             }
         }
 
         function continuarCurso(cursoId) {
             const curso = cursos.find(c => c.id === cursoId);
             if (curso) {
-                alert(`Continuando curso: ${curso.titulo} (${curso.progresso}% completo)`);
-                // Em um sistema real, você redirecionaria para o último módulo acessado
+                const progresso = getProgressoCurso(cursoId);
+                alert(`Continuando curso: ${curso.titulo} (${progresso}% completo)`);
+                // Em um sistema real, você redirecionaria para a última aula
             }
         }
 
         function verDetalhes(cursoId) {
             const curso = cursos.find(c => c.id === cursoId);
             if (curso) {
-                alert(`Detalhes do curso: ${curso.titulo}\n\n${curso.descricao}\n\nDuração: ${curso.duracao}h\nMódulos: ${curso.modulos}\nNível: ${getNivelNome(curso.nivel)}`);
+                alert(`Detalhes do curso: ${curso.titulo}\n\nMatéria: ${getMateriaNome(curso.materia)}\nCategoria: ${getCategoriaNome(curso.categoria)}\nNível: ${getNivelNome(curso.nivel)}\n\n${curso.descricao}`);
+            }
+        }
+
+        // Update progress in API
+        async function atualizarProgresso(usuarioId, cursoId, progresso) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/progresso`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        usuarioId: usuarioId,
+                        cursoId: cursoId,
+                        progresso: progresso
+                    })
+                });
+
+                if (response.ok) {
+                    // Recarrega o progresso
+                    await loadUserProgress();
+                    // Atualiza a exibição
+                    displayCursos();
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar progresso:', error);
             }
         }
 
         // Loading state
         function showLoading() {
             coursesContainer.innerHTML = `
-                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #ffcf00;">
-                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 15px;"></i>
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
                     <p>Carregando cursos...</p>
                 </div>
             `;
