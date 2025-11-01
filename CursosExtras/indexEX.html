@@ -922,15 +922,20 @@ async function loadCursos() {
 }
 
 
-       function filterCursos(filter = 'all') {
+      function filterCursos(filter = 'all') {
     const searchTerm = searchInput.value.toLowerCase();
     
-    console.log('🔍 Aplicando filtro:', { filter, searchTerm, totalCursos: cursos.length });
+    console.log('🔍 Aplicando filtro:', { 
+        filter, 
+        searchTerm, 
+        totalCursos: cursos.length,
+        cursosDisponiveis: cursos.map(c => ({ titulo: c.titulo, materia: c.materia, ativo: c.ativo }))
+    });
     
     filteredCursos = cursos.filter(curso => {
-        // Verifica se o curso está ativo
+        // CORREÇÃO: Mostrar cursos mesmo se ativo for undefined ou true
         if (curso.ativo === false) {
-            console.log(`❌ Curso ${curso.titulo} está inativo`);
+            console.log(`❌ Curso ${curso.titulo} está explicitamente inativo`);
             return false;
         }
         
@@ -942,13 +947,15 @@ async function loadCursos() {
         const shouldShow = matchesFilter && matchesSearch;
         
         if (shouldShow) {
-            console.log(`✅ Mostrando: ${curso.titulo} (${curso.materia})`);
+            console.log(`✅ Mostrando: ${curso.titulo} (${curso.materia}, ativo: ${curso.ativo})`);
+        } else {
+            console.log(`🚫 Ocultando: ${curso.titulo} - filtro: ${filter}, busca: ${searchTerm}`);
         }
         
         return shouldShow;
     });
     
-    console.log(`📊 Resultado: ${filteredCursos.length} cursos após filtro`);
+    console.log(`📊 Resultado: ${filteredCursos.length} de ${cursos.length} cursos após filtro`);
     displayCursos();
 }
         // Display cursos
