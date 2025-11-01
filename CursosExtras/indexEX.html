@@ -974,11 +974,8 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
-        <button class="btn-voltar" onclick="voltarParaMenu()">
-            <i class="fas fa-arrow-left"></i> 
-        </button>
+
         <div class="container">
             <div class="header-content">
                 <div class="logo">
@@ -1081,6 +1078,7 @@
             <p>Desenvolvido para melhorar seu aprendizado</p>
         </div>
     </footer>
+<button class="btn-voltar" onclick="window.history.back()">←</button>
 
     <script>
         const API_BASE_URL = 'https://coliseum-api.onrender.com';
