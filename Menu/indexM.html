@@ -293,9 +293,9 @@
                 <div class="nav-label">Contato</div>
             </button>
 
-            <button class="nav-btn" onclick="mostrarNavegador()">
-                <div class="nav-icon">🌐</div>
-                <div class="nav-label">Navegador</div>
+            <button class="nav-btn" onclick="mostrarExtras()">
+                <div class="nav-icon">📕+</div>
+                <div class="nav-label">Cursos Extras</div>
             </button>
         </div>
     </div>
@@ -311,7 +311,7 @@ const ROTAS = {
     PROVAS: '/provas',
     CONFIGURACAO: '/configuracao',
     CONTATO: '/contato',
-    NAVEGADOR: '/navegador',
+    EXTRAS: '/extras',
     LOGIN: '/login',
     ESTUDO: '/estudo'
 };
@@ -354,7 +354,7 @@ function mostrarContato() {
 
 function mostrarNavegador() { 
     console.log('🌐 Redirecionando para Navegador...');
-    window.location.href = ROTAS.NAVEGADOR;
+    window.location.href = ROTAS.EXTRAS;
 }
   function mostrarEstudo() { 
     console.log('📖 Redirecionando para Esudo...');
