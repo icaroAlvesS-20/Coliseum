@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursos Extras - Coliseum</title>
+    <meta name="description" content="Cursos extras para complementar seus estudos">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #000000 0%, #2d2d2d 100%);
+            min-height: 100vh;
+            color: #ffffff;
+        }
+
+        .header {
+            background: linear-gradient(145deg, #383838, #282828);
+            padding: 25px 0;
+            border-bottom: 3px solid #ffcf00;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-emoji {
+            font-size: 3rem;
+            background: #ffcf00;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            box-shadow: 0 0 20px rgba(255, 207, 0, 0.5);
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-text h1 {
+            color: #ffcf00;
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin: 0;
+            text-shadow: 0 2px 10px rgba(255, 207, 0, 0.3);
+        }
+
+        .logo-text span {
+            color: #ccc;
+            font-size: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 207, 0, 0.1);
+            padding: 12px 20px;
+            border-radius: 15px;
+            border: 1px solid #555;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #ffcf00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .user-details h3 {
+            color: #ffcf00;
+            margin-bottom: 3px;
+            font-size: 1.1rem;
+        }
+
+        .user-details p {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .main-content {
+            padding: 40px 0;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title h2 {
+            color: #ffcf00;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(255, 207, 0, 0.3);
+        }
+
+        .page-title p {
+            color: #ccc;
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 12px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #555;
+            border-radius: 12px;
+            color: #ccc;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: #ffcf00;
+            color: #000;
+            border-color: #ffcf00;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 207, 0, 0.3);
+        }
+
+        .search-box {
+            max-width: 500px;
+            margin: 0 auto 40px auto;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 18px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #555;
+            border-radius: 15px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #ffcf00;
+            box-shadow: 0 0 20px rgba(255, 207, 0, 0.3);
+        }
+
+        .search-box input::placeholder {
+            color: #888;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ffcf00;
+            font-size: 1.2rem;
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .course-card {
+            background: linear-gradient(145deg, #383838, #282828);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid #555;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .course-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            border-color: #ffcf00;
+        }
+
+        .course-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #ffcf00, #ff9800);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .course-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .course-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-matematica { background: #4361ee; color: white; }
+        .badge-ciencias { background: #4cc9f0; color: white; }
+        .badge-humanas { background: #f72585; color: white; }
+        .badge-linguagens { background: #ffcf00; color: black; }
+        .badge-preparatorio { background: #7209b7; color: white; }
+
+        .course-level {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+        }
+
+        .level-iniciante { background: #4caf50; }
+        .level-intermediario { background: #ff9800; }
+        .level-avancado { background: #f44336; }
+
+        .course-content {
+            padding: 25px;
+        }
+
+        .course-title {
+            color: #ffcf00;
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .course-description {
+            color: #ccc;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .course-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #444;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .meta-value {
+            color: #ffcf00;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .meta-label {
+            color: #888;
+            font-size: 0.8rem;
+            margin-top: 3px;
+        }
+
+        .course-progress {
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #444;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffcf00, #ff9800);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            color: #aaa;
+            font-size: 0.8rem;
+        }
+
+        .course-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ffcf00, #ff9800);
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid #555;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 5px 15px rgba(255, 207, 0, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #ffcf00;
+        }
+
+        .empty-state h3 {
+            color: #ffcf00;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .stats-section {
+            background: linear-gradient(145deg, #383838, #282828);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            border: 1px solid #555;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid #555;
+        }
+
+        .stat-value {
+            color: #ffcf00;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .footer {
+            background: linear-gradient(145deg, #282828, #1a1a1a);
+            padding: 30px 0;
+            border-top: 1px solid #555;
+            margin-top: 50px;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ffcf00;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #ffcf00;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .logo {
+                justify-content: center;
+            }
+
+            .courses-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                justify-content: flex-start;
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+
+            .filter-btn {
+                white-space: nowrap;
+            }
+
+            .course-actions {
+                flex-direction: column;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-links {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 15px;
+            }
+
+            .logo-emoji {
+                width: 50px;
+                height: 50px;
+                font-size: 2rem;
+            }
+
+            .logo-text h1 {
+                font-size: 1.8rem;
+            }
+
+            .page-title h2 {
+                font-size: 2rem;
+            }
+
+            .course-content {
+                padding: 20px;
+            }
+
+            .course-title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-emoji">🏛️</div>
+                    <div class="logo-text">
+                        <h1>Coliseum</h1>
+                        <span>Cursos Extras</span>
+                    </div>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar">A</div>
+                    <div class="user-details">
+                        <h3 id="user-name">Aluno</h3>
+                        <p id="user-serie">Série: --</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Page Title -->
+            <div class="page-title">
+                <h2>Cursos Extras</h2>
+                <p>Amplie seus conhecimentos com nossos cursos complementares</p>
+            </div>
+
+            <!-- Stats Section -->
+            <div class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-cursos">0</div>
+                        <div class="stat-label">Cursos Disponíveis</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="cursos-andamento">0</div>
+                        <div class="stat-label">Cursos em Andamento</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="cursos-concluidos">0</div>
+                        <div class="stat-label">Cursos Concluídos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="horas-estudadas">0h</div>
+                        <div class="stat-label">Horas Estudadas</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">Todos os Cursos</button>
+                <button class="filter-btn" data-filter="matematica">Matemática</button>
+                <button class="filter-btn" data-filter="ciencias">Ciências</button>
+                <button class="filter-btn" data-filter="humanas">Humanas</button>
+                <button class="filter-btn" data-filter="linguagens">Linguagens</button>
+                <button class="filter-btn" data-filter="preparatorio">Preparatório</button>
+            </div>
+
+            <!-- Search -->
+            <div class="search-box">
+                <input type="text" id="course-search" placeholder="Buscar cursos...">
+                <div class="search-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+
+            <!-- Courses Grid -->
+            <div class="courses-grid" id="courses-container">
+                <!-- Cursos serão carregados aqui -->
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="empty-state" style="display: none;">
+                <i class="fas fa-graduation-cap"></i>
+                <h3>Nenhum curso encontrado</h3>
+                <p>Tente ajustar os filtros ou termos de busca</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Coliseum Educação</span>
+                </div>
+                <div class="footer-links">
+                    <a href="#">Início</a>
+                    <a href="#">Vídeos</a>
+                    <a href="#">Ranking</a>
+                    <a href="#">Suporte</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const API_BASE_URL = 'https://coliseum-api.onrender.com';
+
+        // State
+        let cursos = [];
+        let userData = {};
+        let filteredCursos = [];
+
+        // DOM Elements
+        const coursesContainer = document.getElementById('courses-container');
+        const emptyState = document.getElementById('empty-state');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const searchInput = document.getElementById('course-search');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            loadCursos();
+            setupEventListeners();
+        });
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Filter buttons
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    filterCursos(this.dataset.filter);
+                });
+            });
+
+            // Search input
+            searchInput.addEventListener('input', function() {
+                filterCursos();
+            });
+        }
+
+        // Load user data
+        async function loadUserData() {
+            try {
+                // Em um sistema real, você obteria o ID do usuário logado
+                const userId = localStorage.getItem('userId') || 1;
+                
+                const response = await fetch(`${API_BASE_URL}/api/usuarios/${userId}`);
+                if (response.ok) {
+                    userData = await response.json();
+                    updateUserInterface();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados do usuário:', error);
+                // Dados padrão para demonstração
+                userData = {
+                    nome: 'Aluno Demo',
+                    serie: '9º Ano',
+                    pontuacao: 1250
+                };
+                updateUserInterface();
+            }
+        }
+
+        function updateUserInterface() {
+            document.getElementById('user-name').textContent = userData.nome || 'Aluno';
+            document.getElementById('user-serie').textContent = `Série: ${userData.serie || '--'}`;
+            
+            // Criar inicial do nome para o avatar
+            const avatar = document.getElementById('user-avatar');
+            if (userData.nome) {
+                avatar.textContent = userData.nome.charAt(0).toUpperCase();
+            }
+        }
+
+        // Load cursos
+        async function loadCursos() {
+            try {
+                showLoading();
+
+                // Em um sistema real, você teria um endpoint específico para cursos
+                const cursosData = await fetch(`${API_BASE_URL}/api/cursos`)
+                    .then(response => {
+                        if (response.ok) return response.json();
+                        throw new Error('Endpoint de cursos não disponível');
+                    })
+                    .catch(() => {
+                        // Dados de exemplo para demonstração
+                        return getSampleCursos();
+                    });
+
+                cursos = cursosData;
+                filteredCursos = [...cursos];
+                
+                displayCursos();
+                updateStats();
+
+            } catch (error) {
+                console.error('Erro ao carregar cursos:', error);
+                // Usar dados de exemplo em caso de erro
+                cursos = getSampleCursos();
+                filteredCursos = [...cursos];
+                displayCursos();
+                updateStats();
+            }
+        }
+
+        // Sample data para demonstração
+        function getSampleCursos() {
+            return [
+                {
+                    id: 1,
+                    titulo: 'Matemática Básica',
+                    descricao: 'Curso completo de matemática básica para iniciantes, cobrindo operações fundamentais, frações, porcentagens e álgebra inicial.',
+                    categoria: 'matematica',
+                    nivel: 'iniciante',
+                    duracao: 20,
+                    modulos: 5,
+                    imagem: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400',
+                    ativo: true,
+                    alunos: 150,
+                    avaliacao: 4.8,
+                    progresso: 65
+                },
+                {
+                    id: 2,
+                    titulo: 'História do Brasil',
+                    descricao: 'Aprenda sobre a história do Brasil desde o descobrimento até os dias atuais, com foco nos principais eventos e personagens.',
+                    categoria: 'humanas',
+                    nivel: 'intermediario',
+                    duracao: 15,
+                    modulos: 4,
+                    imagem: 'https://images.unsplash.com/photo-1580137189272-c9379f8864fd?w=400',
+                    ativo: true,
+                    alunos: 89,
+                    avaliacao: 4.5,
+                    progresso: 30
+                },
+                {
+                    id: 3,
+                    titulo: 'Gramática Avançada',
+                    descricao: 'Domine as regras gramaticais mais complexas da língua portuguesa e melhore sua escrita e interpretação de textos.',
+                    categoria: 'linguagens',
+                    nivel: 'avancado',
+                    duracao: 25,
+                    modulos: 6,
+                    imagem: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400',
+                    ativo: true,
+                    alunos: 67,
+                    avaliacao: 4.7,
+                    progresso: 0
+                },
+                {
+                    id: 4,
+                    titulo: 'Física Moderna',
+                    descricao: 'Explore os conceitos da física moderna incluindo relatividade, mecânica quântica e suas aplicações no mundo contemporâneo.',
+                    categoria: 'ciencias',
+                    nivel: 'avancado',
+                    duracao: 30,
+                    modulos: 8,
+                    imagem: 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400',
+                    ativo: true,
+                    alunos: 45,
+                    avaliacao: 4.9,
+                    progresso: 10
+                },
+                {
+                    id: 5,
+                    titulo: 'Preparatório ENEM',
+                    descricao: 'Curso completo de preparação para o ENEM com todas as matérias, simulados e dicas de redação.',
+                    categoria: 'preparatorio',
+                    nivel: 'intermediario',
+                    duracao: 40,
+                    modulos: 10,
+                    imagem: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400',
+                    ativo: true,
+                    alunos: 234,
+                    avaliacao: 4.8,
+                    progresso: 0
+                },
+                {
+                    id: 6,
+                    titulo: 'Química Orgânica',
+                    descricao: 'Aprenda os fundamentos da química orgânica, estrutura molecular, reações químicas e aplicações práticas.',
+                    categoria: 'ciencias',
+                    nivel: 'intermediario',
+                    duracao: 18,
+                    modulos: 5,
+                    imagem: 'https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=400',
+                    ativo: true,
+                    alunos: 78,
+                    avaliacao: 4.6,
+                    progresso: 0
+                }
+            ];
+        }
+
+        // Filter cursos
+        function filterCursos(filter = 'all') {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            filteredCursos = cursos.filter(curso => {
+                const matchesFilter = filter === 'all' || curso.categoria === filter;
+                const matchesSearch = curso.titulo.toLowerCase().includes(searchTerm) ||
+                                    curso.descricao.toLowerCase().includes(searchTerm);
+                
+                return matchesFilter && matchesSearch;
+            });
+            
+            displayCursos();
+        }
+
+        // Display cursos
+        function displayCursos() {
+            coursesContainer.innerHTML = '';
+
+            if (filteredCursos.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            filteredCursos.forEach(curso => {
+                const courseCard = createCourseCard(curso);
+                coursesContainer.appendChild(courseCard);
+            });
+        }
+
+        // Create course card
+        function createCourseCard(curso) {
+            const card = document.createElement('div');
+            card.className = 'course-card';
+            
+            const categoriaNome = getCategoriaNome(curso.categoria);
+            const nivelNome = getNivelNome(curso.nivel);
+            const progresso = curso.progresso || 0;
+
+            card.innerHTML = `
+                <div class="course-image">
+                    <img src="${curso.imagem}" alt="${curso.titulo}" onerror="this.src='https://via.placeholder.com/400x200/383838/ffcf00?text=${encodeURIComponent(curso.titulo)}'">
+                    <div class="course-badge badge-${curso.categoria}">${categoriaNome}</div>
+                    <div class="course-level level-${curso.nivel}">${nivelNome}</div>
+                </div>
+                
+                <div class="course-content">
+                    <h3 class="course-title">${curso.titulo}</h3>
+                    <p class="course-description">${curso.descricao}</p>
+                    
+                    <div class="course-meta">
+                        <div class="meta-item">
+                            <div class="meta-value">${curso.duracao}h</div>
+                            <div class="meta-label">Duração</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-value">${curso.modulos}</div>
+                            <div class="meta-label">Módulos</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-value">${curso.alunos}</div>
+                            <div class="meta-label">Alunos</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-value">${curso.avaliacao}</div>
+                            <div class="meta-label">Avaliação</div>
+                        </div>
+                    </div>
+                    
+                    ${progresso > 0 ? `
+                    <div class="course-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progresso}%"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>Progresso</span>
+                            <span>${progresso}%</span>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="course-actions">
+                        ${progresso > 0 ? `
+                            <button class="btn btn-primary" onclick="continuarCurso(${curso.id})">
+                                <i class="fas fa-play"></i> Continuar
+                            </button>
+                        ` : `
+                            <button class="btn btn-primary" onclick="iniciarCurso(${curso.id})">
+                                <i class="fas fa-play"></i> Começar
+                            </button>
+                        `}
+                        
+                        <button class="btn btn-secondary" onclick="verDetalhes(${curso.id})">
+                            <i class="fas fa-info-circle"></i> Detalhes
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Update stats
+        function updateStats() {
+            const totalCursos = cursos.length;
+            const cursosAndamento = cursos.filter(c => c.progresso > 0 && c.progresso < 100).length;
+            const cursosConcluidos = cursos.filter(c => c.progresso === 100).length;
+            const horasEstudadas = cursos.reduce((total, curso) => {
+                return total + (curso.duracao * (curso.progresso || 0) / 100);
+            }, 0);
+
+            document.getElementById('total-cursos').textContent = totalCursos;
+            document.getElementById('cursos-andamento').textContent = cursosAndamento;
+            document.getElementById('cursos-concluidos').textContent = cursosConcluidos;
+            document.getElementById('horas-estudadas').textContent = `${Math.round(horasEstudadas)}h`;
+        }
+
+        // Helper functions
+        function getCategoriaNome(categoria) {
+            const nomes = {
+                'matematica': 'Matemática',
+                'ciencias': 'Ciências',
+                'humanas': 'Humanas',
+                'linguagens': 'Linguagens',
+                'preparatorio': 'Preparatório'
+            };
+            return nomes[categoria] || categoria;
+        }
+
+        function getNivelNome(nivel) {
+            const nomes = {
+                'iniciante': 'Iniciante',
+                'intermediario': 'Intermediário',
+                'avancado': 'Avançado'
+            };
+            return nomes[nivel] || nivel;
+        }
+
+        // Course actions
+        function iniciarCurso(cursoId) {
+            const curso = cursos.find(c => c.id === cursoId);
+            if (curso) {
+                alert(`Iniciando curso: ${curso.titulo}`);
+                // Em um sistema real, você redirecionaria para a página do curso
+                // ou iniciaria o primeiro módulo
+                
+                // Simular progresso
+                curso.progresso = 10;
+                displayCursos();
+                updateStats();
+            }
+        }
+
+        function continuarCurso(cursoId) {
+            const curso = cursos.find(c => c.id === cursoId);
+            if (curso) {
+                alert(`Continuando curso: ${curso.titulo} (${curso.progresso}% completo)`);
+                // Em um sistema real, você redirecionaria para o último módulo acessado
+            }
+        }
+
+        function verDetalhes(cursoId) {
+            const curso = cursos.find(c => c.id === cursoId);
+            if (curso) {
+                alert(`Detalhes do curso: ${curso.titulo}\n\n${curso.descricao}\n\nDuração: ${curso.duracao}h\nMódulos: ${curso.modulos}\nNível: ${getNivelNome(curso.nivel)}`);
+            }
+        }
+
+        // Loading state
+        function showLoading() {
+            coursesContainer.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #ffcf00;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 15px;"></i>
+                    <p>Carregando cursos...</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
