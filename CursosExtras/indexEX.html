@@ -916,21 +916,35 @@
     }
 }
       
-        function filterCursos(filter = 'all') {
-            const searchTerm = searchInput.value.toLowerCase();
-            
-            filteredCursos = cursos.filter(curso => {
-                const matchesFilter = filter === 'all' || curso.materia === filter;
-                const matchesSearch = curso.titulo.toLowerCase().includes(searchTerm) ||
-                                    (curso.descricao && curso.descricao.toLowerCase().includes(searchTerm)) ||
-                                    (curso.categoria && curso.categoria.toLowerCase().includes(searchTerm));
-                
-                return matchesFilter && matchesSearch;
-            });
-            
-            displayCursos();
+       function filterCursos(filter = 'all') {
+    const searchTerm = searchInput.value.toLowerCase();
+    
+    console.log('🔍 Aplicando filtro:', { filter, searchTerm, totalCursos: cursos.length });
+    
+    filteredCursos = cursos.filter(curso => {
+        // Verifica se o curso está ativo
+        if (curso.ativo === false) {
+            console.log(`❌ Curso ${curso.titulo} está inativo`);
+            return false;
         }
-
+        
+        const matchesFilter = filter === 'all' || curso.materia === filter;
+        const matchesSearch = curso.titulo.toLowerCase().includes(searchTerm) ||
+                            (curso.descricao && curso.descricao.toLowerCase().includes(searchTerm)) ||
+                            (curso.categoria && curso.categoria.toLowerCase().includes(searchTerm));
+        
+        const shouldShow = matchesFilter && matchesSearch;
+        
+        if (shouldShow) {
+            console.log(`✅ Mostrando: ${curso.titulo} (${curso.materia})`);
+        }
+        
+        return shouldShow;
+    });
+    
+    console.log(`📊 Resultado: ${filteredCursos.length} cursos após filtro`);
+    displayCursos();
+}
         // Display cursos
         function displayCursos() {
             coursesContainer.innerHTML = '';
