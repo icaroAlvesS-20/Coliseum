@@ -1203,6 +1203,21 @@
             console.log('Progresso do usuário:', userProgress);
             console.log('API Base URL:', API_BASE_URL);
         };
+        // Adicione no final do script da página de cursos
+function debugCursos() {
+    console.log('🔍 DEBUG - Estado dos Cursos:');
+    console.log('Todos os cursos:', cursos);
+    console.log('Cursos filtrados:', filteredCursos);
+    console.log('Filtro ativo:', document.querySelector('.filter-btn.active')?.dataset.filter);
+    console.log('Termo de busca:', document.getElementById('course-search')?.value);
+    
+    // Verifica se há cursos inativos
+    const cursosInativos = cursos.filter(c => !c.ativo);
+    console.log('Cursos inativos:', cursosInativos);
+}
+
+// Chame esta função após carregar os cursos
+// debugCursos();
     </script>
 </body>
 </html>
