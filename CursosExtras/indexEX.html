@@ -1221,29 +1221,46 @@ async function loadCursos() {
         }
 
         // Debug function para verificar dados
-        window.debugCursos = function() {
-            console.log('🔍 DEBUG - Estado atual:');
-            console.log('Cursos carregados:', cursos);
-            console.log('Cursos filtrados:', filteredCursos);
-            console.log('Dados do usuário:', userData);
-            console.log('Progresso do usuário:', userProgress);
-            console.log('API Base URL:', API_BASE_URL);
-        };
-        // Adicione no final do script da página de cursos
-function debugCursos() {
-    console.log('🔍 DEBUG - Estado dos Cursos:');
-    console.log('Todos os cursos:', cursos);
+        // ✅ FUNÇÃO DE DIAGNÓSTICO COMPLETO
+function diagnosticoCompleto() {
+    console.log('🔍 DIAGNÓSTICO COMPLETO - CURSOS EXTRAS');
+    console.log('API Base:', API_BASE_URL);
+    console.log('Cursos carregados:', cursos);
     console.log('Cursos filtrados:', filteredCursos);
-    console.log('Filtro ativo:', document.querySelector('.filter-btn.active')?.dataset.filter);
-    console.log('Termo de busca:', document.getElementById('course-search')?.value);
+    console.log('User Data:', userData);
     
-    // Verifica se há cursos inativos
-    const cursosInativos = cursos.filter(c => !c.ativo);
-    console.log('Cursos inativos:', cursosInativos);
+    // Verifica cada curso individualmente
+    cursos.forEach((curso, index) => {
+        console.log(`Curso ${index + 1}:`, {
+            id: curso.id,
+            titulo: curso.titulo,
+            materia: curso.materia,
+            ativo: curso.ativo,
+            categoria: curso.categoria,
+            temDescricao: !!curso.descricao,
+            temImagem: !!curso.imagem
+        });
+    });
+    
+    // Testa a API diretamente
+    testAPIDirect();
 }
 
-// Chame esta função após carregar os cursos
-// debugCursos();
+// ✅ TESTE DIRETO DA API
+async function testAPIDirect() {
+    try {
+        console.log('🧪 Testando API diretamente...');
+        const response = await fetch(`${API_BASE_URL}/api/cursos`);
+        console.log('Status:', response.status);
+        const data = await response.json();
+        console.log('Dados da API:', data);
+        return data;
+    } catch (error) {
+        console.error('❌ Erro no teste da API:', error);
+    }
+}
+
+window.diagnostico = diagnosticoCompleto;
     </script>
 </body>
 </html>
