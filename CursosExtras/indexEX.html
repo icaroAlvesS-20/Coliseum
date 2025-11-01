@@ -895,27 +895,33 @@
         }
 
         // Load cursos from API
-        async function loadCursos() {
+       // ✅ FUNÇÃO LOADCURSOS CORRIGIDA E COMPLETA
+async function loadCursos() {
     try {
         showLoading();
+        console.log('🔄 Carregando cursos da API...');
         
         const response = await fetch(`${API_BASE_URL}/api/cursos`);
         
         if (response.ok) {
             cursos = await response.json();
+            console.log('✅ Cursos carregados da API:', cursos);
         } else {
             throw new Error(`HTTP ${response.status}`);
         }
     } catch (error) {
-        console.warn('Usando dados locais:', error);
+        console.warn('❌ Erro ao carregar cursos, usando dados locais:', error);
         cursos = getSampleCursos(); // Dados de exemplo
+        showAlert('⚠️ Usando dados de exemplo - API offline', 'warning');
     } finally {
         filteredCursos = [...cursos];
         displayCursos();
         updateStats();
+        console.log(`🎯 ${cursos.length} cursos processados`);
     }
 }
-      
+
+
        function filterCursos(filter = 'all') {
     const searchTerm = searchInput.value.toLowerCase();
     
