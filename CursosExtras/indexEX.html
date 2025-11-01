@@ -7,7 +7,7 @@
     <meta name="description" content="Cursos extras para complementar seus estudos">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-               * {
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -48,6 +48,7 @@
             border-bottom: 3px solid var(--primary);
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
             position: relative;
+            min-height: 140px;
         }
 
         .header-content {
@@ -57,6 +58,7 @@
             flex-wrap: wrap;
             gap: 15px;
             position: relative;
+            min-height: 80px;
         }
 
         .logo {
@@ -145,12 +147,11 @@
             text-overflow: ellipsis;
         }
 
-        /* Botão Voltar */
+        /* Botão Voltar - POSIÇÃO ATUALIZADA */
         .btn-voltar {
             position: absolute;
             left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
+            bottom: 15px;
             background: var(--primary);
             color: #000;
             border: none;
@@ -169,7 +170,7 @@
         }
 
         .btn-voltar:hover {
-            transform: translateY(-50%) scale(1.05);
+            transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255, 207, 0, 0.4);
         }
 
@@ -643,18 +644,19 @@
 
             .header {
                 padding: 12px 0;
+                min-height: 120px;
             }
 
             .header-content {
                 flex-direction: column;
                 text-align: center;
-                padding-top: 60px;
                 gap: 12px;
+                min-height: auto;
             }
 
             .logo {
                 justify-content: center;
-                order: 2;
+                order: 1;
                 flex: none;
                 width: 100%;
             }
@@ -670,22 +672,23 @@
             }
 
             .user-info {
-                order: 3;
+                order: 2;
                 width: 100%;
                 justify-content: center;
                 max-width: 300px;
                 margin: 0 auto;
             }
 
+            /* Botão Voltar - RESPONSIVE */
             .btn-voltar {
-                position: absolute;
-                left: 50%;
-                top: 20px;
-                transform: translateX(-50%);
-                margin-bottom: 0;
+                position: relative;
+                left: auto;
+                bottom: auto;
+                margin: 10px auto 0 auto;
                 align-self: center;
                 font-size: 0.9rem;
                 padding: 8px 12px;
+                order: 3;
             }
 
             .page-title h2 {
@@ -757,6 +760,10 @@
                 padding: 10px;
             }
 
+            .header {
+                min-height: 110px;
+            }
+
             .logo-text h1 {
                 font-size: 1.3rem;
             }
@@ -782,7 +789,7 @@
             .btn-voltar {
                 padding: 6px 10px;
                 font-size: 0.85rem;
-                top: 15px;
+                margin-top: 5px;
             }
 
             .page-title h2 {
@@ -865,6 +872,10 @@
 
         /* Mobile muito pequeno */
         @media (max-width: 360px) {
+            .header {
+                min-height: 100px;
+            }
+
             .logo-emoji {
                 width: 45px;
                 height: 45px;
@@ -913,15 +924,29 @@
         @media (max-height: 500px) and (orientation: landscape) {
             .header {
                 padding: 8px 0;
+                min-height: 80px;
             }
             
             .header-content {
-                padding-top: 50px;
+                flex-direction: row;
+                min-height: 60px;
+            }
+            
+            .logo {
+                order: 1;
+                flex: 1;
+                justify-content: flex-start;
+            }
+            
+            .user-info {
+                order: 2;
+                width: auto;
             }
             
             .btn-voltar {
-                top: 15px;
-                padding: 6px 10px;
+                order: 3;
+                margin: 0;
+                position: static;
             }
             
             .page-title {
@@ -946,7 +971,6 @@
                 transform: scale(0.99);
             }
         }
-    </style>
     </style>
 </head>
 <body>
