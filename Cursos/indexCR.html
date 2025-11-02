@@ -460,306 +460,309 @@
     <button class="btn-voltar" onclick="voltarParaCursos()">←</button>
 
     <script>
-        const API_BASE_URL = 'https://coliseum-api.onrender.com';
+       const API_BASE_URL = 'https://coliseum-api.onrender.com';
+
+// Estado global
+let cursoAtual = null;
+let modulos = [];
+let aulaAtual = null;
+let usuarioId = null;
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 Inicializando página do curso...');
+    
+    // Pega ID do curso da URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const cursoId = urlParams.get('id');
+    usuarioId = localStorage.getItem('userId') || 1; // Fallback
+    
+    if (cursoId) {
+        await carregarCurso(cursoId);
+        await carregarModulos(cursoId);
+    } else {
+        mostrarErro('ID do curso não especificado');
+    }
+});
+
+// ✅ CARREGAR DADOS DO CURSO
+async function carregarCurso(cursoId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/cursos`);
+        const cursos = await response.json();
+        cursoAtual = cursos.find(c => c.id == cursoId);
         
-        // Estado global
-        let cursoAtual = null;
-        let modulos = [];
-        let aulaAtual = null;
-        let usuarioId = null;
-
-        // Inicialização
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🚀 Inicializando página do curso...');
+        if (cursoAtual) {
+            document.getElementById('curso-titulo').textContent = cursoAtual.titulo;
             
-            // Pega ID do curso da URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const cursoId = urlParams.get('id');
-            usuarioId = localStorage.getItem('userId') || 1; // Fallback
-            
-            if (cursoId) {
-                await carregarCurso(cursoId);
-                await carregarModulos(cursoId);
-            } else {
-                mostrarErro('ID do curso não especificado');
-            }
-        });
-
-        // ✅ CARREGAR DADOS DO CURSO
-        async function carregarCurso(cursoId) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/cursos`);
-                const cursos = await response.json();
-                cursoAtual = cursos.find(c => c.id == cursoId);
-                
-                if (cursoAtual) {
-                    document.getElementById('curso-titulo').textContent = cursoAtual.titulo;
-                    
-                    // Carrega progresso do usuário
-                    await atualizarProgressoGeral(cursoId);
-                }
-            } catch (error) {
-                console.error('Erro ao carregar curso:', error);
-            }
+            // Carrega progresso do usuário
+            await atualizarProgressoGeral(cursoId);
         }
-
-        // ✅ CARREGAR MÓDULOS E AULAS
-        async function carregarModulos(cursoId) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/cursos/${cursoId}/modulos?usuarioId=${usuarioId}`);
-                modulos = await response.json();
-                
-                exibirModulos();
-            } catch (error) {
-                console.error('Erro ao carregar módulos:', error);
-            }
-        }
-
-        // ✅ EXIBIR MÓDULOS NA SIDEBAR
-        function exibirModulos() {
-            const container = document.getElementById('modulos-container');
-            container.innerHTML = '';
-
-            modulos.forEach(modulo => {
-                const moduloDiv = document.createElement('div');
-                moduloDiv.className = 'modulo';
-                
-                const aulasConcluidas = modulo.aulas.filter(aula => 
-                    aula.progressos.length > 0 && aula.progressos[0].concluida
-                ).length;
-                
-                const todasConcluidas = aulasConcluidas === modulo.aulas.length;
-
-                moduloDiv.innerHTML = `
-                    <div class="modulo-header" onclick="toggleModulo(this)">
-                        <h3>${modulo.titulo}</h3>
-                        <span>${aulasConcluidas}/${modulo.aulas.length}</span>
-                    </div>
-                    <div class="modulo-conteudo">
-                        <ul class="aulas-lista">
-                            ${modulo.aulas.map(aula => `
-                                <li class="aula-item ${aula.progressos.length > 0 && aula.progressos[0].concluida ? 'concluida' : ''}" 
-                                    onclick="carregarAula(${aula.id})"
-                                    data-aula-id="${aula.id}">
-                                    <div class="aula-checkbox"></div>
-                                    <div class="aula-info">
-                                        <div class="aula-titulo">${aula.titulo}</div>
-                                        <div class="aula-duracao">${aula.duracao} min</div>
-                                    </div>
-                                </li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                `;
-
-                if (todasConcluidas) {
-                    moduloDiv.classList.add('concluido');
-                }
-
-                container.appendChild(moduloDiv);
-            });
-        }
-
-        // ✅ CARREGAR AULA SELECIONADA
-        async function carregarAula(aulaId) {
-            try {
-                // Remove classe ativa de todas as aulas
-                document.querySelectorAll('.aula-item').forEach(item => {
-                    item.classList.remove('ativa');
-                });
-
-                // Adiciona classe ativa na aula selecionada
-                const aulaItem = document.querySelector(`[data-aula-id="${aulaId}"]`);
-                if (aulaItem) {
-                    aulaItem.classList.add('ativa');
-                }
-
-                const response = await fetch(`${API_BASE_URL}/api/aulas/${aulaId}?usuarioId=${usuarioId}`);
-                aulaAtual = await response.json();
-
-                exibirAula(aulaAtual);
-            } catch (error) {
-                console.error('Erro ao carregar aula:', error);
-            }
-        }
-
-        // ✅ EXIBIR CONTEÚDO DA AULA
-        function exibirAula(aula) {
-            document.getElementById('empty-state').style.display = 'none';
-            document.getElementById('aula-conteudo').style.display = 'block';
-
-            // Atualiza informações básicas
-            document.getElementById('aula-titulo').textContent = aula.titulo;
-            document.getElementById('aula-descricao').textContent = aula.descricao || '';
-            document.getElementById('aula-duracao').textContent = aula.duracao;
-            document.getElementById('aula-modulo').textContent = aula.modulo.titulo;
-
-            // Conteúdo de vídeo
-            const videoContainer = document.getElementById('video-container');
-            if (aula.videoUrl) {
-                videoContainer.style.display = 'block';
-                videoContainer.innerHTML = `
-                    <iframe src="${aula.videoUrl}" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen>
-                    </iframe>
-                `;
-            } else {
-                videoContainer.style.display = 'none';
-            }
-
-            // Conteúdo em texto
-            const conteudoTexto = document.getElementById('conteudo-texto');
-            if (aula.conteudo) {
-                conteudoTexto.innerHTML = aula.conteudo;
-            } else {
-                conteudoTexto.innerHTML = '<p>Conteúdo da aula em desenvolvimento...</p>';
-            }
-
-            // Configura botões de navegação
-            configurarNavegacao(aula);
-        }
-
-        // ✅ CONFIGURAR NAVEGAÇÃO ENTRE AULAS
-        function configurarNavegacao(aula) {
-            const btnAnterior = document.getElementById('btn-aula-anterior');
-            const btnProxima = document.getElementById('btn-proxima-aula');
-            const btnConcluir = document.getElementById('btn-concluir-aula');
-
-            // Encontra aula atual no array de módulos
-            let aulaIndex = -1;
-            let moduloAtual = null;
-
-            for (const modulo of modulos) {
-                const index = modulo.aulas.findIndex(a => a.id === aula.id);
-                if (index !== -1) {
-                    aulaIndex = index;
-                    moduloAtual = modulo;
-                    break;
-                }
-            }
-
-            // Configura botão anterior
-            if (aulaIndex > 0) {
-                btnAnterior.style.display = 'flex';
-                btnAnterior.onclick = () => carregarAula(moduloAtual.aulas[aulaIndex - 1].id);
-            } else {
-                btnAnterior.style.display = 'none';
-            }
-
-            // Configura botão próxima
-            if (aulaIndex < moduloAtual.aulas.length - 1) {
-                btnProxima.style.display = 'flex';
-                btnProxima.onclick = () => carregarAula(moduloAtual.aulas[aulaIndex + 1].id);
-            } else {
-                btnProxima.style.display = 'none';
-            }
-
-            // Configura botão concluir
-            const jaConcluida = aula.progressos.length > 0 && aula.progressos[0].concluida;
-            btnConcluir.innerHTML = jaConcluida ? 
-                '<i class="fas fa-check"></i> Aula Concluída' : 
-                '<i class="fas fa-check"></i> Marcar como Concluída';
-            btnConcluir.disabled = jaConcluida;
-            btnConcluir.style.opacity = jaConcluida ? '0.6' : '1';
-
-            if (!jaConcluida) {
-                btnConcluir.onclick = () => concluirAula(aula.id);
-            }
-        }
-
-        // ✅ CONCLUSÃO DE AULA
-        async function concluirAula(aulaId) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/progresso/aula`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        usuarioId: parseInt(usuarioId),
-                        aulaId: aulaId,
-                        cursoId: cursoAtual.id
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    // Atualiza interface
-                    const aulaItem = document.querySelector(`[data-aula-id="${aulaId}"]`);
-                    if (aulaItem) {
-                        aulaItem.classList.add('concluida');
-                    }
-
-                    // Atualiza progresso geral
-                    await atualizarProgressoGeral(cursoAtual.id);
-
-                    // Recarrega módulos para atualizar contadores
-                    await carregarModulos(cursoAtual.id);
-
-                    // Atualiza botão
-                    document.getElementById('btn-concluir-aula').innerHTML = '<i class="fas fa-check"></i> Aula Concluída';
-                    document.getElementById('btn-concluir-aula').disabled = true;
-                    document.getElementById('btn-concluir-aula').style.opacity = '0.6';
-
-                    // Mostra mensagem de sucesso
-                    alert('🎉 Aula concluída com sucesso!');
-                }
-            } catch (error) {
-                console.error('Erro ao concluir aula:', error);
-                alert('❌ Erro ao salvar progresso');
-            }
-        }
-
-        // ✅ ATUALIZAR PROGRESSO GERAL
-        async function atualizarProgressoGeral(cursoId) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/progresso/${usuarioId}`);
-                const data = await response.json();
-
-                if (data.success) {
-                    const progressoCurso = data.progressos.find(p => p.cursoId == cursoId);
-                    
-                    if (progressoCurso) {
-                        const progresso = progressoCurso.progresso || 0;
-                        document.getElementById('progresso-geral').style.width = `${progresso}%`;
-                        document.getElementById('progresso-texto').textContent = `${progresso}%`;
-                    }
-                }
-            } catch (error) {
-                console.error('Erro ao carregar progresso:', error);
-            }
-        }
-
-        // ✅ FUNÇÕES AUXILIARES
-        function toggleModulo(element) {
-            const modulo = element.parentElement;
-            modulo.classList.toggle('aberto');
-        }
-function voltarParaCursos() {
-    window.location.href = 'indexEX.html'; // Volta para a lista de cursos
+    } catch (error) {
+        console.error('Erro ao carregar curso:', error);
+    }
 }
 
-        function mostrarErro(mensagem) {
-            const container = document.getElementById('aula-container');
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <h3>Erro</h3>
-                    <p>${mensagem}</p>
-                    <button class="btn btn-primary" onclick="voltarParaCursos()" style="margin-top: 20px;">
-                        Voltar para Cursos
-                    </button>
-                </div>
-            `;
+// ✅ CARREGAR MÓDULOS E AULAS
+async function carregarModulos(cursoId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/cursos/${cursoId}/modulos?usuarioId=${usuarioId}`);
+        modulos = await response.json();
+        
+        exibirModulos();
+    } catch (error) {
+        console.error('Erro ao carregar módulos:', error);
+    }
+}
+
+// ✅ EXIBIR MÓDULOS NA SIDEBAR
+function exibirModulos() {
+    const container = document.getElementById('modulos-container');
+    container.innerHTML = '';
+
+    modulos.forEach(modulo => {
+        const moduloDiv = document.createElement('div');
+        moduloDiv.className = 'modulo';
+        
+        const aulasConcluidas = modulo.aulas.filter(aula => 
+            aula.progressos.length > 0 && aula.progressos[0].concluida
+        ).length;
+        
+        const todasConcluidas = aulasConcluidas === modulo.aulas.length;
+
+        moduloDiv.innerHTML = `
+            <div class="modulo-header" onclick="toggleModulo(this)">
+                <h3>${modulo.titulo}</h3>
+                <span>${aulasConcluidas}/${modulo.aulas.length}</span>
+            </div>
+            <div class="modulo-conteudo">
+                <ul class="aulas-lista">
+                    ${modulo.aulas.map(aula => `
+                        <li class="aula-item ${aula.progressos.length > 0 && aula.progressos[0].concluida ? 'concluida' : ''}" 
+                            onclick="carregarAula(${aula.id})"
+                            data-aula-id="${aula.id}">
+                            <div class="aula-checkbox"></div>
+                            <div class="aula-info">
+                                <div class="aula-titulo">${aula.titulo}</div>
+                                <div class="aula-duracao">${aula.duracao} min</div>
+                            </div>
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>
+        `;
+
+        if (todasConcluidas) {
+            moduloDiv.classList.add('concluido');
         }
 
-        // Debug
-        window.debugCurso = function() {
-            console.log('Curso:', cursoAtual);
-            console.log('Módulos:', modulos);
-            console.log('Aula atual:', aulaAtual);
-        };
+        container.appendChild(moduloDiv);
+    });
+}
+
+// ✅ CARREGAR AULA SELECIONADA
+async function carregarAula(aulaId) {
+    try {
+        // Remove classe ativa de todas as aulas
+        document.querySelectorAll('.aula-item').forEach(item => {
+            item.classList.remove('ativa');
+        });
+
+        // Adiciona classe ativa na aula selecionada
+        const aulaItem = document.querySelector(`[data-aula-id="${aulaId}"]`);
+        if (aulaItem) {
+            aulaItem.classList.add('ativa');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/aulas/${aulaId}?usuarioId=${usuarioId}`);
+        aulaAtual = await response.json();
+
+        exibirAula(aulaAtual);
+    } catch (error) {
+        console.error('Erro ao carregar aula:', error);
+    }
+}
+
+// ✅ EXIBIR CONTEÚDO DA AULA
+function exibirAula(aula) {
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('aula-conteudo').style.display = 'block';
+
+    // Atualiza informações básicas
+    document.getElementById('aula-titulo').textContent = aula.titulo;
+    document.getElementById('aula-descricao').textContent = aula.descricao || '';
+    document.getElementById('aula-duracao').textContent = aula.duracao;
+    document.getElementById('aula-modulo').textContent = aula.modulo.titulo;
+
+    // Conteúdo de vídeo
+    const videoContainer = document.getElementById('video-container');
+    if (aula.videoUrl) {
+        videoContainer.style.display = 'block';
+        videoContainer.innerHTML = `
+            <iframe src="${aula.videoUrl}" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+            </iframe>
+        `;
+    } else {
+        videoContainer.style.display = 'none';
+    }
+
+    // Conteúdo em texto
+    const conteudoTexto = document.getElementById('conteudo-texto');
+    if (aula.conteudo) {
+        conteudoTexto.innerHTML = aula.conteudo;
+    } else {
+        conteudoTexto.innerHTML = '<p>Conteúdo da aula em desenvolvimento...</p>';
+    }
+
+    // Configura botões de navegação
+    configurarNavegacao(aula);
+}
+
+// ✅ CONFIGURAR NAVEGAÇÃO ENTRE AULAS
+function configurarNavegacao(aula) {
+    const btnAnterior = document.getElementById('btn-aula-anterior');
+    const btnProxima = document.getElementById('btn-proxima-aula');
+    const btnConcluir = document.getElementById('btn-concluir-aula');
+
+    // Encontra aula atual no array de módulos
+    let aulaIndex = -1;
+    let moduloAtual = null;
+
+    for (const modulo of modulos) {
+        const index = modulo.aulas.findIndex(a => a.id === aula.id);
+        if (index !== -1) {
+            aulaIndex = index;
+            moduloAtual = modulo;
+            break;
+        }
+    }
+
+    // Configura botão anterior
+    if (aulaIndex > 0) {
+        btnAnterior.style.display = 'flex';
+        btnAnterior.onclick = () => carregarAula(moduloAtual.aulas[aulaIndex - 1].id);
+    } else {
+        btnAnterior.style.display = 'none';
+    }
+
+    // Configura botão próxima
+    if (aulaIndex < moduloAtual.aulas.length - 1) {
+        btnProxima.style.display = 'flex';
+        btnProxima.onclick = () => carregarAula(moduloAtual.aulas[aulaIndex + 1].id);
+    } else {
+        btnProxima.style.display = 'none';
+    }
+
+    // Configura botão concluir
+    const jaConcluida = aula.progressos.length > 0 && aula.progressos[0].concluida;
+    btnConcluir.innerHTML = jaConcluida ? 
+        '<i class="fas fa-check"></i> Aula Concluída' : 
+        '<i class="fas fa-check"></i> Marcar como Concluída';
+    btnConcluir.disabled = jaConcluida;
+    btnConcluir.style.opacity = jaConcluida ? '0.6' : '1';
+
+    if (!jaConcluida) {
+        btnConcluir.onclick = () => concluirAula(aula.id);
+    }
+}
+
+// ✅ CONCLUSÃO DE AULA
+async function concluirAula(aulaId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/progresso/aula`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                usuarioId: parseInt(usuarioId),
+                aulaId: aulaId,
+                cursoId: cursoAtual.id
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Atualiza interface
+            const aulaItem = document.querySelector(`[data-aula-id="${aulaId}"]`);
+            if (aulaItem) {
+                aulaItem.classList.add('concluida');
+            }
+
+            // Atualiza progresso geral
+            await atualizarProgressoGeral(cursoAtual.id);
+
+            // Recarrega módulos para atualizar contadores
+            await carregarModulos(cursoAtual.id);
+
+            // Atualiza botão
+            document.getElementById('btn-concluir-aula').innerHTML = '<i class="fas fa-check"></i> Aula Concluída';
+            document.getElementById('btn-concluir-aula').disabled = true;
+            document.getElementById('btn-concluir-aula').style.opacity = '0.6';
+
+            // Mostra mensagem de sucesso
+            alert('🎉 Aula concluída com sucesso!');
+        }
+    } catch (error) {
+        console.error('Erro ao concluir aula:', error);
+        alert('❌ Erro ao salvar progresso');
+    }
+}
+
+// ✅ ATUALIZAR PROGRESSO GERAL
+async function atualizarProgressoGeral(cursoId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/progresso/${usuarioId}`);
+        const data = await response.json();
+
+        if (data.success) {
+            const progressoCurso = data.progressos.find(p => p.cursoId == cursoId);
+            
+            if (progressoCurso) {
+                const progresso = progressoCurso.progresso || 0;
+                document.getElementById('progresso-geral').style.width = `${progresso}%`;
+                document.getElementById('progresso-texto').textContent = `${progresso}%`;
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao carregar progresso:', error);
+    }
+}
+
+// ✅ FUNÇÕES AUXILIARES
+function toggleModulo(element) {
+    const modulo = element.parentElement;
+    modulo.classList.toggle('aberto');
+}
+
+// ✅ CORREÇÃO: Navegação para Vercel - Volta para Cursos Extras
+function voltarParaCursos() {
+    window.location.href = '/extras'; // Vai para a rota /extras que aponta para indexEX.html
+}
+
+function mostrarErro(mensagem) {
+    const container = document.getElementById('aula-container');
+    container.innerHTML = `
+        <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Erro</h3>
+            <p>${mensagem}</p>
+            <button class="btn btn-primary" onclick="voltarParaCursos()" style="margin-top: 20px;">
+                Voltar para Cursos
+            </button>
+        </div>
+    `;
+}
+
+// Debug
+window.debugCurso = function() {
+    console.log('Curso:', cursoAtual);
+    console.log('Módulos:', modulos);
+    console.log('Aula atual:', aulaAtual);
+};
     </script>
 </body>
 </html>
+
 
