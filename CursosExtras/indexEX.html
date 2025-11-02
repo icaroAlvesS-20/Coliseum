@@ -1074,17 +1074,18 @@
 
 
         // Course actions
-        function iniciarCurso(cursoId) {
-            console.log('Iniciando curso:', cursoId);
-            // Redireciona para a página do curso
-            window.location.href = `curso.html?id=${cursoId}`;
-        }
+// Course actions - CORRIGIDO
+function iniciarCurso(cursoId) {
+    console.log('Iniciando curso:', cursoId);
+    // Redireciona para a página do curso CORRETA
+    window.location.href = `indexCR.html?id=${cursoId}`;
+}
 
-        function continuarCurso(cursoId) {
-            console.log('Continuando curso:', cursoId);
-            // Redireciona para a página do curso
-            window.location.href = `curso.html?id=${cursoId}`;
-        }
+function continuarCurso(cursoId) {
+    console.log('Continuando curso:', cursoId);
+    // Redireciona para a página do curso CORRETA
+    window.location.href = `indexCR.html?id=${cursoId}`;
+}
 
         function verDetalhes(cursoId) {
             const curso = cursos.find(c => c.id === cursoId);
