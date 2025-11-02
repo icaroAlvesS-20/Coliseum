@@ -1112,23 +1112,14 @@ function getSampleCursos() {
 
 // Course actions (mantidas)
 function iniciarCurso(cursoId) {
-    const curso = cursos.find(c => c.id === cursoId);
-    if (curso) {
-        alert(`Iniciando curso: ${curso.titulo}`);
-        if (userData && userData.id) {
-            atualizarProgresso(userData.id, cursoId, 10);
-        }
-    }
+    // Redireciona para a página do curso
+    window.location.href = `curso.html?id=${cursoId}`;
 }
 
 function continuarCurso(cursoId) {
-    const curso = cursos.find(c => c.id === cursoId);
-    if (curso) {
-        const progresso = getProgressoCurso(cursoId);
-        alert(`Continuando curso: ${curso.titulo} (${progresso}% completo)`);
-    }
+    // Redireciona para a página do curso
+    window.location.href = `curso.html?id=${cursoId}`;
 }
-
 function verDetalhes(cursoId) {
     const curso = cursos.find(c => c.id === cursoId);
     if (curso) {
