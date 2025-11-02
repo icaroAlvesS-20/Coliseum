@@ -84,6 +84,10 @@
       "dest": "/CSN/indexCSN.html"
     },
     {
+  "src": "/cursos/curso.html",
+  "dest": "/Cursos/indexCR.html"
+},
+    {
       "src": "/",
       "dest": "/Login/index.html"
     },
