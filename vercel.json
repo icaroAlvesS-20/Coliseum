@@ -44,6 +44,10 @@
       "dest": "/CursosExtras/indexEX.html"
     },
     {
+      "src": "/cursos",
+      "dest": "/Cursos/indexCR.html"
+    },
+    {
       "src": "/login",
       "dest": "/Login/index.html"
     },
@@ -82,10 +86,6 @@
     {
       "src": "/ciencias-natureza",
       "dest": "/CSN/indexCSN.html"
-    },
-    {
-      "src": "/cursos/curso.html",
-      "dest": "/Cursos/indexCR.html"
     },
     {
       "src": "/",
