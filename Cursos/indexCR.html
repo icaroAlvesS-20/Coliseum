@@ -661,25 +661,34 @@
             }
         });
 
-        // ✅ CARREGAR DADOS DO CURSO
+        // ✅ CARREGAR DADOS DO CURSO - CORRIGIDO
         async function carregarCurso(cursoId) {
             try {
+                console.log(`📚 Buscando curso ID: ${cursoId} da API...`);
+                
                 // Tenta carregar da API primeiro
                 const response = await fetch(`https://coliseum-api.onrender.com/api/cursos`);
                 if (response.ok) {
                     const cursos = await response.json();
-                    cursoAtual = cursos.find(c => c.id == cursoId);
+                    console.log('📦 Cursos da API:', cursos);
+                    
+                    // A API retorna um array, não um objeto
+                    cursoAtual = Array.isArray(cursos) ? 
+                        cursos.find(c => c.id == cursoId) : 
+                        cursos[cursoId];
                 }
             } catch (error) {
-                console.log('🌐 API offline, usando dados locais');
+                console.log('🌐 API offline, usando dados locais:', error);
             }
             
             // Fallback para dados locais
             if (!cursoAtual) {
+                console.log('🔄 Usando dados de exemplo...');
                 cursoAtual = CURSOS_EXEMPLO[cursoId];
             }
             
             if (cursoAtual) {
+                console.log('✅ Curso carregado:', cursoAtual);
                 document.getElementById('curso-titulo').textContent = cursoAtual.titulo;
                 atualizarProgressoGeral();
             } else {
@@ -687,61 +696,105 @@
             }
         }
 
-        // ✅ CARREGAR MÓDULOS E AULAS
+        // ✅ CARREGAR MÓDULOS E AULAS - CORRIGIDO
         async function carregarModulos(cursoId) {
             try {
-                // Tenta carregar da API
-                const response = await fetch(`https://coliseum-api.onrender.com/api/cursos/${cursoId}/modulos?usuarioId=${usuarioId}`);
-                if (response.ok) {
-                    modulos = await response.json();
+                console.log(`📂 Buscando módulos do curso ${cursoId}...`);
+                
+                // Se o curso já tem módulos (dados locais), usa eles
+                if (cursoAtual && cursoAtual.modulos) {
+                    modulos = cursoAtual.modulos;
+                    console.log('✅ Módulos carregados do curso:', modulos);
+                } else {
+                    // Tenta carregar da API
+                    const response = await fetch(`https://coliseum-api.onrender.com/api/cursos/${cursoId}/modulos`);
+                    if (response.ok) {
+                        modulos = await response.json();
+                        console.log('✅ Módulos da API:', modulos);
+                    } else {
+                        throw new Error('API não respondeu');
+                    }
                 }
             } catch (error) {
-                console.log('🌐 API offline, usando módulos locais');
-            }
-            
-            // Fallback para dados locais
-            if (!modulos || modulos.length === 0) {
+                console.log('🌐 API offline, usando módulos locais:', error);
+                // Fallback para dados locais
                 modulos = cursoAtual?.modulos || [];
             }
             
+            console.log('🎯 Módulos finais:', modulos);
             exibirModulos();
+            
+            // Se houver módulos, abre o primeiro por padrão
+            if (modulos.length > 0) {
+                const primeiroModulo = document.querySelector('.modulo');
+                if (primeiroModulo) {
+                    primeiroModulo.classList.add('aberto');
+                }
+                
+                // Carrega a primeira aula automaticamente
+                const primeiraAula = modulos[0]?.aulas?.[0];
+                if (primeiraAula) {
+                    setTimeout(() => carregarAula(primeiraAula.id), 500);
+                }
+            }
         }
 
-        // ✅ EXIBIR MÓDULOS NA SIDEBAR
+        // ✅ EXIBIR MÓDULOS NA SIDEBAR - CORRIGIDO
         function exibirModulos() {
             const container = document.getElementById('modulos-container');
+            
+            if (!modulos || modulos.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-book"></i>
+                        <h3>Nenhum módulo disponível</h3>
+                        <p>Este curso ainda não possui conteúdo</p>
+                    </div>
+                `;
+                return;
+            }
+
             container.innerHTML = '';
 
             modulos.forEach(modulo => {
-                const moduloDiv = document.createElement('div');
-                moduloDiv.className = 'modulo';
-                
-                const aulasConcluidas = modulo.aulas.filter(aula => 
+                // Garante que aulas existem
+                const aulas = modulo.aulas || [];
+                const aulasConcluidas = aulas.filter(aula => 
                     progressoUsuario[aula.id] === true
                 ).length;
                 
-                const todasConcluidas = aulasConcluidas === modulo.aulas.length;
+                const todasConcluidas = aulas.length > 0 && aulasConcluidas === aulas.length;
 
+                const moduloDiv = document.createElement('div');
+                moduloDiv.className = 'modulo';
+                
                 moduloDiv.innerHTML = `
                     <div class="modulo-header" onclick="toggleModulo(this)">
                         <h3>${modulo.titulo}</h3>
-                        <span>${aulasConcluidas}/${modulo.aulas.length}</span>
+                        <span>${aulasConcluidas}/${aulas.length}</span>
                     </div>
                     <div class="modulo-conteudo">
-                        <ul class="aulas-lista">
-                            ${modulo.aulas.map(aula => `
-                                <li class="aula-item ${progressoUsuario[aula.id] ? 'concluida' : ''}" 
-                                    onclick="carregarAula(${aula.id})"
-                                    data-aula-id="${aula.id}">
-                                    <div class="aula-checkbox"></div>
-                                    <div class="aula-info">
-                                        <div class="aula-titulo">${aula.titulo}</div>
-                                        <div class="aula-duracao">${aula.duracao} min</div>
-                                        ${aula.provedor === 'pandavideo' ? '<i class="fas fa-crown" style="color: #ffcf00; margin-left: 5px;"></i>' : ''}
-                                    </div>
-                                </li>
-                            `).join('')}
-                        </ul>
+                        ${aulas.length > 0 ? `
+                            <ul class="aulas-lista">
+                                ${aulas.map(aula => `
+                                    <li class="aula-item ${progressoUsuario[aula.id] ? 'concluida' : ''}" 
+                                        onclick="carregarAula(${aula.id})"
+                                        data-aula-id="${aula.id}">
+                                        <div class="aula-checkbox"></div>
+                                        <div class="aula-info">
+                                            <div class="aula-titulo">${aula.titulo}</div>
+                                            <div class="aula-duracao">${aula.duracao} min</div>
+                                            ${aula.provedor === 'pandavideo' ? '<i class="fas fa-crown" style="color: #ffcf00; margin-left: 5px;"></i>' : ''}
+                                        </div>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        ` : `
+                            <div style="padding: 20px; text-align: center; color: #888;">
+                                <i class="fas fa-video-slash"></i>
+                                <p>Nenhuma aula disponível</p>
+                            </div>
+                        `}
                     </div>
                 `;
 
@@ -753,9 +806,11 @@
             });
         }
 
-        // ✅ CARREGAR AULA SELECIONADA
+        // ✅ CARREGAR AULA SELECIONADA - CORRIGIDO
         async function carregarAula(aulaId) {
             try {
+                console.log(`🎬 Carregando aula ID: ${aulaId}`);
+                
                 // Remove classe ativa de todas as aulas
                 document.querySelectorAll('.aula-item').forEach(item => {
                     item.classList.remove('ativa');
@@ -765,37 +820,52 @@
                 const aulaItem = document.querySelector(`[data-aula-id="${aulaId}"]`);
                 if (aulaItem) {
                     aulaItem.classList.add('ativa');
+                    
+                    // Garante que o módulo pai está aberto
+                    const modulo = aulaItem.closest('.modulo');
+                    if (modulo && !modulo.classList.contains('aberto')) {
+                        modulo.classList.add('aberto');
+                    }
                 }
 
                 // Encontra a aula nos dados
+                aulaAtual = null;
+                let moduloDaAula = null;
+                
                 for (const modulo of modulos) {
-                    aulaAtual = modulo.aulas.find(a => a.id === aulaId);
-                    if (aulaAtual) {
-                        aulaAtual.modulo = modulo;
+                    const aulaEncontrada = modulo.aulas?.find(a => a.id === aulaId);
+                    if (aulaEncontrada) {
+                        aulaAtual = aulaEncontrada;
+                        moduloDaAula = modulo;
                         break;
                     }
                 }
 
-                if (aulaAtual) {
+                if (aulaAtual && moduloDaAula) {
+                    aulaAtual.modulo = moduloDaAula;
                     exibirAula(aulaAtual);
+                } else {
+                    mostrarErro('Aula não encontrada');
                 }
 
             } catch (error) {
-                console.error('Erro ao carregar aula:', error);
+                console.error('❌ Erro ao carregar aula:', error);
                 mostrarErro('Erro ao carregar a aula selecionada');
             }
         }
 
-        // ✅ EXIBIR CONTEÚDO DA AULA
+        // ✅ EXIBIR CONTEÚDO DA AULA - CORRIGIDO
         function exibirAula(aula) {
+            console.log('🎯 Exibindo aula:', aula);
+            
             document.getElementById('empty-state').style.display = 'none';
             document.getElementById('aula-conteudo').style.display = 'block';
 
             // Atualiza informações básicas
             document.getElementById('aula-titulo').textContent = aula.titulo;
-            document.getElementById('aula-descricao').textContent = aula.descricao || '';
-            document.getElementById('aula-duracao').textContent = aula.duracao;
-            document.getElementById('aula-modulo').textContent = aula.modulo.titulo;
+            document.getElementById('aula-descricao').textContent = aula.descricao || 'Sem descrição disponível';
+            document.getElementById('aula-duracao').textContent = aula.duracao || 0;
+            document.getElementById('aula-modulo').textContent = aula.modulo?.titulo || 'Módulo';
             
             // Define o provedor do vídeo
             const provedorNome = aula.provedor === 'pandavideo' ? 'Panda Video' : 'YouTube';
@@ -803,17 +873,22 @@
 
             // Conteúdo de vídeo
             const videoContainer = document.getElementById('video-container');
-            videoContainer.style.display = 'block';
-            videoContainer.innerHTML = `
-                <div class="video-provider-badge">
-                    <i class="fas ${aula.provedor === 'pandavideo' ? 'fa-crown' : 'fa-play'}"></i>
-                    ${provedorNome}
-                </div>
-                <iframe src="${aula.videoUrl}" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen>
-                </iframe>
-            `;
+            if (aula.videoUrl) {
+                videoContainer.style.display = 'block';
+                videoContainer.innerHTML = `
+                    <div class="video-provider-badge">
+                        <i class="fas ${aula.provedor === 'pandavideo' ? 'fa-crown' : 'fa-play'}"></i>
+                        ${provedorNome}
+                    </div>
+                    <iframe src="${aula.videoUrl}" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                    </iframe>
+                `;
+            } else {
+                videoContainer.style.display = 'none';
+                videoContainer.innerHTML = '<div class="empty-state"><i class="fas fa-video-slash"></i><p>Vídeo não disponível</p></div>';
+            }
 
             // Conteúdo em texto
             const conteudoTexto = document.getElementById('conteudo-texto');
@@ -827,7 +902,7 @@
             configurarNavegacao(aula);
         }
 
-        // ✅ CONFIGURAR NAVEGAÇÃO ENTRE AULAS
+        // ✅ CONFIGURAR NAVEGAÇÃO ENTRE AULAS - CORRIGIDO
         function configurarNavegacao(aula) {
             const btnAnterior = document.getElementById('btn-aula-anterior');
             const btnProxima = document.getElementById('btn-proxima-aula');
@@ -838,7 +913,7 @@
             let moduloAtual = null;
 
             for (const modulo of modulos) {
-                const index = modulo.aulas.findIndex(a => a.id === aula.id);
+                const index = modulo.aulas?.findIndex(a => a.id === aula.id) || -1;
                 if (index !== -1) {
                     aulaIndex = index;
                     moduloAtual = modulo;
@@ -847,7 +922,7 @@
             }
 
             // Configura botão anterior
-            if (aulaIndex > 0) {
+            if (aulaIndex > 0 && moduloAtual) {
                 btnAnterior.style.display = 'flex';
                 btnAnterior.onclick = () => carregarAula(moduloAtual.aulas[aulaIndex - 1].id);
             } else {
@@ -855,7 +930,7 @@
             }
 
             // Configura botão próxima
-            if (aulaIndex < moduloAtual.aulas.length - 1) {
+            if (moduloAtual && aulaIndex < moduloAtual.aulas.length - 1) {
                 btnProxima.style.display = 'flex';
                 btnProxima.onclick = () => carregarAula(moduloAtual.aulas[aulaIndex + 1].id);
             } else {
@@ -877,9 +952,11 @@
             }
         }
 
-        // ✅ CONCLUSÃO DE AULA
+        // ✅ CONCLUSÃO DE AULA - CORRIGIDO
         async function concluirAula(aulaId) {
             try {
+                console.log(`✅ Concluindo aula ${aulaId}`);
+                
                 // Tenta salvar na API
                 try {
                     const response = await fetch(`https://coliseum-api.onrender.com/api/progresso/aula`, {
@@ -917,20 +994,22 @@
                 exibirModulos();
 
                 // Atualiza botão
-                document.getElementById('btn-concluir-aula').innerHTML = '<i class="fas fa-check"></i> Aula Concluída';
-                document.getElementById('btn-concluir-aula').disabled = true;
-                document.getElementById('btn-concluir-aula').style.opacity = '0.6';
+                const btnConcluir = document.getElementById('btn-concluir-aula');
+                btnConcluir.innerHTML = '<i class="fas fa-check"></i> Aula Concluída';
+                btnConcluir.disabled = true;
+                btnConcluir.style.opacity = '0.6';
+                btnConcluir.onclick = null;
 
                 // Mostra mensagem de sucesso
                 alert('🎉 Aula concluída com sucesso!');
 
             } catch (error) {
-                console.error('Erro ao concluir aula:', error);
+                console.error('❌ Erro ao concluir aula:', error);
                 alert('❌ Erro ao salvar progresso');
             }
         }
 
-        // ✅ ATUALIZAR PROGRESSO GERAL
+        // ✅ ATUALIZAR PROGRESSO GERAL - CORRIGIDO
         function atualizarProgressoGeral() {
             if (!cursoAtual) return;
 
@@ -938,8 +1017,9 @@
             let aulasConcluidas = 0;
 
             modulos.forEach(modulo => {
-                totalAulas += modulo.aulas.length;
-                modulo.aulas.forEach(aula => {
+                const aulas = modulo.aulas || [];
+                totalAulas += aulas.length;
+                aulas.forEach(aula => {
                     if (progressoUsuario[aula.id]) {
                         aulasConcluidas++;
                     }
@@ -957,11 +1037,15 @@
             const progressoSalvo = localStorage.getItem(`progresso_curso_${cursoAtual?.id}_usuario_${usuarioId}`);
             if (progressoSalvo) {
                 progressoUsuario = JSON.parse(progressoSalvo);
+            } else {
+                progressoUsuario = {};
             }
+            console.log('📊 Progresso carregado:', progressoUsuario);
         }
 
         function salvarProgressoLocal() {
             localStorage.setItem(`progresso_curso_${cursoAtual?.id}_usuario_${usuarioId}`, JSON.stringify(progressoUsuario));
+            console.log('💾 Progresso salvo:', progressoUsuario);
         }
 
         // ✅ FUNÇÕES AUXILIARES
@@ -990,10 +1074,12 @@
 
         // Debug
         window.debugCurso = function() {
+            console.log('=== DEBUG CURSO ===');
             console.log('Curso:', cursoAtual);
             console.log('Módulos:', modulos);
             console.log('Aula atual:', aulaAtual);
             console.log('Progresso:', progressoUsuario);
+            console.log('Usuario ID:', usuarioId);
         };
     </script>
 </body>
