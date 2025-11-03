@@ -476,66 +476,80 @@
     <button class="btn-voltar" onclick="voltarParaCursos()">←</button>
 
     <script>
-        // Configurações da API
+        // Configurações
         const API_BASE_URL = 'https://coliseum-api.onrender.com';
         
         // Estado global
         let cursoAtual = null;
         let modulos = [];
         let aulaAtual = null;
-        let usuarioId = null;
-        let progressoUsuario = {};
+        let usuarioId = 1; // ID fixo para teste
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 Inicializando página do curso...');
             
-            // Pega ID do curso da URL
             const urlParams = new URLSearchParams(window.location.search);
             const cursoId = urlParams.get('id');
-            usuarioId = localStorage.getItem('userId') || 1;
             
             if (cursoId) {
-                await carregarTodosOsCursosECursoAtual(cursoId);
+                await carregarCurso(cursoId);
                 await carregarModulos(cursoId);
-                carregarProgressoLocal();
             } else {
                 mostrarErro('ID do curso não especificado');
             }
         });
 
-        // ✅ CARREGAR TODOS OS CURSOS E ENCONTRAR O CURSO ATUAL
-        async function carregarTodosOsCursosECursoAtual(cursoId) {
+        // ✅ CARREGAR CURSO
+        async function carregarCurso(cursoId) {
             try {
-                console.log(`📚 Buscando todos os cursos da API...`);
+                console.log(`📚 Buscando curso ${cursoId}...`);
+                
+                const response = await fetch(`${API_BASE_URL}/api/cursos/${cursoId}`);
+                
+                if (response.ok) {
+                    cursoAtual = await response.json();
+                    document.getElementById('curso-titulo').textContent = cursoAtual.titulo;
+                    console.log('✅ Curso carregado:', cursoAtual.titulo);
+                } else {
+                    // Se não encontrar curso específico, busca na lista geral
+                    await buscarCursoNaListaGeral(cursoId);
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar curso:', error);
+                await buscarCursoNaListaGeral(cursoId);
+            }
+        }
+
+        // ✅ BUSCAR CURSO NA LISTA GERAL
+        async function buscarCursoNaListaGeral(cursoId) {
+            try {
+                console.log(`🔍 Buscando curso ${cursoId} na lista geral...`);
                 
                 const response = await fetch(`${API_BASE_URL}/api/cursos`);
                 
                 if (response.ok) {
                     const todosCursos = await response.json();
-                    console.log('✅ Todos os cursos carregados:', todosCursos);
-                    
-                    // Encontra o curso específico
                     cursoAtual = todosCursos.find(c => c.id == cursoId);
                     
                     if (cursoAtual) {
-                        console.log('✅ Curso encontrado:', cursoAtual);
                         document.getElementById('curso-titulo').textContent = cursoAtual.titulo;
-                        atualizarProgressoGeral();
+                        console.log('✅ Curso encontrado na lista geral:', cursoAtual.titulo);
                     } else {
                         mostrarErro(`Curso ID ${cursoId} não encontrado. Cursos disponíveis: ${todosCursos.map(c => c.id).join(', ')}`);
                     }
                 } else {
-                    throw new Error(`Erro ${response.status} na API`);
+                    throw new Error('Não foi possível carregar os cursos');
                 }
                 
             } catch (error) {
-                console.error('❌ Erro ao carregar cursos:', error);
-                mostrarErro('Erro ao carregar os cursos: ' + error.message);
+                console.error('❌ Erro ao buscar cursos:', error);
+                mostrarErro('Erro ao carregar os cursos');
             }
         }
 
-        // ✅ CARREGAR MÓDULOS E AULAS DA API
+        // ✅ CARREGAR MÓDULOS
         async function carregarModulos(cursoId) {
             try {
                 console.log(`📂 Buscando módulos do curso ${cursoId}...`);
@@ -544,21 +558,17 @@
                 
                 if (response.ok) {
                     modulos = await response.json();
-                    console.log('✅ Módulos carregados da API:', modulos);
-                    
+                    console.log('✅ Módulos carregados:', modulos);
                     exibirModulos();
                     
-                    // Carrega primeira aula automaticamente se existir
+                    // Carrega primeira aula se existir
                     if (modulos.length > 0 && modulos[0].aulas && modulos[0].aulas.length > 0) {
-                        const primeiraAula = modulos[0].aulas[0];
-                        setTimeout(() => carregarAula(primeiraAula.id), 1000);
+                        setTimeout(() => carregarAula(modulos[0].aulas[0].id), 500);
                     }
-                } else if (response.status === 404) {
-                    console.log('📭 Este curso não possui módulos ainda');
+                } else {
+                    console.log('📭 Curso não possui módulos');
                     modulos = [];
                     exibirModulos();
-                } else {
-                    throw new Error(`Erro ${response.status} na API`);
                 }
                 
             } catch (error) {
@@ -568,7 +578,7 @@
             }
         }
 
-        // ✅ EXIBIR MÓDULOS NA SIDEBAR
+        // ✅ EXIBIR MÓDULOS
         function exibirModulos() {
             const container = document.getElementById('modulos-container');
             
@@ -576,12 +586,8 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-book"></i>
-                        <h3>Conteúdo em Desenvolvimento</h3>
+                        <h3>Curso sem Conteúdo</h3>
                         <p>Este curso ainda não possui módulos disponíveis</p>
-                        <p style="margin-top: 10px; font-size: 0.9rem; color: #ffcf00;">
-                            <i class="fas fa-info-circle"></i>
-                            Os administradores estão preparando o conteúdo
-                        </p>
                     </div>
                 `;
                 return;
@@ -591,28 +597,19 @@
 
             modulos.forEach(modulo => {
                 const aulas = modulo.aulas || [];
-                const aulasConcluidas = aulas.filter(aula => {
-                    // Verifica se a aula foi concluída (usando progressos da API ou local)
-                    const progressoAPI = aula.progressos && aula.progressos.length > 0 ? aula.progressos[0].concluida : false;
-                    return progressoAPI || progressoUsuario[aula.id] === true;
-                }).length;
                 
-                const todasConcluidas = aulas.length > 0 && aulasConcluidas === aulas.length;
-
                 const moduloDiv = document.createElement('div');
                 moduloDiv.className = 'modulo';
                 moduloDiv.innerHTML = `
                     <div class="modulo-header" onclick="toggleModulo(this)">
                         <h3>${modulo.titulo}</h3>
-                        <span>${aulasConcluidas}/${aulas.length}</span>
+                        <span>${aulas.length} aulas</span>
                     </div>
                     <div class="modulo-conteudo">
                         ${aulas.length > 0 ? `
                             <ul class="aulas-lista">
-                                ${aulas.map(aula => {
-                                    const concluida = (aula.progressos && aula.progressos.length > 0 && aula.progressos[0].concluida) || progressoUsuario[aula.id] === true;
-                                    return `
-                                    <li class="aula-item ${concluida ? 'concluida' : ''}" 
+                                ${aulas.map(aula => `
+                                    <li class="aula-item" 
                                         onclick="carregarAula(${aula.id})"
                                         data-aula-id="${aula.id}">
                                         <div class="aula-checkbox"></div>
@@ -621,83 +618,48 @@
                                             <div class="aula-duracao">${aula.duracao || 0} min</div>
                                         </div>
                                     </li>
-                                `}).join('')}
+                                `).join('')}
                             </ul>
                         ` : `
                             <div style="padding: 20px; text-align: center; color: #888;">
                                 <i class="fas fa-video-slash"></i>
-                                <p>Nenhuma aula disponível neste módulo</p>
+                                <p>Nenhuma aula disponível</p>
                             </div>
                         `}
                     </div>
                 `;
 
-                if (todasConcluidas) {
-                    moduloDiv.classList.add('concluido');
-                }
-
                 container.appendChild(moduloDiv);
             });
 
-            // Abre o primeiro módulo automaticamente
+            // Abre primeiro módulo
             const primeiroModulo = document.querySelector('.modulo');
             if (primeiroModulo) {
                 primeiroModulo.classList.add('aberto');
             }
         }
 
-        // ✅ CARREGAR AULA SELECIONADA
+        // ✅ CARREGAR AULA
         async function carregarAula(aulaId) {
             try {
-                console.log(`🎬 Carregando aula ID: ${aulaId}`);
+                console.log(`🎬 Carregando aula ${aulaId}...`);
                 
-                // Remove classe ativa de todas as aulas
+                // Ativa aula selecionada
                 document.querySelectorAll('.aula-item').forEach(item => {
                     item.classList.remove('ativa');
                 });
-
-                // Adiciona classe ativa na aula selecionada
+                
                 const aulaItem = document.querySelector(`[data-aula-id="${aulaId}"]`);
                 if (aulaItem) {
                     aulaItem.classList.add('ativa');
                     
-                    // Garante que o módulo pai está aberto
                     const modulo = aulaItem.closest('.modulo');
                     if (modulo && !modulo.classList.contains('aberto')) {
                         modulo.classList.add('aberto');
                     }
                 }
 
-                // Primeiro tenta encontrar a aula nos módulos já carregados
-                aulaAtual = null;
-                let moduloDaAula = null;
-                
-                for (const modulo of modulos) {
-                    const aulaEncontrada = modulo.aulas?.find(a => a.id === aulaId);
-                    if (aulaEncontrada) {
-                        aulaAtual = aulaEncontrada;
-                        moduloDaAula = modulo;
-                        break;
-                    }
-                }
-
-                // Se não encontrou, busca da API
-                if (!aulaAtual) {
-                    await carregarAulaDaAPI(aulaId);
-                } else {
-                    aulaAtual.modulo = moduloDaAula;
-                    exibirAula(aulaAtual);
-                }
-
-            } catch (error) {
-                console.error('❌ Erro ao carregar aula:', error);
-                mostrarErro('Erro ao carregar a aula selecionada');
-            }
-        }
-
-        // ✅ CARREGAR AULA DIRETO DA API
-        async function carregarAulaDaAPI(aulaId) {
-            try {
+                // Busca dados da aula
                 const response = await fetch(`${API_BASE_URL}/api/aulas/${aulaId}?usuarioId=${usuarioId}`);
                 
                 if (response.ok) {
@@ -706,44 +668,34 @@
                 } else {
                     throw new Error('Aula não encontrada');
                 }
+
             } catch (error) {
-                console.error('❌ Erro ao carregar aula da API:', error);
-                mostrarErro('Aula não encontrada');
+                console.error('❌ Erro ao carregar aula:', error);
+                mostrarErro('Erro ao carregar a aula');
             }
         }
 
-        // ✅ EXIBIR CONTEÚDO DA AULA
+        // ✅ EXIBIR AULA
         function exibirAula(aula) {
             console.log('🎯 Exibindo aula:', aula);
             
             document.getElementById('empty-state').style.display = 'none';
             document.getElementById('aula-conteudo').style.display = 'block';
 
-            // Atualiza informações básicas
+            // Informações básicas
             document.getElementById('aula-titulo').textContent = aula.titulo;
-            document.getElementById('aula-descricao').textContent = aula.descricao || 'Sem descrição disponível';
+            document.getElementById('aula-descricao').textContent = aula.descricao || 'Sem descrição';
             document.getElementById('aula-duracao').textContent = aula.duracao || 0;
             document.getElementById('aula-modulo').textContent = aula.modulo?.titulo || 'Módulo';
-            
-            // Define o provedor do vídeo (detecta automaticamente)
-            let provedorNome = 'YouTube';
-            let provedorIcon = 'fa-play';
-            
-            if (aula.videoUrl && aula.videoUrl.includes('pandavideo')) {
-                provedorNome = 'Panda Video';
-                provedorIcon = 'fa-crown';
-            }
-            
-            document.getElementById('aula-provedor').textContent = provedorNome;
+            document.getElementById('aula-provedor').textContent = 'YouTube';
 
-            // Conteúdo de vídeo
+            // Vídeo
             const videoContainer = document.getElementById('video-container');
             if (aula.videoUrl) {
                 videoContainer.style.display = 'block';
                 videoContainer.innerHTML = `
                     <div class="video-provider-badge">
-                        <i class="fas ${provedorIcon}"></i>
-                        ${provedorNome}
+                        <i class="fas fa-play"></i> YouTube
                     </div>
                     <iframe src="${aula.videoUrl}" 
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -752,82 +704,42 @@
                 `;
             } else {
                 videoContainer.style.display = 'none';
-                videoContainer.innerHTML = '<div style="padding: 40px; text-align: center; color: #888;"><i class="fas fa-video-slash"></i><p>Vídeo não disponível</p></div>';
             }
 
-            // Conteúdo em texto
+            // Conteúdo
             const conteudoTexto = document.getElementById('conteudo-texto');
-            if (aula.conteudo) {
-                conteudoTexto.innerHTML = aula.conteudo;
-            } else {
-                conteudoTexto.innerHTML = '<p>Conteúdo da aula em desenvolvimento...</p>';
-            }
+            conteudoTexto.innerHTML = aula.conteudo || '<p>Conteúdo da aula em desenvolvimento...</p>';
 
-            // Configura botões de navegação
+            // Configura navegação
             configurarNavegacao(aula);
         }
 
-        // ✅ CONFIGURAR NAVEGAÇÃO ENTRE AULAS
+        // ✅ CONFIGURAR NAVEGAÇÃO
         function configurarNavegacao(aula) {
-            const btnAnterior = document.getElementById('btn-aula-anterior');
-            const btnProxima = document.getElementById('btn-proxima-aula');
             const btnConcluir = document.getElementById('btn-concluir-aula');
-
-            // Encontra aula atual no array de módulos
-            let aulaIndex = -1;
-            let moduloAtual = null;
-
-            for (const modulo of modulos) {
-                const index = modulo.aulas?.findIndex(a => a.id === aula.id) || -1;
-                if (index !== -1) {
-                    aulaIndex = index;
-                    moduloAtual = modulo;
-                    break;
-                }
-            }
-
-            // Configura botão anterior
-            if (aulaIndex > 0 && moduloAtual) {
-                btnAnterior.style.display = 'flex';
-                btnAnterior.onclick = () => carregarAula(moduloAtual.aulas[aulaIndex - 1].id);
-            } else {
-                btnAnterior.style.display = 'none';
-            }
-
-            // Configura botão próxima
-            if (moduloAtual && aulaIndex < moduloAtual.aulas.length - 1) {
-                btnProxima.style.display = 'flex';
-                btnProxima.onclick = () => carregarAula(moduloAtual.aulas[aulaIndex + 1].id);
-            } else {
-                btnProxima.style.display = 'none';
-            }
-
-            // Configura botão concluir
-            const jaConcluida = (aula.progressos && aula.progressos.length > 0 && aula.progressos[0].concluida) || progressoUsuario[aula.id] === true;
-            btnConcluir.innerHTML = jaConcluida ? 
+            const concluida = aula.progressos && aula.progressos.length > 0 && aula.progressos[0].concluida;
+            
+            btnConcluir.innerHTML = concluida ? 
                 '<i class="fas fa-check"></i> Aula Concluída' : 
                 '<i class="fas fa-check"></i> Marcar como Concluída';
-            btnConcluir.disabled = jaConcluida;
-            btnConcluir.style.opacity = jaConcluida ? '0.6' : '1';
+            btnConcluir.disabled = concluida;
+            btnConcluir.style.opacity = concluida ? '0.6' : '1';
 
-            if (!jaConcluida) {
+            if (!concluida) {
                 btnConcluir.onclick = () => concluirAula(aula.id);
-            } else {
-                btnConcluir.onclick = null;
             }
         }
 
         // ✅ CONCLUSÃO DE AULA
         async function concluirAula(aulaId) {
             try {
-                console.log(`✅ Concluindo aula ${aulaId}`);
+                console.log(`✅ Concluindo aula ${aulaId}...`);
                 
-                // Salva na API
                 const response = await fetch(`${API_BASE_URL}/api/progresso/aula`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        usuarioId: parseInt(usuarioId),
+                        usuarioId: usuarioId,
                         aulaId: aulaId,
                         cursoId: cursoAtual.id
                     })
@@ -835,79 +747,26 @@
                 
                 if (response.ok) {
                     const result = await response.json();
-                    console.log('✅ Progresso salvo na API:', result);
+                    console.log('✅ Progresso salvo:', result);
+                    
+                    // Atualiza interface
+                    const aulaItem = document.querySelector(`[data-aula-id="${aulaId}"]`);
+                    if (aulaItem) {
+                        aulaItem.classList.add('concluida');
+                    }
+                    
+                    const btnConcluir = document.getElementById('btn-concluir-aula');
+                    btnConcluir.innerHTML = '<i class="fas fa-check"></i> Aula Concluída';
+                    btnConcluir.disabled = true;
+                    btnConcluir.style.opacity = '0.6';
+                    
+                    mostrarMensagem('🎉 Aula concluída com sucesso!');
                 }
-
-                // Salva localmente também
-                progressoUsuario[aulaId] = true;
-                salvarProgressoLocal();
-
-                // Atualiza interface
-                const aulaItem = document.querySelector(`[data-aula-id="${aulaId}"]`);
-                if (aulaItem) {
-                    aulaItem.classList.add('concluida');
-                }
-
-                // Atualiza progresso geral
-                atualizarProgressoGeral();
-
-                // Recarrega módulos para atualizar contadores
-                exibirModulos();
-
-                // Atualiza botão
-                const btnConcluir = document.getElementById('btn-concluir-aula');
-                btnConcluir.innerHTML = '<i class="fas fa-check"></i> Aula Concluída';
-                btnConcluir.disabled = true;
-                btnConcluir.style.opacity = '0.6';
-                btnConcluir.onclick = null;
-
-                // Mostra mensagem de sucesso
-                mostrarMensagem('🎉 Aula concluída com sucesso!', 'success');
-
+                
             } catch (error) {
                 console.error('❌ Erro ao concluir aula:', error);
                 mostrarMensagem('❌ Erro ao salvar progresso', 'error');
             }
-        }
-
-        // ✅ ATUALIZAR PROGRESSO GERAL
-        function atualizarProgressoGeral() {
-            if (!cursoAtual) return;
-
-            let totalAulas = 0;
-            let aulasConcluidas = 0;
-
-            modulos.forEach(modulo => {
-                const aulas = modulo.aulas || [];
-                totalAulas += aulas.length;
-                aulas.forEach(aula => {
-                    const concluida = (aula.progressos && aula.progressos.length > 0 && aula.progressos[0].concluida) || progressoUsuario[aula.id] === true;
-                    if (concluida) {
-                        aulasConcluidas++;
-                    }
-                });
-            });
-
-            const progresso = totalAulas > 0 ? Math.round((aulasConcluidas / totalAulas) * 100) : 0;
-            
-            document.getElementById('progresso-geral').style.width = `${progresso}%`;
-            document.getElementById('progresso-texto').textContent = `${progresso}%`;
-        }
-
-        // ✅ GERENCIAMENTO DE PROGRESSO LOCAL
-        function carregarProgressoLocal() {
-            const progressoSalvo = localStorage.getItem(`progresso_curso_${cursoAtual?.id}_usuario_${usuarioId}`);
-            if (progressoSalvo) {
-                progressoUsuario = JSON.parse(progressoSalvo);
-            } else {
-                progressoUsuario = {};
-            }
-            console.log('📊 Progresso carregado:', progressoUsuario);
-        }
-
-        function salvarProgressoLocal() {
-            localStorage.setItem(`progresso_curso_${cursoAtual?.id}_usuario_${usuarioId}`, JSON.stringify(progressoUsuario));
-            console.log('💾 Progresso salvo:', progressoUsuario);
         }
 
         // ✅ FUNÇÕES AUXILIARES
@@ -927,7 +786,7 @@
                     <i class="fas fa-exclamation-triangle"></i>
                     <h3>Erro</h3>
                     <p>${mensagem}</p>
-                    <button class="btn btn-primary" onclick="voltarParaCursos()" style="margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="voltarParaCursos()">
                         Voltar para Cursos
                     </button>
                 </div>
@@ -935,7 +794,6 @@
         }
 
         function mostrarMensagem(mensagem, tipo = 'success') {
-            // Cria uma mensagem temporária
             const mensagemDiv = document.createElement('div');
             mensagemDiv.style.cssText = `
                 position: fixed;
@@ -946,29 +804,20 @@
                 padding: 15px 20px;
                 border-radius: 8px;
                 z-index: 10000;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             `;
-            mensagemDiv.innerHTML = `
-                <i class="fas ${tipo === 'success' ? 'fa-check' : 'fa-exclamation-triangle'}"></i>
-                ${mensagem}
-            `;
+            mensagemDiv.innerHTML = `<i class="fas ${tipo === 'success' ? 'fa-check' : 'fa-exclamation-triangle'}"></i> ${mensagem}`;
             
             document.body.appendChild(mensagemDiv);
-            
-            setTimeout(() => {
-                mensagemDiv.remove();
-            }, 3000);
+            setTimeout(() => mensagemDiv.remove(), 3000);
         }
 
         // Debug
-        window.debugCurso = function() {
-            console.log('=== DEBUG CURSO ===');
+        window.debug = function() {
             console.log('Curso:', cursoAtual);
             console.log('Módulos:', modulos);
             console.log('Aula atual:', aulaAtual);
-            console.log('Progresso:', progressoUsuario);
-            console.log('Usuario ID:', usuarioId);
         };
     </script>
 </body>
 </html>
+
