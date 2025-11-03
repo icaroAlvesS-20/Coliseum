@@ -496,7 +496,7 @@
             usuarioId = localStorage.getItem('userId') || 1;
             
             if (cursoId) {
-                await carregarCurso(cursoId);
+                await carregarTodosOsCursosECursoAtual(cursoId);
                 await carregarModulos(cursoId);
                 carregarProgressoLocal();
             } else {
@@ -504,28 +504,34 @@
             }
         });
 
-        // ✅ CARREGAR CURSO DA API
-        async function carregarCurso(cursoId) {
+        // ✅ CARREGAR TODOS OS CURSOS E ENCONTRAR O CURSO ATUAL
+        async function carregarTodosOsCursosECursoAtual(cursoId) {
             try {
-                console.log(`📚 Buscando curso ID: ${cursoId} da API...`);
+                console.log(`📚 Buscando todos os cursos da API...`);
                 
-                const response = await fetch(`${API_BASE_URL}/api/cursos/${cursoId}`);
+                const response = await fetch(`${API_BASE_URL}/api/cursos`);
                 
                 if (response.ok) {
-                    cursoAtual = await response.json();
-                    console.log('✅ Curso carregado da API:', cursoAtual);
+                    const todosCursos = await response.json();
+                    console.log('✅ Todos os cursos carregados:', todosCursos);
                     
-                    document.getElementById('curso-titulo').textContent = cursoAtual.titulo;
-                    atualizarProgressoGeral();
-                } else if (response.status === 404) {
-                    throw new Error('Curso não encontrado na API');
+                    // Encontra o curso específico
+                    cursoAtual = todosCursos.find(c => c.id == cursoId);
+                    
+                    if (cursoAtual) {
+                        console.log('✅ Curso encontrado:', cursoAtual);
+                        document.getElementById('curso-titulo').textContent = cursoAtual.titulo;
+                        atualizarProgressoGeral();
+                    } else {
+                        mostrarErro(`Curso ID ${cursoId} não encontrado. Cursos disponíveis: ${todosCursos.map(c => c.id).join(', ')}`);
+                    }
                 } else {
                     throw new Error(`Erro ${response.status} na API`);
                 }
                 
             } catch (error) {
-                console.error('❌ Erro ao carregar curso:', error);
-                mostrarErro('Erro ao carregar o curso: ' + error.message);
+                console.error('❌ Erro ao carregar cursos:', error);
+                mostrarErro('Erro ao carregar os cursos: ' + error.message);
             }
         }
 
@@ -534,87 +540,32 @@
             try {
                 console.log(`📂 Buscando módulos do curso ${cursoId}...`);
                 
-                const response = await fetch(`${API_BASE_URL}/api/cursos/${cursoId}/modulos`);
+                const response = await fetch(`${API_BASE_URL}/api/cursos/${cursoId}/modulos?usuarioId=${usuarioId}`);
                 
                 if (response.ok) {
                     modulos = await response.json();
                     console.log('✅ Módulos carregados da API:', modulos);
                     
-                    // Se a API retornar vazio, tenta buscar aulas diretamente
-                    if (modulos.length === 0) {
-                        await carregarAulasDiretamente(cursoId);
-                    } else {
-                        exibirModulos();
-                        
-                        // Carrega primeira aula automaticamente
-                        if (modulos.length > 0 && modulos[0].aulas && modulos[0].aulas.length > 0) {
-                            const primeiraAula = modulos[0].aulas[0];
-                            setTimeout(() => carregarAula(primeiraAula.id), 1000);
-                        }
+                    exibirModulos();
+                    
+                    // Carrega primeira aula automaticamente se existir
+                    if (modulos.length > 0 && modulos[0].aulas && modulos[0].aulas.length > 0) {
+                        const primeiraAula = modulos[0].aulas[0];
+                        setTimeout(() => carregarAula(primeiraAula.id), 1000);
                     }
                 } else if (response.status === 404) {
-                    // Se não tem rota de módulos, busca aulas diretamente
-                    await carregarAulasDiretamente(cursoId);
+                    console.log('📭 Este curso não possui módulos ainda');
+                    modulos = [];
+                    exibirModulos();
                 } else {
                     throw new Error(`Erro ${response.status} na API`);
                 }
                 
             } catch (error) {
                 console.error('❌ Erro ao carregar módulos:', error);
-                mostrarErro('Erro ao carregar o conteúdo do curso');
+                modulos = [];
+                exibirModulos();
             }
-        }
-
-        // ✅ CARREGAR AULAS DIRETAMENTE (fallback)
-        async function carregarAulasDiretamente(cursoId) {
-            try {
-                console.log('🔄 Buscando aulas diretamente...');
-                
-                const response = await fetch(`${API_BASE_URL}/api/cursos/${cursoId}/aulas`);
-                
-                if (response.ok) {
-                    const aulas = await response.json();
-                    console.log('✅ Aulas carregadas:', aulas);
-                    
-                    // Organiza as aulas em módulos
-                    modulos = organizarAulasEmModulos(aulas);
-                    exibirModulos();
-                    
-                    if (aulas.length > 0) {
-                        setTimeout(() => carregarAula(aulas[0].id), 1000);
-                    }
-                } else {
-                    throw new Error('Não foi possível carregar as aulas');
-                }
-                
-            } catch (error) {
-                console.error('❌ Erro ao carregar aulas:', error);
-                mostrarErro('Este curso ainda não possui conteúdo disponível');
-            }
-        }
-
-        // ✅ ORGANIZAR AULAS EM MÓDULOS
-        function organizarAulasEmModulos(aulas) {
-            // Agrupa aulas por módulo
-            const modulosMap = {};
-            
-            aulas.forEach(aula => {
-                const moduloId = aula.moduloId || 1;
-                const moduloNome = aula.moduloNome || `Módulo ${moduloId}`;
-                
-                if (!modulosMap[moduloId]) {
-                    modulosMap[moduloId] = {
-                        id: moduloId,
-                        titulo: moduloNome,
-                        ordem: moduloId,
-                        aulas: []
-                    };
-                }
-                
-                modulosMap[moduloId].aulas.push(aula);
-            });
-            
-            return Object.values(modulosMap);
         }
 
         // ✅ EXIBIR MÓDULOS NA SIDEBAR
@@ -627,6 +578,10 @@
                         <i class="fas fa-book"></i>
                         <h3>Conteúdo em Desenvolvimento</h3>
                         <p>Este curso ainda não possui módulos disponíveis</p>
+                        <p style="margin-top: 10px; font-size: 0.9rem; color: #ffcf00;">
+                            <i class="fas fa-info-circle"></i>
+                            Os administradores estão preparando o conteúdo
+                        </p>
                     </div>
                 `;
                 return;
@@ -636,9 +591,11 @@
 
             modulos.forEach(modulo => {
                 const aulas = modulo.aulas || [];
-                const aulasConcluidas = aulas.filter(aula => 
-                    progressoUsuario[aula.id] === true
-                ).length;
+                const aulasConcluidas = aulas.filter(aula => {
+                    // Verifica se a aula foi concluída (usando progressos da API ou local)
+                    const progressoAPI = aula.progressos && aula.progressos.length > 0 ? aula.progressos[0].concluida : false;
+                    return progressoAPI || progressoUsuario[aula.id] === true;
+                }).length;
                 
                 const todasConcluidas = aulas.length > 0 && aulasConcluidas === aulas.length;
 
@@ -652,23 +609,24 @@
                     <div class="modulo-conteudo">
                         ${aulas.length > 0 ? `
                             <ul class="aulas-lista">
-                                ${aulas.map(aula => `
-                                    <li class="aula-item ${progressoUsuario[aula.id] ? 'concluida' : ''}" 
+                                ${aulas.map(aula => {
+                                    const concluida = (aula.progressos && aula.progressos.length > 0 && aula.progressos[0].concluida) || progressoUsuario[aula.id] === true;
+                                    return `
+                                    <li class="aula-item ${concluida ? 'concluida' : ''}" 
                                         onclick="carregarAula(${aula.id})"
                                         data-aula-id="${aula.id}">
                                         <div class="aula-checkbox"></div>
                                         <div class="aula-info">
                                             <div class="aula-titulo">${aula.titulo}</div>
                                             <div class="aula-duracao">${aula.duracao || 0} min</div>
-                                            ${aula.provedor === 'pandavideo' ? '<i class="fas fa-crown" style="color: #ffcf00;"></i>' : ''}
                                         </div>
                                     </li>
-                                `).join('')}
+                                `}).join('')}
                             </ul>
                         ` : `
                             <div style="padding: 20px; text-align: center; color: #888;">
                                 <i class="fas fa-video-slash"></i>
-                                <p>Nenhuma aula disponível</p>
+                                <p>Nenhuma aula disponível neste módulo</p>
                             </div>
                         `}
                     </div>
@@ -710,7 +668,7 @@
                     }
                 }
 
-                // Encontra a aula nos módulos carregados
+                // Primeiro tenta encontrar a aula nos módulos já carregados
                 aulaAtual = null;
                 let moduloDaAula = null;
                 
@@ -723,12 +681,12 @@
                     }
                 }
 
-                if (aulaAtual && moduloDaAula) {
+                // Se não encontrou, busca da API
+                if (!aulaAtual) {
+                    await carregarAulaDaAPI(aulaId);
+                } else {
                     aulaAtual.modulo = moduloDaAula;
                     exibirAula(aulaAtual);
-                } else {
-                    // Se não encontrou nos módulos, busca diretamente na API
-                    await carregarAulaDaAPI(aulaId);
                 }
 
             } catch (error) {
@@ -740,7 +698,7 @@
         // ✅ CARREGAR AULA DIRETO DA API
         async function carregarAulaDaAPI(aulaId) {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/aulas/${aulaId}`);
+                const response = await fetch(`${API_BASE_URL}/api/aulas/${aulaId}?usuarioId=${usuarioId}`);
                 
                 if (response.ok) {
                     aulaAtual = await response.json();
@@ -767,8 +725,15 @@
             document.getElementById('aula-duracao').textContent = aula.duracao || 0;
             document.getElementById('aula-modulo').textContent = aula.modulo?.titulo || 'Módulo';
             
-            // Define o provedor do vídeo
-            const provedorNome = aula.provedor === 'pandavideo' ? 'Panda Video' : 'YouTube';
+            // Define o provedor do vídeo (detecta automaticamente)
+            let provedorNome = 'YouTube';
+            let provedorIcon = 'fa-play';
+            
+            if (aula.videoUrl && aula.videoUrl.includes('pandavideo')) {
+                provedorNome = 'Panda Video';
+                provedorIcon = 'fa-crown';
+            }
+            
             document.getElementById('aula-provedor').textContent = provedorNome;
 
             // Conteúdo de vídeo
@@ -777,7 +742,7 @@
                 videoContainer.style.display = 'block';
                 videoContainer.innerHTML = `
                     <div class="video-provider-badge">
-                        <i class="fas ${aula.provedor === 'pandavideo' ? 'fa-crown' : 'fa-play'}"></i>
+                        <i class="fas ${provedorIcon}"></i>
                         ${provedorNome}
                     </div>
                     <iframe src="${aula.videoUrl}" 
@@ -838,7 +803,7 @@
             }
 
             // Configura botão concluir
-            const jaConcluida = progressoUsuario[aula.id] === true;
+            const jaConcluida = (aula.progressos && aula.progressos.length > 0 && aula.progressos[0].concluida) || progressoUsuario[aula.id] === true;
             btnConcluir.innerHTML = jaConcluida ? 
                 '<i class="fas fa-check"></i> Aula Concluída' : 
                 '<i class="fas fa-check"></i> Marcar como Concluída';
@@ -864,8 +829,7 @@
                     body: JSON.stringify({
                         usuarioId: parseInt(usuarioId),
                         aulaId: aulaId,
-                        cursoId: cursoAtual.id,
-                        concluida: true
+                        cursoId: cursoAtual.id
                     })
                 });
                 
@@ -917,7 +881,8 @@
                 const aulas = modulo.aulas || [];
                 totalAulas += aulas.length;
                 aulas.forEach(aula => {
-                    if (progressoUsuario[aula.id]) {
+                    const concluida = (aula.progressos && aula.progressos.length > 0 && aula.progressos[0].concluida) || progressoUsuario[aula.id] === true;
+                    if (concluida) {
                         aulasConcluidas++;
                     }
                 });
@@ -1007,5 +972,3 @@
     </script>
 </body>
 </html>
-
-
