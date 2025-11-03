@@ -143,332 +143,473 @@ body {
     <!-- Status da API -->
     <div class="api-status" id="api-status"></div>
 
-    <script>
-        // ✅ SISTEMA HÍBRIDO - API + FALLBACK AUTOMÁTICO
-        class GerenciadorCursos {
-            constructor() {
-                this.API_BASE = 'https://coliseum-api.onrender.com/api';
-                this.usuarioId = 1; // ID padrão para demonstração
-                this.cursosFallback = this.criarDadosFallback();
-            }
+<script>
+    // ✅ SISTEMA HÍBRIDO - API + FALLBACK AUTOMÁTICO (OTIMIZADO)
+    class GerenciadorCursos {
+        constructor() {
+            this.API_BASE = 'https://coliseum-api.onrender.com/api';
+            this.usuarioId = this.obterUsuarioId(); // ID dinâmico
+            this.cursosFallback = this.criarDadosFallback();
+            this.cursoAtual = null;
+        }
 
-            criarDadosFallback() {
-                return {
-                    12: {
-                        id: 12,
-                        titulo: "Início PHP - Curso Completo",
-                        descricao: "Aprenda PHP desde o básico até conceitos avançados. Desenvolva aplicações web dinâmicas e interativas com uma das linguagens mais populares do mundo.",
-                        imagem: "https://via.placeholder.com/800x400/4F46E5/FFFFFF?text=PHP+Programming",
-                        ativo: true,
-                        modulos: [
-                            {
-                                id: 1,
-                                titulo: "🔰 Introdução ao PHP",
-                                ordem: 1,
-                                aulas: [
-                                    { id: 1, titulo: "O que é PHP e para que serve?", ordem: 1, duracao: "10:00", descricao: "Conceitos básicos da linguagem", concluida: false },
-                                    { id: 2, titulo: "Configurando ambiente (XAMPP/WAMP)", ordem: 2, duracao: "15:00", descricao: "Preparando o ambiente de desenvolvimento", concluida: false },
-                                    { id: 3, titulo: "Seu primeiro script PHP", ordem: 3, duracao: "12:00", descricao: "Hello World em PHP", concluida: false }
-                                ]
-                            },
-                            {
-                                id: 2,
-                                titulo: "💡 Variáveis e Tipos de Dados",
-                                ordem: 2,
-                                aulas: [
-                                    { id: 4, titulo: "Declarando e usando variáveis", ordem: 1, duracao: "12:00", descricao: "Sintaxe de variáveis em PHP", concluida: false },
-                                    { id: 5, titulo: "Tipos de dados: string, int, float, boolean", ordem: 2, duracao: "18:00", descricao: "Tipos de dados fundamentais", concluida: false },
-                                    { id: 6, titulo: "Arrays e manipulação de dados", ordem: 3, duracao: "20:00", descricao: "Trabalhando com arrays", concluida: false }
-                                ]
-                            },
-                            {
-                                id: 3,
-                                titulo: "⚙️ Estruturas de Controle",
-                                ordem: 3,
-                                aulas: [
-                                    { id: 7, titulo: "Condicionais: if, else, switch", ordem: 1, duracao: "15:00", descricao: "Tomando decisões no código", concluida: false },
-                                    { id: 8, titulo: "Loops: for, while, foreach", ordem: 2, duracao: "16:00", descricao: "Estruturas de repetição", concluida: false },
-                                    { id: 9, titulo: "Exercícios práticos", ordem: 3, duracao: "25:00", descricao: "Fixando o conhecimento", concluida: false }
-                                ]
-                            },
-                            {
-                                id: 4,
-                                titulo: "🚀 Funções e Formulários",
-                                ordem: 4,
-                                aulas: [
-                                    { id: 10, titulo: "Criando e usando funções", ordem: 1, duracao: "18:00", descricao: "Organizando o código com funções", concluida: false },
-                                    { id: 11, titulo: "Trabalhando com formulários HTML", ordem: 2, duracao: "22:00", descricao: "Processando dados de formulários", concluida: false },
-                                    { id: 12, titulo: "Validação de dados", ordem: 3, duracao: "20:00", descricao: "Validando entradas do usuário", concluida: false }
-                                ]
-                            }
-                        ]
-                    }
-                };
-            }
+        obterUsuarioId() {
+            // Tenta obter o ID do usuário logado de localStorage ou session
+            return localStorage.getItem('usuarioId') || 
+                   sessionStorage.getItem('usuarioId') || 
+                   1; // Fallback para demo
+        }
 
-            async carregarPaginaCurso() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const cursoId = parseInt(urlParams.get('id'));
-                
-                console.log(`🚀 Inicializando página do curso ${cursoId}...`);
-
-                if (!cursoId) {
-                    this.mostrarErro('ID do curso não especificado na URL');
-                    return;
+        criarDadosFallback() {
+            return {
+                12: {
+                    id: 12,
+                    titulo: "Início PHP - Curso Completo",
+                    descricao: "Aprenda PHP desde o básico até conceitos avançados. Desenvolva aplicações web dinâmicas e interativas com uma das linguagens mais populares do mundo.",
+                    imagem: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=400&fit=crop",
+                    ativo: true,
+                    modulos: [
+                        {
+                            id: 1,
+                            titulo: "🔰 Introdução ao PHP",
+                            ordem: 1,
+                            aulas: [
+                                { id: 1, titulo: "O que é PHP e para que serve?", ordem: 1, duracao: "10:00", descricao: "Conceitos básicos da linguagem", concluida: false, videoUrl: "#" },
+                                { id: 2, titulo: "Configurando ambiente (XAMPP/WAMP)", ordem: 2, duracao: "15:00", descricao: "Preparando o ambiente de desenvolvimento", concluida: false, videoUrl: "#" },
+                                { id: 3, titulo: "Seu primeiro script PHP", ordem: 3, duracao: "12:00", descricao: "Hello World em PHP", concluida: false, videoUrl: "#" }
+                            ]
+                        },
+                        {
+                            id: 2,
+                            titulo: "💡 Variáveis e Tipos de Dados",
+                            ordem: 2,
+                            aulas: [
+                                { id: 4, titulo: "Declarando e usando variáveis", ordem: 1, duracao: "12:00", descricao: "Sintaxe de variáveis em PHP", concluida: false, videoUrl: "#" },
+                                { id: 5, titulo: "Tipos de dados: string, int, float, boolean", ordem: 2, duracao: "18:00", descricao: "Tipos de dados fundamentais", concluida: false, videoUrl: "#" },
+                                { id: 6, titulo: "Arrays e manipulação de dados", ordem: 3, duracao: "20:00", descricao: "Trabalhando com arrays", concluida: false, videoUrl: "#" }
+                            ]
+                        },
+                        {
+                            id: 3,
+                            titulo: "⚙️ Estruturas de Controle",
+                            ordem: 3,
+                            aulas: [
+                                { id: 7, titulo: "Condicionais: if, else, switch", ordem: 1, duracao: "15:00", descricao: "Tomando decisões no código", concluida: false, videoUrl: "#" },
+                                { id: 8, titulo: "Loops: for, while, foreach", ordem: 2, duracao: "16:00", descricao: "Estruturas de repetição", concluida: false, videoUrl: "#" },
+                                { id: 9, titulo: "Exercícios práticos", ordem: 3, duracao: "25:00", descricao: "Fixando o conhecimento", concluida: false, videoUrl: "#" }
+                            ]
+                        }
+                    ]
                 }
+            };
+        }
 
-                // Mostrar estado de carregamento
-                this.mostrarCarregando();
+        async carregarPaginaCurso() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const cursoId = parseInt(urlParams.get('id'));
+            
+            console.log(`🚀 Inicializando página do curso ${cursoId}...`);
+            console.log(`👤 Usuário ID: ${this.usuarioId}`);
 
-                try {
-                    // Tentar carregar da API primeiro
-                    await this.carregarDaAPI(cursoId);
-                } catch (error) {
-                    console.warn('❌ API offline, usando fallback:', error.message);
-                    this.usarFallback(cursoId);
-                    this.atualizarStatusAPI('fallback', 'Usando dados locais');
-                }
+            if (!cursoId) {
+                this.mostrarErro('ID do curso não especificado na URL');
+                return;
             }
 
-            async carregarDaAPI(cursoId) {
-                this.atualizarStatusAPI('online', 'Conectado à API');
-                
-                console.log(`📡 Tentando conectar com API...`);
+            // Mostrar estado de carregamento
+            this.mostrarCarregando();
 
+            try {
+                // Tentar carregar da API primeiro (com timeout)
+                await this.carregarDaAPI(cursoId);
+            } catch (error) {
+                console.warn('❌ API offline, usando fallback:', error.message);
+                this.usarFallback(cursoId);
+                this.atualizarStatusAPI('fallback', 'Usando dados locais');
+            }
+        }
+
+        async carregarDaAPI(cursoId) {
+            this.atualizarStatusAPI('online', 'Conectado à API');
+            
+            console.log(`📡 Tentando conectar com API...`);
+
+            // Timeout de 8 segundos para a API
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+            try {
                 // Testar conexão com API primeiro
-                const healthResponse = await fetch(`${this.API_BASE}/health`);
+                const healthResponse = await fetch(`${this.API_BASE}/health`, {
+                    signal: controller.signal
+                });
+                
                 if (!healthResponse.ok) {
                     throw new Error('API não está respondendo');
                 }
 
                 // Carregar curso específico
                 console.log(`📚 Buscando curso ${cursoId} na API...`);
-                const cursoResponse = await fetch(`${this.API_BASE}/cursos/${cursoId}`);
+                const cursoResponse = await fetch(`${this.API_BASE}/cursos/${cursoId}`, {
+                    signal: controller.signal
+                });
                 
                 if (cursoResponse.ok) {
                     const curso = await cursoResponse.json();
                     console.log('✅ Curso carregado da API:', curso.titulo);
+                    this.cursoAtual = curso;
                     this.exibirCurso(curso);
                     
                     // Carregar módulos
-                    console.log(`📂 Buscando módulos do curso ${cursoId}...`);
-                    const modulosResponse = await fetch(`${this.API_BASE}/cursos/${cursoId}/modulos?usuarioId=${this.usuarioId}`);
-                    
-                    if (modulosResponse.ok) {
-                        const modulos = await modulosResponse.json();
-                        console.log(`✅ ${modulos.length} módulos carregados da API`);
-                        this.exibirModulos(modulos);
-                    } else {
-                        console.log('📭 API não retornou módulos, usando fallback');
-                        this.exibirModulos(curso.modulos || []);
-                    }
+                    await this.carregarModulosDaAPI(cursoId);
+                } else if (cursoResponse.status === 404) {
+                    throw new Error(`Curso ${cursoId} não encontrado na API`);
                 } else {
-                    throw new Error(`Curso não encontrado na API: ${cursoResponse.status}`);
+                    throw new Error(`Erro API: ${cursoResponse.status}`);
                 }
+            } finally {
+                clearTimeout(timeoutId);
             }
+        }
 
-            usarFallback(cursoId) {
-                this.atualizarStatusAPI('offline', 'API offline - Modo local');
+        async carregarModulosDaAPI(cursoId) {
+            console.log(`📂 Buscando módulos do curso ${cursoId}...`);
+            
+            try {
+                const modulosResponse = await fetch(`${this.API_BASE}/cursos/${cursoId}/modulos?usuarioId=${this.usuarioId}`);
                 
-                const curso = this.cursosFallback[cursoId];
-                
-                if (curso) {
-                    console.log('✅ Curso carregado do fallback:', curso.titulo);
-                    this.exibirCurso(curso);
-                    this.exibirModulos(curso.modulos);
+                if (modulosResponse.ok) {
+                    const modulos = await modulosResponse.json();
+                    console.log(`✅ ${modulos.length} módulos carregados da API`);
+                    this.exibirModulos(modulos);
                 } else {
-                    this.mostrarErro('Curso não encontrado');
+                    console.log('📭 API não retornou módulos, usando módulos do curso');
+                    this.exibirModulos(this.cursoAtual?.modulos || []);
                 }
+            } catch (error) {
+                console.warn('Erro ao carregar módulos:', error.message);
+                this.exibirModulos(this.cursoAtual?.modulos || []);
+            }
+        }
+
+        usarFallback(cursoId) {
+            this.atualizarStatusAPI('offline', 'API offline - Modo local');
+            
+            const curso = this.cursosFallback[cursoId];
+            
+            if (curso) {
+                console.log('✅ Curso carregado do fallback:', curso.titulo);
+                this.cursoAtual = curso;
+                this.exibirCurso(curso);
+                this.exibirModulos(curso.modulos);
+                
+                // Adicionar imagem do curso se disponível
+                if (curso.imagem) {
+                    this.adicionarImagemCurso(curso.imagem);
+                }
+            } else {
+                this.mostrarErro('Curso não encontrado no sistema');
+            }
+        }
+
+        exibirCurso(curso) {
+            const tituloElement = document.getElementById('curso-titulo');
+            const descElement = document.getElementById('curso-descricao');
+            
+            if (tituloElement) tituloElement.textContent = curso.titulo;
+            if (descElement) descElement.textContent = curso.descricao;
+            
+            // Atualizar título da página
+            document.title = `${curso.titulo} - Coliseum`;
+        }
+
+        adicionarImagemCurso(urlImagem) {
+            const header = document.querySelector('.curso-header');
+            if (header && urlImagem) {
+                header.style.background = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${urlImagem}') center/cover`;
+            }
+        }
+
+        exibirModulos(modulos) {
+            const container = document.getElementById('modulos-container');
+            
+            if (!modulos || modulos.length === 0) {
+                this.exibirSemModulos();
+                return;
             }
 
-            exibirCurso(curso) {
-                const tituloElement = document.getElementById('curso-titulo');
-                const descElement = document.getElementById('curso-descricao');
+            let html = '';
+            let totalAulasCurso = 0;
+            let aulasConcluidasCurso = 0;
+            
+            modulos.forEach((modulo, index) => {
+                const aulas = modulo.aulas || [];
+                const aulasConcluidas = aulas.filter(aula => aula.concluida).length;
+                const totalAulas = aulas.length;
+                const progresso = totalAulas > 0 ? Math.round((aulasConcluidas / totalAulas) * 100) : 0;
                 
-                if (tituloElement) tituloElement.textContent = curso.titulo;
-                if (descElement) descElement.textContent = curso.descricao;
+                totalAulasCurso += totalAulas;
+                aulasConcluidasCurso += aulasConcluidas;
                 
-                // Atualizar título da página
-                document.title = `${curso.titulo} - Coliseum`;
-            }
-
-            exibirModulos(modulos) {
-                const container = document.getElementById('modulos-container');
-                
-                if (!modulos || modulos.length === 0) {
-                    this.exibirSemModulos();
-                    return;
-                }
-
-                let html = '';
-                
-                modulos.forEach((modulo, index) => {
-                    const aulasConcluidas = modulo.aulas ? modulo.aulas.filter(aula => aula.concluida).length : 0;
-                    const totalAulas = modulo.aulas ? modulo.aulas.length : 0;
-                    const progresso = totalAulas > 0 ? Math.round((aulasConcluidas / totalAulas) * 100) : 0;
-                    
-                    html += `
-                        <div class="modulo-card">
-                            <div class="modulo-header">
-                                <h3 class="modulo-titulo">${modulo.titulo}</h3>
-                                <div class="modulo-info">
-                                    <span class="aula-count">${totalAulas} aulas</span>
-                                    <span class="progresso">${progresso}% concluído</span>
-                                </div>
-                            </div>
-                            <div class="aulas-lista">
-                                ${this.gerarListaAulas(modulo.aulas)}
+                html += `
+                    <div class="modulo-card">
+                        <div class="modulo-header">
+                            <h3 class="modulo-titulo">${modulo.titulo}</h3>
+                            <div class="modulo-info">
+                                <span class="aula-count">${totalAulas} aulas</span>
+                                <span class="progresso">${progresso}% concluído</span>
                             </div>
                         </div>
-                    `;
-                });
+                        <div class="aulas-lista">
+                            ${this.gerarListaAulas(aulas)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Adicionar progresso geral do curso
+            const progressoGeral = totalAulasCurso > 0 ? Math.round((aulasConcluidasCurso / totalAulasCurso) * 100) : 0;
+            this.atualizarProgressoGeral(progressoGeral, aulasConcluidasCurso, totalAulasCurso);
+            
+            container.innerHTML = html;
+        }
+
+        atualizarProgressoGeral(progresso, concluidas, total) {
+            const header = document.querySelector('.curso-header');
+            if (header) {
+                const progressoHTML = `
+                    <div style="margin-top: 20px; background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>Progresso do Curso:</span>
+                            <span><strong>${progresso}%</strong></span>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.3); height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div style="background: #10b981; height: 100%; width: ${progresso}%; transition: width 0.5s ease;"></div>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 0.9em;">
+                            ${concluidas} de ${total} aulas concluídas
+                        </div>
+                    </div>
+                `;
                 
-                container.innerHTML = html;
+                const existingProgress = header.querySelector('.progresso-geral');
+                if (existingProgress) {
+                    existingProgress.innerHTML = progressoHTML;
+                } else {
+                    const progressDiv = document.createElement('div');
+                    progressDiv.className = 'progresso-geral';
+                    progressDiv.innerHTML = progressoHTML;
+                    header.appendChild(progressDiv);
+                }
+            }
+        }
+
+        gerarListaAulas(aulas) {
+            if (!aulas || aulas.length === 0) {
+                return '<div class="aula-item" style="justify-content: center; color: #6b7280;">Nenhuma aula disponível neste módulo</div>';
             }
 
-            gerarListaAulas(aulas) {
-                if (!aulas || aulas.length === 0) {
-                    return '<div class="aula-item">Nenhuma aula disponível</div>';
-                }
-
-                return aulas.map(aula => `
-                    <div class="aula-item ${aula.concluida ? 'concluida' : ''}">
-                        <div class="aula-info">
-                            <div class="aula-numero">${aula.ordem}</div>
-                            <div class="aula-detalhes">
-                                <div class="aula-titulo">${aula.titulo}</div>
-                                ${aula.descricao ? `<div class="aula-descricao">${aula.descricao}</div>` : ''}
-                            </div>
+            return aulas.map(aula => `
+                <div class="aula-item ${aula.concluida ? 'concluida' : ''}" onclick="gerenciadorCursos.iniciarAula(${aula.id})" style="cursor: pointer;">
+                    <div class="aula-info">
+                        <div class="aula-numero">${aula.ordem}</div>
+                        <div class="aula-detalhes">
+                            <div class="aula-titulo">${aula.titulo}</div>
+                            ${aula.descricao ? `<div class="aula-descricao">${aula.descricao}</div>` : ''}
                         </div>
-                        <div class="aula-meta">
-                            <span class="aula-duracao">${aula.duracao || '10:00'}</span>
-                            ${aula.concluida ? '<span class="status-concluida">✓</span>' : ''}
-                            <button class="btn-aula ${aula.concluida ? 'concluida' : ''}" 
-                                    onclick="gerenciadorCursos.iniciarAula(${aula.id})">
-                                ${aula.concluida ? 'Revistar' : 'Iniciar'}
+                    </div>
+                    <div class="aula-meta">
+                        <span class="aula-duracao">${aula.duracao || '10:00'}</span>
+                        ${aula.concluida ? '<span class="status-concluida">✓</span>' : ''}
+                        <button class="btn-aula ${aula.concluida ? 'concluida' : ''}">
+                            ${aula.concluida ? 'Revistar' : 'Assistir'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        exibirSemModulos() {
+            const container = document.getElementById('modulos-container');
+            container.innerHTML = `
+                <div class="sem-modulos">
+                    <h3>📭 Módulos em Desenvolvimento</h3>
+                    <p>Este curso ainda não possui módulos disponíveis.</p>
+                    <p><small>Nossa equipe está preparando conteúdo de qualidade para você!</small></p>
+                    <button class="btn-tentar-novamente" onclick="location.reload()">
+                        🔄 Tentar Novamente
+                    </button>
+                </div>
+            `;
+        }
+
+        mostrarCarregando() {
+            const container = document.getElementById('modulos-container');
+            container.innerHTML = `
+                <div class="carregando">
+                    <div class="loading-spinner"></div>
+                    <h3>Carregando Conteúdo</h3>
+                    <p>Buscando informações do curso...</p>
+                </div>
+            `;
+        }
+
+        mostrarErro(mensagem) {
+            const container = document.getElementById('modulos-container');
+            container.innerHTML = `
+                <div class="erro-curso">
+                    <h3>❌ Erro ao Carregar o Curso</h3>
+                    <p>${mensagem}</p>
+                    <div style="margin-top: 20px;">
+                        <button class="btn-tentar-novamente" onclick="location.reload()" style="margin-right: 10px;">
+                            🔄 Tentar Novamente
+                        </button>
+                        <button class="btn-tentar-novamente" onclick="gerenciadorCursos.usarFallback(12)" style="background: #f59e0b;">
+                            🎯 Usar Conteúdo Demo
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        atualizarStatusAPI(status, mensagem) {
+            const statusElement = document.getElementById('api-status');
+            statusElement.textContent = `API: ${mensagem}`;
+            statusElement.className = `api-status ${status}`;
+            statusElement.style.opacity = '1';
+            
+            // Auto-esconder após 5 segundos
+            setTimeout(() => {
+                statusElement.style.opacity = '0.7';
+            }, 5000);
+        }
+
+        iniciarAula(aulaId) {
+            console.log(`🎬 Iniciando aula ${aulaId}`);
+            
+            // Encontrar a aula nos dados atuais
+            const aula = this.encontrarAula(aulaId);
+            if (!aula) {
+                alert('Aula não encontrada!');
+                return;
+            }
+
+            // Simular player de vídeo
+            const playerHTML = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; justify-content: center; align-items: center;">
+                    <div style="background: white; padding: 20px; border-radius: 10px; max-width: 800px; width: 90%;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3>${aula.titulo}</h3>
+                            <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;">X</button>
+                        </div>
+                        <div style="background: #000; aspect-ratio: 16/9; display: flex; justify-content: center; align-items: center; color: white; margin-bottom: 20px;">
+                            🎥 Player de Vídeo - ${aula.duracao}
+                        </div>
+                        <p>${aula.descricao || 'Assista à aula para aprender este conteúdo.'}</p>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button onclick="gerenciadorCursos.marcarAulaConcluida(${aulaId})" class="btn-aula" style="flex: 1;">
+                                ✅ Marcar como Concluída
+                            </button>
+                            <button onclick="this.parentElement.parentElement.parentElement.remove()" style="flex: 1; background: #6b7280; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">
+                                Fechar
                             </button>
                         </div>
                     </div>
-                `).join('');
-            }
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', playerHTML);
+        }
 
-            exibirSemModulos() {
-                const container = document.getElementById('modulos-container');
-                container.innerHTML = `
-                    <div class="sem-modulos">
-                        <h3>📭 Módulos em Desenvolvimento</h3>
-                        <p>Este curso ainda não possui módulos disponíveis.</p>
-                        <p><small>Nossa equipe está preparando conteúdo de qualidade para você!</small></p>
-                        <button class="btn-tentar-novamente" onclick="location.reload()">
-                            🔄 Tentar Novamente
-                        </button>
-                    </div>
-                `;
+        encontrarAula(aulaId) {
+            if (!this.cursoAtual || !this.cursoAtual.modulos) return null;
+            
+            for (const modulo of this.cursoAtual.modulos) {
+                if (modulo.aulas) {
+                    const aula = modulo.aulas.find(a => a.id === aulaId);
+                    if (aula) return aula;
+                }
             }
+            return null;
+        }
 
-            mostrarCarregando() {
-                const container = document.getElementById('modulos-container');
-                container.innerHTML = `
-                    <div class="carregando">
-                        <div class="loading-spinner"></div>
-                        <h3>Carregando Conteúdo</h3>
-                        <p>Buscando informações do curso...</p>
-                    </div>
-                `;
-            }
-
-            mostrarErro(mensagem) {
-                const container = document.getElementById('modulos-container');
-                container.innerHTML = `
-                    <div class="erro-curso">
-                        <h3>❌ Erro ao Carregar o Curso</h3>
-                        <p>${mensagem}</p>
-                        <button class="btn-tentar-novamente" onclick="location.reload()">
-                            🔄 Tentar Novamente
-                        </button>
-                    </div>
-                `;
-            }
-
-            atualizarStatusAPI(status, mensagem) {
-                const statusElement = document.getElementById('api-status');
-                statusElement.textContent = `API: ${mensagem}`;
-                statusElement.className = `api-status ${status}`;
+        async marcarAulaConcluida(aulaId) {
+            const aula = this.encontrarAula(aulaId);
+            if (aula) {
+                aula.concluida = true;
+                console.log(`✅ Aula ${aulaId} marcada como concluída`);
+                alert('Aula concluída com sucesso! ✔️');
                 
-                // Auto-esconder após 5 segundos
-                setTimeout(() => {
-                    statusElement.style.opacity = '0.7';
-                }, 5000);
-            }
-
-            iniciarAula(aulaId) {
-                console.log(`🎬 Iniciando aula ${aulaId}`);
-                // Aqui você pode implementar a lógica para abrir o player de vídeo
-                alert(`Iniciando aula ${aulaId}\n\nIntegre com seu player de vídeo aqui!`);
+                // Fechar o player
+                document.querySelector('div[style*="position: fixed; top: 0"]')?.remove();
                 
-                // Exemplo: marcar como concluída
-                // this.marcarAulaConcluida(aulaId);
-            }
-
-            async marcarAulaConcluida(aulaId) {
+                // Recarregar a exibição para atualizar o progresso
+                this.exibirModulos(this.cursoAtual.modulos);
+                
+                // Tentar salvar na API se estiver online
                 try {
-                    const response = await fetch(`${this.API_BASE}/progresso/aula`, {
+                    await fetch(`${this.API_BASE}/progresso/aula`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             usuarioId: this.usuarioId,
                             aulaId: aulaId,
                             cursoId: this.getCursoId()
                         })
                     });
-                    
-                    if (response.ok) {
-                        console.log('✅ Progresso salvo na API');
-                    }
+                    console.log('✅ Progresso salvo na API');
                 } catch (error) {
                     console.warn('❌ Não foi possível salvar progresso na API');
                 }
             }
-
-            getCursoId() {
-                const urlParams = new URLSearchParams(window.location.search);
-                return parseInt(urlParams.get('id'));
-            }
         }
 
-        // ✅ INICIALIZAÇÃO
-        const gerenciadorCursos = new GerenciadorCursos();
+        getCursoId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return parseInt(urlParams.get('id'));
+        }
+    }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Página de curso carregada!');
-            gerenciadorCursos.carregarPaginaCurso();
-        });
+    // ✅ INICIALIZAÇÃO
+    const gerenciadorCursos = new GerenciadorCursos();
 
-        // ✅ TESTES MANUAIS (para debug)
-        window.testarAPI = async function() {
-            console.log('🧪 Testando endpoints da API...');
-            
-            const endpoints = [
-                '/health',
-                '/cursos',
-                '/cursos/12',
-                '/cursos/12/modulos?usuarioId=1',
-                '/debug/curso-12'
-            ];
-            
-            for (const endpoint of endpoints) {
-                try {
-                    const response = await fetch(`https://coliseum-api.onrender.com/api${endpoint}`);
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 Página de curso carregada!');
+        gerenciadorCursos.carregarPaginaCurso();
+    });
+
+    // ✅ TESTES MANUAIS (para debug)
+    window.testarAPI = async function() {
+        console.log('🧪 Testando endpoints da API...');
+        
+        const endpoints = [
+            '/health',
+            '/cursos', 
+            '/cursos/12',
+            '/cursos/12/modulos?usuarioId=1',
+            '/debug/curso-12'
+        ];
+        
+        for (const endpoint of endpoints) {
+            try {
+                const response = await fetch(`https://coliseum-api.onrender.com/api${endpoint}`);
+                console.log(`📡 ${endpoint}: ${response.status}`);
+                if (response.ok) {
                     const data = await response.json();
-                    console.log(`✅ ${endpoint}: ${response.status}`, data);
-                } catch (error) {
-                    console.log(`❌ ${endpoint}: ERROR -`, error.message);
+                    console.log('📦 Dados:', data);
                 }
+            } catch (error) {
+                console.log(`❌ ${endpoint}: ERROR -`, error.message);
             }
-        };
-    </script>
+        }
+    };
+
+    // ✅ FORÇAR MODO FALLBACK (para testes)
+    window.usoForcadoFallback = function() {
+        gerenciadorCursos.usarFallback(12);
+    };
+</script>
 </body>
 </html>
+
 
