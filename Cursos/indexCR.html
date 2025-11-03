@@ -247,6 +247,18 @@
             border: none;
         }
 
+        .video-provider-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            z-index: 10;
+        }
+
         .conteudo-aula {
             background: #2a2a2a;
             border-radius: 10px;
@@ -430,10 +442,11 @@
                         <div class="aula-meta">
                             <span><i class="fas fa-clock"></i> <span id="aula-duracao">0</span> min</span>
                             <span><i class="fas fa-book"></i> <span id="aula-modulo">Módulo</span></span>
+                            <span><i class="fas fa-video"></i> <span id="aula-provedor">Plataforma</span></span>
                         </div>
                     </div>
 
-                    <div class="video-container" id="video-container" style="display: none;">
+                    <div class="video-container" id="video-container" style="display: none; position: relative;">
                         <!-- Player de vídeo será inserido aqui -->
                     </div>
 
@@ -460,309 +473,528 @@
     <button class="btn-voltar" onclick="voltarParaCursos()">←</button>
 
     <script>
-       const API_BASE_URL = 'https://coliseum-api.onrender.com';
+        // Dados de exemplo com YouTube e Panda Video
+        const CURSOS_EXEMPLO = {
+            1: {
+                id: 1,
+                titulo: "Matemática Básica",
+                descricao: "Curso completo de matemática básica para iniciantes",
+                materia: "matematica",
+                nivel: "fundamental",
+                modulos: [
+                    {
+                        id: 1,
+                        titulo: "Introdução à Matemática",
+                        ordem: 1,
+                        aulas: [
+                            {
+                                id: 1,
+                                titulo: "O que é Matemática?",
+                                descricao: "Entenda os conceitos básicos da matemática e sua importância",
+                                duracao: 15,
+                                videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+                                provedor: "youtube",
+                                conteudo: `
+                                    <h2>Introdução à Matemática</h2>
+                                    <p>A matemática é a ciência do raciocínio lógico e abstrato. Ela estuda quantidades, medidas, espaços, estruturas e variações.</p>
+                                    
+                                    <h3>Conceitos Fundamentais</h3>
+                                    <ul>
+                                        <li>Números e operações básicas</li>
+                                        <li>Geometria e formas</li>
+                                        <li>Álgebra e equações</li>
+                                        <li>Estatística e probabilidade</li>
+                                    </ul>
+                                `
+                            },
+                            {
+                                id: 2,
+                                titulo: "Números Naturais - Panda Video",
+                                descricao: "Aprenda sobre números naturais usando Panda Video",
+                                duracao: 20,
+                                videoUrl: "https://player-vz-ccb146c8-6e6.tv.pandavideo.com.br/embed/?v=9d33e5c2-7a2b-4b15-886c-5f1d72f5240b",
+                                provedor: "pandavideo",
+                                conteudo: `
+                                    <h2>Números Naturais</h2>
+                                    <p>Os números naturais são os números que usamos para contar: 0, 1, 2, 3, 4, 5, ...</p>
+                                    
+                                    <h3>Características dos Números Naturais</h3>
+                                    <ul>
+                                        <li>São infinitos</li>
+                                        <li>Começam no zero</li>
+                                        <li>São usados para contar</li>
+                                        <li>São sempre positivos</li>
+                                    </ul>
+                                `
+                            }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        titulo: "Operações Básicas",
+                        ordem: 2,
+                        aulas: [
+                            {
+                                id: 3,
+                                titulo: "Adição e Subtração - YouTube",
+                                descricao: "Domine as operações de adição e subtração",
+                                duracao: 25,
+                                videoUrl: "https://www.youtube.com/embed/NU_n3G7UE6c",
+                                provedor: "youtube",
+                                conteudo: `
+                                    <h2>Adição e Subtração</h2>
+                                    <p>As operações de adição e subtração são fundamentais na matemática.</p>
+                                    
+                                    <h3>Propriedades da Adição</h3>
+                                    <ul>
+                                        <li><strong>Comutativa:</strong> a + b = b + a</li>
+                                        <li><strong>Associativa:</strong> (a + b) + c = a + (b + c)</li>
+                                        <li><strong>Elemento neutro:</strong> a + 0 = a</li>
+                                    </ul>
+                                `
+                            },
+                            {
+                                id: 4,
+                                titulo: "Multiplicação - Panda Video",
+                                descricao: "Aprenda multiplicação com exemplos práticos",
+                                duracao: 30,
+                                videoUrl: "https://player-vz-ccb146c8-6e6.tv.pandavideo.com.br/embed/?v=8a7e6c5d-4f3a-4b2c-9d1e-0f5a4b3c2d1a",
+                                provedor: "pandavideo",
+                                conteudo: `
+                                    <h2>Multiplicação</h2>
+                                    <p>A multiplicação é uma forma rápida de fazer adições repetidas.</p>
+                                    
+                                    <h3>Tabuada Básica</h3>
+                                    <p>Memorize a tabuada para agilizar seus cálculos:</p>
+                                    <ul>
+                                        <li>2 × 1 = 2</li>
+                                        <li>2 × 2 = 4</li>
+                                        <li>2 × 3 = 6</li>
+                                        <li>2 × 4 = 8</li>
+                                        <li>2 × 5 = 10</li>
+                                    </ul>
+                                `
+                            }
+                        ]
+                    }
+                ]
+            },
+            2: {
+                id: 2,
+                titulo: "Programação Python",
+                descricao: "Aprenda Python do zero ao avançado",
+                materia: "programacao",
+                nivel: "iniciante",
+                modulos: [
+                    {
+                        id: 1,
+                        titulo: "Primeiros Passos",
+                        ordem: 1,
+                        aulas: [
+                            {
+                                id: 5,
+                                titulo: "Instalação do Python - YouTube",
+                                descricao: "Como instalar e configurar o Python no seu computador",
+                                duracao: 18,
+                                videoUrl: "https://www.youtube.com/embed/YYXdXT2l-Gg",
+                                provedor: "youtube",
+                                conteudo: `
+                                    <h2>Instalando o Python</h2>
+                                    <p>Python é uma linguagem de programação poderosa e fácil de aprender.</p>
+                                    
+                                    <h3>Passos para Instalação</h3>
+                                    <ol>
+                                        <li>Acesse python.org</li>
+                                        <li>Baixe a versão mais recente</li>
+                                        <li>Execute o instalador</li>
+                                        <li>Marque "Add Python to PATH"</li>
+                                        <li>Clique em "Install Now"</li>
+                                    </ol>
+                                `
+                            },
+                            {
+                                id: 6,
+                                titulo: "Primeiro Programa - Panda Video",
+                                descricao: "Crie seu primeiro programa em Python",
+                                duracao: 22,
+                                videoUrl: "https://player-vz-ccb146c8-6e6.tv.pandavideo.com.br/embed/?v=7b6c5d4e-3f2a-4c1b-8d9e-1f0a5b4c3d2e",
+                                provedor: "pandavideo",
+                                conteudo: `
+                                    <h2>Seu Primeiro Programa Python</h2>
+                                    <p>Vamos começar com o tradicional "Hello World!".</p>
+                                    
+                                    <h3>Código Básico</h3>
+                                    <pre><code>print("Hello, World!")</code></pre>
+                                    
+                                    <h3>Explicação</h3>
+                                    <p>A função <code>print()</code> exibe texto na tela.</p>
+                                `
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
 
-// Estado global
-let cursoAtual = null;
-let modulos = [];
-let aulaAtual = null;
-let usuarioId = null;
+        // Estado global
+        let cursoAtual = null;
+        let modulos = [];
+        let aulaAtual = null;
+        let usuarioId = null;
+        let progressoUsuario = {};
 
-// Inicialização
-document.addEventListener('DOMContentLoaded', async function() {
-    console.log('🚀 Inicializando página do curso...');
-    
-    // Pega ID do curso da URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const cursoId = urlParams.get('id');
-    usuarioId = localStorage.getItem('userId') || 1; // Fallback
-    
-    if (cursoId) {
-        await carregarCurso(cursoId);
-        await carregarModulos(cursoId);
-    } else {
-        mostrarErro('ID do curso não especificado');
-    }
-});
-
-// ✅ CARREGAR DADOS DO CURSO
-async function carregarCurso(cursoId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/cursos`);
-        const cursos = await response.json();
-        cursoAtual = cursos.find(c => c.id == cursoId);
-        
-        if (cursoAtual) {
-            document.getElementById('curso-titulo').textContent = cursoAtual.titulo;
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Inicializando página do curso...');
             
-            // Carrega progresso do usuário
-            await atualizarProgressoGeral(cursoId);
-        }
-    } catch (error) {
-        console.error('Erro ao carregar curso:', error);
-    }
-}
-
-// ✅ CARREGAR MÓDULOS E AULAS
-async function carregarModulos(cursoId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/cursos/${cursoId}/modulos?usuarioId=${usuarioId}`);
-        modulos = await response.json();
-        
-        exibirModulos();
-    } catch (error) {
-        console.error('Erro ao carregar módulos:', error);
-    }
-}
-
-// ✅ EXIBIR MÓDULOS NA SIDEBAR
-function exibirModulos() {
-    const container = document.getElementById('modulos-container');
-    container.innerHTML = '';
-
-    modulos.forEach(modulo => {
-        const moduloDiv = document.createElement('div');
-        moduloDiv.className = 'modulo';
-        
-        const aulasConcluidas = modulo.aulas.filter(aula => 
-            aula.progressos.length > 0 && aula.progressos[0].concluida
-        ).length;
-        
-        const todasConcluidas = aulasConcluidas === modulo.aulas.length;
-
-        moduloDiv.innerHTML = `
-            <div class="modulo-header" onclick="toggleModulo(this)">
-                <h3>${modulo.titulo}</h3>
-                <span>${aulasConcluidas}/${modulo.aulas.length}</span>
-            </div>
-            <div class="modulo-conteudo">
-                <ul class="aulas-lista">
-                    ${modulo.aulas.map(aula => `
-                        <li class="aula-item ${aula.progressos.length > 0 && aula.progressos[0].concluida ? 'concluida' : ''}" 
-                            onclick="carregarAula(${aula.id})"
-                            data-aula-id="${aula.id}">
-                            <div class="aula-checkbox"></div>
-                            <div class="aula-info">
-                                <div class="aula-titulo">${aula.titulo}</div>
-                                <div class="aula-duracao">${aula.duracao} min</div>
-                            </div>
-                        </li>
-                    `).join('')}
-                </ul>
-            </div>
-        `;
-
-        if (todasConcluidas) {
-            moduloDiv.classList.add('concluido');
-        }
-
-        container.appendChild(moduloDiv);
-    });
-}
-
-// ✅ CARREGAR AULA SELECIONADA
-async function carregarAula(aulaId) {
-    try {
-        // Remove classe ativa de todas as aulas
-        document.querySelectorAll('.aula-item').forEach(item => {
-            item.classList.remove('ativa');
+            // Pega ID do curso da URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const cursoId = urlParams.get('id');
+            usuarioId = localStorage.getItem('userId') || 1;
+            
+            if (cursoId) {
+                await carregarCurso(cursoId);
+                await carregarModulos(cursoId);
+                carregarProgressoLocal();
+            } else {
+                mostrarErro('ID do curso não especificado');
+            }
         });
 
-        // Adiciona classe ativa na aula selecionada
-        const aulaItem = document.querySelector(`[data-aula-id="${aulaId}"]`);
-        if (aulaItem) {
-            aulaItem.classList.add('ativa');
-        }
-
-        const response = await fetch(`${API_BASE_URL}/api/aulas/${aulaId}?usuarioId=${usuarioId}`);
-        aulaAtual = await response.json();
-
-        exibirAula(aulaAtual);
-    } catch (error) {
-        console.error('Erro ao carregar aula:', error);
-    }
-}
-
-// ✅ EXIBIR CONTEÚDO DA AULA
-function exibirAula(aula) {
-    document.getElementById('empty-state').style.display = 'none';
-    document.getElementById('aula-conteudo').style.display = 'block';
-
-    // Atualiza informações básicas
-    document.getElementById('aula-titulo').textContent = aula.titulo;
-    document.getElementById('aula-descricao').textContent = aula.descricao || '';
-    document.getElementById('aula-duracao').textContent = aula.duracao;
-    document.getElementById('aula-modulo').textContent = aula.modulo.titulo;
-
-    // Conteúdo de vídeo
-    const videoContainer = document.getElementById('video-container');
-    if (aula.videoUrl) {
-        videoContainer.style.display = 'block';
-        videoContainer.innerHTML = `
-            <iframe src="${aula.videoUrl}" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-            </iframe>
-        `;
-    } else {
-        videoContainer.style.display = 'none';
-    }
-
-    // Conteúdo em texto
-    const conteudoTexto = document.getElementById('conteudo-texto');
-    if (aula.conteudo) {
-        conteudoTexto.innerHTML = aula.conteudo;
-    } else {
-        conteudoTexto.innerHTML = '<p>Conteúdo da aula em desenvolvimento...</p>';
-    }
-
-    // Configura botões de navegação
-    configurarNavegacao(aula);
-}
-
-// ✅ CONFIGURAR NAVEGAÇÃO ENTRE AULAS
-function configurarNavegacao(aula) {
-    const btnAnterior = document.getElementById('btn-aula-anterior');
-    const btnProxima = document.getElementById('btn-proxima-aula');
-    const btnConcluir = document.getElementById('btn-concluir-aula');
-
-    // Encontra aula atual no array de módulos
-    let aulaIndex = -1;
-    let moduloAtual = null;
-
-    for (const modulo of modulos) {
-        const index = modulo.aulas.findIndex(a => a.id === aula.id);
-        if (index !== -1) {
-            aulaIndex = index;
-            moduloAtual = modulo;
-            break;
-        }
-    }
-
-    // Configura botão anterior
-    if (aulaIndex > 0) {
-        btnAnterior.style.display = 'flex';
-        btnAnterior.onclick = () => carregarAula(moduloAtual.aulas[aulaIndex - 1].id);
-    } else {
-        btnAnterior.style.display = 'none';
-    }
-
-    // Configura botão próxima
-    if (aulaIndex < moduloAtual.aulas.length - 1) {
-        btnProxima.style.display = 'flex';
-        btnProxima.onclick = () => carregarAula(moduloAtual.aulas[aulaIndex + 1].id);
-    } else {
-        btnProxima.style.display = 'none';
-    }
-
-    // Configura botão concluir
-    const jaConcluida = aula.progressos.length > 0 && aula.progressos[0].concluida;
-    btnConcluir.innerHTML = jaConcluida ? 
-        '<i class="fas fa-check"></i> Aula Concluída' : 
-        '<i class="fas fa-check"></i> Marcar como Concluída';
-    btnConcluir.disabled = jaConcluida;
-    btnConcluir.style.opacity = jaConcluida ? '0.6' : '1';
-
-    if (!jaConcluida) {
-        btnConcluir.onclick = () => concluirAula(aula.id);
-    }
-}
-
-// ✅ CONCLUSÃO DE AULA
-async function concluirAula(aulaId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/progresso/aula`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                usuarioId: parseInt(usuarioId),
-                aulaId: aulaId,
-                cursoId: cursoAtual.id
-            })
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            // Atualiza interface
-            const aulaItem = document.querySelector(`[data-aula-id="${aulaId}"]`);
-            if (aulaItem) {
-                aulaItem.classList.add('concluida');
+        // ✅ CARREGAR DADOS DO CURSO
+        async function carregarCurso(cursoId) {
+            try {
+                // Tenta carregar da API primeiro
+                const response = await fetch(`https://coliseum-api.onrender.com/api/cursos`);
+                if (response.ok) {
+                    const cursos = await response.json();
+                    cursoAtual = cursos.find(c => c.id == cursoId);
+                }
+            } catch (error) {
+                console.log('🌐 API offline, usando dados locais');
             }
-
-            // Atualiza progresso geral
-            await atualizarProgressoGeral(cursoAtual.id);
-
-            // Recarrega módulos para atualizar contadores
-            await carregarModulos(cursoAtual.id);
-
-            // Atualiza botão
-            document.getElementById('btn-concluir-aula').innerHTML = '<i class="fas fa-check"></i> Aula Concluída';
-            document.getElementById('btn-concluir-aula').disabled = true;
-            document.getElementById('btn-concluir-aula').style.opacity = '0.6';
-
-            // Mostra mensagem de sucesso
-            alert('🎉 Aula concluída com sucesso!');
-        }
-    } catch (error) {
-        console.error('Erro ao concluir aula:', error);
-        alert('❌ Erro ao salvar progresso');
-    }
-}
-
-// ✅ ATUALIZAR PROGRESSO GERAL
-async function atualizarProgressoGeral(cursoId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/progresso/${usuarioId}`);
-        const data = await response.json();
-
-        if (data.success) {
-            const progressoCurso = data.progressos.find(p => p.cursoId == cursoId);
             
-            if (progressoCurso) {
-                const progresso = progressoCurso.progresso || 0;
-                document.getElementById('progresso-geral').style.width = `${progresso}%`;
-                document.getElementById('progresso-texto').textContent = `${progresso}%`;
+            // Fallback para dados locais
+            if (!cursoAtual) {
+                cursoAtual = CURSOS_EXEMPLO[cursoId];
+            }
+            
+            if (cursoAtual) {
+                document.getElementById('curso-titulo').textContent = cursoAtual.titulo;
+                atualizarProgressoGeral();
+            } else {
+                mostrarErro('Curso não encontrado');
             }
         }
-    } catch (error) {
-        console.error('Erro ao carregar progresso:', error);
-    }
-}
 
-// ✅ FUNÇÕES AUXILIARES
-function toggleModulo(element) {
-    const modulo = element.parentElement;
-    modulo.classList.toggle('aberto');
-}
+        // ✅ CARREGAR MÓDULOS E AULAS
+        async function carregarModulos(cursoId) {
+            try {
+                // Tenta carregar da API
+                const response = await fetch(`https://coliseum-api.onrender.com/api/cursos/${cursoId}/modulos?usuarioId=${usuarioId}`);
+                if (response.ok) {
+                    modulos = await response.json();
+                }
+            } catch (error) {
+                console.log('🌐 API offline, usando módulos locais');
+            }
+            
+            // Fallback para dados locais
+            if (!modulos || modulos.length === 0) {
+                modulos = cursoAtual?.modulos || [];
+            }
+            
+            exibirModulos();
+        }
 
-// ✅ CORREÇÃO: Navegação para Vercel - Volta para Cursos Extras
-function voltarParaCursos() {
-    window.location.href = '/extras'; // Vai para a rota /extras que aponta para indexEX.html
-}
+        // ✅ EXIBIR MÓDULOS NA SIDEBAR
+        function exibirModulos() {
+            const container = document.getElementById('modulos-container');
+            container.innerHTML = '';
 
-function mostrarErro(mensagem) {
-    const container = document.getElementById('aula-container');
-    container.innerHTML = `
-        <div class="empty-state">
-            <i class="fas fa-exclamation-triangle"></i>
-            <h3>Erro</h3>
-            <p>${mensagem}</p>
-            <button class="btn btn-primary" onclick="voltarParaCursos()" style="margin-top: 20px;">
-                Voltar para Cursos
-            </button>
-        </div>
-    `;
-}
+            modulos.forEach(modulo => {
+                const moduloDiv = document.createElement('div');
+                moduloDiv.className = 'modulo';
+                
+                const aulasConcluidas = modulo.aulas.filter(aula => 
+                    progressoUsuario[aula.id] === true
+                ).length;
+                
+                const todasConcluidas = aulasConcluidas === modulo.aulas.length;
 
-// Debug
-window.debugCurso = function() {
-    console.log('Curso:', cursoAtual);
-    console.log('Módulos:', modulos);
-    console.log('Aula atual:', aulaAtual);
-};
+                moduloDiv.innerHTML = `
+                    <div class="modulo-header" onclick="toggleModulo(this)">
+                        <h3>${modulo.titulo}</h3>
+                        <span>${aulasConcluidas}/${modulo.aulas.length}</span>
+                    </div>
+                    <div class="modulo-conteudo">
+                        <ul class="aulas-lista">
+                            ${modulo.aulas.map(aula => `
+                                <li class="aula-item ${progressoUsuario[aula.id] ? 'concluida' : ''}" 
+                                    onclick="carregarAula(${aula.id})"
+                                    data-aula-id="${aula.id}">
+                                    <div class="aula-checkbox"></div>
+                                    <div class="aula-info">
+                                        <div class="aula-titulo">${aula.titulo}</div>
+                                        <div class="aula-duracao">${aula.duracao} min</div>
+                                        ${aula.provedor === 'pandavideo' ? '<i class="fas fa-crown" style="color: #ffcf00; margin-left: 5px;"></i>' : ''}
+                                    </div>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+
+                if (todasConcluidas) {
+                    moduloDiv.classList.add('concluido');
+                }
+
+                container.appendChild(moduloDiv);
+            });
+        }
+
+        // ✅ CARREGAR AULA SELECIONADA
+        async function carregarAula(aulaId) {
+            try {
+                // Remove classe ativa de todas as aulas
+                document.querySelectorAll('.aula-item').forEach(item => {
+                    item.classList.remove('ativa');
+                });
+
+                // Adiciona classe ativa na aula selecionada
+                const aulaItem = document.querySelector(`[data-aula-id="${aulaId}"]`);
+                if (aulaItem) {
+                    aulaItem.classList.add('ativa');
+                }
+
+                // Encontra a aula nos dados
+                for (const modulo of modulos) {
+                    aulaAtual = modulo.aulas.find(a => a.id === aulaId);
+                    if (aulaAtual) {
+                        aulaAtual.modulo = modulo;
+                        break;
+                    }
+                }
+
+                if (aulaAtual) {
+                    exibirAula(aulaAtual);
+                }
+
+            } catch (error) {
+                console.error('Erro ao carregar aula:', error);
+                mostrarErro('Erro ao carregar a aula selecionada');
+            }
+        }
+
+        // ✅ EXIBIR CONTEÚDO DA AULA
+        function exibirAula(aula) {
+            document.getElementById('empty-state').style.display = 'none';
+            document.getElementById('aula-conteudo').style.display = 'block';
+
+            // Atualiza informações básicas
+            document.getElementById('aula-titulo').textContent = aula.titulo;
+            document.getElementById('aula-descricao').textContent = aula.descricao || '';
+            document.getElementById('aula-duracao').textContent = aula.duracao;
+            document.getElementById('aula-modulo').textContent = aula.modulo.titulo;
+            
+            // Define o provedor do vídeo
+            const provedorNome = aula.provedor === 'pandavideo' ? 'Panda Video' : 'YouTube';
+            document.getElementById('aula-provedor').textContent = provedorNome;
+
+            // Conteúdo de vídeo
+            const videoContainer = document.getElementById('video-container');
+            videoContainer.style.display = 'block';
+            videoContainer.innerHTML = `
+                <div class="video-provider-badge">
+                    <i class="fas ${aula.provedor === 'pandavideo' ? 'fa-crown' : 'fa-play'}"></i>
+                    ${provedorNome}
+                </div>
+                <iframe src="${aula.videoUrl}" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                </iframe>
+            `;
+
+            // Conteúdo em texto
+            const conteudoTexto = document.getElementById('conteudo-texto');
+            if (aula.conteudo) {
+                conteudoTexto.innerHTML = aula.conteudo;
+            } else {
+                conteudoTexto.innerHTML = '<p>Conteúdo da aula em desenvolvimento...</p>';
+            }
+
+            // Configura botões de navegação
+            configurarNavegacao(aula);
+        }
+
+        // ✅ CONFIGURAR NAVEGAÇÃO ENTRE AULAS
+        function configurarNavegacao(aula) {
+            const btnAnterior = document.getElementById('btn-aula-anterior');
+            const btnProxima = document.getElementById('btn-proxima-aula');
+            const btnConcluir = document.getElementById('btn-concluir-aula');
+
+            // Encontra aula atual no array de módulos
+            let aulaIndex = -1;
+            let moduloAtual = null;
+
+            for (const modulo of modulos) {
+                const index = modulo.aulas.findIndex(a => a.id === aula.id);
+                if (index !== -1) {
+                    aulaIndex = index;
+                    moduloAtual = modulo;
+                    break;
+                }
+            }
+
+            // Configura botão anterior
+            if (aulaIndex > 0) {
+                btnAnterior.style.display = 'flex';
+                btnAnterior.onclick = () => carregarAula(moduloAtual.aulas[aulaIndex - 1].id);
+            } else {
+                btnAnterior.style.display = 'none';
+            }
+
+            // Configura botão próxima
+            if (aulaIndex < moduloAtual.aulas.length - 1) {
+                btnProxima.style.display = 'flex';
+                btnProxima.onclick = () => carregarAula(moduloAtual.aulas[aulaIndex + 1].id);
+            } else {
+                btnProxima.style.display = 'none';
+            }
+
+            // Configura botão concluir
+            const jaConcluida = progressoUsuario[aula.id] === true;
+            btnConcluir.innerHTML = jaConcluida ? 
+                '<i class="fas fa-check"></i> Aula Concluída' : 
+                '<i class="fas fa-check"></i> Marcar como Concluída';
+            btnConcluir.disabled = jaConcluida;
+            btnConcluir.style.opacity = jaConcluida ? '0.6' : '1';
+
+            if (!jaConcluida) {
+                btnConcluir.onclick = () => concluirAula(aula.id);
+            } else {
+                btnConcluir.onclick = null;
+            }
+        }
+
+        // ✅ CONCLUSÃO DE AULA
+        async function concluirAula(aulaId) {
+            try {
+                // Tenta salvar na API
+                try {
+                    const response = await fetch(`https://coliseum-api.onrender.com/api/progresso/aula`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            usuarioId: parseInt(usuarioId),
+                            aulaId: aulaId,
+                            cursoId: cursoAtual.id
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('✅ Progresso salvo na API:', result);
+                    }
+                } catch (apiError) {
+                    console.log('🌐 API offline, salvando localmente');
+                }
+
+                // Salva localmente
+                progressoUsuario[aulaId] = true;
+                salvarProgressoLocal();
+
+                // Atualiza interface
+                const aulaItem = document.querySelector(`[data-aula-id="${aulaId}"]`);
+                if (aulaItem) {
+                    aulaItem.classList.add('concluida');
+                }
+
+                // Atualiza progresso geral
+                atualizarProgressoGeral();
+
+                // Recarrega módulos para atualizar contadores
+                exibirModulos();
+
+                // Atualiza botão
+                document.getElementById('btn-concluir-aula').innerHTML = '<i class="fas fa-check"></i> Aula Concluída';
+                document.getElementById('btn-concluir-aula').disabled = true;
+                document.getElementById('btn-concluir-aula').style.opacity = '0.6';
+
+                // Mostra mensagem de sucesso
+                alert('🎉 Aula concluída com sucesso!');
+
+            } catch (error) {
+                console.error('Erro ao concluir aula:', error);
+                alert('❌ Erro ao salvar progresso');
+            }
+        }
+
+        // ✅ ATUALIZAR PROGRESSO GERAL
+        function atualizarProgressoGeral() {
+            if (!cursoAtual) return;
+
+            let totalAulas = 0;
+            let aulasConcluidas = 0;
+
+            modulos.forEach(modulo => {
+                totalAulas += modulo.aulas.length;
+                modulo.aulas.forEach(aula => {
+                    if (progressoUsuario[aula.id]) {
+                        aulasConcluidas++;
+                    }
+                });
+            });
+
+            const progresso = totalAulas > 0 ? Math.round((aulasConcluidas / totalAulas) * 100) : 0;
+            
+            document.getElementById('progresso-geral').style.width = `${progresso}%`;
+            document.getElementById('progresso-texto').textContent = `${progresso}%`;
+        }
+
+        // ✅ GERENCIAMENTO DE PROGRESSO LOCAL
+        function carregarProgressoLocal() {
+            const progressoSalvo = localStorage.getItem(`progresso_curso_${cursoAtual?.id}_usuario_${usuarioId}`);
+            if (progressoSalvo) {
+                progressoUsuario = JSON.parse(progressoSalvo);
+            }
+        }
+
+        function salvarProgressoLocal() {
+            localStorage.setItem(`progresso_curso_${cursoAtual?.id}_usuario_${usuarioId}`, JSON.stringify(progressoUsuario));
+        }
+
+        // ✅ FUNÇÕES AUXILIARES
+        function toggleModulo(element) {
+            const modulo = element.parentElement;
+            modulo.classList.toggle('aberto');
+        }
+
+        function voltarParaCursos() {
+            window.location.href = '/extras';
+        }
+
+        function mostrarErro(mensagem) {
+            const container = document.getElementById('aula-container');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Erro</h3>
+                    <p>${mensagem}</p>
+                    <button class="btn btn-primary" onclick="voltarParaCursos()" style="margin-top: 20px;">
+                        Voltar para Cursos
+                    </button>
+                </div>
+            `;
+        }
+
+        // Debug
+        window.debugCurso = function() {
+            console.log('Curso:', cursoAtual);
+            console.log('Módulos:', modulos);
+            console.log('Aula atual:', aulaAtual);
+            console.log('Progresso:', progressoUsuario);
+        };
     </script>
 </body>
 </html>
-
-
