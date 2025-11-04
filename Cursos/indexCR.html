@@ -5,26 +5,401 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curso - Coliseum</title>
     <style>
-:root {
-    /* Cores principais */
-    --azul-escuro: #1e40af;       /* Azul do "PROGRAMAÇÃO" */
-    --azul-medio: #3b82f6;        /* Azul dos números e seleções */
-    --azul-claro: #dbeafe;        /* Fundo dos cards */
-    
-    /* Cores de texto */
-    --texto-escuro: #1f2937;      /* Texto principal */
-    --texto-cinza: #6b7280;       /* Texto secundário */
-    --texto-claro: #9ca3af;       /* Texto desabilitado */
-    
-    /* Cores de interface */
-    --fundo: #ffffff;             /* Fundo principal */
-    --borda: #e5e7eb;            /* Bordas e divisores */
-    --destaque: #10b981;         /* Verde para progresso/status */
-    
-    /* Estados */
-    --selecionado: #3b82f6;       /* Checkbox selecionado */
-    --hover: #f3f4f6;            /* Hover suave */
-}
+ * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 350px;
+            background: #2a2a2a;
+            border-right: 2px solid #444;
+            overflow-y: auto;
+            height: 100vh;
+            position: fixed;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: #383838;
+            border-bottom: 2px solid #444;
+        }
+
+        .curso-info h1 {
+            color: #ffcf00;
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+        }
+
+        .curso-meta {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-value {
+            color: #ffcf00;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .meta-label {
+            color: #888;
+            font-size: 0.7rem;
+        }
+
+        .progresso-geral {
+            margin-top: 15px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #444;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffcf00, #ff6b00);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            color: #aaa;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        /* Módulos */
+        .modulos-container {
+            padding: 20px;
+        }
+
+        .modulo {
+            margin-bottom: 20px;
+            background: #383838;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #555;
+        }
+
+        .modulo-header {
+            padding: 15px;
+            background: rgba(255, 207, 0, 0.1);
+            border-bottom: 1px solid #555;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modulo-header h3 {
+            color: #ffcf00;
+            font-size: 1.1rem;
+        }
+
+        .modulo-conteudo {
+            display: none;
+        }
+
+        .modulo.concluido .modulo-header {
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .modulo.aberto .modulo-conteudo {
+            display: block;
+        }
+
+        .aulas-lista {
+            list-style: none;
+        }
+
+        .aula-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #444;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .aula-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .aula-item.ativa {
+            background: rgba(255, 207, 0, 0.1);
+            border-left: 3px solid #ffcf00;
+        }
+
+        .aula-item.concluida {
+            color: #4CAF50;
+        }
+
+        .aula-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #555;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .aula-item.concluida .aula-checkbox {
+            background: #4CAF50;
+            border-color: #4CAF50;
+        }
+
+        .aula-item.concluida .aula-checkbox::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+        }
+
+        .aula-info {
+            flex: 1;
+        }
+
+        .aula-titulo {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .aula-duracao {
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        /* Conteúdo Principal */
+        .conteudo-principal {
+            flex: 1;
+            margin-left: 350px;
+            padding: 0;
+        }
+
+        .aula-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .aula-header {
+            margin-bottom: 30px;
+        }
+
+        .aula-header h1 {
+            color: #ffcf00;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .aula-descricao {
+            color: #ccc;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .aula-meta {
+            display: flex;
+            gap: 20px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .video-container {
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            aspect-ratio: 16/9;
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .video-provider-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            z-index: 10;
+        }
+
+        .conteudo-aula {
+            background: #2a2a2a;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .conteudo-aula h2, .conteudo-aula h3 {
+            color: #ffcf00;
+            margin: 20px 0 10px 0;
+        }
+
+        .conteudo-aula p {
+            margin-bottom: 15px;
+        }
+
+        .conteudo-aula ul, .conteudo-aula ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .acoes-aula {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-top: 1px solid #444;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ffcf00, #ff6b00);
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #555;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 5px 15px rgba(255, 207, 0, 0.4);
+        }
+
+        /* Botão Voltar */
+        .btn-voltar {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #ffcf00;
+            color: #000;
+            font-size: 24px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.4);
+        }
+
+        .btn-voltar:hover {
+            background: #e6b800;
+            transform: scale(1.1);
+        }
+
+        /* Estados vazios */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #ffcf00;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #ffcf00;
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+
+            .conteudo-principal {
+                margin-left: 0;
+            }
+
+            .btn-voltar {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                bottom: 20px;
+                right: 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -516,6 +891,7 @@
 </script>
 </body>
 </html>
+
 
 
 
