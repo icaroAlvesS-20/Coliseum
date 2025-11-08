@@ -424,13 +424,22 @@
     <div class="api-status" id="api-status"></div>
 
 <script>
-// ✅ SISTEMA SIMPLIFICADO - APENAS API
+// ✅ SISTEMA CORRIGIDO - COM VERIFICAÇÕES
 class GerenciadorCursos {
     constructor() {
         this.API_BASE = 'https://coliseum-api.onrender.com/api';
         this.usuarioId = this.obterUsuarioId();
         this.cursoAtual = null;
         this.modulosAtuais = [];
+        
+        // Verificar se estamos na página correta
+        this.paginaValida = this.verificarPaginaValida();
+    }
+
+    verificarPaginaValida() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cursoId = parseInt(urlParams.get('id'));
+        return !!cursoId && document.getElementById('modulos-container');
     }
 
     obterUsuarioId() {
@@ -440,15 +449,15 @@ class GerenciadorCursos {
     }
 
     async carregarPaginaCurso() {
+        if (!this.paginaValida) {
+            console.warn('⚠️ Não está na página de curso válida');
+            return;
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const cursoId = parseInt(urlParams.get('id'));
         
         console.log(`🚀 Inicializando página do curso ${cursoId}...`);
-
-        if (!cursoId) {
-            this.mostrarErro('ID do curso não especificado na URL');
-            return;
-        }
 
         this.mostrarCarregando();
 
@@ -484,17 +493,23 @@ class GerenciadorCursos {
     async carregarModulosDaAPI(cursoId) {
         console.log(`📂 Buscando módulos do curso ${cursoId}...`);
         
-        const modulosResponse = await fetch(
-            `${this.API_BASE}/cursos/${cursoId}/modulos?usuarioId=${this.usuarioId}`
-        );
+        try {
+            const modulosResponse = await fetch(
+                `${this.API_BASE}/cursos/${cursoId}/modulos?usuarioId=${this.usuarioId}`
+            );
 
-        if (modulosResponse.ok) {
-            const modulos = await modulosResponse.json();
-            console.log(`✅ ${modulos.length} módulos carregados`);
-            this.modulosAtuais = modulos;
-            this.exibirModulos(modulos);
-        } else {
-            // Usar módulos do objeto curso
+            if (modulosResponse.ok) {
+                const modulos = await modulosResponse.json();
+                console.log(`✅ ${modulos.length} módulos carregados`);
+                this.modulosAtuais = modulos;
+                this.exibirModulos(modulos);
+            } else {
+                // Usar módulos do objeto curso
+                this.modulosAtuais = this.cursoAtual?.modulos || [];
+                this.exibirModulos(this.modulosAtuais);
+            }
+        } catch (error) {
+            console.warn('❌ Erro ao carregar módulos:', error);
             this.modulosAtuais = this.cursoAtual?.modulos || [];
             this.exibirModulos(this.modulosAtuais);
         }
@@ -504,8 +519,17 @@ class GerenciadorCursos {
         const tituloElement = document.getElementById('curso-titulo');
         const descElement = document.getElementById('curso-descricao');
         
-        if (tituloElement) tituloElement.textContent = curso.titulo;
-        if (descElement) descElement.textContent = curso.descricao;
+        if (tituloElement) {
+            tituloElement.textContent = curso.titulo;
+        } else {
+            console.warn('❌ Elemento curso-titulo não encontrado');
+        }
+        
+        if (descElement) {
+            descElement.textContent = curso.descricao;
+        } else {
+            console.warn('❌ Elemento curso-descricao não encontrado');
+        }
         
         document.title = `${curso.titulo} - Coliseum`;
 
@@ -526,7 +550,10 @@ class GerenciadorCursos {
 
     exibirModulos(modulos) {
         const container = document.getElementById('modulos-container');
-        if (!container) return;
+        if (!container) {
+            console.error('❌ Container modulos-container não encontrado!');
+            return;
+        }
 
         if (!modulos || modulos.length === 0) {
             container.innerHTML = `
@@ -615,16 +642,22 @@ class GerenciadorCursos {
 
     toggleModulo(index) {
         const modulos = document.querySelectorAll('.modulo');
+        if (modulos.length === 0) return;
+        
         const modulo = modulos[index];
         const conteudo = modulo.querySelector('.modulo-conteudo');
         const toggle = modulo.querySelector('.modulo-toggle');
+
+        if (!conteudo || !toggle) return;
 
         // Fechar outros módulos
         modulos.forEach((mod, i) => {
             if (i !== index) {
                 mod.classList.remove('aberto');
-                mod.querySelector('.modulo-conteudo').style.display = 'none';
-                mod.querySelector('.modulo-toggle').textContent = '+';
+                const outroConteudo = mod.querySelector('.modulo-conteudo');
+                const outrotoggle = mod.querySelector('.modulo-toggle');
+                if (outroConteudo) outroConteudo.style.display = 'none';
+                if (outrotoggle) outrotoggle.textContent = '+';
             }
         });
 
@@ -690,6 +723,12 @@ class GerenciadorCursos {
     }
 
     exibirPlayerAula(aula) {
+        // Remover player existente
+        const playerExistente = document.querySelector('.aula-player-overlay');
+        if (playerExistente) {
+            playerExistente.remove();
+        }
+
         const playerHTML = `
             <div class="aula-player-overlay">
                 <div class="aula-player-container">
@@ -784,7 +823,7 @@ class GerenciadorCursos {
         // Atualizar visualmente a aula como concluída
         const aulaElements = document.querySelectorAll('.aula-item');
         aulaElements.forEach(element => {
-            if (element.onclick && element.onclick.toString().includes(aulaId.toString())) {
+            if (element.getAttribute('onclick')?.includes(aulaId.toString())) {
                 element.classList.add('concluida');
             }
         });
@@ -828,7 +867,7 @@ class GerenciadorCursos {
         
         container.innerHTML = `
             <div style="text-align: center; padding: 40px; color: #ffcf00;">
-                <div class="loading-spinner" style="border: 4px solid #f3f3f3; border-top: 4px solid #ffcf00; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+                <div style="border: 4px solid #f3f3f3; border-top: 4px solid #ffcf00; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
                 <h3>Carregando Conteúdo</h3>
                 <p>Buscando informações do curso...</p>
             </div>
@@ -850,7 +889,7 @@ class GerenciadorCursos {
                 <div style="font-size: 3rem; margin-bottom: 15px;">❌</div>
                 <h3 style="color: #ff6b6b;">Erro ao Carregar</h3>
                 <p>${mensagem}</p>
-                <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 15px;">
+                <button onclick="location.reload()" style="background: #4361ee; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px;">
                     🔄 Tentar Novamente
                 </button>
             </div>
@@ -858,16 +897,24 @@ class GerenciadorCursos {
     }
 }
 
-// ✅ INICIALIZAÇÃO
-const gerenciadorCursos = new GerenciadorCursos();
-
+// ✅ INICIALIZAÇÃO COM VERIFICAÇÃO
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Página de curso carregada!');
-    gerenciadorCursos.carregarPaginaCurso();
+    console.log('🚀 DOM Carregado - Verificando página de curso...');
+    
+    const gerenciadorCursos = new GerenciadorCursos();
+    window.gerenciadorCursos = gerenciadorCursos;
+    
+    if (gerenciadorCursos.paginaValida) {
+        console.log('✅ Página de curso válida - Iniciando carregamento...');
+        gerenciadorCursos.carregarPaginaCurso();
+    } else {
+        console.log('⚠️ Não é uma página de curso válida');
+    }
 });
 </script>
 </body>
 </html>
+
 
 
 
