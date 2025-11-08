@@ -1036,6 +1036,9 @@ function getCategoriaNome(categoria) {
 
 function getNivelNome(nivel) {
     const nomes = {
+        'iniciante': 'Iniciante',
+        'intermediario': 'Intermediario',
+        'avancado': 'Avançado',
         'fundamental': 'Fundamental',
         'medio': 'Ensino Médio',
         'vestibular': 'Vestibular'
@@ -1056,6 +1059,8 @@ function updateStats() {
     const cursosCsn = cursos.filter(c => c.materia === 'csn').length;
     const cursosCsh = cursos.filter(c => c.materia === 'csh').length;
     const cursosPortugues = cursos.filter(c => c.materia === 'portugues').length;
+    const cursosProgramacao = cursos.filter(c => c.materia === 'programacao').length;
+
 
     // Atualiza elementos se existirem
     const totalElement = document.getElementById('total-cursos');
