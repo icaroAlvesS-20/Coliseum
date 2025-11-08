@@ -716,7 +716,7 @@
                 </div>
                  <div class="stat-card">
                     <div class="stat-value" id="cursos-programacao">0</div>
-                    <div class="stat-label">Progranmação</div>
+                    <div class="stat-label">Programação</div>
                 </div>
             </div>
         </div>
@@ -1067,19 +1067,24 @@ function updateStats() {
     const csnElement = document.getElementById('cursos-csn');
     const cshElement = document.getElementById('cursos-csh');
     const portuguesElement = document.getElementById('cursos-portugues');
+    const portuguesElement = document.getElementById('cursos-programacao');
+
 
     if (totalElement) totalElement.textContent = totalCursos;
     if (matematicaElement) matematicaElement.textContent = cursosMatematica;
     if (csnElement) csnElement.textContent = cursosCsn;
     if (cshElement) cshElement.textContent = cursosCsh;
     if (portuguesElement) portuguesElement.textContent = cursosPortugues;
+    if (programacaoElement) programacaoElement.textContent = cursosProgramacao;
+
 
     console.log('📊 Estatísticas atualizadas:', {
         total: totalCursos,
         matematica: cursosMatematica,
         csn: cursosCsn,
         csh: cursosCsh,
-        portugues: cursosPortugues
+        portugues: cursosPortugues,
+        programacao: cursosProgramacao
     });
 }
 
