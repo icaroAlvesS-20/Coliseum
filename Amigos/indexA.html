@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styleA.css">
+    <script src="scriptA.js" defer></script>
+    <title>Amigos</title>
+    <link rel="icon" href="ImagensA/Amogus.png" type="image/x-icon">
+</head>
+<body>
+    <div class="container">
+        <!-- CABEÇALHO -->
+        <div class="header">
+            <div class="Topimg">
+                <img src="ImagensA/Amogus.png" alt="Amigos">
+            </div>
+            <h1>Amigos</h1>
+        </div>
+
+        <!-- BLOCO PRINCIPAL -->
+        <div class="bloco-cinza">
+            <!-- BARRA DE BUSCA -->
+            <div class="search-container">
+                <div class="buscfriends" onclick="buscarAmigos()">
+                    <img src="ImagensA/Lupa.png" alt="Buscar Amigos">
+                </div>
+                <input type="text" class="search-input" placeholder="Buscar amigos..." id="searchInput">
+            </div>
+
+            <!-- BOTÃO ADICIONAR AMIGO -->
+            <div class="add-friend-btn" onclick="abrirModalAdicionar()">
+                <div class="addfriends">
+                    <img src="ImagensA/AddAmigos.png" alt="Adicionar Amigos">
+                </div>
+                <div class="add-friend-text">Adicionar Amigo</div>
+            </div>
+
+            <!-- LISTA DE AMIGOS -->
+            <div class="friends-list" id="friendsList">
+                <!-- Amigos serão carregados via JavaScript -->
+                <div class="empty-state">
+                    <img src="ImagensA/AddAmigos.png" alt="Nenhum amigo">
+                    <p>Nenhum amigo adicionado ainda</p>
+                    <p style="font-size: 12px; margin-top: 10px;">Clique em "Adicionar Amigo" para começar</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ADICIONAR AMIGO -->
+    <div class="modal" id="addFriendModal">
+        <div class="modal-content">
+            <h2>Adicionar Amigo</h2>
+            <input type="text" class="modal-input" id="friendNameInput" placeholder="Nome do amigo">
+            <input type="text" class="modal-input" id="friendRAInput" placeholder="RA do amigo">
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-confirm" onclick="adicionarAmigo()">Adicionar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL BUSCAR AMIGO -->
+    <div class="modal" id="searchFriendModal">
+        <div class="modal-content">
+            <h2>Buscar Amigo</h2>
+            <input type="text" class="modal-input" id="searchFriendInput" placeholder="Digite o nome ou RA">
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-confirm" onclick="realizarBusca()">Buscar</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-voltar" onclick="history.back()">←</button>
+</body>
+</html>
