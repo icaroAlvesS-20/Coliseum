@@ -554,7 +554,32 @@ body {
     background: rgba(255, 215, 0, 0.1);
     border-color: var(--primary-light);
 }
+        .btn-voltar {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #ffcf00;
+            color: #000;
+            font-size: 24px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.4);
+            transition: all 0.3s ease;
+        }
 
+        .btn-voltar:hover {
+            background: #e6b800;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(255, 207, 0, 0.6);
+        }
 /* ===== ESTADOS DE CARREGAMENTO E ERRO ===== */
 .carregando,
 .empty-state {
@@ -1285,5 +1310,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
 
 
