@@ -611,7 +611,106 @@ body {
     color: var(--primary);
     opacity: 0.7;
 }
+ .video-provider-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(0, 0, 0, 0.8);
+        color: var(--primary);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        z-index: 10;
+        font-weight: 600;
+        border: 1px solid rgba(255, 215, 0, 0.3);
+        backdrop-filter: blur(10px);
+    }
 
+    /* Cores específicas para cada provedor */
+    .video-provider-badge.panda-video {
+        background: rgba(255, 87, 34, 0.9);
+        color: white;
+        border-color: rgba(255, 87, 34, 0.5);
+    }
+
+    .video-provider-badge.youtube {
+        background: rgba(255, 0, 0, 0.9);
+        color: white;
+        border-color: rgba(255, 0, 0, 0.5);
+    }
+
+    .video-provider-badge.vimeo {
+        background: rgba(26, 183, 234, 0.9);
+        color: white;
+        border-color: rgba(26, 183, 234, 0.5);
+    }
+
+    .video-provider-badge.external {
+        background: rgba(76, 175, 80, 0.9);
+        color: white;
+        border-color: rgba(76, 175, 80, 0.5);
+    }
+
+    .video-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-secondary);
+        background: var(--secondary);
+        text-align: center;
+        padding: 40px;
+    }
+
+    .video-placeholder .placeholder-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        opacity: 0.7;
+    }
+
+    .video-placeholder h4 {
+        color: var(--primary);
+        margin-bottom: 10px;
+        font-size: 1.3rem;
+    }
+
+    .video-placeholder p {
+        margin-bottom: 20px;
+        line-height: 1.5;
+    }
+
+    .video-placeholder small {
+        margin-top: 15px;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+
+    .video-placeholder .btn {
+        margin-top: 10px;
+    }
+
+    .video-container {
+        position: relative;
+        background: #000;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        aspect-ratio: 16/9;
+        border: 2px solid rgba(255, 215, 0, 0.1);
+    }
+
+    .video-container iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    .no-video-warning {
+        color: var(--warning);
+        font-style: italic;
+        margin: 15px 0;
+    }
 /* ===== ANIMAÇÕES ===== */
 @keyframes fadeIn {
     from { opacity: 0; }
@@ -1125,6 +1224,8 @@ class GerenciadorCursos {
             playerExistente.remove();
         }
 
+        const videoEmbed = this.gerarEmbedVideo(aula.videoUrl, aula.duracao);
+        
         const playerHTML = `
             <div class="aula-player-overlay">
                 <div class="aula-player-container">
@@ -1136,15 +1237,7 @@ class GerenciadorCursos {
                     </div>
                     
                     <div class="video-container">
-                        ${aula.videoUrl ? `
-                            <iframe src="${aula.videoUrl}" frameborder="0" allowfullscreen></iframe>
-                        ` : `
-                            <div class="video-placeholder">
-                                <div class="placeholder-icon">🎥</div>
-                                <p>Player de Vídeo</p>
-                                <small>Duração: ${this.formatarDuracao(aula.duracao)}</small>
-                            </div>
-                        `}
+                        ${videoEmbed}
                     </div>
 
                     <div class="player-content">
@@ -1168,12 +1261,140 @@ class GerenciadorCursos {
                         <button class="btn btn-secondary" onclick="this.closest('.aula-player-overlay').remove()">
                             Fechar
                         </button>
+                        ${aula.videoUrl ? `
+                        <button class="btn btn-secondary" onclick="window.open('${aula.videoUrl}', '_blank')">
+                            🔗 Abrir em Nova Aba
+                        </button>
+                        ` : ''}
                     </div>
                 </div>
             </div>
         `;
         
         document.body.insertAdjacentHTML('beforeend', playerHTML);
+    }
+
+    gerarEmbedVideo(videoUrl, duracao) {
+        if (!videoUrl) {
+            return this.gerarPlaceholderVideo(duracao);
+        }
+
+        try {
+            // ✅ PANDA VIDEO - URLs do domínio panda
+            if (videoUrl.includes('panda') || videoUrl.includes('seu-dominio-panda.com')) {
+                return `
+                    <iframe 
+                        src="${videoUrl}" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                    <div class="video-provider-badge panda-video">Panda Video</div>
+                `;
+            }
+
+            // Converter URL do YouTube para embed
+            if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+                const videoId = this.extrairVideoIdYouTube(videoUrl);
+                if (videoId) {
+                    return `
+                        <iframe 
+                            src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                        </iframe>
+                        <div class="video-provider-badge youtube">YouTube</div>
+                    `;
+                }
+            }
+
+            // Converter URL do Vimeo para embed
+            if (videoUrl.includes('vimeo.com')) {
+                const videoId = this.extrairVideoIdVimeo(videoUrl);
+                if (videoId) {
+                    return `
+                        <iframe 
+                            src="https://player.vimeo.com/video/${videoId}" 
+                            frameborder="0" 
+                            allow="autoplay; fullscreen; picture-in-picture" 
+                            allowfullscreen>
+                        </iframe>
+                        <div class="video-provider-badge vimeo">Vimeo</div>
+                    `;
+                }
+            }
+
+            // Se for uma URL de embed direto ou HTML
+            if (videoUrl.includes('<iframe') || videoUrl.includes('</iframe>')) {
+                return videoUrl;
+            }
+
+            // Se for uma URL genérica, tentar usar como iframe
+            if (videoUrl.startsWith('http')) {
+                return `
+                    <iframe 
+                        src="${videoUrl}" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                    <div class="video-provider-badge external">Video Externo</div>
+                `;
+            }
+
+            // Se não for uma URL reconhecida, mostrar placeholder com link
+            return this.gerarPlaceholderComLink(videoUrl, duracao);
+
+        } catch (error) {
+            console.error('Erro ao gerar embed do vídeo:', error);
+            return this.gerarPlaceholderVideo(duracao);
+        }
+    }
+
+    extrairVideoIdYouTube(url) {
+        const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+        const match = url.match(regex);
+        return match ? match[1] : null;
+    }
+
+    extrairVideoIdVimeo(url) {
+        const regex = /vimeo\.com\/(\d+)/;
+        const match = url.match(regex);
+        return match ? match[1] : null;
+    }
+
+    gerarPlaceholderVideo(duracao) {
+        return `
+            <div class="video-placeholder">
+                <div class="placeholder-icon">📹</div>
+                <h4>Vídeo da Aula</h4>
+                <p>O player de vídeo será carregado aqui</p>
+                <small>Duração: ${this.formatarDuracao(duracao)}</small>
+            </div>
+        `;
+    }
+
+    gerarPlaceholderComLink(videoUrl, duracao) {
+        return `
+            <div class="video-placeholder">
+                <div class="placeholder-icon">🎬</div>
+                <h4>Conteúdo de Vídeo</h4>
+                <p>Este vídeo precisa ser aberto em uma nova janela</p>
+                <button class="btn btn-primary" onclick="window.open('${videoUrl}', '_blank')">
+                    🔗 Abrir Vídeo
+                </button>
+                <small>Duração: ${this.formatarDuracao(duracao)}</small>
+            </div>
+        `;
+    }
+
+    formatarDuracao(minutos) {
+        if (!minutos) return '10:00';
+        if (minutos < 60) return `${minutos.toString().padStart(2, '0')}:00`;
+        const horas = Math.floor(minutos / 60);
+        const mins = minutos % 60;
+        return `${horas}:${mins.toString().padStart(2, '0')}:00`;
     }
 
     async marcarAulaConcluida(aulaId) {
@@ -1310,6 +1531,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
-
-
-
