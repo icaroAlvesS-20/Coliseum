@@ -787,19 +787,17 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 // ✅ CORREÇÃO: Navegação para Vercel - Volta para Menu
 function voltarParaMenu() {
-    window.location.href = '/menu'; // Vai para a rota /menu definida no vercel.json
+    window.location.href = '/menu';
 }
 
 // ✅ CORREÇÃO: Navegação para página do curso
 function iniciarCurso(cursoId) {
     console.log('Iniciando curso:', cursoId);
-    // Redireciona para a página do curso (indexCR.html) com ID
     window.location.href = `/cursos?id=${cursoId}`;
 }
 
 function continuarCurso(cursoId) {
     console.log('Continuando curso:', cursoId);
-    // Redireciona para a página do curso (indexCR.html) com ID
     window.location.href = `/cursos?id=${cursoId}`;
 }
 
@@ -857,7 +855,7 @@ function updateUserInterface() {
     console.log('User data:', userData);
 }
 
-// ✅ FUNÇÃO PRINCIPAL - LOAD CURSOS
+// ✅ FUNÇÃO PRINCIPAL - LOAD CURSOS (APENAS API)
 async function loadCursos() {
     try {
         showLoading();
@@ -872,9 +870,9 @@ async function loadCursos() {
             throw new Error(`HTTP ${response.status}`);
         }
     } catch (error) {
-        console.warn('❌ Erro ao carregar cursos, usando dados locais:', error);
-        cursos = getSampleCursos();
-        showAlert('⚠️ Usando dados de exemplo - API offline', 'warning');
+        console.error('❌ Erro ao carregar cursos da API:', error);
+        cursos = []; // Array vazio em caso de erro
+        showAlert('❌ Erro ao carregar cursos. Verifique sua conexão.', 'error');
     } finally {
         filteredCursos = [...cursos];
         displayCursos();
@@ -962,8 +960,8 @@ function createCourseCard(curso) {
                     <div class="meta-label">Módulos</div>
                 </div>
                 <div class="meta-item">
-                    <div class="meta-value">${curso.alunos || 0}</div>
-                    <div class="meta-label">Alunos</div>
+                    <div class="meta-value">${getTotalAulas(curso)}</div>
+                    <div class="meta-label">Aulas</div>
                 </div>
             </div>
             
@@ -1026,7 +1024,7 @@ function getCategoriaNome(categoria) {
         'geografia': 'Geografia',
         'gramatica': 'Gramática',
         'interpretacao': 'Interpretação',
-        'php': 'Python',
+        'php': 'PHP',
         'js': 'JavaScript',
         'react': 'React',
         'python': 'Python'
@@ -1037,13 +1035,22 @@ function getCategoriaNome(categoria) {
 function getNivelNome(nivel) {
     const nomes = {
         'iniciante': 'Iniciante',
-        'intermediario': 'Intermediario',
+        'intermediario': 'Intermediário',
         'avancado': 'Avançado',
         'fundamental': 'Fundamental',
         'medio': 'Ensino Médio',
         'vestibular': 'Vestibular'
     };
     return nomes[nivel] || nivel;
+}
+
+function getTotalAulas(curso) {
+    if (!curso.modulos) return 0;
+    let totalAulas = 0;
+    curso.modulos.forEach(modulo => {
+        totalAulas += modulo.aulas ? modulo.aulas.length : 0;
+    });
+    return totalAulas;
 }
 
 function getProgressoCurso(cursoId) {
@@ -1061,7 +1068,6 @@ function updateStats() {
     const cursosPortugues = cursos.filter(c => c.materia === 'portugues').length;
     const cursosProgramacao = cursos.filter(c => c.materia === 'programacao').length;
 
-
     // Atualiza elementos se existirem
     const totalElement = document.getElementById('total-cursos');
     const matematicaElement = document.getElementById('cursos-matematica');
@@ -1070,14 +1076,12 @@ function updateStats() {
     const portuguesElement = document.getElementById('cursos-portugues');
     const programacaoElement = document.getElementById('cursos-programacao');
 
-
     if (totalElement) totalElement.textContent = totalCursos;
     if (matematicaElement) matematicaElement.textContent = cursosMatematica;
     if (csnElement) csnElement.textContent = cursosCsn;
     if (cshElement) cshElement.textContent = cursosCsh;
     if (portuguesElement) portuguesElement.textContent = cursosPortugues;
     if (programacaoElement) programacaoElement.textContent = cursosProgramacao;
-
 
     console.log('📊 Estatísticas atualizadas:', {
         total: totalCursos,
@@ -1118,8 +1122,6 @@ function showAlert(message, type = 'error') {
         alert.remove();
     });
 }
-
-
     </script>
 </body>
 </html>
