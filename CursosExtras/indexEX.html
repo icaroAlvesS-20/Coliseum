@@ -684,7 +684,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log('🎯 Página de cursos inicializada com sucesso!');
 });
 
-// ✅ FUNÇÃO fetchAPI CORRIGIDA - SEM FILTROS PROBLEMÁTICOS
+// ✅ FUNÇÃO fetchAPI SIMPLIFICADA
 async function fetchAPI(endpoint, options = {}) {
     const PROXY_URL = 'https://corsproxy.io/?';
     const targetURL = `${API_BASE_URL}${endpoint}`;
@@ -692,13 +692,7 @@ async function fetchAPI(endpoint, options = {}) {
     try {
         console.log(`🌐 Fazendo requisição para: ${targetURL}`);
         
-        // Para cursos, usa endpoint sem filtros problemáticos
-        let finalEndpoint = endpoint;
-        if (endpoint === '/api/cursos') {
-            finalEndpoint = '/api/cursos/todos'; // Endpoint alternativo
-        }
-        
-        const proxyTarget = `${PROXY_URL}${encodeURIComponent(API_BASE_URL + finalEndpoint)}`;
+        const proxyTarget = `${PROXY_URL}${encodeURIComponent(targetURL)}`;
         
         const config = {
             method: options.method || 'GET',
@@ -716,17 +710,6 @@ async function fetchAPI(endpoint, options = {}) {
         const response = await fetch(proxyTarget, config);
 
         if (!response.ok) {
-            // Se o endpoint alternativo falhar, tenta o original
-            if (endpoint === '/api/cursos' && finalEndpoint === '/api/cursos/todos') {
-                console.log('🔄 Endpoint alternativo falhou, tentando endpoint original...');
-                const originalProxy = `${PROXY_URL}${encodeURIComponent(targetURL)}`;
-                const originalResponse = await fetch(originalProxy, config);
-                
-                if (originalResponse.ok) {
-                    return await originalResponse.json();
-                }
-            }
-            
             const errorText = await response.text();
             throw new Error(`Erro ${response.status}: ${errorText}`);
         }
@@ -735,13 +718,6 @@ async function fetchAPI(endpoint, options = {}) {
         
     } catch (error) {
         console.error('❌ Erro na requisição:', error);
-        
-        // Se ainda houver erro, cria dados de exemplo
-        if (endpoint === '/api/cursos') {
-            console.log('📝 Criando cursos de exemplo devido ao erro...');
-            return criarCursosExemplo();
-        }
-        
         throw error;
     }
 }
@@ -752,7 +728,7 @@ function criarCursosExemplo() {
         {
             id: 1,
             titulo: "Matemática Básica",
-            descricao: "Aprenda os fundamentos da matemática com exercícios práticos",
+            descricao: "Aprenda os fundamentos da matemática com exercícios práticos e exemplos do dia a dia.",
             materia: "matematica",
             categoria: "algebra",
             nivel: "fundamental",
@@ -761,9 +737,20 @@ function criarCursosExemplo() {
             modulos: [
                 {
                     titulo: "Introdução à Matemática",
+                    ordem: 1,
                     aulas: [
-                        { titulo: "O que é Matemática?", duracao: 15 },
-                        { titulo: "Números e Operações", duracao: 20 }
+                        { 
+                            titulo: "O que é Matemática?", 
+                            descricao: "Entenda os conceitos básicos",
+                            duracao: 15,
+                            ordem: 1
+                        },
+                        { 
+                            titulo: "Números e Operações", 
+                            descricao: "Aprenda as quatro operações básicas",
+                            duracao: 20,
+                            ordem: 2
+                        }
                     ]
                 }
             ]
@@ -771,7 +758,7 @@ function criarCursosExemplo() {
         {
             id: 2,
             titulo: "Química Geral",
-            descricao: "Conceitos fundamentais de química para entender a composição da matéria",
+            descricao: "Conceitos fundamentais de química para entender a composição da matéria.",
             materia: "csn",
             categoria: "quimica",
             nivel: "medio",
@@ -780,9 +767,14 @@ function criarCursosExemplo() {
             modulos: [
                 {
                     titulo: "Introdução à Química",
+                    ordem: 1,
                     aulas: [
-                        { titulo: "Matéria e Energia", duracao: 18 },
-                        { titulo: "Tabela Periódica", duracao: 25 }
+                        { 
+                            titulo: "Matéria e Energia", 
+                            descricao: "Conceitos fundamentais",
+                            duracao: 18,
+                            ordem: 1
+                        }
                     ]
                 }
             ]
@@ -790,7 +782,7 @@ function criarCursosExemplo() {
         {
             id: 3,
             titulo: "História do Brasil",
-            descricao: "Conheça a história do Brasil desde o período colonial",
+            descricao: "Conheça a história do Brasil desde o período colonial até os dias atuais.",
             materia: "csh",
             categoria: "historia",
             nivel: "medio",
@@ -799,9 +791,14 @@ function criarCursosExemplo() {
             modulos: [
                 {
                     titulo: "Período Colonial",
+                    ordem: 1,
                     aulas: [
-                        { titulo: "Descobrimento do Brasil", duracao: 20 },
-                        { titulo: "Ciclo do Açúcar", duracao: 22 }
+                        { 
+                            titulo: "Descobrimento do Brasil", 
+                            descricao: "A chegada dos portugueses",
+                            duracao: 20,
+                            ordem: 1
+                        }
                     ]
                 }
             ]
@@ -809,7 +806,7 @@ function criarCursosExemplo() {
         {
             id: 4,
             titulo: "Gramática Portuguesa",
-            descricao: "Domine as regras gramaticais e melhore sua escrita",
+            descricao: "Domine as regras gramaticais e melhore sua escrita e interpretação de textos.",
             materia: "portugues",
             categoria: "gramatica",
             nivel: "fundamental",
@@ -818,9 +815,14 @@ function criarCursosExemplo() {
             modulos: [
                 {
                     titulo: "Classes Gramaticais",
+                    ordem: 1,
                     aulas: [
-                        { titulo: "Substantivos e Adjetivos", duracao: 15 },
-                        { titulo: "Verbos e Conjugações", duracao: 30 }
+                        { 
+                            titulo: "Substantivos e Adjetivos", 
+                            descricao: "Aprenda a classificar palavras",
+                            duracao: 15,
+                            ordem: 1
+                        }
                     ]
                 }
             ]
@@ -828,7 +830,7 @@ function criarCursosExemplo() {
         {
             id: 5,
             titulo: "Introdução à Programação",
-            descricao: "Aprenda os conceitos básicos de programação e lógica computacional",
+            descricao: "Aprenda os conceitos básicos de programação e lógica computacional.",
             materia: "programacao",
             categoria: "python",
             nivel: "iniciante",
@@ -837,9 +839,14 @@ function criarCursosExemplo() {
             modulos: [
                 {
                     titulo: "Fundamentos",
+                    ordem: 1,
                     aulas: [
-                        { titulo: "O que é Programação?", duracao: 20 },
-                        { titulo: "Variáveis e Tipos de Dados", duracao: 25 }
+                        { 
+                            titulo: "O que é Programação?", 
+                            descricao: "Entenda o básico da programação",
+                            duracao: 20,
+                            ordem: 1
+                        }
                     ]
                 }
             ]
@@ -926,46 +933,43 @@ async function loadUserData() {
         } else {
             userData = { nome: 'Aluno', serie: '1º Ano', pontuacao: 0 };
         }
-        await loadUserProgress();
     } catch (error) {
         console.error('❌ Erro ao carregar dados do usuário:', error);
         userData = { nome: 'Aluno', serie: '--', pontuacao: 0 };
     }
 }
 
-// Load user progress from API
-async function loadUserProgress() {
-    try {
-        if (userData && userData.id) {
-            console.log('📊 Carregando progresso do usuário...');
-            const response = await fetchAPI(`/api/progresso/${userData.id}`);
-            if (response) {
-                userProgress = response.progressos || [];
-                console.log(`📊 ${userProgress.length} progressos carregados`);
-            }
-        }
-    } catch (error) {
-        console.error('❌ Erro ao carregar progresso:', error);
-        userProgress = [];
-    }
-}
-
-// ✅ FUNÇÃO LOADCURSOS ATUALIZADA
+// ✅ FUNÇÃO LOADCURSOS CORRIGIDA
 async function loadCursos() {
     try {
         showLoading();
         console.log('🔄 Carregando cursos...');
         
-        const cursosData = await fetchAPI('/api/cursos');
-        cursos = Array.isArray(cursosData) ? cursosData : [];
-        console.log(`✅ ${cursos.length} cursos carregados`);
+        // Tenta carregar da API
+        try {
+            const cursosData = await fetchAPI('/api/cursos');
+            cursos = Array.isArray(cursosData) ? cursosData : [];
+            console.log(`✅ ${cursos.length} cursos carregados da API`);
+        } catch (apiError) {
+            console.error('❌ Erro ao carregar da API, usando cursos de exemplo:', apiError);
+            cursos = criarCursosExemplo();
+            showAlert('⚠️ Usando cursos de exemplo devido a problema no servidor', 'warning');
+        }
+        
+        // Se ainda não tem cursos, cria exemplos
+        if (cursos.length === 0) {
+            console.log('📝 Nenhum curso encontrado, criando exemplos...');
+            cursos = criarCursosExemplo();
+            showAlert('ℹ️ Nenhum curso encontrado. Criando cursos de exemplo.', 'info');
+        }
         
         displayCursos(cursos);
         
     } catch (error) {
-        console.error('❌ Erro ao carregar cursos:', error);
-        cursos = [];
-        showAlert('⚠️ Usando cursos de exemplo devido a problema no servidor', 'warning');
+        console.error('❌ Erro crítico ao carregar cursos:', error);
+        cursos = criarCursosExemplo();
+        showAlert('⚠️ Erro ao carregar cursos. Usando dados de exemplo.', 'warning');
+        displayCursos(cursos);
     } finally {
         filteredCursos = [...cursos];
         updateStats();
@@ -973,7 +977,7 @@ async function loadCursos() {
     }
 }
 
-// ✅ FILTRO SIMPLIFICADO - SEM CAMPO 'ativo'
+// ✅ FILTRO SIMPLIFICADO
 function filterCursos(filter = 'all') {
     const searchTerm = searchInput.value.toLowerCase();
     
@@ -1142,9 +1146,8 @@ function getTotalAulas(curso) {
 }
 
 function getProgressoCurso(cursoId) {
-    if (!userProgress || userProgress.length === 0) return 0;
-    const progresso = userProgress.find(p => p.cursoId === cursoId);
-    return progresso ? progresso.progresso : 0;
+    // Simula progresso para demonstração
+    return Math.random() > 0.7 ? Math.floor(Math.random() * 100) : 0;
 }
 
 function verDetalhes(cursoId) {
