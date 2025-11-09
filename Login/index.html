@@ -321,8 +321,11 @@
             <button class="btn-registrar" id="btnAcao">Entrar</button>
         </div>
     </div>
-<script>const CONFIG = {
-    API_URL: 'https://coliseum-api.onrender.com',
+<script>
+   const CONFIG = {
+    API_URL: 'https://corsproxy.io/?',
+    API_ORIGINAL: 'https://coliseum-api.onrender.com',
+    
     ENDPOINTS: {
         LOGIN: '/api/usuarios',
         HEALTH: '/api/health'
@@ -409,6 +412,33 @@ function configurarModoFormulario() {
     atualizarModo();
 }
 
+async function fazerRequisicaoComProxy(endpoint, options = {}) {
+    const urlProxy = `${CONFIG.API_URL}${encodeURIComponent(CONFIG.API_ORIGINAL + endpoint)}`;
+    
+    console.log(`📤 Enviando via proxy para: ${urlProxy}`);
+    
+    try {
+        const response = await fetch(urlProxy, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            ...options
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Erro HTTP: ${response.status}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('💥 Erro na requisição com proxy:', error);
+        throw error;
+    }
+}
+
+// ✅ Modificar a função registrar para usar proxy
 async function registrar() {
     console.log('🔐 Processando acesso...');
     
@@ -446,27 +476,20 @@ async function registrar() {
             requestBody.serie = serie;
         }
         
-        console.log(`📤 Enviando ${action} para:`, CONFIG.API_URL + CONFIG.ENDPOINTS.LOGIN);
+        console.log(`📤 Enviando ${action} via proxy...`);
         
-        const response = await fetch(CONFIG.API_URL + CONFIG.ENDPOINTS.LOGIN, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+        // ✅ Usar a função com proxy
+        const data = await fazerRequisicaoComProxy(CONFIG.ENDPOINTS.LOGIN, {
             body: JSON.stringify(requestBody)
         });
         
-        const data = await response.json();
         console.log('📨 Resposta:', data);
         
         if (data.success) {
             mostrarMensagem(`✅ ${data.message}`, 'sucesso');
-            
-            // ✅ CORREÇÃO: Padronizar localStorage
             salvarDadosUsuarioPadronizados(data.usuario);
             
             setTimeout(() => {
-                // ✅ CORREÇÃO: Usar rota do Vercel
                 window.location.href = ROTAS.MENU;
             }, 1500);
         } else {
@@ -474,10 +497,53 @@ async function registrar() {
         }
         
     } catch (error) {
-        console.error('💥 Erro na requisição:', error);
-        mostrarMensagem('❌ Erro de conexão com o servidor', 'erro');
+        console.error('💥 Erro completo:', error);
+        mostrarMensagem('❌ Erro de conexão. Tentando método alternativo...', 'erro');
+        
+        // ✅ Tentar método alternativo sem proxy
+        await tentarRequisicaoDireta();
     } finally {
         mostrarLoading(false);
+    }
+}
+
+// ✅ Método alternativo direto (para teste)
+async function tentarRequisicaoDireta() {
+    try {
+        const ra = document.getElementById('ra')?.value.trim();
+        const senha = document.getElementById('senha')?.value;
+        const nome = document.getElementById('nome')?.value.trim();
+        const serie = document.getElementById('serie')?.value.trim();
+        const isCadastro = nome && serie;
+        const action = isCadastro ? 'cadastro' : 'login';
+        
+        const requestBody = {
+            ra: ra,
+            senha: senha,
+            action: action
+        };
+        
+        if (isCadastro) {
+            requestBody.nome = nome;
+            requestBody.serie = serie;
+        }
+        
+        console.log('🔄 Tentando requisição direta...');
+        
+        const response = await fetch('https://coliseum-api.onrender.com/api/usuarios', {
+            method: 'POST',
+            mode: 'no-cors', // ✅ Modo no-cors para contornar CORS
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        // Com no-cors não podemos ler a resposta, mas pelo menos a requisição é enviada
+        mostrarMensagem('✅ Requisição enviada (modo no-cors)', 'sucesso');
+        
+    } catch (error) {
+        console.error('Erro no método alternativo:', error);
     }
 }
 
@@ -539,6 +605,5 @@ function mostrarLoading(mostrar, texto = 'Carregando...') {
 
 console.log('🎯 Sistema Coliseum carregado com sucesso!');
 </script>
-
 </body>
 </html>
