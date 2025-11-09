@@ -785,6 +785,52 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log('🎯 Página de cursos inicializada com sucesso!');
 });
 
+// ✅ FUNÇÃO showLoading QUE ESTAVA FALTANDO
+function showLoading() {
+    if (!coursesContainer) return;
+    
+    coursesContainer.innerHTML = `
+        <div class="loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Carregando cursos...</p>
+        </div>
+    `;
+}
+
+// ✅ FUNÇÃO updateStats QUE ESTAVA FALTANDO
+function updateStats() {
+    const totalCursos = cursos.length;
+    const cursosMatematica = cursos.filter(c => c.materia === 'matematica').length;
+    const cursosCsn = cursos.filter(c => c.materia === 'csn').length;
+    const cursosCsh = cursos.filter(c => c.materia === 'csh').length;
+    const cursosPortugues = cursos.filter(c => c.materia === 'portugues').length;
+    const cursosProgramacao = cursos.filter(c => c.materia === 'programacao').length;
+
+    // Atualiza elementos se existirem
+    const totalElement = document.getElementById('total-cursos');
+    const matematicaElement = document.getElementById('cursos-matematica');
+    const csnElement = document.getElementById('cursos-csn');
+    const cshElement = document.getElementById('cursos-csh');
+    const portuguesElement = document.getElementById('cursos-portugues');
+    const programacaoElement = document.getElementById('cursos-programacao');
+
+    if (totalElement) totalElement.textContent = totalCursos;
+    if (matematicaElement) matematicaElement.textContent = cursosMatematica;
+    if (csnElement) csnElement.textContent = cursosCsn;
+    if (cshElement) cshElement.textContent = cursosCsh;
+    if (portuguesElement) portuguesElement.textContent = cursosPortugues;
+    if (programacaoElement) programacaoElement.textContent = cursosProgramacao;
+
+    console.log('📊 Estatísticas atualizadas:', {
+        total: totalCursos,
+        matematica: cursosMatematica,
+        csn: cursosCsn,
+        csh: cursosCsh,
+        portugues: cursosPortugues,
+        programacao: cursosProgramacao
+    });
+}
+
 // ✅ CORREÇÃO: Navegação para Vercel - Volta para Menu
 function voltarParaMenu() {
     window.location.href = '/menu';
@@ -855,61 +901,58 @@ function updateUserInterface() {
     console.log('User data:', userData);
 }
 
-// ✅ FUNÇÃO LOADCURSOS COM PROXY CORS
+// ✅ FUNÇÃO LOADCURSOS SIMPLIFICADA E CORRIGIDA
 async function loadCursos() {
     try {
-        showLoading();
-        console.log('🔄 Carregando cursos da API...');
+        showLoading(); // ✅ AGORA ESTÁ DEFINIDA
+        console.log('🔄 Carregando cursos...');
         
-        // ✅ USAR PROXY CORS PARA CONTORNAR O PROBLEMA
-        const PROXY_URL = 'https://corsproxy.io/?';
-        const targetURL = `${API_BASE_URL}/api/cursos`;
-        const proxyURL = `${PROXY_URL}${encodeURIComponent(targetURL)}`;
+        // Tentar método direto primeiro (mais rápido)
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/cursos`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                cursos = Array.isArray(data) ? data : [];
+                console.log(`✅ ${cursos.length} cursos carregados diretamente`);
+                return;
+            }
+        } catch (directError) {
+            console.log('❌ Método direto falhou, tentando proxy...');
+        }
         
-        console.log(`🌐 Fazendo requisição via proxy para: ${targetURL}`);
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
-        
-        const response = await fetch(proxyURL, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        console.log('📊 Status da resposta via proxy:', response.status);
+        // Se direto falhou, tentar proxy
+        const proxyURL = `https://corsproxy.io/?${encodeURIComponent(`${API_BASE_URL}/api/cursos`)}`;
+        const response = await fetch(proxyURL);
         
         if (response.ok) {
             const data = await response.json();
             cursos = Array.isArray(data) ? data : [];
             console.log(`✅ ${cursos.length} cursos carregados via proxy`);
         } else {
-            console.error('❌ Erro HTTP via proxy:', response.status, response.statusText);
-            throw new Error(`Proxy retornou erro: ${response.status}`);
+            throw new Error(`Erro ${response.status}`);
         }
+        
     } catch (error) {
         console.error('❌ Erro ao carregar cursos:', error);
         cursos = [];
         
-        // Mensagem específica baseada no erro
-        if (error.name === 'AbortError') {
-            showAlert('⏰ Tempo esgotado. Servidor está lento.', 'warning');
-        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-            showAlert('❌ Problema de conexão. Verifique sua internet.', 'error');
-        } else if (error.message.includes('500')) {
-            showAlert('⚠️ Erro interno do servidor. Tente novamente em alguns minutos.', 'warning');
+        // Mensagem amigável
+        if (error.message.includes('500')) {
+            showAlert('⚠️ Servidor temporariamente indisponível', 'warning');
         } else {
-            showAlert('❌ Erro ao carregar cursos: ' + error.message, 'error');
+            showAlert('❌ Erro ao carregar cursos. Tente novamente.', 'error');
         }
+        
     } finally {
         filteredCursos = [...cursos];
         displayCursos();
-        updateStats(); // ✅ AGORA ESTA FUNÇÃO EXISTE
+        updateStats(); // ✅ AGORA ESTÁ DEFINIDA
         console.log(`🎯 ${cursos.length} cursos processados`);
     }
 }
@@ -1092,56 +1135,11 @@ function getProgressoCurso(cursoId) {
     return progresso ? progresso.progresso : 0;
 }
 
-// ✅ UPDATE STATS - FUNÇÃO QUE ESTAVA FALTANDO
-function updateStats() {
-    const totalCursos = cursos.length;
-    const cursosMatematica = cursos.filter(c => c.materia === 'matematica').length;
-    const cursosCsn = cursos.filter(c => c.materia === 'csn').length;
-    const cursosCsh = cursos.filter(c => c.materia === 'csh').length;
-    const cursosPortugues = cursos.filter(c => c.materia === 'portugues').length;
-    const cursosProgramacao = cursos.filter(c => c.materia === 'programacao').length;
-
-    // Atualiza elementos se existirem
-    const totalElement = document.getElementById('total-cursos');
-    const matematicaElement = document.getElementById('cursos-matematica');
-    const csnElement = document.getElementById('cursos-csn');
-    const cshElement = document.getElementById('cursos-csh');
-    const portuguesElement = document.getElementById('cursos-portugues');
-    const programacaoElement = document.getElementById('cursos-programacao');
-
-    if (totalElement) totalElement.textContent = totalCursos;
-    if (matematicaElement) matematicaElement.textContent = cursosMatematica;
-    if (csnElement) csnElement.textContent = cursosCsn;
-    if (cshElement) cshElement.textContent = cursosCsh;
-    if (portuguesElement) portuguesElement.textContent = cursosPortugues;
-    if (programacaoElement) programacaoElement.textContent = cursosProgramacao;
-
-    console.log('📊 Estatísticas atualizadas:', {
-        total: totalCursos,
-        matematica: cursosMatematica,
-        csn: cursosCsn,
-        csh: cursosCsh,
-        portugues: cursosPortugues,
-        programacao: cursosProgramacao
-    });
-}
-
 function verDetalhes(cursoId) {
     const curso = cursos.find(c => c.id === cursoId);
     if (curso) {
         alert(`Detalhes do curso: ${curso.titulo}\n\nMatéria: ${getMateriaNome(curso.materia)}\nCategoria: ${getCategoriaNome(curso.categoria)}\nNível: ${getNivelNome(curso.nivel)}\n\n${curso.descricao}`);
     }
-}
-
-function showLoading() {
-    if (!coursesContainer) return;
-    
-    coursesContainer.innerHTML = `
-        <div class="loading">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Carregando cursos...</p>
-        </div>
-    `;
 }
 
 function showAlert(message, type = 'error') {
