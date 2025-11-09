@@ -855,16 +855,23 @@ function updateUserInterface() {
     console.log('User data:', userData);
 }
 
-// ✅ ✅✅ CORREÇÃO: FUNÇÃO LOADCURSOS ÚNICA E CORRIGIDA
+// ✅ FUNÇÃO LOADCURSOS COM PROXY CORS
 async function loadCursos() {
     try {
         showLoading();
         console.log('🔄 Carregando cursos da API...');
         
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
+        // ✅ USAR PROXY CORS PARA CONTORNAR O PROBLEMA
+        const PROXY_URL = 'https://corsproxy.io/?';
+        const targetURL = `${API_BASE_URL}/api/cursos`;
+        const proxyURL = `${PROXY_URL}${encodeURIComponent(targetURL)}`;
         
-        const response = await fetch(`${API_BASE_URL}/api/cursos`, {
+        console.log(`🌐 Fazendo requisição via proxy para: ${targetURL}`);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        
+        const response = await fetch(proxyURL, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -875,15 +882,15 @@ async function loadCursos() {
         
         clearTimeout(timeoutId);
         
-        console.log('📊 Status da resposta:', response.status);
+        console.log('📊 Status da resposta via proxy:', response.status);
         
         if (response.ok) {
             const data = await response.json();
             cursos = Array.isArray(data) ? data : [];
-            console.log(`✅ ${cursos.length} cursos carregados da API`);
+            console.log(`✅ ${cursos.length} cursos carregados via proxy`);
         } else {
-            console.error('❌ Erro HTTP:', response.status, response.statusText);
-            throw new Error(`Servidor retornou erro: ${response.status}`);
+            console.error('❌ Erro HTTP via proxy:', response.status, response.statusText);
+            throw new Error(`Proxy retornou erro: ${response.status}`);
         }
     } catch (error) {
         console.error('❌ Erro ao carregar cursos:', error);
@@ -892,17 +899,17 @@ async function loadCursos() {
         // Mensagem específica baseada no erro
         if (error.name === 'AbortError') {
             showAlert('⏰ Tempo esgotado. Servidor está lento.', 'warning');
-        } else if (error.message.includes('500')) {
-            showAlert('⚠️ Erro interno do servidor. Tente novamente em alguns minutos.', 'warning');
         } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
             showAlert('❌ Problema de conexão. Verifique sua internet.', 'error');
+        } else if (error.message.includes('500')) {
+            showAlert('⚠️ Erro interno do servidor. Tente novamente em alguns minutos.', 'warning');
         } else {
             showAlert('❌ Erro ao carregar cursos: ' + error.message, 'error');
         }
     } finally {
         filteredCursos = [...cursos];
         displayCursos();
-        updateStats();
+        updateStats(); // ✅ AGORA ESTA FUNÇÃO EXISTE
         console.log(`🎯 ${cursos.length} cursos processados`);
     }
 }
@@ -1085,7 +1092,7 @@ function getProgressoCurso(cursoId) {
     return progresso ? progresso.progresso : 0;
 }
 
-// ✅ UPDATE STATS
+// ✅ UPDATE STATS - FUNÇÃO QUE ESTAVA FALTANDO
 function updateStats() {
     const totalCursos = cursos.length;
     const cursosMatematica = cursos.filter(c => c.materia === 'matematica').length;
