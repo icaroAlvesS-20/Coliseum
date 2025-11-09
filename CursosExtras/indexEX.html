@@ -817,24 +817,49 @@ function setupEventListeners() {
 }
 
 // Load user data from localStorage
-async function loadUserData() {
+async function loadCursos() {
     try {
-        const userDataStr = localStorage.getItem('userData');
-        if (userDataStr) {
-            userData = JSON.parse(userDataStr);
-            updateUserInterface();
+        showLoading();
+        console.log('🔄 Carregando cursos da API...');
+        
+        const response = await fetch(`${API_BASE_URL}/api/cursos`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+        
+        console.log('📊 Status da resposta:', response.status);
+        
+        if (response.ok) {
+            const data = await response.json();
+            cursos = Array.isArray(data) ? data : [];
+            console.log('✅ Cursos carregados da API:', cursos);
+        } else if (response.status === 500) {
+            throw new Error('Servidor indisponível (Erro 500)');
         } else {
-            userData = { nome: 'Aluno', serie: '1º Ano', pontuacao: 0 };
-            updateUserInterface();
+            throw new Error(`Erro HTTP: ${response.status}`);
         }
-        await loadUserProgress();
     } catch (error) {
-        console.error('❌ Erro ao carregar dados do usuário:', error);
-        userData = { nome: 'Aluno', serie: '--', pontuacao: 0 };
-        updateUserInterface();
+        console.error('❌ Erro ao carregar cursos da API:', error);
+        cursos = [];
+        
+        // Mensagem mais específica baseada no tipo de erro
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            showAlert('❌ Erro de conexão. Verifique sua internet.', 'error');
+        } else if (error.message.includes('500')) {
+            showAlert('⚠️ Servidor temporariamente indisponível. Tente novamente em alguns instantes.', 'warning');
+        } else {
+            showAlert('❌ Erro ao carregar cursos. Tente novamente.', 'error');
+        }
+    } finally {
+        filteredCursos = [...cursos];
+        displayCursos();
+        updateStats();
+        console.log(`🎯 ${cursos.length} cursos processados`);
     }
 }
-
 // Load user progress from API
 async function loadUserProgress() {
     try {
