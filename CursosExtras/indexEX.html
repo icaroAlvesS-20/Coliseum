@@ -684,6 +684,78 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log('🎯 Página de cursos inicializada com sucesso!');
 });
 
+// ✅ FUNÇÃO fetchAPI COM PROXY CORS
+async function fetchAPI(endpoint, options = {}) {
+    const PROXY_URL = 'https://corsproxy.io/?';
+    const targetURL = `${API_BASE_URL}${endpoint}`;
+    
+    try {
+        console.log(`🌐 Fazendo requisição via proxy para: ${targetURL}`);
+        
+        // Configuração do proxy CORS
+        const proxyTarget = `${PROXY_URL}${encodeURIComponent(targetURL)}`;
+        
+        const config = {
+            method: options.method || 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                ...options.headers
+            }
+        };
+
+        // Adiciona body apenas se existir e não for GET
+        if (options.body && config.method !== 'GET') {
+            config.body = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
+        }
+
+        const response = await fetch(proxyTarget, config);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Erro ${response.status}: ${errorText}`);
+        }
+        
+        return await response.json();
+        
+    } catch (error) {
+        console.error('❌ Erro na requisição:', error);
+        
+        // Se for erro de CORS ou conexão, tenta método alternativo
+        if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+            console.log('🔄 Tentando método alternativo sem proxy...');
+            try {
+                const directConfig = {
+                    method: options.method || 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        ...options.headers
+                    },
+                    mode: 'cors'
+                };
+
+                if (options.body && directConfig.method !== 'GET') {
+                    directConfig.body = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
+                }
+
+                const directResponse = await fetch(`${API_BASE_URL}${endpoint}`, directConfig);
+
+                if (directResponse.ok) {
+                    console.log('✅ Conexão direta funcionou!');
+                    return await directResponse.json();
+                } else {
+                    throw new Error(`HTTP ${directResponse.status}`);
+                }
+            } catch (fallbackError) {
+                console.error('❌ Método alternativo também falhou:', fallbackError);
+            }
+        }
+        
+        throw error;
+    }
+}
+
 // ✅ FUNÇÃO showLoading
 function showLoading() {
     if (!coursesContainer) return;
@@ -784,10 +856,9 @@ async function loadUserProgress() {
     try {
         if (userData && userData.id) {
             console.log('📊 Carregando progresso do usuário...');
-            const response = await fetch(`${API_BASE_URL}/api/progresso/${userData.id}`);
-            if (response.ok) {
-                const data = await response.json();
-                userProgress = data.progressos || [];
+            const response = await fetchAPI(`/api/progresso/${userData.id}`);
+            if (response) {
+                userProgress = response.progressos || [];
                 console.log(`📊 ${userProgress.length} progressos carregados`);
             }
         }
@@ -797,63 +868,32 @@ async function loadUserProgress() {
     }
 }
 
-// ✅ FUNÇÃO LOADCURSOS SIMPLIFICADA
+// ✅ FUNÇÃO LOADCURSOS ATUALIZADA COM PROXY
 async function loadCursos() {
     try {
         showLoading();
         console.log('🔄 Carregando cursos...');
         
-        // Tentar método direto primeiro
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/cursos`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                cursos = Array.isArray(data) ? data : [];
-                console.log(`✅ ${cursos.length} cursos carregados diretamente`);
-            } else {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            
-        } catch (directError) {
-            console.log('❌ Método direto falhou, tentando proxy...', directError);
-            
-            // Método com proxy CORS
-            const proxyURL = `https://corsproxy.io/?${encodeURIComponent(`${API_BASE_URL}/api/cursos`)}`;
-            const response = await fetch(proxyURL, {
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                cursos = Array.isArray(data) ? data : [];
-                console.log(`✅ ${cursos.length} cursos carregados via proxy`);
-            } else {
-                throw new Error(`Proxy também falhou: HTTP ${response.status}`);
-            }
-        }
+        const cursosData = await fetchAPI('/api/cursos');
+        cursos = Array.isArray(cursosData) ? cursosData : [];
+        console.log(`✅ ${cursos.length} cursos carregados`);
+        
+        displayCursos(cursos);
         
     } catch (error) {
         console.error('❌ Erro ao carregar cursos:', error);
         cursos = [];
         
-        if (error.message.includes('500')) {
-            showAlert('⚠️ Servidor temporariamente indisponível. Tente novamente em alguns instantes.', 'warning');
+        if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+            showAlert('❌ Erro de conexão com o servidor. Verifique sua internet.', 'error');
+        } else if (error.message.includes('500')) {
+            showAlert('⚠️ Servidor temporariamente indisponível', 'warning');
         } else {
-            showAlert('❌ Erro ao carregar cursos. Verifique sua conexão.', 'error');
+            showAlert('❌ Erro ao carregar cursos. Tente novamente.', 'error');
         }
         
     } finally {
         filteredCursos = [...cursos];
-        displayCursos();
         updateStats();
         console.log(`🎯 ${cursos.length} cursos processados`);
     }
