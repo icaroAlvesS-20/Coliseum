@@ -1397,87 +1397,164 @@ class GerenciadorCursos {
         return `${horas}:${mins.toString().padStart(2, '0')}:00`;
     }
 
-    async marcarAulaConcluida(aulaId) {
-        const cursoId = this.getCursoId();
-        
-        try {
-            console.log(`✅ Marcando aula ${aulaId} como concluída...`);
-            
-            const response = await fetch(`${this.API_BASE}/progresso/aula`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    usuarioId: this.usuarioId,
-                    aulaId: aulaId,
-                    cursoId: cursoId
-                })
-            });
-
-            if (response.ok) {
-                const resultado = await response.json();
-                console.log('✅ Progresso salvo na API');
-                
-                // Atualizar interface
-                this.atualizarInterfaceAulaConcluida(aulaId);
-                
-                // Fechar player
-                document.querySelector('.aula-player-overlay')?.remove();
-                
-                // Recarregar módulos para atualizar progresso
-                await this.carregarModulosDaAPI(cursoId);
-                
-            } else {
-                throw new Error('Erro ao salvar progresso');
-            }
-
-        } catch (error) {
-            console.error('❌ Erro ao salvar progresso:', error);
-            alert('Erro ao salvar progresso. Tente novamente.');
-        }
-    }
-
-    atualizarInterfaceAulaConcluida(aulaId) {
-        // Atualizar visualmente a aula como concluída
-        const aulaElements = document.querySelectorAll('.aula-item');
-        aulaElements.forEach(element => {
-            if (element.getAttribute('onclick')?.includes(aulaId.toString())) {
-                element.classList.add('concluida');
-            }
+   async marcarAulaConcluida(aulaId) {
+    const cursoId = this.getCursoId();
+    
+    try {
+        console.log(`✅ Marcando aula ${aulaId} como concluída...`);
+        console.log(`🌐 API URL: ${this.API_BASE}/progresso/aula`);
+        console.log(`📦 Dados:`, {
+            usuarioId: this.usuarioId,
+            aulaId: aulaId,
+            cursoId: cursoId
         });
-    }
-
-    atualizarProgressoGeral(progresso, concluidas, total) {
-        const header = document.querySelector('.curso-header');
-        if (!header) return;
-
-        const progressoHTML = `
-            <div class="progresso-geral-curso">
-                <div class="progresso-header">
-                    <span>Progresso do Curso</span>
-                    <span class="progresso-percent">${progresso}%</span>
-                </div>
-                <div class="progresso-bar">
-                    <div class="progresso-fill" style="width: ${progresso}%"></div>
-                </div>
-                <div class="progresso-stats">
-                    ${concluidas} de ${total} aulas concluídas
-                </div>
-            </div>
-        `;
         
-        const existingProgress = header.querySelector('.progresso-geral-curso');
-        if (existingProgress) {
-            existingProgress.innerHTML = progressoHTML;
+        const response = await fetch(`${this.API_BASE}/progresso/aula`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            credentials: 'include', // ← ADICIONADO
+            body: JSON.stringify({
+                usuarioId: this.usuarioId,
+                aulaId: parseInt(aulaId), // ← Garantir que é número
+                cursoId: parseInt(cursoId) // ← Garantir que é número
+            })
+        });
+
+        console.log(`📡 Response status: ${response.status}`);
+        console.log(`📡 Response headers:`, Object.fromEntries(response.headers.entries()));
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Erro na resposta:', errorText);
+            throw new Error(`Erro ${response.status}: ${errorText}`);
+        }
+
+        const resultado = await response.json();
+        console.log('✅ Progresso salvo na API:', resultado);
+        
+        // Atualizar interface
+        this.atualizarInterfaceAulaConcluida(aulaId);
+        
+        // Fechar player
+        document.querySelector('.aula-player-overlay')?.remove();
+        
+        // Recarregar módulos para atualizar progresso
+        await this.carregarModulosDaAPI(cursoId);
+        
+        // Atualizar progresso geral se disponível
+        if (resultado.progresso !== undefined) {
+            this.atualizarProgressoGeral(
+                resultado.progresso, 
+                resultado.aulasConcluidas, 
+                resultado.totalAulas
+            );
+        }
+
+    } catch (error) {
+        console.error('❌ Erro ao salvar progresso:', error);
+        
+        // Mostrar erro mais específico
+        if (error.message.includes('Failed to fetch')) {
+            alert('❌ Erro de conexão. Verifique se a API está online.');
+        } else if (error.message.includes('CORS')) {
+            alert('❌ Erro de CORS. Contate o administrador.');
         } else {
-            header.insertAdjacentHTML('beforeend', progressoHTML);
+            alert('❌ Erro ao salvar progresso: ' + error.message);
         }
     }
+}
 
-    getCursoId() {
-        const urlParams = new URLSearchParams(window.location.search);
-        return parseInt(urlParams.get('id'));
+atualizarInterfaceAulaConcluida(aulaId) {
+    // Atualizar visualmente a aula como concluída
+    const aulaElements = document.querySelectorAll('.aula-item, [data-aula-id]');
+    aulaElements.forEach(element => {
+        const elementAulaId = element.getAttribute('data-aula-id') || 
+                             element.getAttribute('onclick')?.match(/\d+/)?.[0];
+        
+        if (elementAulaId === aulaId.toString()) {
+            element.classList.add('concluida');
+            
+            // Adicionar ícone de concluído
+            const checkIcon = element.querySelector('.check-icon') || 
+                            document.createElement('span');
+            if (!element.querySelector('.check-icon')) {
+                checkIcon.className = 'check-icon';
+                checkIcon.innerHTML = '✅';
+                checkIcon.style.marginLeft = '10px';
+                element.appendChild(checkIcon);
+            }
+        }
+    });
+}
+
+atualizarProgressoGeral(progresso, concluidas, total) {
+    const header = document.querySelector('.curso-header') || 
+                   document.querySelector('.modulos-container')?.parentElement;
+    
+    if (!header) return;
+
+    const progressoHTML = `
+        <div class="progresso-geral-curso" style="
+            background: rgba(255,207,0,0.1);
+            border: 1px solid #ffcf00;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        ">
+            <div class="progresso-header" style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 8px;
+            ">
+                <span style="font-weight: bold; color: #ffcf00;">Progresso do Curso</span>
+                <span class="progresso-percent" style="
+                    font-weight: bold;
+                    color: #ffcf00;
+                    font-size: 1.1em;
+                ">${progresso}%</span>
+            </div>
+            <div class="progresso-bar" style="
+                background: #333;
+                border-radius: 10px;
+                height: 8px;
+                overflow: hidden;
+                margin-bottom: 8px;
+            ">
+                <div class="progresso-fill" style="
+                    background: #ffcf00;
+                    height: 100%;
+                    width: ${progresso}%;
+                    transition: width 0.3s ease;
+                "></div>
+            </div>
+            <div class="progresso-stats" style="
+                color: #aaa;
+                font-size: 0.9em;
+                text-align: center;
+            ">
+                ${concluidas} de ${total} aulas concluídas
+            </div>
+        </div>
+    `;
+    
+    const existingProgress = header.querySelector('.progresso-geral-curso');
+    if (existingProgress) {
+        existingProgress.remove();
     }
+    
+    header.insertAdjacentHTML('afterbegin', progressoHTML);
+}
 
+getCursoId() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const cursoId = urlParams.get('id');
+    console.log(`🔧 Curso ID da URL: ${cursoId}`);
+    return parseInt(cursoId);
+}
     mostrarCarregando() {
         const container = document.getElementById('modulos-container');
         if (!container) return;
@@ -1531,3 +1608,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
