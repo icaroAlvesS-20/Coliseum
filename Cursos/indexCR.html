@@ -1558,22 +1558,6 @@ atualizarProgressoGeral(progresso, concluidas, total) {
     // Inserir ABAIXO do título
     tituloCurso.insertAdjacentHTML('afterend', progressoHTML);
 }
-    // Remover progresso existente
-    const existingProgress = document.querySelector('.progresso-geral-curso');
-    if (existingProgress) {
-        existingProgress.remove();
-    }
-    
-    // Inserir ABAIXO do título
-    tituloCurso.insertAdjacentHTML('afterend', progressoHTML);
-}
-    const existingProgress = header.querySelector('.progresso-geral-curso');
-    if (existingProgress) {
-        existingProgress.remove();
-    }
-    
-    header.insertAdjacentHTML('afterbegin', progressoHTML);
-}
 
 getCursoId() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -1581,42 +1565,41 @@ getCursoId() {
     console.log(`🔧 Curso ID da URL: ${cursoId}`);
     return parseInt(cursoId);
 }
-    mostrarCarregando() {
-        const container = document.getElementById('modulos-container');
-        if (!container) return;
-        
-        container.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #ffcf00;">
-                <div style="border: 4px solid #f3f3f3; border-top: 4px solid #ffcf00; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
-                <h3>Carregando Conteúdo</h3>
-                <p>Buscando informações do curso...</p>
-            </div>
-            <style>
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            </style>
-        `;
-    }
 
-    mostrarErro(mensagem) {
-        const container = document.getElementById('modulos-container');
-        if (!container) return;
-        
-        container.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #ff6b6b;">
-                <div style="font-size: 3rem; margin-bottom: 15px;">❌</div>
-                <h3 style="color: #ff6b6b;">Erro ao Carregar</h3>
-                <p>${mensagem}</p>
-                <button onclick="location.reload()" style="background: #4361ee; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px;">
-                    🔄 Tentar Novamente
-                </button>
-            </div>
-        `;
-    }
+mostrarCarregando() {
+    const container = document.getElementById('modulos-container');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: #ffcf00;">
+            <div style="border: 4px solid #f3f3f3; border-top: 4px solid #ffcf00; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+            <h3>Carregando Conteúdo</h3>
+            <p>Buscando informações do curso...</p>
+        </div>
+        <style>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    `;
 }
 
+mostrarErro(mensagem) {
+    const container = document.getElementById('modulos-container');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: #ff6b6b;">
+            <div style="font-size: 3rem; margin-bottom: 15px;">❌</div>
+            <h3 style="color: #ff6b6b;">Erro ao Carregar</h3>
+            <p>${mensagem}</p>
+            <button onclick="location.reload()" style="background: #4361ee; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px;">
+                🔄 Tentar Novamente
+            </button>
+        </div>
+    `;
+}
 // ✅ INICIALIZAÇÃO COM VERIFICAÇÃO
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM Carregado - Verificando página de curso...');
@@ -1634,6 +1617,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
-
-
-
