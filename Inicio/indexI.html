@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafios - Coliseum</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+        background: linear-gradient(135deg, #000000 0%, #2d2d2d 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ===== CONTAINER PRINCIPAL ===== */
+        .container {
+            width: 400px;
+            margin: 20px auto;
+            padding: 30px;
+            background: #1a1a1a;
+            border-radius: 15px;
+            border: 2px solid #e6b800;
+            text-align: center;
+        }
+
+        /* ===== PRÁTICAS DIÁRIAS ===== */
+        .praticas-diarias {
+            width: 90%;
+            max-width: 800px;
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #e6b800;
+            text-align: center;
+        }
+
+        .praticas-diarias h3 {
+            color: #e6b800;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        #praticas-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .pratica-card {
+            background: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+            transition: all 0.3s;
+            min-height: 120px;
+        }
+
+        .pontuacao {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #e6b800;
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .materia-tag {
+            background: #333;
+            color: #e6b800;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .pratica-titulo {
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .pratica-descricao {
+            color: #ccc;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .btn-pratica {
+            background: #e6b800;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: all 0.3s;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-pratica:disabled {
+            background: #4CAF50;
+            color: white;
+            cursor: not-allowed;
+        }
+
+        .btn-pratica.concluido {
+            background: #4CAF50;
+            color: white;
+        }
+
+        #contador-praticas {
+            color: #e6b800;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        #tempo-restante {
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        /* ===== BOTÕES FIXOS ===== */
+        .btn-voltar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #ffcf00;
+            color: #000;
+            font-size: 30px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-reset {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            min-height: 44px;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-perguntas {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            border: 2px solid #e6b800;
+            box-shadow: 0 0 20px rgba(230, 184, 0, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            background: #e6b800;
+            color: #000;
+            padding: 15px 20px;
+            border-radius: 13px 13px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #000;
+            border: none;
+            padding: 0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #000;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .progresso-container {
+            margin-bottom: 20px;
+        }
+
+        .barra-progresso {
+            width: 100%;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progresso {
+            height: 100%;
+            background: #e6b800;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .contador-perguntas {
+            text-align: center;
+            color: #e6b800;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .pergunta-texto {
+            color: #fff;
+            font-size: 18px;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .alternativas-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .alternativa-btn {
+            background: #2a2a2a;
+            color: #fff;
+            border: 2px solid #444;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s;
+            font-size: 16px;
+            min-height: 54px;
+            display: flex;
+            align-items: center;
+        }
+
+        .feedback-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .feedback-texto {
+            color: #e6b800;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .btn-proxima, .btn-reiniciar {
+            background: #e6b800;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            min-height: 44px;
+            width: 100%;
+            max-width: 200px;
+            margin: 5px;
+        }
+
+        .resultado-final {
+            text-align: center;
+            color: #fff;
+        }
+
+        .resultado-titulo {
+            color: #e6b800;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .resultado-pontos {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .info-pontuacao {
+            margin: 10px 0;
+            padding: 8px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 5px;
+            font-size: 12px;
+            color: #ffd700;
+        }
+
+        .pontos-ganhos {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffd700;
+            margin: 10px 0;
+            text-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+        }
+
+        /* ===== ESTADOS INTERATIVOS (DESKTOP) ===== */
+        @media (hover: hover) and (pointer: fine) {
+            .pratica-card:hover {
+                border-color: #e6b800;
+                transform: translateY(-2px);
+            }
+            
+            .btn-pratica:hover:not(:disabled) {
+                background: #ffd700;
+                transform: translateY(-1px);
+            }
+            
+            .btn-voltar:hover {
+                background: #e6b800;
+                transform: scale(1.1);
+            }
+            
+            .btn-reset:hover {
+                background: #ff0000;
+                transform: translateY(-1px);
+            }
+            
+            .alternativa-btn:hover {
+                border-color: #e6b800;
+                background: #333;
+            }
+            
+            .btn-proxima:hover, .btn-reiniciar:hover {
+                background: #ffd700;
+                transform: translateY(-1px);
+            }
+        }
+
+        /* ===== MOBILE (max-width: 768px) ===== */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                align-items: flex-start;
+                min-height: 100vh;
+                height: auto;
+            }
+            
+            .container {
+                width: 95%;
+                padding: 20px;
+                margin: 10px auto;
+            }
+            
+            .praticas-diarias {
+                width: 95%;
+                padding: 20px;
+                margin: 10px auto;
+            }
+            
+            input, button {
+                font-size: 16px;
+                padding: 12px;
+            }
+            
+            h1, .praticas-diarias h3 {
+                font-size: 1.5rem;
+            }
+            
+            /* PRÁTICAS MOBILE */
+            #praticas-container {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                margin-bottom: 15px;
+                padding: 0 5px;
+            }
+            
+            .pratica-card {
+                padding: 15px;
+                min-height: 110px;
+                border-width: 1px;
+            }
+            
+            /* Desativa hover effects no mobile */
+            .pratica-card:hover {
+                border-color: #444;
+                transform: none;
+            }
+            
+            /* Efeito de toque no mobile */
+            .pratica-card:active {
+                border-color: #e6b800;
+                background: #333;
+                transform: scale(0.98);
+            }
+            
+            .pratica-titulo {
+                font-size: 1rem;
+                margin-bottom: 6px;
+            }
+            
+            .pratica-descricao {
+                font-size: 0.85rem;
+            }
+            
+            .btn-pratica {
+                padding: 12px;
+                font-size: 16px;
+            }
+            
+            .btn-pratica:active:not(:disabled) {
+                background: #ffd700;
+                transform: scale(0.98);
+            }
+            
+            /* BOTÕES FIXOS MOBILE */
+            .btn-voltar {
+                width: 50px;
+                height: 50px;
+                bottom: 15px;
+                right: 15px;
+                font-size: 24px;
+            }
+            
+            .btn-reset {
+                top: 15px;
+                right: 15px;
+                padding: 10px 14px;
+                font-size: 14px;
+            }
+            
+            .btn-voltar:active {
+                transform: scale(0.9);
+            }
+            
+            .btn-reset:active {
+                transform: scale(0.95);
+            }
+            
+            /* MODAL MOBILE */
+            .modal-perguntas {
+                padding: 10px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                max-height: 85vh;
+            }
+            
+            .modal-body {
+                padding: 15px;
+            }
+            
+            .pergunta-texto {
+                font-size: 16px;
+                margin-bottom: 15px;
+            }
+            
+            .alternativa-btn {
+                padding: 12px;
+                font-size: 14px;
+                min-height: 50px;
+            }
+            
+            .alternativa-btn:active {
+                border-color: #e6b800;
+                background: #333;
+                transform: scale(0.98);
+            }
+            
+            .btn-proxima, .btn-reiniciar {
+                padding: 12px 20px;
+                font-size: 16px;
+                width: 100%;
+                max-width: none;
+            }
+            
+            .btn-proxima:active, .btn-reiniciar:active {
+                transform: scale(0.98);
+            }
+            
+            .pontos-ganhos {
+                font-size: 24px;
+            }
+        }
+
+        /* ===== MOBILE PEQUENO (max-width: 480px) ===== */
+        @media (max-width: 480px) {
+            .container {
+                width: 98%;
+                padding: 15px;
+                margin: 5px auto;
+            }
+            
+            .praticas-diarias {
+                width: 98%;
+                padding: 15px;
+            }
+            
+            input, button {
+                padding: 14px;
+                margin: 8px 0;
+            }
+            
+            h1, .praticas-diarias h3 {
+                font-size: 1.3rem;
+            }
+            
+            #praticas-container {
+                gap: 10px;
+                padding: 0 2px;
+            }
+            
+            .pratica-card {
+                padding: 12px;
+                min-height: 100px;
+                border-radius: 8px;
+            }
+            
+            .pratica-titulo {
+                font-size: 0.9rem;
+            }
+            
+            .pratica-descricao {
+                font-size: 0.8rem;
+            }
+            
+            .btn-voltar {
+                width: 45px;
+                height: 45px;
+                bottom: 10px;
+                right: 10px;
+                font-size: 20px;
+            }
+            
+            .btn-reset {
+                top: 10px;
+                right: 10px;
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+        }
+
+        /* ===== TABLET (769px - 1024px) ===== */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .container {
+                width: 80%;
+                max-width: 500px;
+            }
+            
+            .praticas-diarias {
+                width: 85%;
+                max-width: 700px;
+            }
+            
+            #praticas-container {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 18px;
+            }
+            
+            .pratica-card {
+                padding: 18px;
+            }
+        }
+
+        /* ===== DESKTOP (min-width: 769px) ===== */
+        @media (min-width: 769px) {
+            .container {
+                width: 400px;
+            }
+        }
+
+        /* ===== PREVENIR ZOOM NO iOS ===== */
+        input, select, textarea, button {
+            font-size: 16px;
+        }
+
+        /* ===== SCROLL SUAVE ===== */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            overflow-x: hidden;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="praticas-diarias">
+        <h3> Desafios do Dia</h3>
+        <div id="praticas-container">
+        </div>
+        <p id="contador-praticas">Próximas práticas em: <span id="tempo-restante">24:00:00</span></p>
+    </div>
+
+    <!-- Modal de Perguntas -->
+    <div class="modal-perguntas" id="modalPerguntas">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📝 Questionário</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Conteúdo das perguntas será injetado aqui -->
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-voltar" onclick="history.back()">←</button>
+
+    <script>
+const API_URL = 'https://coliseum-api.onrender.com';
+let praticaIndexAtual = 0;
+
+// ✅ VERIFICAÇÃO DE LOGIN PARA DESAFIOS
+function verificarLoginDesafios() {
+    console.log('🔍 Verificando login para desafios...');
+    
+    const usuarioId = localStorage.getItem('usuarioId');
+    const usuarioLogado = localStorage.getItem('usuarioLogado');
+    
+    console.log('Dados de login:', { usuarioId, usuarioLogado });
+    
+    // Verificação mais flexível
+    if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
+        console.log('✅ Usuário identificado para desafios');
+        if (!usuarioLogado || usuarioLogado !== 'true') {
+            localStorage.setItem('usuarioLogado', 'true');
+        }
+        return true;
+    }
+    
+    // Tentar buscar em outras chaves
+    const usuarioJSON = localStorage.getItem('usuario');
+    if (usuarioJSON) {
+        try {
+            const usuario = JSON.parse(usuarioJSON);
+            if (usuario && usuario.id) {
+                console.log('✅ Usuário encontrado na chave "usuario"');
+                localStorage.setItem('usuarioId', usuario.id.toString());
+                localStorage.setItem('usuarioNome', usuario.nome || 'Jogador');
+                localStorage.setItem('usuarioLogado', 'true');
+                return true;
+            }
+        } catch (e) {
+            console.error('Erro ao parsear usuario:', e);
+        }
+    }
+    
+    console.log('❌ Usuário não logado - redirecionando...');
+    window.location.href = '../Login/index.html';
+    return false;
+}
+
+// ✅ OBTER USUÁRIO ID CONSISTENTE
+function obterUsuarioIdConsistente() {
+    let usuarioId = localStorage.getItem('usuarioId');
+    
+    if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
+        const usuarioJSON = localStorage.getItem('usuario');
+        if (usuarioJSON) {
+            try {
+                const usuario = JSON.parse(usuarioJSON);
+                usuarioId = usuario.id;
+                localStorage.setItem('usuarioId', usuarioId);
+            } catch (e) {
+                console.error('Erro ao parsear usuario:', e);
+            }
+        }
+    }
+
+    if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
+        console.error('❌ ERRO: usuarioId não encontrado!');
+        const deviceId = 'device_' + Math.random().toString(36).substr(2, 9);
+        usuarioId = 'temp_' + deviceId;
+        localStorage.setItem('usuarioId', usuarioId);
+    }
+
+    return usuarioId;
+}
+
+// ✅ ATUALIZAR DADOS DO USUÁRIO
+async function atualizarDadosUsuario(usuario) {
+    if (usuario && usuario.id) {
+        // Atualizar localStorage global
+        localStorage.setItem('usuarioId', usuario.id.toString());
+        localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
+        localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
+        localStorage.setItem('usuarioNome', usuario.nome || 'Jogador');
+        localStorage.setItem('usuarioRA', usuario.ra || '');
+        localStorage.setItem('usuarioSerie', usuario.serie || '');
+        
+        console.log('✅ Dados do usuário atualizados:', usuario);
+    }
+}
+
+// ✅ REGISTRAR PONTUAÇÃO NO SERVIDOR (CORRIGIDO)
+async function registrarPontuacaoNoServidor(acertos, totalPerguntas, pontos, sequencia, materia) {
+    try {
+        const usuarioId = obterUsuarioIdConsistente();
+        
+        console.log('🎯 Enviando desafio para usuarioId:', usuarioId);
+
+        const porcentagemAcerto = Math.round((acertos / totalPerguntas) * 100);
+
+        const dadosDesafio = {
+            usuarioId: parseInt(usuarioId),
+            pontuacaoGanha: parseInt(pontos),
+            acertos: parseInt(acertos),
+            totalPerguntas: parseInt(totalPerguntas),
+            porcentagemAcerto: porcentagemAcerto,
+            sequencia: parseInt(sequencia),
+            materia: materia,
+            data: new Date().toISOString()
+        };
+
+        console.log('📤 Dados enviados:', dadosDesafio);
+
+        const response = await fetch(`${API_URL}/api/desafio-completo`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dadosDesafio)
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            console.log('✅ Sucesso:', result.message);
+            
+            // Atualizar dados locais com resposta do servidor
+            if (result.usuario) {
+                await atualizarDadosUsuario(result.usuario);
+            }
+            
+            return result;
+        }
+
+        throw new Error(`Erro ${response.status}`);
+        
+    } catch (error) {
+        console.error('❌ Erro na requisição:', error);
+        // Mesmo offline, atualizar dados locais
+        atualizarDadosLocais(acertos, totalPerguntas, pontos);
+        throw error;
+    }
+}
+
+// ✅ ATUALIZAR DADOS LOCAIS
+function atualizarDadosLocais(acertos, totalPerguntas, pontos) {
+    try {
+        const pontuacaoAtual = parseInt(localStorage.getItem('usuarioPontuacao') || '0');
+        const desafiosAtuais = parseInt(localStorage.getItem('usuarioDesafios') || '0');
+        
+        const novaPontuacao = pontuacaoAtual + pontos;
+        const novosDesafios = desafiosAtuais + 1;
+        
+        localStorage.setItem('usuarioPontuacao', novaPontuacao.toString());
+        localStorage.setItem('usuarioDesafios', novosDesafios.toString());
+        
+        console.log('📊 Dados locais atualizados:', {
+            pontuacao: novaPontuacao,
+            desafios: novosDesafios
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro ao atualizar dados locais:', error);
+    }
+}
+
+// ✅ SISTEMA DE PONTUAÇÃO
+class SistemaPontuacao {
+    calcularPontuacao(acertos, totalPerguntas) {
+        const porcentagemBase = (acertos / totalPerguntas) * 100;
+        
+        let pontosBase = 0;
+        if (porcentagemBase >= 90) pontosBase = 20;
+        else if (porcentagemBase >= 75) pontosBase = 15;
+        else if (porcentagemBase >= 60) pontosBase = 10;
+        else if (porcentagemBase >= 50) pontosBase = 8;
+        else if (porcentagemBase >= 25) pontosBase = 5;
+        else pontosBase = 2;
+
+        if (acertos === totalPerguntas) {
+            pontosBase += 5;
+        }
+
+        const sequenciaAtual = parseInt(localStorage.getItem('sequencia') || '0');
+        if (sequenciaAtual > 1) {
+            const bonusSequencia = Math.min(sequenciaAtual, 10);
+            pontosBase += bonusSequencia;
+        }
+
+        return pontosBase;
+    }
+
+    atualizarSequencia(acertos, totalPerguntas) {
+        let sequencia = parseInt(localStorage.getItem('sequencia') || '0');
+        
+        if (acertos === totalPerguntas) {
+            sequencia++;
+            localStorage.setItem('sequencia', sequencia);
+        } else {
+            localStorage.setItem('sequencia', '0');
+        }
+        
+        return sequencia;
+    }
+}
+
+// ✅ BANCO DE PRÁTICAS
+const bancoPraticas = [
+    { 
+        materia: "Matemática", 
+        titulo: "Operações Fundamentais", 
+        descricao: "Cálculos do cotidiano",
+        perguntas: [
+            { pergunta: "Qual é o resultado de 25 × 4?", alternativas: ["80", "90", "100", "110"], correta: 2 },
+            { pergunta: "Quanto é 15% de 200?", alternativas: ["20", "25", "30", "35"], correta: 2 },
+            { pergunta: "Qual é a raiz quadrada de 64?", alternativas: ["6", "7", "8", "9"], correta: 2 },
+            { pergunta: "Quanto é 7² + 4³?", alternativas: ["49", "64", "113", "125"], correta: 2 }
+        ]
+    },
+    { 
+        materia: "Matemática", 
+        titulo: "Frações Práticas", 
+        descricao: "Usando frações no dia a dia",
+        perguntas: [
+            { pergunta: "Se comi 1/4 da pizza, quanto sobrou?", alternativas: ["1/2", "2/4", "3/4", "4/4"], correta: 2 },
+            { pergunta: "Quanto é 1/2 + 1/4?", alternativas: ["1/4", "2/4", "3/4", "4/4"], correta: 2 },
+            { pergunta: "Qual é a forma decimal de 3/5?", alternativas: ["0.3", "0.5", "0.6", "0.8"], correta: 2 },
+            { pergunta: "Quanto é 2/3 de 120?", alternativas: ["60", "70", "80", "90"], correta: 2 }
+        ]
+    },
+    { 
+        materia: "Português", 
+        titulo: "Gramática Essencial", 
+        descricao: "Regras fundamentais",
+        perguntas: [
+            { pergunta: "Qual é o plural de 'cão'?", alternativas: ["cães", "cãos", "cões", "cãs"], correta: 0 },
+            { pergunta: "Na frase 'Ela corre rápido', 'rápido' é:", alternativas: ["substantivo", "adjetivo", "advérbio", "verbo"], correta: 2 },
+            { pergunta: "Qual é o sujeito em 'Os alunos estudaram'?", alternativas: ["estudaram", "os", "alunos", "os alunos"], correta: 3 },
+            { pergunta: "Qual destes é um artigo definido?", alternativas: ["um", "uma", "o", "uns"], correta: 2 }
+        ]
+    },
+    { 
+        materia: "Português", 
+        titulo: "Ortografia Básica", 
+        descricao: "Escrita correta das palavras",
+        perguntas: [
+            { pergunta: "Qual está escrito corretamente?", alternativas: ["excessão", "exceção", "ecceção", "excesão"], correta: 1 },
+            { pergunta: "Complete: Ele ____ à escola", alternativas: ["foi", "fói", "foy", "foe"], correta: 0 },
+            { pergunta: "Qual está com a grafia correta?", alternativas: ["concerteza", "com certeza", "concerteza", "conserteza"], correta: 1 },
+            { pergunta: "Complete: ____ tarde", alternativas: ["Ha", "Ah", "Há", "A"], correta: 2 }
+        ]
+    },
+    { 
+        materia: "Ciências", 
+        titulo: "Corpo Humano", 
+        descricao: "Nosso organismo",
+        perguntas: [
+            { pergunta: "Quantos ossos tem o corpo humano adulto?", alternativas: ["156", "206", "256", "306"], correta: 1 },
+            { pergunta: "Qual órgão bombeia o sangue?", alternativas: ["Pulmão", "Coração", "Fígado", "Rim"], correta: 1 },
+            { pergunta: "Qual é o maior órgão do corpo humano?", alternativas: ["Coração", "Fígado", "Pele", "Cérebro"], correta: 2 },
+            { pergunta: "Onde ocorre a digestão dos alimentos?", alternativas: ["Pulmão", "Estômago", "Coração", "Rim"], correta: 1 }
+        ]
+    },
+    { 
+        materia: "Ciências", 
+        titulo: "Sistema Solar", 
+        descricao: "Nosso lugar no universo",
+        perguntas: [
+            { pergunta: "Qual é o planeta mais próximo do Sol?", alternativas: ["Vênus", "Marte", "Mercúrio", "Terra"], correta: 2 },
+            { pergunta: "Quantos planetas tem nosso sistema solar?", alternativas: ["7", "8", "9", "10"], correta: 1 },
+            { pergunta: "Qual é o planeta conhecido como 'planeta vermelho'?", alternativas: ["Vênus", "Marte", "Júpiter", "Saturno"], correta: 1 },
+            { pergunta: "Qual é o maior planeta do sistema solar?", alternativas: ["Terra", "Saturno", "Júpiter", "Netuno"], correta: 2 }
+        ]
+    },
+    { 
+        materia: "História", 
+        titulo: "Descobrimento do Brasil", 
+        descricao: "Chegada dos portugueses",
+        perguntas: [
+            { pergunta: "Em que ano Portugal descobriu o Brasil?", alternativas: ["1492", "1500", "1520", "1540"], correta: 1 },
+            { pergunta: "Quem comandava as caravelas portuguesas?", alternativas: ["Cristóvão Colombo", "Pedro Álvares Cabral", "Vasco da Gama", "Fernão de Magalhães"], correta: 1 },
+            { pergunta: "Qual foi o primeiro nome dado ao Brasil?", alternativas: ["Terra de Santa Cruz", "Pindorama", "Brasil Colônia", "América Portuguesa"], correta: 0 },
+            { pergunta: "De onde vieram os primeiros colonizadores?", alternativas: ["Espanha", "Portugal", "França", "Holanda"], correta: 1 }
+        ]
+    },
+    { 
+        materia: "História", 
+        titulo: "Independência do Brasil", 
+        descricao: "Fim do domínio português",
+        perguntas: [
+            { pergunta: "Em que ano o Brasil se tornou independente?", alternativas: ["1808", "1822", "1889", "1900"], correta: 1 },
+            { pergunta: "Quem proclamou a independência?", alternativas: ["Dom Pedro I", "Dom Pedro II", "Dom João VI", "Tiradentes"], correta: 0 },
+            { pergunta: "Onde foi proclamada a independência?", alternativas: ["Rio de Janeiro", "São Paulo", "Minas Gerais", "Bahia"], correta: 1 },
+            { pergunta: "Qual era o lema da independência?", alternativas: ["Liberdade ou Morte", "Independência ou Morte", "Pátria Livre", "Brasil Livre"], correta: 1 }
+        ]
+    }
+];
+
+// ✅ GERENCIADOR DE PRÁTICAS
+class GerenciadorPraticas {
+    constructor() {
+        this.praticasHoje = [];
+        this.ultimaAtualizacao = this.getDataUltimaAtualizacao();
+        
+        if (this.elementosExistem()) {
+            this.inicializar();
+        }
+    }
+
+    elementosExistem() {
+        return document.getElementById('praticas-container') && document.getElementById('tempo-restante');
+    }
+
+    getDataUltimaAtualizacao() {
+        return localStorage.getItem('ultimaAtualizacaoPraticas');
+    }
+
+    salvarDataAtualizacao() {
+        localStorage.setItem('ultimaAtualizacaoPraticas', new Date().toISOString());
+    }
+
+    precisaAtualizar() {
+        const ultima = this.getDataUltimaAtualizacao();
+        if (!ultima) return true;
+        const diffHoras = (new Date() - new Date(ultima)) / (1000 * 60 * 60);
+        return diffHoras >= 24;
+    }
+
+    selecionarPraticasDoDia() {
+        const seed = new Date().toDateString();
+        const random = this.geradorRandom(seed);
+        const embaralhado = [...bancoPraticas].sort(() => random() - 0.5);
+        return embaralhado.slice(0, 2);
+    }
+
+    geradorRandom(seed) {
+        let x = 0;
+        for (let i = 0; i < seed.length; i++) {
+            x = (x << 5) - x + seed.charCodeAt(i);
+            x |= 0;
+        }
+        return () => {
+            x = Math.sin(x) * 10000;
+            return x - Math.floor(x);
+        };
+    }
+
+    atualizarPraticas() {
+        if (this.precisaAtualizar()) {
+            console.log("🔄 Atualizando práticas do dia...");
+            this.praticasHoje = this.selecionarPraticasDoDia();
+            this.salvarDataAtualizacao();
+            this.salvarPraticasAtuais();
+            this.resetarPraticasConcluidas();
+        } else {
+            console.log("📋 Carregando práticas salvas...");
+            this.carregarPraticasSalvas();
+        }
+        this.renderizarPraticas();
+    }
+
+    resetarPraticasConcluidas() {
+        for (let i = 0; i < 10; i++) {
+            localStorage.removeItem(`pratica_${i}_concluida`);
+        }
+    }
+
+    salvarPraticasAtuais() {
+        localStorage.setItem('praticasAtuais', JSON.stringify(this.praticasHoje));
+    }
+
+    carregarPraticasSalvas() {
+        const salvas = localStorage.getItem('praticasAtuais');
+        this.praticasHoje = salvas ? JSON.parse(salvas) : this.selecionarPraticasDoDia();
+    }
+
+    inicializar() {
+        this.atualizarPraticas();
+        this.iniciarContador();
+    }
+
+    renderizarPraticas() {
+        const container = document.getElementById('praticas-container');
+        if (!container) return;
+
+        container.innerHTML = '';
+        this.praticasHoje.forEach((pratica, index) => {
+            const concluida = localStorage.getItem(`pratica_${index}_concluida`);
+            
+            const card = document.createElement('div');
+            card.className = 'pratica-card';
+            card.innerHTML = `
+                <div class="pontuacao">+20 p</div>
+                <div class="materia-tag">${pratica.materia}</div>
+                <div class="pratica-titulo">${pratica.titulo}</div>
+                <div class="pratica-descricao">${pratica.descricao}</div>
+                <button class="btn-pratica ${concluida ? 'concluido' : ''}" data-index="${index}" ${concluida ? 'disabled' : ''}>
+                    ${concluida ? '✓ Concluído' : 'Iniciar Prática'}
+                </button>
+            `;
+            container.appendChild(card);
+        });
+
+        setTimeout(() => this.adicionarEventListeners(), 100);
+    }
+
+    adicionarEventListeners() {
+        document.querySelectorAll('.btn-pratica:not(:disabled)').forEach(btn => {
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            newBtn.addEventListener('click', (e) => {
+                const index = parseInt(e.target.dataset.index);
+                console.log(`🎯 Iniciando prática ${index}`);
+                praticaIndexAtual = index;
+                if (window.questionario) {
+                    window.questionario.abrirQuestionario(index);
+                }
+            });
+        });
+    }
+
+    concluirPratica(index) {
+        localStorage.setItem(`pratica_${index}_concluida`, 'true');
+        console.log(`✅ Prática ${index} concluída`);
+        this.renderizarPraticas();
+    }
+
+    iniciarContador() {
+        const elementoContador = document.getElementById('tempo-restante');
+        if (!elementoContador) return;
+
+        const atualizarContador = () => {
+            const agora = new Date();
+            const proximaAtualizacao = new Date(agora);
+            proximaAtualizacao.setHours(24, 0, 0, 0);
+            
+            const diff = proximaAtualizacao - agora;
+            const horas = Math.floor(diff / (1000 * 60 * 60));
+            const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const segundos = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            elementoContador.textContent = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+            
+            if (diff <= 0) {
+                this.atualizarPraticas();
+            }
+        };
+
+        atualizarContador();
+        setInterval(atualizarContador, 1000);
+    }
+}
+
+// ✅ QUESTIONÁRIO COMPLETO
+class Questionario {
+    constructor() {
+        this.perguntasAtuais = [];
+        this.perguntaIndex = 0;
+        this.acertos = 0;
+        this.modal = document.getElementById('modalPerguntas');
+        this.modalBody = document.getElementById('modalBody');
+        this.materiaAtual = '';
+        
+        if (this.modal && this.modalBody) {
+            this.inicializarEventos();
+        }
+    }
+
+    inicializarEventos() {
+        const closeBtn = document.querySelector('.close-modal');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.fecharModal());
+        }
+
+        if (this.modal) {
+            this.modal.addEventListener('click', (e) => {
+                if (e.target === this.modal) this.fecharModal();
+            });
+        }
+    }
+
+    abrirQuestionario(praticaIndex) {
+        if (!window.gerenciadorPraticas?.praticasHoje[praticaIndex]) return;
+
+        // Verificar login antes de abrir questionário
+        if (!verificarLoginDesafios()) return;
+
+        const pratica = window.gerenciadorPraticas.praticasHoje[praticaIndex];
+        this.perguntasAtuais = [...pratica.perguntas];
+        this.perguntaIndex = 0;
+        this.acertos = 0;
+        this.materiaAtual = pratica.materia;
+        
+        this.mostrarPergunta();
+        
+        if (this.modal) this.modal.style.display = 'flex';
+    }
+
+    mostrarPergunta() {
+        if (!this.modalBody || this.perguntaIndex >= this.perguntasAtuais.length) {
+            this.mostrarResultado();
+            return;
+        }
+
+        const pergunta = this.perguntasAtuais[this.perguntaIndex];
+        const progresso = ((this.perguntaIndex) / this.perguntasAtuais.length) * 100;
+
+        this.modalBody.innerHTML = `
+            <div class="progresso-container">
+                <div class="barra-progresso"><div class="progresso" style="width: ${progresso}%"></div></div>
+                <div class="contador-perguntas">${this.perguntaIndex + 1}/${this.perguntasAtuais.length}</div>
+            </div>
+            <div class="pergunta-texto">${pergunta.pergunta}</div>
+            <div class="alternativas-container">
+                ${pergunta.alternativas.map((alt, index) => `
+                    <button class="alternativa-btn" data-index="${index}">${String.fromCharCode(65 + index)}) ${alt}</button>
+                `).join('')}
+            </div>
+            <div class="feedback-container" style="display: none;">
+                <div class="feedback-texto" id="feedbackTexto"></div>
+                <button class="btn-proxima">Próxima Pergunta</button>
+            </div>
+        `;
+
+        setTimeout(() => this.adicionarEventListenersPergunta(), 10);
+    }
+
+    adicionarEventListenersPergunta() {
+        document.querySelectorAll('.alternativa-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.verificarResposta(parseInt(e.target.dataset.index)));
+        });
+
+        const btnProxima = this.modalBody.querySelector('.btn-proxima');
+        if (btnProxima) btnProxima.addEventListener('click', () => this.proximaPergunta());
+    }
+
+    verificarResposta(respostaIndex) {
+        const pergunta = this.perguntasAtuais[this.perguntaIndex];
+        const alternativas = this.modalBody.querySelectorAll('.alternativa-btn');
+        const feedbackContainer = this.modalBody.querySelector('.feedback-container');
+        const feedbackTexto = this.modalBody.querySelector('#feedbackTexto');
+
+        alternativas.forEach(btn => btn.style.pointerEvents = 'none');
+
+        alternativas.forEach((btn, index) => {
+            if (index === pergunta.correta) {
+                btn.style.background = '#4CAF50';
+                btn.style.color = 'white';
+            } else if (index === respostaIndex) {
+                btn.style.background = '#f44336';
+                btn.style.color = 'white';
+            }
+        });
+
+        if (respostaIndex === pergunta.correta) {
+            this.acertos++;
+            feedbackTexto.textContent = '✓ Resposta correta!';
+            feedbackTexto.style.color = '#4CAF50';
+        } else {
+            feedbackTexto.textContent = '✗ Resposta incorreta!';
+            feedbackTexto.style.color = '#f44336';
+        }
+
+        feedbackContainer.style.display = 'block';
+    }
+
+    proximaPergunta() {
+        this.perguntaIndex++;
+        this.perguntaIndex < this.perguntasAtuais.length ? this.mostrarPergunta() : this.mostrarResultado();
+    }
+
+    async mostrarResultado() {
+        const percentual = Math.round((this.acertos / this.perguntasAtuais.length) * 100);
+        
+        const sistemaPontuacao = new SistemaPontuacao();
+        const pontos = sistemaPontuacao.calcularPontuacao(this.acertos, this.perguntasAtuais.length);
+        const sequencia = sistemaPontuacao.atualizarSequencia(this.acertos, this.perguntasAtuais.length);
+
+        console.log(`🎯 Pontuação calculada: ${pontos} pontos`);
+
+        // Registrar e sincronizar
+        try {
+            await registrarPontuacaoNoServidor(
+                this.acertos, 
+                this.perguntasAtuais.length, 
+                pontos, 
+                sequencia, 
+                this.materiaAtual
+            );
+            console.log('✅ Pontuação registrada com sucesso');
+        } catch (error) {
+            console.error('❌ Erro ao registrar pontuação:', error);
+        }
+        
+        this.mostrarResultadoAnimado(this.acertos, this.perguntasAtuais.length, pontos, sequencia);
+    }
+
+    mostrarResultadoAnimado(acertos, total, pontosTotais, sequencia) {
+        const percentual = Math.round((acertos / total) * 100);
+        const emoji = percentual >= 90 ? '🎉' : percentual >= 70 ? '🎯' : percentual >= 50 ? '👍' : '💪';
+        
+        let mensagemBonus = '';
+        if (sequencia > 1) {
+            mensagemBonus = `<div style="color: #ffd700; margin: 10px 0; font-size: 14px;">🔥 Sequência de ${sequencia} desafios perfeitos!</div>`;
+        }
+
+        this.modalBody.innerHTML = `
+            <div class="resultado-final">
+                <div style="font-size: 48px; margin-bottom: 20px;">${emoji}</div>
+                <div style="color: #ffcf00; font-size: 24px; margin-bottom: 10px;">Desafio Concluído!</div>
+                <div style="color: #fff; font-size: 18px; margin-bottom: 15px;">${acertos}/${total} acertos (${percentual}%)</div>
+                <div>
+                    <div style="font-size: 28px; font-weight: bold; color: #ffd700; margin: 10px 0;">+${pontosTotais} pontos</div>
+                    ${mensagemBonus}
+                </div>
+                <div style="color: #ccc; font-size: 12px; margin: 15px 0;">
+                    <small>Pontos registrados no seu perfil!</small>
+                </div>
+                <button class="btn-interno" style="width: 100%; margin-top: 15px;">Continuar</button>
+            </div>
+        `;
+
+        setTimeout(() => {
+            const btnContinuar = this.modalBody.querySelector('.btn-interno');
+            if (btnContinuar) {
+                btnContinuar.addEventListener('click', () => {
+                    this.fecharModal();
+                    if (window.gerenciadorPraticas) {
+                        window.gerenciadorPraticas.concluirPratica(praticaIndexAtual);
+                    }
+                });
+            }
+        }, 50);
+    }
+
+    fecharModal() {
+        if (this.modal) this.modal.style.display = 'none';
+    }
+}
+
+// ✅ INICIALIZAÇÃO DESAFIOS
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log("🚀 Inicializando sistema de desafios...");
+    
+    // Verificação crítica de usuário
+    if (!verificarLoginDesafios()) {
+        return;
+    }
+    
+    console.log('👤 Usuário identificado:', localStorage.getItem('usuarioNome'));
+    console.log('🔑 User ID:', localStorage.getItem('usuarioId'));
+    
+    // Inicializar componentes
+    window.gerenciadorPraticas = new GerenciadorPraticas();
+    window.questionario = new Questionario();
+    
+    console.log("✅ Sistema de desafios inicializado!");
+});
+    </script>
+</body>
+</html>
