@@ -1491,10 +1491,17 @@ atualizarInterfaceAulaConcluida(aulaId) {
 }
 
 atualizarProgressoGeral(progresso, concluidas, total) {
-    const header = document.querySelector('.curso-header') || 
-                   document.querySelector('.modulos-container')?.parentElement;
+    // Encontrar o container do título do curso
+    const tituloCurso = document.querySelector('.curso-titulo') || 
+                       document.querySelector('h1') || 
+                       document.querySelector('h2') ||
+                       document.querySelector('.curso-header h1') ||
+                       document.querySelector('.curso-header h2');
     
-    if (!header) return;
+    if (!tituloCurso) {
+        console.warn('❌ Título do curso não encontrado');
+        return;
+    }
 
     const progressoHTML = `
         <div class="progresso-geral-curso" style="
@@ -1503,6 +1510,7 @@ atualizarProgressoGeral(progresso, concluidas, total) {
             border-radius: 10px;
             padding: 15px;
             margin: 15px 0;
+            max-width: 400px;
         ">
             <div class="progresso-header" style="
                 display: flex;
@@ -1541,6 +1549,15 @@ atualizarProgressoGeral(progresso, concluidas, total) {
         </div>
     `;
     
+    // Remover progresso existente
+    const existingProgress = document.querySelector('.progresso-geral-curso');
+    if (existingProgress) {
+        existingProgress.remove();
+    }
+    
+    // Inserir ABAIXO do título
+    tituloCurso.insertAdjacentHTML('afterend', progressoHTML);
+}
     const existingProgress = header.querySelector('.progresso-geral-curso');
     if (existingProgress) {
         existingProgress.remove();
@@ -1608,4 +1625,5 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
 
