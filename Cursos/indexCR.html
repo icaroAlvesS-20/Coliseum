@@ -1558,6 +1558,15 @@ atualizarProgressoGeral(progresso, concluidas, total) {
     // Inserir ABAIXO do título
     tituloCurso.insertAdjacentHTML('afterend', progressoHTML);
 }
+    // Remover progresso existente
+    const existingProgress = document.querySelector('.progresso-geral-curso');
+    if (existingProgress) {
+        existingProgress.remove();
+    }
+    
+    // Inserir ABAIXO do título
+    tituloCurso.insertAdjacentHTML('afterend', progressoHTML);
+}
     const existingProgress = header.querySelector('.progresso-geral-curso');
     if (existingProgress) {
         existingProgress.remove();
@@ -1625,5 +1634,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
 
 
