@@ -966,23 +966,29 @@ class GerenciadorCursos {
 
     async carregarCursoDaAPI(cursoId) {
         console.log(`📚 Buscando curso ${cursoId} na API...`);
-        const cursoResponse = await fetch(`${this.API_BASE}/cursos/${cursoId}`);
         
-        if (!cursoResponse.ok) {
-            if (cursoResponse.status === 404) {
-                throw new Error(`Curso ID ${cursoId} não encontrado`);
-            } else {
-                throw new Error(`Erro API: ${cursoResponse.status}`);
+        try {
+            const cursoResponse = await fetch(`${this.API_BASE}/cursos/${cursoId}`);
+            
+            if (!cursoResponse.ok) {
+                if (cursoResponse.status === 404) {
+                    throw new Error(`Curso ID ${cursoId} não encontrado`);
+                } else {
+                    throw new Error(`Erro API: ${cursoResponse.status}`);
+                }
             }
+
+            const curso = await cursoResponse.json();
+            console.log('✅ Curso carregado:', curso.titulo);
+            this.cursoAtual = curso;
+            this.exibirCurso(curso);
+
+            // Carregar módulos
+            await this.carregarModulosDaAPI(cursoId);
+        } catch (error) {
+            console.error('❌ Erro ao carregar curso da API:', error);
+            throw error; // Propaga o erro para ser tratado no método chamador
         }
-
-        const curso = await cursoResponse.json();
-        console.log('✅ Curso carregado:', curso.titulo);
-        this.cursoAtual = curso;
-        this.exibirCurso(curso);
-
-        // Carregar módulos
-        await this.carregarModulosDaAPI(cursoId);
     }
 
     async carregarModulosDaAPI(cursoId) {
@@ -999,6 +1005,7 @@ class GerenciadorCursos {
                 this.modulosAtuais = modulos;
                 this.exibirModulos(modulos);
             } else {
+                console.warn('⚠️ Usando módulos do objeto curso');
                 // Usar módulos do objeto curso
                 this.modulosAtuais = this.cursoAtual?.modulos || [];
                 this.exibirModulos(this.modulosAtuais);
@@ -1397,210 +1404,129 @@ class GerenciadorCursos {
         return `${horas}:${mins.toString().padStart(2, '0')}:00`;
     }
 
-   async marcarAulaConcluida(aulaId) {
-    const cursoId = this.getCursoId();
-    
-    try {
-        console.log(`✅ Marcando aula ${aulaId} como concluída...`);
-        console.log(`🌐 API URL: ${this.API_BASE}/progresso/aula`);
-        console.log(`📦 Dados:`, {
-            usuarioId: this.usuarioId,
-            aulaId: aulaId,
-            cursoId: cursoId
-        });
+    async marcarAulaConcluida(aulaId) {
+        const cursoId = this.getCursoId();
         
-        const response = await fetch(`${this.API_BASE}/progresso/aula`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            credentials: 'include', // ← ADICIONADO
-            body: JSON.stringify({
-                usuarioId: this.usuarioId,
-                aulaId: parseInt(aulaId), // ← Garantir que é número
-                cursoId: parseInt(cursoId) // ← Garantir que é número
-            })
-        });
+        try {
+            console.log(`✅ Marcando aula ${aulaId} como concluída...`);
+            
+            const response = await fetch(`${this.API_BASE}/progresso/aula`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    usuarioId: this.usuarioId,
+                    aulaId: parseInt(aulaId),
+                    cursoId: parseInt(cursoId)
+                })
+            });
 
-        console.log(`📡 Response status: ${response.status}`);
-        console.log(`📡 Response headers:`, Object.fromEntries(response.headers.entries()));
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ Erro na resposta:', errorText);
-            throw new Error(`Erro ${response.status}: ${errorText}`);
-        }
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Erro ${response.status}: ${errorText}`);
+            }
 
-        const resultado = await response.json();
-        console.log('✅ Progresso salvo na API:', resultado);
-        
-        // Atualizar interface
-        this.atualizarInterfaceAulaConcluida(aulaId);
-        
-        // Fechar player
-        document.querySelector('.aula-player-overlay')?.remove();
-        
-        // Recarregar módulos para atualizar progresso
-        await this.carregarModulosDaAPI(cursoId);
-        
-        // Atualizar progresso geral se disponível
-        if (resultado.progresso !== undefined) {
-            this.atualizarProgressoGeral(
-                resultado.progresso, 
-                resultado.aulasConcluidas, 
-                resultado.totalAulas
-            );
-        }
+            const resultado = await response.json();
+            console.log('✅ Progresso salvo na API:', resultado);
+            
+            // Atualizar interface
+            this.atualizarInterfaceAulaConcluida(aulaId);
+            
+            // Fechar player
+            document.querySelector('.aula-player-overlay')?.remove();
+            
+            // Recarregar módulos para atualizar progresso
+            await this.carregarModulosDaAPI(cursoId);
 
-    } catch (error) {
-        console.error('❌ Erro ao salvar progresso:', error);
-        
-        // Mostrar erro mais específico
-        if (error.message.includes('Failed to fetch')) {
-            alert('❌ Erro de conexão. Verifique se a API está online.');
-        } else if (error.message.includes('CORS')) {
-            alert('❌ Erro de CORS. Contate o administrador.');
-        } else {
+        } catch (error) {
+            console.error('❌ Erro ao salvar progresso:', error);
             alert('❌ Erro ao salvar progresso: ' + error.message);
         }
     }
-}
 
-atualizarInterfaceAulaConcluida(aulaId) {
-    // Atualizar visualmente a aula como concluída
-    const aulaElements = document.querySelectorAll('.aula-item, [data-aula-id]');
-    aulaElements.forEach(element => {
-        const elementAulaId = element.getAttribute('data-aula-id') || 
-                             element.getAttribute('onclick')?.match(/\d+/)?.[0];
+    atualizarInterfaceAulaConcluida(aulaId) {
+        // Atualizar visualmente a aula como concluída
+        const aulaElements = document.querySelectorAll('.aula-item');
+        aulaElements.forEach(element => {
+            const onclickAttr = element.getAttribute('onclick');
+            if (onclickAttr && onclickAttr.includes(aulaId)) {
+                element.classList.add('concluida');
+            }
+        });
+    }
+
+    atualizarProgressoGeral(progresso, concluidas, total) {
+        // Encontrar o container do título do curso
+        const tituloCurso = document.querySelector('.curso-titulo');
         
-        if (elementAulaId === aulaId.toString()) {
-            element.classList.add('concluida');
-            
-            // Adicionar ícone de concluído
-            const checkIcon = element.querySelector('.check-icon') || 
-                            document.createElement('span');
-            if (!element.querySelector('.check-icon')) {
-                checkIcon.className = 'check-icon';
-                checkIcon.innerHTML = '✅';
-                checkIcon.style.marginLeft = '10px';
-                element.appendChild(checkIcon);
-            }
+        if (!tituloCurso) {
+            console.warn('❌ Título do curso não encontrado');
+            return;
         }
-    });
-}
 
-atualizarProgressoGeral(progresso, concluidas, total) {
-    // Encontrar o container do título do curso
-    const tituloCurso = document.querySelector('.curso-titulo') || 
-                       document.querySelector('h1') || 
-                       document.querySelector('h2') ||
-                       document.querySelector('.curso-header h1') ||
-                       document.querySelector('.curso-header h2');
-    
-    if (!tituloCurso) {
-        console.warn('❌ Título do curso não encontrado');
-        return;
+        // Remover progresso existente
+        const existingProgress = document.querySelector('.progresso-geral-curso');
+        if (existingProgress) {
+            existingProgress.remove();
+        }
+
+        const progressoHTML = `
+            <div class="progresso-geral-curso">
+                <div class="progresso-header">
+                    <span>Progresso do Curso</span>
+                    <span class="progresso-percent">${progresso}%</span>
+                </div>
+                <div class="progresso-bar">
+                    <div class="progresso-fill" style="width: ${progresso}%"></div>
+                </div>
+                <div class="progresso-stats">
+                    ${concluidas} de ${total} aulas concluídas
+                </div>
+            </div>
+        `;
+        
+        // Inserir ABAIXO do título
+        tituloCurso.insertAdjacentHTML('afterend', progressoHTML);
     }
 
-    const progressoHTML = `
-        <div class="progresso-geral-curso" style="
-            background: rgba(255,207,0,0.1);
-            border: 1px solid #ffcf00;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
-            max-width: 400px;
-        ">
-            <div class="progresso-header" style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 8px;
-            ">
-                <span style="font-weight: bold; color: #ffcf00;">Progresso do Curso</span>
-                <span class="progresso-percent" style="
-                    font-weight: bold;
-                    color: #ffcf00;
-                    font-size: 1.1em;
-                ">${progresso}%</span>
-            </div>
-            <div class="progresso-bar" style="
-                background: #333;
-                border-radius: 10px;
-                height: 8px;
-                overflow: hidden;
-                margin-bottom: 8px;
-            ">
-                <div class="progresso-fill" style="
-                    background: #ffcf00;
-                    height: 100%;
-                    width: ${progresso}%;
-                    transition: width 0.3s ease;
-                "></div>
-            </div>
-            <div class="progresso-stats" style="
-                color: #aaa;
-                font-size: 0.9em;
-                text-align: center;
-            ">
-                ${concluidas} de ${total} aulas concluídas
-            </div>
-        </div>
-    `;
-    
-    // Remover progresso existente
-    const existingProgress = document.querySelector('.progresso-geral-curso');
-    if (existingProgress) {
-        existingProgress.remove();
+    getCursoId() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cursoId = urlParams.get('id');
+        return parseInt(cursoId);
     }
-    
-    // Inserir ABAIXO do título
-    tituloCurso.insertAdjacentHTML('afterend', progressoHTML);
+
+    mostrarCarregando() {
+        const container = document.getElementById('modulos-container');
+        if (!container) return;
+        
+        container.innerHTML = `
+            <div class="carregando">
+                <div class="loading-spinner"></div>
+                <h3>Carregando Conteúdo</h3>
+                <p>Buscando informações do curso...</p>
+            </div>
+        `;
+    }
+
+    mostrarErro(mensagem) {
+        const container = document.getElementById('modulos-container');
+        if (!container) return;
+        
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #ff6b6b;">
+                <div style="font-size: 3rem; margin-bottom: 15px;">❌</div>
+                <h3 style="color: #ff6b6b;">Erro ao Carregar</h3>
+                <p>${mensagem}</p>
+                <button onclick="location.reload()" style="background: #4361ee; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px; margin-left: auto; margin-right: auto; display: block;">
+                    🔄 Tentar Novamente
+                </button>
+            </div>
+        `;
+    }
 }
 
-getCursoId() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const cursoId = urlParams.get('id');
-    console.log(`🔧 Curso ID da URL: ${cursoId}`);
-    return parseInt(cursoId);
-}
-
-mostrarCarregando() {
-    const container = document.getElementById('modulos-container');
-    if (!container) return;
-    
-    container.innerHTML = `
-        <div style="text-align: center; padding: 40px; color: #ffcf00;">
-            <div style="border: 4px solid #f3f3f3; border-top: 4px solid #ffcf00; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
-            <h3>Carregando Conteúdo</h3>
-            <p>Buscando informações do curso...</p>
-        </div>
-        <style>
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        </style>
-    `;
-}
-
-mostrarErro(mensagem) {
-    const container = document.getElementById('modulos-container');
-    if (!container) return;
-    
-    container.innerHTML = `
-        <div style="text-align: center; padding: 40px; color: #ff6b6b;">
-            <div style="font-size: 3rem; margin-bottom: 15px;">❌</div>
-            <h3 style="color: #ff6b6b;">Erro ao Carregar</h3>
-            <p>${mensagem}</p>
-            <button onclick="location.reload()" style="background: #4361ee; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px; margin-left: auto; margin-right: auto; 
-            display: block;" /* Necessário para margin auto funcionar */">
-                🔄 Tentar Novamente
-            </button>
-        </div>
-    `;
-}
 // ✅ INICIALIZAÇÃO COM VERIFICAÇÃO
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM Carregado - Verificando página de curso...');
@@ -1618,8 +1544,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
-
-
-
-
-
