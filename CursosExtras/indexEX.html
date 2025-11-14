@@ -764,10 +764,10 @@ async function loadCursos() {
                 // ESTRATÉGIA 3: Tenta endpoint list
                 try {
                     cursosData = await fetchAPI('/api/cursos/list');
-                    console.log('✅ Cursos carregados do endpoint /list');
+                    console.log('✅ Cursos carregados ');
                 } catch (error3) {
                     console.log('❌ Todos os endpoints falharam');
-                    throw new Error('Não foi possível conectar com a API de cursos');
+                    throw new Error('Não foi possível conectar com os cursos');
                 }
             }
         }
@@ -775,7 +775,7 @@ async function loadCursos() {
         cursos = Array.isArray(cursosData) ? cursosData : [];
         
         if (cursos.length === 0) {
-            showAlert('ℹ️ Nenhum curso encontrado na API.', 'info');
+            showAlert('ℹ️ Nenhum curso encontrado.', 'info');
         } else {
             showAlert(`✅ ${cursos.length} cursos carregados com sucesso!`, 'success');
         }
@@ -786,7 +786,7 @@ async function loadCursos() {
         console.error('❌ Erro crítico ao carregar cursos:', error);
         
         if (error.message.includes('500') && error.message.includes('ativo')) {
-            showAlert('🚨 ERRO: O backend está com problemas de configuração. Campos "ativo" não existem no banco de dados. Contate o administrador.', 'error');
+            showAlert('🚨 ERRO: Campos "ativo" não existem no banco de dados. Contate o administrador.', 'error');
         } else if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
             showAlert('❌ Erro de conexão. Verifique sua internet e tente novamente.', 'error');
         } else {
@@ -809,7 +809,7 @@ function showLoading() {
     coursesContainer.innerHTML = `
         <div class="loading">
             <i class="fas fa-spinner fa-spin"></i>
-            <p>Conectando com a API...</p>
+            <p>Conectando...</p>
         </div>
     `;
 }
