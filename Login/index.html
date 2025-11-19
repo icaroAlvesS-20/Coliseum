@@ -412,32 +412,32 @@ function configurarEventListeners() {
         });
     });
 }
-
 function configurarModoFormulario() {
-    const raInput = document.getElementById('ra');
+    const btnCadastro = document.getElementById('btnCadastro');
+    const btnRegistrar = document.getElementById('btnRegistrar');
     const nomeGroup = document.getElementById('nome-group');
     const serieGroup = document.getElementById('serie-group');
-    const btnAcao = document.getElementById('btnAcao');
     const modoInfo = document.getElementById('modoInfo');
 
-    function atualizarModo() {
-        const raPreenchido = raInput.value.trim().length > 0;
+    nomeGroup.style.display = 'none';
+    serieGroup.style.display = 'none';
+    btnRegistrar.style.display = 'none';
+    
+    btnCadastro.addEventListener('click', function() {
+        const cadastroVisivel = nomeGroup.style.display === 'block';
         
-        if (raPreenchido) {
+        if (!cadastroVisivel) {
             nomeGroup.style.display = 'block';
             serieGroup.style.display = 'block';
-            btnAcao.textContent = 'Cadastrar';
-            modoInfo.textContent = '💡 Preencha todos os campos para CADASTRAR';
-        } else {
-            nomeGroup.style.display = 'none';
-            serieGroup.style.display = 'none';
-            btnAcao.textContent = 'Entrar';
-            modoInfo.textContent = '💡  Não possue uma conta?, Cadastre-se';
+            btnRegistrar.style.display = 'block';
+            btnCadastro.style.display = 'none';
+            modoInfo.textContent = '💡 Preencha todos os campos para cadastrar';
         }
-    }
+    });
 
-    raInput.addEventListener('input', atualizarModo);
-    atualizarModo();
+    btnRegistrar.addEventListener('click', function() {
+        registrar();
+    });
 }
 
 async function fazerRequisicaoComProxy(endpoint, options = {}) {
