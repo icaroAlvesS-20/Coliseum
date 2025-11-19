@@ -190,7 +190,30 @@
 
     .btn-cadastro:active {
         transform: translateY(0);
-    }   
+    }
+       .btn-voltar {
+        width: 100%;
+        padding: 17px;
+        background: linear-gradient(135deg, #000000, #000000);
+        color: #ffcf00;
+        border: none;
+        border-radius: 12px;
+        font-size: 17px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        margin-top: 5px;
+    }
+
+    .btn-voltar:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-voltar:active {
+        transform: translateY(0);
+    }
     .mensagem {
         position: fixed;
         top: 20px;
@@ -281,7 +304,11 @@
         }
         .btn-cadastro {
             padding: 16px;
-        }
+       }
+     .btn-voltar {
+            padding: 16px;
+       }
+    
     }
 
     @media (max-width: 360px) {
@@ -339,17 +366,12 @@
         </div>
 
         <div id="modoInfo" class="modo-info">
-            💡 Não tem uma conta? Clique em Cadastrar
+            💡 Não tem uma conta? Cadastre-se
         </div>
         
-        <!-- BOTÃO PRINCIPAL (para entrar) -->
         <button class="btn-registrar" id="btnEntrar">Entrar</button>
         
-        <!-- BOTÃO PARA REVELAR CADASTRO -->
         <button class="btn-cadastro" id="btnCadastro">Cadastrar</button>
-        
-        <!-- BOTÃO PARA FAZER CADASTRO (aparece depois) -->
-        <button class="btn-registrar" id="btnRegistrar" style="display: none;">Finalizar Cadastro</button>
     </div>
 </div>
 <script>const CONFIG = {
@@ -399,7 +421,6 @@ function configurarEventListeners() {
         });
     }
     
-    // ✅ CORRIGIDO: Removida a duplicação
     const btnEntrar = document.getElementById('btnEntrar');
     if (btnEntrar) {
         btnEntrar.addEventListener('click', registrar);
@@ -418,14 +439,13 @@ function configurarEventListeners() {
 
 function configurarModoFormulario() {
     const btnCadastro = document.getElementById('btnCadastro');
-    const btnRegistrar = document.getElementById('btnRegistrar');
+    const btnEntrar = document.getElementById('btnEntrar');
     const nomeGroup = document.getElementById('nome-group');
     const serieGroup = document.getElementById('serie-group');
     const modoInfo = document.getElementById('modoInfo');
 
     nomeGroup.style.display = 'none';
     serieGroup.style.display = 'none';
-    btnRegistrar.style.display = 'none';
     
     btnCadastro.addEventListener('click', function() {
         const cadastroVisivel = nomeGroup.style.display === 'block';
@@ -433,14 +453,29 @@ function configurarModoFormulario() {
         if (!cadastroVisivel) {
             nomeGroup.style.display = 'block';
             serieGroup.style.display = 'block';
-            btnRegistrar.style.display = 'block';
             btnCadastro.style.display = 'none';
             modoInfo.textContent = '💡 Preencha todos os campos para cadastrar';
+            
+            btnEntrar.textContent = 'Voltar';
+            btnEntrar.className = 'btn-voltar';
         }
     });
 
-    btnRegistrar.addEventListener('click', function() {
-        registrar();
+    btnEntrar.addEventListener('click', function() {
+        if (btnEntrar.textContent === 'Voltar') {
+            nomeGroup.style.display = 'none';
+            serieGroup.style.display = 'none';
+            btnCadastro.style.display = 'block';
+            modoInfo.textContent = '💡 Não tem uma conta? Cadastre-se';
+            
+            btnEntrar.textContent = 'Entrar';
+            btnEntrar.className = 'btn-registrar';
+            
+            document.getElementById('nome').value = '';
+            document.getElementById('serie').value = '';
+        } else {
+            registrar();
+        }
     });
 }
 
@@ -479,9 +514,10 @@ async function registrar() {
     const nome = document.getElementById('nome')?.value.trim();
     const serie = document.getElementById('serie')?.value.trim();
     
-    // Verificar se estamos no modo CADASTRO (campos visíveis)
-    const nomeGroup = document.getElementById('nome-group');
-    const isCadastro = nomeGroup.style.display === 'block';
+    // Verificar se estamos no modo CADASTRO (botão não é "Voltar")
+    const btnEntrar = document.getElementById('btnEntrar');
+    const isCadastro = btnEntrar.textContent !== 'Voltar';
+    
     const action = isCadastro ? 'cadastro' : 'login';
     
     console.log(`🎯 Ação: ${action}`, { ra, isCadastro });
@@ -496,6 +532,7 @@ async function registrar() {
         return;
     }
     
+    // Resto do código permanece igual...
     mostrarLoading(true, isCadastro ? 'Cadastrando...' : 'Entrando...');
     
     try {
