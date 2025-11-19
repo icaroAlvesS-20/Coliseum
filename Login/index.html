@@ -306,49 +306,52 @@
 </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <!-- CONTAINER DO CÍRCULO COM IMAGEM DENTRO -->
-            <div class="logo-container">
-              <div class="logo-emoji">🏛️</div>
+<div class="container">
+    <div class="header">
+        <div class="logo-container">
+            <div class="logo-emoji">🏛️</div>
+        </div>
+        <h1>Coliseum</h1>
+    </div>
+    
+    <div class="form-container">
+        <div class="form-group">
+            <label for="ra">RA</label>
+            <input type="text" id="ra" placeholder="Digite seu RA" autocomplete="username">
+        </div>
+
+        <div class="form-group campo-opcional" id="nome-group">
+            <label for="nome">Nome Completo</label>
+            <input type="text" id="nome" placeholder="Digite seu nome completo"> 
+        </div>
+
+        <div class="form-group campo-opcional" id="serie-group">
+            <label for="serie">Série</label>
+            <input type="text" id="serie" placeholder="Ex: 1 ANO"> 
+        </div>
+
+        <div class="form-group">
+            <label for="senha">Senha</label>
+            <div class="password-container">
+                <input type="password" id="senha" placeholder="Digite sua senha" autocomplete="current-password">
+                <button type="button" id="toggleSenha" class="toggle-password">👁️</button>
             </div>
-            <h1>Coliseum</h1>
+        </div>
+
+        <div id="modoInfo" class="modo-info">
+            💡 Não tem uma conta? Clique em Cadastrar
         </div>
         
-        <div class="form-container">
-            <div class="form-group">
-                <label for="ra">RA</label>
-                <input type="text" id="ra" placeholder="Digite seu RA" autocomplete="username">
-            </div>
-
-            <div class="form-group campo-opcional" id="nome-group">
-                <label for="nome">Nome Completo</label>
-                <input type="text" id="nome" placeholder="Digite seu nome completo"> 
-            </div>
-
-            <div class="form-group campo-opcional" id="serie-group">
-                <label for="serie">Série</label>
-                <input type="text" id="serie" placeholder="Ex: 1 ANO"> 
-            </div>
-
-            <div class="form-group">
-                <label for="senha">Senha</label>
-                <div class="password-container">
-                    <input type="password" id="senha" placeholder="Digite sua senha" autocomplete="current-password">
-                    <button type="button" id="toggleSenha" class="toggle-password">👁️</button>
-                </div>
-            </div>
-
-            <div id="modoInfo" class="modo-info">
-                💡 Não tem uma conta?, Cadastre-se
-            </div>
-            
-            <button class="btn-registrar" id="btnAcao">Registrar</button>
-            <button class="btn-cadastro" id="btnAcao">Cadastrar</button>
-
-
-        </div>
+        <!-- BOTÃO PRINCIPAL (para entrar) -->
+        <button class="btn-registrar" id="btnEntrar">Entrar</button>
+        
+        <!-- BOTÃO PARA REVELAR CADASTRO -->
+        <button class="btn-cadastro" id="btnCadastro">Cadastrar</button>
+        
+        <!-- BOTÃO PARA FAZER CADASTRO (aparece depois) -->
+        <button class="btn-registrar" id="btnRegistrar" style="display: none;">Finalizar Cadastro</button>
     </div>
+</div>
 <script>
    const CONFIG = {
     API_URL: 'https://corsproxy.io/?',
@@ -396,6 +399,21 @@ function configurarEventListeners() {
             toggleSenha.textContent = type === 'password' ? '🔒' : '👁️';
         });
     }
+        const btnEntrar = document.getElementById('btnEntrar');
+    if (btnEntrar) {
+        btnEntrar.addEventListener('click', registrar);
+    }
+    
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                registrar();
+            }
+        });
+    });
+}
     
     const btnAcao = document.getElementById('btnAcao');
     if (btnAcao) {
@@ -475,7 +493,9 @@ async function registrar() {
     const nome = document.getElementById('nome')?.value.trim();
     const serie = document.getElementById('serie')?.value.trim();
     
-    const isCadastro = nome && serie;
+    // Verificar se estamos no modo CADASTRO (campos visíveis)
+    const nomeGroup = document.getElementById('nome-group');
+    const isCadastro = nomeGroup.style.display === 'block';
     const action = isCadastro ? 'cadastro' : 'login';
     
     console.log(`🎯 Ação: ${action}`, { ra, isCadastro });
@@ -506,7 +526,6 @@ async function registrar() {
         
         console.log(`📤 Enviando ${action} via proxy...`);
         
-        // ✅ Usar a função com proxy
         const data = await fazerRequisicaoComProxy(CONFIG.ENDPOINTS.LOGIN, {
             body: JSON.stringify(requestBody)
         });
@@ -526,16 +545,12 @@ async function registrar() {
         
     } catch (error) {
         console.error('💥 Erro completo:', error);
-        mostrarMensagem('❌ Erro de conexão. Tentando método alternativo...', 'erro');
-        
-        // ✅ Tentar método alternativo sem proxy
-        await tentarRequisicaoDireta();
+        mostrarMensagem('❌ Erro de conexão. Tente novamente.', 'erro');
     } finally {
         mostrarLoading(false);
     }
 }
 
-// ✅ Método alternativo direto (para teste)
 async function tentarRequisicaoDireta() {
     try {
         const ra = document.getElementById('ra')?.value.trim();
