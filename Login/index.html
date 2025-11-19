@@ -352,8 +352,7 @@
         <button class="btn-registrar" id="btnRegistrar" style="display: none;">Finalizar Cadastro</button>
     </div>
 </div>
-<script>
-   const CONFIG = {
+<script>const CONFIG = {
     API_URL: 'https://corsproxy.io/?',
     API_ORIGINAL: 'https://coliseum-api.onrender.com',
     
@@ -399,7 +398,9 @@ function configurarEventListeners() {
             toggleSenha.textContent = type === 'password' ? '🔒' : '👁️';
         });
     }
-        const btnEntrar = document.getElementById('btnEntrar');
+    
+    // ✅ CORRIGIDO: Removida a duplicação
+    const btnEntrar = document.getElementById('btnEntrar');
     if (btnEntrar) {
         btnEntrar.addEventListener('click', registrar);
     }
@@ -413,23 +414,8 @@ function configurarEventListeners() {
             }
         });
     });
-}
-    
-    const btnAcao = document.getElementById('btnAcao');
-    if (btnAcao) {
-        btnAcao.addEventListener('click', registrar);
-    }
-    
-    const inputs = document.querySelectorAll('input');
-    inputs.forEach(input => {
-        input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                registrar();
-            }
-        });
-    });
-}
+} // ← FIM CORRETO DA FUNÇÃO
+
 function configurarModoFormulario() {
     const btnCadastro = document.getElementById('btnCadastro');
     const btnRegistrar = document.getElementById('btnRegistrar');
