@@ -403,334 +403,211 @@
     </div>
 </div>
 <script>
+// Configurações
 const CONFIG = {
     API_URL: 'https://coliseum-api.onrender.com',
-    ENDPOINTS: {
-        LOGIN: '/api/usuarios',
-        HEALTH: '/api/health'
-    }
+    ENDPOINTS: { LOGIN: '/api/usuarios', HEALTH: '/api/health' },
+    TIMEOUT: 10000
 };
 
-// ✅ ROTAS DO VERCEL
-const ROTAS = {
-    MENU: '/menu',
-    RANKING: '/ranking',
-    PERFIL: '/perfil',
-    AMIGOS: '/amigos',
-    DESAFIOS: '/desafios',
-    PROVAS: '/provas',
-    CONFIGURACAO: '/configuracao',
-    CONTATO: '/contato',
-    NAVEGADOR: '/navegador',
-    LOGIN: '/login'
-};
-
-// ✅ SISTEMA DE PROXY ALTERNATIVO
+const ROTAS = { MENU: '/menu' };
 const PROXY_SERVERS = [
     'https://api.allorigins.win/raw?url=',
     'https://cors-anywhere.herokuapp.com/',
     'https://corsproxy.io/?',
-    '' // Tentativa direta
 ];
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Sistema Coliseum inicializando...');
+// Estado
+const Estado = { modoCadastro: false, carregando: false };
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Sistema inicializando...');
     inicializarSistema();
 });
 
 function inicializarSistema() {
     configurarEventListeners();
     configurarModoFormulario();
-    console.log('✅ Sistema inicializado!');
 }
 
 function configurarEventListeners() {
+    // Toggle senha
     const toggleSenha = document.getElementById('toggleSenha');
     const senhaInput = document.getElementById('senha');
-    
     if (toggleSenha && senhaInput) {
-        toggleSenha.addEventListener('click', function() {
-            const type = senhaInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            senhaInput.setAttribute('type', type);
-            toggleSenha.textContent = type === 'password' ? '👁️' : '🔒';
+        toggleSenha.addEventListener('click', () => {
+            const isPassword = senhaInput.type === 'password';
+            senhaInput.type = isPassword ? 'text' : 'password';
+            toggleSenha.textContent = isPassword ? '🔒' : '👁️';
         });
     }
-    
-    const btnEntrar = document.getElementById('btnEntrar');
-    if (btnEntrar) {
-        btnEntrar.addEventListener('click', registrar);
-    }
-    
+
+    // Botões de ação
+    document.getElementById('btnEntrar')?.addEventListener('click', handleAcesso);
+    document.getElementById('btnVoltar')?.addEventListener('click', voltarParaLogin);
+    document.getElementById('btnCadastro')?.addEventListener('click', alternarParaCadastro);
+
+    // Submit com Enter
     const inputs = document.querySelectorAll('input');
     inputs.forEach(input => {
-        input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                registrar();
-            }
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleAcesso();
         });
     });
-    
-    // Event listener para o botão voltar
-    const btnVoltar = document.getElementById('btnVoltar');
-    if (btnVoltar) {
-        btnVoltar.addEventListener('click', voltarParaLogin);
-    }
 }
 
 function configurarModoFormulario() {
-    const btnCadastro = document.getElementById('btnCadastro');
-    const btnEntrar = document.getElementById('btnEntrar');
-    const btnVoltar = document.getElementById('btnVoltar');
-    const nomeGroup = document.getElementById('nome-group');
-    const serieGroup = document.getElementById('serie-group');
-    const modoInfo = document.getElementById('modoInfo');
+    voltarParaLogin();
+}
 
-    nomeGroup.style.display = 'none';
-    serieGroup.style.display = 'none';
-    btnVoltar.style.display = 'none';
-    
-    btnCadastro.addEventListener('click', function() {
-        const cadastroVisivel = nomeGroup.style.display === 'block';
-        
-        if (!cadastroVisivel) {
-            nomeGroup.style.display = 'block';
-            serieGroup.style.display = 'block';
-            btnCadastro.style.display = 'none';
-            btnVoltar.style.display = 'block';
-            modoInfo.textContent = '💡 Preencha todos os campos para cadastrar';
-            
-            btnEntrar.textContent = 'Concluir Cadastro';
-            btnEntrar.className = 'btn-concluir';
-        }
-    });
+// Gerenciamento de modos
+function alternarParaCadastro() {
+    document.getElementById('nome-group').style.display = 'block';
+    document.getElementById('serie-group').style.display = 'block';
+    document.getElementById('btnCadastro').style.display = 'none';
+    document.getElementById('btnVoltar').style.display = 'block';
+    document.getElementById('btnEntrar').textContent = 'Concluir Cadastro';
+    document.getElementById('modoInfo').textContent = '💡 Preencha todos os campos para cadastrar';
+    Estado.modoCadastro = true;
 }
 
 function voltarParaLogin() {
-    const btnCadastro = document.getElementById('btnCadastro');
-    const btnEntrar = document.getElementById('btnEntrar');
-    const btnVoltar = document.getElementById('btnVoltar');
-    const nomeGroup = document.getElementById('nome-group');
-    const serieGroup = document.getElementById('serie-group');
-    const modoInfo = document.getElementById('modoInfo');
-
-    nomeGroup.style.display = 'none';
-    serieGroup.style.display = 'none';
-    btnVoltar.style.display = 'none';
-    btnCadastro.style.display = 'block';
-    modoInfo.textContent = '💡 Não tem uma conta? Cadastre-se';
-    
-    btnEntrar.textContent = 'Entrar';
-    btnEntrar.className = 'btn-registrar';
+    document.getElementById('nome-group').style.display = 'none';
+    document.getElementById('serie-group').style.display = 'none';
+    document.getElementById('btnVoltar').style.display = 'none';
+    document.getElementById('btnCadastro').style.display = 'block';
+    document.getElementById('btnEntrar').textContent = 'Entrar';
+    document.getElementById('modoInfo').textContent = '💡 Não tem uma conta? Cadastre-se';
     
     document.getElementById('nome').value = '';
     document.getElementById('serie').value = '';
+    Estado.modoCadastro = false;
 }
 
-// ✅ NOVO: Sistema de tentativas com múltiplos proxies
-async function fazerRequisicaoComTentativas(endpoint, options = {}) {
-    let lastError = null;
-    
-    for (let i = 0; i < PROXY_SERVERS.length; i++) {
-        const proxy = PROXY_SERVERS[i];
-        const url = proxy ? proxy + encodeURIComponent(CONFIG.API_URL + endpoint) : CONFIG.API_URL + endpoint;
-        
-        console.log(`🔄 Tentativa ${i + 1}/4: ${proxy ? 'Proxy' : 'Direto'} -> ${url}`);
-        
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                ...options,
-                timeout: 10000 // Timeout de 10 segundos
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Erro HTTP: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            console.log(`✅ Sucesso na tentativa ${i + 1}`);
-            return data;
-            
-        } catch (error) {
-            console.warn(`❌ Falha na tentativa ${i + 1}:`, error.message);
-            lastError = error;
-            
-            // Aguarda um pouco antes da próxima tentativa
-            if (i < PROXY_SERVERS.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-        }
-    }
-    
-    throw lastError || new Error('Todas as tentativas falharam');
-}
+// Handler principal
+async function handleAcesso() {
+    if (Estado.carregando) return;
 
-// ✅ NOVO: Função para testar a API
-async function testarConexaoAPI() {
+    const dados = {
+        ra: document.getElementById('ra').value.trim(),
+        senha: document.getElementById('senha').value,
+        nome: document.getElementById('nome').value.trim(),
+        serie: document.getElementById('serie').value.trim(),
+        isCadastro: Estado.modoCadastro
+    };
+
+    if (!validarDados(dados)) return;
+
+    Estado.carregando = true;
+    mostrarLoading(true, Estado.modoCadastro ? 'Cadastrando...' : 'Entrando...');
+
     try {
-        console.log('🔍 Testando conexão com a API...');
-        const response = await fetch(CONFIG.API_URL + CONFIG.ENDPOINTS.HEALTH, {
-            method: 'GET',
-            mode: 'no-cors'
-        });
-        console.log('✅ API está acessível');
-        return true;
+        const resultado = await fazerRequisicao(dados);
+        
+        if (resultado.success) {
+            mostrarMensagem(`✅ ${resultado.message}`, 'sucesso');
+            salvarDadosUsuario(resultado.usuario);
+            setTimeout(() => window.location.href = ROTAS.MENU, 1500);
+        } else {
+            mostrarMensagem(`❌ ${resultado.error || resultado.message}`, 'erro');
+        }
     } catch (error) {
-        console.warn('⚠️ API pode estar offline:', error);
-        return false;
-    }
-}
-
-async function registrar() {
-    console.log('🔐 Processando acesso...');
-    
-    const ra = document.getElementById('ra')?.value.trim();
-    const senha = document.getElementById('senha')?.value;
-    const nome = document.getElementById('nome')?.value.trim();
-    const serie = document.getElementById('serie')?.value.trim();
-    
-    const btnEntrar = document.getElementById('btnEntrar');
-    const isCadastro = btnEntrar.textContent === 'Concluir Cadastro';
-    const action = isCadastro ? 'cadastro' : 'login';
-    
-    console.log(`🎯 Ação: ${action}`, { ra, isCadastro });
-    
-    // Validações
-    if (!ra || !senha) {
-        mostrarMensagem('❌ RA e senha são obrigatórios!', 'erro');
-        return;
-    }
-    
-    if (isCadastro && (!nome || !serie)) {
-        mostrarMensagem('❌ Para cadastro, preencha todos os campos!', 'erro');
-        return;
-    }
-    
-    if (ra.length < 3) {
-        mostrarMensagem('❌ RA deve ter pelo menos 3 caracteres!', 'erro');
-        return;
-    }
-    
-    if (senha.length < 4) {
-        mostrarMensagem('❌ Senha deve ter pelo menos 4 caracteres!', 'erro');
-        return;
-    }
-    
-    mostrarLoading(true, isCadastro ? 'Cadastrando...' : 'Entrando...');
-    
-    try {
-        const requestBody = {
-            ra: ra,
-            senha: senha
-        };
-        
-        // ✅ CORREÇÃO: Remover o campo 'action' e usar endpoints diferentes
-        if (isCadastro) {
-            requestBody.nome = nome;
-            requestBody.serie = serie;
-            // Para cadastro, usar endpoint específico se existir
-            var endpoint = CONFIG.ENDPOINTS.LOGIN; // Ou '/api/usuarios/cadastro' se existir
-        } else {
-            // Para login, manter o endpoint padrão
-            var endpoint = CONFIG.ENDPOINTS.LOGIN;
-        }
-        
-        console.log(`📤 Enviando ${action}...`, requestBody);
-        
-        const data = await fazerRequisicaoComTentativas(endpoint, {
-            body: JSON.stringify(requestBody)
-        });
-        
-        console.log('📨 Resposta:', data);
-        
-        if (data.success) {
-            mostrarMensagem(`✅ ${data.message}`, 'sucesso');
-            salvarDadosUsuarioPadronizados(data.usuario);
-            
-            setTimeout(() => {
-                window.location.href = ROTAS.MENU;
-            }, 1500);
-        } else {
-            // ✅ CORREÇÃO: Verificar diferentes formatos de resposta de erro
-            const mensagemErro = data.error || data.message || 'Erro desconhecido';
-            mostrarMensagem(`❌ ${mensagemErro}`, 'erro');
-        }
-        
-    } catch (error) {
-        console.error('💥 Erro completo:', error);
-        
-        if (error.message.includes('504') || error.message.includes('Timeout')) {
-            mostrarMensagem('⏰ Timeout - Servidor demorou para responder. Tente novamente.', 'erro');
-        } else if (error.message.includes('Failed to fetch')) {
-            mostrarMensagem('🌐 Erro de conexão. Verifique sua internet.', 'erro');
-        } else {
-            mostrarMensagem('❌ Erro interno. Tente novamente em alguns instantes.', 'erro');
-        }
+        mostrarMensagem(getMensagemErro(error), 'erro');
     } finally {
+        Estado.carregando = false;
         mostrarLoading(false);
     }
 }
-function modoOffline() {
-    console.log('🔌 Modo offline ativado');
-    mostrarMensagem('⚠️ Modo offline - Dados salvos localmente', 'erro');
-    
-    // Salva dados localmente para teste
-    const usuarioTeste = {
-        id: Date.now(),
-        nome: document.getElementById('nome')?.value || 'Usuário Teste',
-        ra: document.getElementById('ra')?.value || 'TEST123',
-        serie: document.getElementById('serie')?.value || '1 ANO',
-        pontuacao: 0,
-        desafiosCompletados: 0
-    };
-    
-    salvarDadosUsuarioPadronizados(usuarioTeste);
-    
-    setTimeout(() => {
-        window.location.href = ROTAS.MENU;
-    }, 2000);
+
+// Validações
+function validarDados(dados) {
+    const { ra, senha, nome, serie, isCadastro } = dados;
+
+    if (!ra || !senha) {
+        mostrarMensagem('❌ RA e senha são obrigatórios!', 'erro');
+        return false;
+    }
+
+    if (ra.length < 3) {
+        mostrarMensagem('❌ RA deve ter pelo menos 3 caracteres!', 'erro');
+        return false;
+    }
+
+    if (senha.length < 4) {
+        mostrarMensagem('❌ Senha deve ter pelo menos 4 caracteres!', 'erro');
+        return false;
+    }
+
+    if (isCadastro && (!nome || !serie)) {
+        mostrarMensagem('❌ Para cadastro, preencha todos os campos!', 'erro');
+        return false;
+    }
+
+    return true;
 }
 
-// ✅ FUNÇÃO PARA SALVAR DADOS
-function salvarDadosUsuarioPadronizados(usuario) {
+// Requisições
+async function fazerRequisicao(dados) {
+    const { ra, senha, nome, serie, isCadastro } = dados;
+    
+    const body = isCadastro ? { ra, senha, nome, serie } : { ra, senha };
+    const endpoint = CONFIG.ENDPOINTS.LOGIN;
+
+    for (let i = 0; i < PROXY_SERVERS.length; i++) {
+        const proxy = PROXY_SERVERS[i];
+        const url = proxy + encodeURIComponent(CONFIG.API_URL + endpoint);
+        
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+            
+            return await response.json();
+        } catch (error) {
+            console.warn(`Tentativa ${i + 1} falhou:`, error.message);
+            if (i === PROXY_SERVERS.length - 1) throw error;
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+    }
+}
+
+// Utilitários
+function salvarDadosUsuario(usuario) {
     if (!usuario) return;
     
     localStorage.setItem('usuario', JSON.stringify(usuario));
     localStorage.setItem('usuarioLogado', 'true');
-    localStorage.setItem('usuarioId', usuario.id?.toString() || '0');
     localStorage.setItem('usuarioNome', usuario.nome || 'Usuário');
-    localStorage.setItem('usuarioRA', usuario.ra || '');
-    localStorage.setItem('usuarioSerie', usuario.serie || '');
-    localStorage.setItem('usuarioPontuacao', usuario.pontuacao?.toString() || '0');
-    localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados?.toString() || '0');
-    
-    console.log('✅ Dados do usuário salvos:', usuario);
+    console.log('✅ Dados salvos:', usuario);
 }
 
-function mostrarMensagem(mensagem, tipo = 'info') {
-    console.log(`💬 Mensagem [${tipo}]: ${mensagem}`);
+function mostrarMensagem(mensagem, tipo) {
+    console.log(`💬 ${mensagem}`);
     
-    let mensagemElement = document.getElementById('mensagemGlobal');
-    
-    if (!mensagemElement) {
-        mensagemElement = document.createElement('div');
-        mensagemElement.id = 'mensagemGlobal';
-        mensagemElement.className = 'mensagem';
-        document.body.appendChild(mensagemElement);
+    let msgElement = document.getElementById('mensagemGlobal');
+    if (!msgElement) {
+        msgElement = document.createElement('div');
+        msgElement.id = 'mensagemGlobal';
+        msgElement.className = 'mensagem';
+        document.body.appendChild(msgElement);
     }
     
-    mensagemElement.textContent = mensagem;
-    mensagemElement.className = `mensagem ${tipo}`;
-    mensagemElement.style.display = 'block';
+    msgElement.textContent = mensagem;
+    msgElement.className = `mensagem ${tipo}`;
+    msgElement.style.display = 'block';
     
-    setTimeout(() => {
-        mensagemElement.style.display = 'none';
-    }, 5000);
+    setTimeout(() => msgElement.style.display = 'none', 5000);
 }
 
 function mostrarLoading(mostrar, texto = 'Carregando...') {
@@ -740,21 +617,26 @@ function mostrarLoading(mostrar, texto = 'Carregando...') {
         if (!loadingElement) {
             loadingElement = document.createElement('div');
             loadingElement.id = 'loadingGlobal';
-            loadingElement.innerHTML = `
-                <div class="spinner"></div>
-                <div>${texto}</div>
-            `;
+            loadingElement.innerHTML = `<div class="spinner"></div><div>${texto}</div>`;
             document.body.appendChild(loadingElement);
         }
         loadingElement.style.display = 'flex';
-    } else {
-        if (loadingElement) {
-            loadingElement.style.display = 'none';
-        }
+    } else if (loadingElement) {
+        loadingElement.style.display = 'none';
     }
 }
 
-console.log('🎯 Sistema Coliseum carregado com sucesso!');
+function getMensagemErro(error) {
+    if (error.message.includes('504') || error.message.includes('Timeout')) {
+        return '⏰ Timeout - Servidor demorou para responder';
+    } else if (error.message.includes('Failed to fetch')) {
+        return '🌐 Erro de conexão';
+    } else {
+        return '❌ Erro interno';
+    }
+}
+
+console.log('✅ Sistema carregado!');
 </script>
 </body>
 </html>
