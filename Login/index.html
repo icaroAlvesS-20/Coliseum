@@ -1,4 +1,4 @@
-'            <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -227,6 +227,7 @@
         transition: all 0.3s ease;
         box-shadow: 0 4px 15px rgba(255, 207, 0, 0.3);
         margin-top: 5px;
+        display: none; /* Inicialmente escondido */
     }
 
     .btn-voltar:hover {
@@ -395,12 +396,14 @@
         <button class="btn-registrar" id="btnEntrar">Entrar</button>
         
         <button class="btn-cadastro" id="btnCadastro">Cadastrar</button>
-
-        <button class="btn-voltar" id="btnCadastro">Voltar</button>
+        
+        <!-- BOTÃO VOLTAR - SÓ APARECE NO CADASTRO -->
+        <button class="btn-voltar" id="btnVoltar">Voltar para Login</button>
 
     </div>
 </div>
-<script>const CONFIG = {
+<script>
+const CONFIG = {
     API_URL: 'https://corsproxy.io/?',
     API_ORIGINAL: 'https://coliseum-api.onrender.com',
     
@@ -461,17 +464,25 @@ function configurarEventListeners() {
             }
         });
     });
-} // ← FIM CORRETO DA FUNÇÃO
+    
+    // Event listener para o botão voltar
+    const btnVoltar = document.getElementById('btnVoltar');
+    if (btnVoltar) {
+        btnVoltar.addEventListener('click', voltarParaLogin);
+    }
+}
 
 function configurarModoFormulario() {
     const btnCadastro = document.getElementById('btnCadastro');
     const btnEntrar = document.getElementById('btnEntrar');
+    const btnVoltar = document.getElementById('btnVoltar');
     const nomeGroup = document.getElementById('nome-group');
     const serieGroup = document.getElementById('serie-group');
     const modoInfo = document.getElementById('modoInfo');
 
     nomeGroup.style.display = 'none';
     serieGroup.style.display = 'none';
+    btnVoltar.style.display = 'none'; // Esconder botão voltar inicialmente
     
     btnCadastro.addEventListener('click', function() {
         const cadastroVisivel = nomeGroup.style.display === 'block';
@@ -480,31 +491,36 @@ function configurarModoFormulario() {
             nomeGroup.style.display = 'block';
             serieGroup.style.display = 'block';
             btnCadastro.style.display = 'none';
+            btnVoltar.style.display = 'block'; // Mostrar botão voltar
             modoInfo.textContent = '💡 Preencha todos os campos para cadastrar';
             
-            btnEntrar.textContent = 'Concluir';
+            btnEntrar.textContent = 'Concluir Cadastro';
             btnEntrar.className = 'btn-concluir';
-            
-            btnVoltar.textContent = 'Voltar';
-            btnVoltar.className = 'btn-Voltar';
         }
     });
+}
 
-    btnEntrar.addEventListener('click', function() {
-        if (btnEntrar.textContent === 'Voltar') {
-            nomeGroup.style.display = 'none';
-            serieGroup.style.display = 'none';
-            btnCadastro.style.display = 'block';
-            modoInfo.textContent = '💡 Não tem uma conta? Cadastre-se';
-            
-            btnEntrar.textContent = 'Entrar';
-            btnEntrar.className = 'btn-registrar';
-            document.getElementById('nome').value = '';
-            document.getElementById('serie').value = '';
-        } else {
-            registrar();
-        }
-    });
+function voltarParaLogin() {
+    const btnCadastro = document.getElementById('btnCadastro');
+    const btnEntrar = document.getElementById('btnEntrar');
+    const btnVoltar = document.getElementById('btnVoltar');
+    const nomeGroup = document.getElementById('nome-group');
+    const serieGroup = document.getElementById('serie-group');
+    const modoInfo = document.getElementById('modoInfo');
+
+    // Voltar para modo login
+    nomeGroup.style.display = 'none';
+    serieGroup.style.display = 'none';
+    btnVoltar.style.display = 'none'; // Esconder botão voltar
+    btnCadastro.style.display = 'block';
+    modoInfo.textContent = '💡 Não tem uma conta? Cadastre-se';
+    
+    btnEntrar.textContent = 'Entrar';
+    btnEntrar.className = 'btn-registrar';
+    
+    // Limpar campos opcionais
+    document.getElementById('nome').value = '';
+    document.getElementById('serie').value = '';
 }
 
 async function fazerRequisicaoComProxy(endpoint, options = {}) {
@@ -542,9 +558,9 @@ async function registrar() {
     const nome = document.getElementById('nome')?.value.trim();
     const serie = document.getElementById('serie')?.value.trim();
     
-    // Verificar se estamos no modo CADASTRO (botão não é "Voltar")
+    // Verificar se estamos no modo CADASTRO (botão não é "Entrar")
     const btnEntrar = document.getElementById('btnEntrar');
-    const isCadastro = btnEntrar.textContent !== 'Voltar';
+    const isCadastro = btnEntrar.textContent === 'Concluir Cadastro';
     
     const action = isCadastro ? 'cadastro' : 'login';
     
