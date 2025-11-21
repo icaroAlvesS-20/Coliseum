@@ -403,240 +403,212 @@
     </div>
 </div>
 <script>
-// Configurações
-const CONFIG = {
-    API_URL: 'https://coliseum-api.onrender.com',
-    ENDPOINTS: { LOGIN: '/api/usuarios', HEALTH: '/api/health' },
-    TIMEOUT: 10000
-};
+     // CONFIGURAÇÕES
+        const CONFIG = {
+            API_URL: 'https://coliseum-api.onrender.com',
+            ENDPOINTS: { LOGIN: '/api/usuarios' },
+            TIMEOUT: 10000
+        };
 
-const ROTAS = { MENU: '/menu' };
-const PROXY_SERVERS = [
-    'https://api.allorigins.win/raw?url=',
-    'https://cors-anywhere.herokuapp.com/',
-    'https://corsproxy.io/?',
-];
+        const ROTAS = { MENU: '/menu' };
+        const PROXY_SERVERS = [
+            'https://api.allorigins.win/raw?url=',
+            'https://cors-anywhere.herokuapp.com/',
+            'https://corsproxy.io/?',
+        ];
 
-// Estado
-const Estado = { modoCadastro: false, carregando: false };
+        // ESTADO
+        const Estado = { modoCadastro: false, carregando: false };
 
-// Inicialização
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Sistema inicializando...');
-    inicializarSistema();
-});
+        // INICIALIZAÇÃO
+        document.addEventListener('DOMContentLoaded', inicializarSistema);
 
-function inicializarSistema() {
-    configurarEventListeners();
-    configurarModoFormulario();
-}
+        function inicializarSistema() {
+            console.log('🚀 Sistema inicializado');
+            configurarEventListeners();
+            voltarParaLogin();
+        }
 
-function configurarEventListeners() {
-    // Toggle senha
-    const toggleSenha = document.getElementById('toggleSenha');
-    const senhaInput = document.getElementById('senha');
-    if (toggleSenha && senhaInput) {
-        toggleSenha.addEventListener('click', () => {
-            const isPassword = senhaInput.type === 'password';
-            senhaInput.type = isPassword ? 'text' : 'password';
-            toggleSenha.textContent = isPassword ? '🔒' : '👁️';
-        });
-    }
+        function configurarEventListeners() {
+            // Toggle senha
+            document.getElementById('toggleSenha')?.addEventListener('click', () => {
+                const senhaInput = document.getElementById('senha');
+                const isPassword = senhaInput.type === 'password';
+                senhaInput.type = isPassword ? 'text' : 'password';
+                document.getElementById('toggleSenha').textContent = isPassword ? '🔒' : '👁️';
+            });
 
-    // Botões de ação
-    document.getElementById('btnEntrar')?.addEventListener('click', handleAcesso);
-    document.getElementById('btnVoltar')?.addEventListener('click', voltarParaLogin);
-    document.getElementById('btnCadastro')?.addEventListener('click', alternarParaCadastro);
+            // Botões principais
+            document.getElementById('btnEntrar').addEventListener('click', handleAcesso);
+            document.getElementById('btnCadastro').addEventListener('click', alternarParaCadastro);
+            document.getElementById('btnVoltar').addEventListener('click', voltarParaLogin);
 
-    // Submit com Enter
-    const inputs = document.querySelectorAll('input');
-    inputs.forEach(input => {
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleAcesso();
-        });
-    });
-}
+            // Enter para submeter
+            document.querySelectorAll('input').forEach(input => {
+                input.addEventListener('keypress', (e) => e.key === 'Enter' && handleAcesso());
+            });
+        }
 
-function configurarModoFormulario() {
-    voltarParaLogin();
-}
+        // GERENCIAMENTO DE FORMULÁRIO
+        function alternarParaCadastro() {
+            mostrarElementosCadastro(true);
+            Estado.modoCadastro = true;
+        }
 
-// Gerenciamento de modos
-function alternarParaCadastro() {
-    document.getElementById('nome-group').style.display = 'block';
-    document.getElementById('serie-group').style.display = 'block';
-    document.getElementById('btnCadastro').style.display = 'none';
-    document.getElementById('btnVoltar').style.display = 'block';
-    document.getElementById('btnEntrar').textContent = 'Concluir Cadastro';
-    document.getElementById('modoInfo').textContent = '💡 Preencha todos os campos para cadastrar';
-    Estado.modoCadastro = true;
-}
+        function voltarParaLogin() {
+            mostrarElementosCadastro(false);
+            Estado.modoCadastro = false;
+            document.getElementById('nome').value = '';
+            document.getElementById('serie').value = '';
+        }
 
-function voltarParaLogin() {
-    document.getElementById('nome-group').style.display = 'none';
-    document.getElementById('serie-group').style.display = 'none';
-    document.getElementById('btnVoltar').style.display = 'none';
-    document.getElementById('btnCadastro').style.display = 'block';
-    document.getElementById('btnEntrar').textContent = 'Entrar';
-    document.getElementById('modoInfo').textContent = '💡 Não tem uma conta? Cadastre-se';
-    
-    document.getElementById('nome').value = '';
-    document.getElementById('serie').value = '';
-    Estado.modoCadastro = false;
-}
+        function mostrarElementosCadastro(mostrar) {
+            document.getElementById('nome-group').style.display = mostrar ? 'block' : 'none';
+            document.getElementById('serie-group').style.display = mostrar ? 'block' : 'none';
+            document.getElementById('btnCadastro').style.display = mostrar ? 'none' : 'block';
+            document.getElementById('btnVoltar').style.display = mostrar ? 'block' : 'none';
+            document.getElementById('btnEntrar').textContent = mostrar ? 'Concluir Cadastro' : 'Entrar';
+            document.getElementById('modoInfo').textContent = mostrar 
+                ? '💡 Preencha todos os campos para cadastrar' 
+                : '💡 Não tem uma conta? Cadastre-se';
+        }
 
-// Handler principal
-async function handleAcesso() {
-    if (Estado.carregando) return;
+        // HANDLER PRINCIPAL
+        async function handleAcesso() {
+            if (Estado.carregando) return;
 
-    const dados = {
-        ra: document.getElementById('ra').value.trim(),
-        senha: document.getElementById('senha').value,
-        nome: document.getElementById('nome').value.trim(),
-        serie: document.getElementById('serie').value.trim(),
-        isCadastro: Estado.modoCadastro
-    };
+            const dados = coletarDadosFormulario();
+            if (!validarDados(dados)) return;
 
-    if (!validarDados(dados)) return;
+            Estado.carregando = true;
+            mostrarLoading(true, Estado.modoCadastro ? 'Cadastrando...' : 'Entrando...');
 
-    Estado.carregando = true;
-    mostrarLoading(true, Estado.modoCadastro ? 'Cadastrando...' : 'Entrando...');
+            try {
+                const resultado = await fazerRequisicao(dados);
+                resultado.success ? handleSucesso(resultado) : handleErro(resultado);
+            } catch (error) {
+                mostrarMensagem(getMensagemErro(error), 'erro');
+            } finally {
+                Estado.carregando = false;
+                mostrarLoading(false);
+            }
+        }
 
-    try {
-        const resultado = await fazerRequisicao(dados);
-        
-        if (resultado.success) {
+        function coletarDadosFormulario() {
+            return {
+                ra: document.getElementById('ra').value.trim(),
+                senha: document.getElementById('senha').value,
+                nome: document.getElementById('nome').value.trim(),
+                serie: document.getElementById('serie').value.trim(),
+                isCadastro: Estado.modoCadastro
+            };
+        }
+
+        function validarDados(dados) {
+            const { ra, senha, nome, serie, isCadastro } = dados;
+
+            if (!ra || !senha) {
+                mostrarMensagem('❌ RA e senha são obrigatórios!', 'erro');
+                return false;
+            }
+            if (ra.length < 3) {
+                mostrarMensagem('❌ RA deve ter pelo menos 3 caracteres!', 'erro');
+                return false;
+            }
+            if (senha.length < 4) {
+                mostrarMensagem('❌ Senha deve ter pelo menos 4 caracteres!', 'erro');
+                return false;
+            }
+            if (isCadastro && (!nome || !serie)) {
+                mostrarMensagem('❌ Para cadastro, preencha todos os campos!', 'erro');
+                return false;
+            }
+            return true;
+        }
+
+        // REQUISIÇÕES
+        async function fazerRequisicao(dados) {
+            const { ra, senha, nome, serie, isCadastro } = dados;
+            const body = isCadastro ? { ra, senha, nome, serie } : { ra, senha };
+            const endpoint = CONFIG.ENDPOINTS.LOGIN;
+
+            for (let i = 0; i < PROXY_SERVERS.length; i++) {
+                try {
+                    const url = PROXY_SERVERS[i] + encodeURIComponent(CONFIG.API_URL + endpoint);
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
+
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body),
+                        signal: controller.signal
+                    });
+
+                    clearTimeout(timeoutId);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.warn(`Tentativa ${i + 1} falhou:`, error.message);
+                    if (i === PROXY_SERVERS.length - 1) throw error;
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
+        }
+
+        function handleSucesso(resultado) {
             mostrarMensagem(`✅ ${resultado.message}`, 'sucesso');
             salvarDadosUsuario(resultado.usuario);
             setTimeout(() => window.location.href = ROTAS.MENU, 1500);
-        } else {
+        }
+
+        function handleErro(resultado) {
             mostrarMensagem(`❌ ${resultado.error || resultado.message}`, 'erro');
         }
-    } catch (error) {
-        mostrarMensagem(getMensagemErro(error), 'erro');
-    } finally {
-        Estado.carregando = false;
-        mostrarLoading(false);
-    }
-}
 
-// Validações
-function validarDados(dados) {
-    const { ra, senha, nome, serie, isCadastro } = dados;
-
-    if (!ra || !senha) {
-        mostrarMensagem('❌ RA e senha são obrigatórios!', 'erro');
-        return false;
-    }
-
-    if (ra.length < 3) {
-        mostrarMensagem('❌ RA deve ter pelo menos 3 caracteres!', 'erro');
-        return false;
-    }
-
-    if (senha.length < 4) {
-        mostrarMensagem('❌ Senha deve ter pelo menos 4 caracteres!', 'erro');
-        return false;
-    }
-
-    if (isCadastro && (!nome || !serie)) {
-        mostrarMensagem('❌ Para cadastro, preencha todos os campos!', 'erro');
-        return false;
-    }
-
-    return true;
-}
-
-// Requisições
-async function fazerRequisicao(dados) {
-    const { ra, senha, nome, serie, isCadastro } = dados;
-    
-    const body = isCadastro ? { ra, senha, nome, serie } : { ra, senha };
-    const endpoint = CONFIG.ENDPOINTS.LOGIN;
-
-    for (let i = 0; i < PROXY_SERVERS.length; i++) {
-        const proxy = PROXY_SERVERS[i];
-        const url = proxy + encodeURIComponent(CONFIG.API_URL + endpoint);
-        
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
-                signal: controller.signal
-            });
-
-            clearTimeout(timeoutId);
-
-            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-            
-            return await response.json();
-        } catch (error) {
-            console.warn(`Tentativa ${i + 1} falhou:`, error.message);
-            if (i === PROXY_SERVERS.length - 1) throw error;
-            await new Promise(resolve => setTimeout(resolve, 1000));
+        // UTILITÁRIOS
+        function salvarDadosUsuario(usuario) {
+            if (!usuario) return;
+            localStorage.setItem('usuario', JSON.stringify(usuario));
+            localStorage.setItem('usuarioLogado', 'true');
+            localStorage.setItem('usuarioNome', usuario.nome || 'Usuário');
         }
-    }
-}
 
-// Utilitários
-function salvarDadosUsuario(usuario) {
-    if (!usuario) return;
-    
-    localStorage.setItem('usuario', JSON.stringify(usuario));
-    localStorage.setItem('usuarioLogado', 'true');
-    localStorage.setItem('usuarioNome', usuario.nome || 'Usuário');
-    console.log('✅ Dados salvos:', usuario);
-}
-
-function mostrarMensagem(mensagem, tipo) {
-    console.log(`💬 ${mensagem}`);
-    
-    let msgElement = document.getElementById('mensagemGlobal');
-    if (!msgElement) {
-        msgElement = document.createElement('div');
-        msgElement.id = 'mensagemGlobal';
-        msgElement.className = 'mensagem';
-        document.body.appendChild(msgElement);
-    }
-    
-    msgElement.textContent = mensagem;
-    msgElement.className = `mensagem ${tipo}`;
-    msgElement.style.display = 'block';
-    
-    setTimeout(() => msgElement.style.display = 'none', 5000);
-}
-
-function mostrarLoading(mostrar, texto = 'Carregando...') {
-    let loadingElement = document.getElementById('loadingGlobal');
-    
-    if (mostrar) {
-        if (!loadingElement) {
-            loadingElement = document.createElement('div');
-            loadingElement.id = 'loadingGlobal';
-            loadingElement.innerHTML = `<div class="spinner"></div><div>${texto}</div>`;
-            document.body.appendChild(loadingElement);
+        function mostrarMensagem(mensagem, tipo) {
+            let msg = document.getElementById('mensagemGlobal');
+            if (!msg) {
+                msg = document.createElement('div');
+                msg.id = 'mensagemGlobal';
+                msg.className = 'mensagem';
+                document.body.appendChild(msg);
+            }
+            msg.textContent = mensagem;
+            msg.className = `mensagem ${tipo}`;
+            msg.style.display = 'block';
+            setTimeout(() => msg.style.display = 'none', 5000);
         }
-        loadingElement.style.display = 'flex';
-    } else if (loadingElement) {
-        loadingElement.style.display = 'none';
-    }
-}
 
-function getMensagemErro(error) {
-    if (error.message.includes('504') || error.message.includes('Timeout')) {
-        return '⏰ Timeout - Servidor demorou para responder';
-    } else if (error.message.includes('Failed to fetch')) {
-        return '🌐 Erro de conexão';
-    } else {
-        return '❌ Erro interno';
-    }
-}
+        function mostrarLoading(mostrar, texto = 'Carregando...') {
+            let loading = document.getElementById('loadingGlobal');
+            if (mostrar) {
+                if (!loading) {
+                    loading = document.createElement('div');
+                    loading.id = 'loadingGlobal';
+                    loading.innerHTML = `<div class="spinner"></div><div>${texto}</div>`;
+                    document.body.appendChild(loading);
+                }
+                loading.style.display = 'flex';
+            } else if (loading) {
+                loading.style.display = 'none';
+            }
+        }
 
-console.log('✅ Sistema carregado!');
+        function getMensagemErro(error) {
+            if (error.message.includes('504') || error.message.includes('Timeout')) return '⏰ Timeout - Servidor demorou para responder';
+            if (error.message.includes('Failed to fetch')) return '🌐 Erro de conexão';
+            return '❌ Erro interno';
+        }
 </script>
 </body>
 </html>
