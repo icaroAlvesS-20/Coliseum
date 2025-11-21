@@ -208,10 +208,33 @@
 
     .btn-concluir:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 6px 20px rgba(255, 207, 0, 0.4);
     }
 
     .btn-concluir:active {
+        transform: translateY(0);
+    }
+    .btn-voltar {
+        width: 100%;
+        padding: 17px;
+        background: linear-gradient(135deg, #ffcf00, #ff9900);
+        color: #000000;
+        border: none;
+        border-radius: 12px;
+        font-size: 17px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 207, 0, 0.3);
+        margin-top: 5px;
+    }
+
+    .btn-voltar:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-voltar:active {
         transform: translateY(0);
     }
     .mensagem {
@@ -458,6 +481,9 @@ function configurarModoFormulario() {
             
             btnEntrar.textContent = 'Concluir';
             btnEntrar.className = 'btn-concluir';
+            
+            btnVoltar.textContent = 'Voltar';
+            btnVoltar.className = 'btn-Voltar';
         }
     });
 
@@ -470,7 +496,6 @@ function configurarModoFormulario() {
             
             btnEntrar.textContent = 'Entrar';
             btnEntrar.className = 'btn-registrar';
-            
             document.getElementById('nome').value = '';
             document.getElementById('serie').value = '';
         } else {
