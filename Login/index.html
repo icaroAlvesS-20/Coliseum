@@ -586,7 +586,6 @@ async function testarConexaoAPI() {
     }
 }
 
-// ✅ FUNÇÃO REGISTRAR ATUALIZADA
 async function registrar() {
     console.log('🔐 Processando acesso...');
     
@@ -625,26 +624,25 @@ async function registrar() {
     mostrarLoading(true, isCadastro ? 'Cadastrando...' : 'Entrando...');
     
     try {
-        // Testar conexão primeiro
-        const apiOnline = await testarConexaoAPI();
-        if (!apiOnline) {
-            mostrarMensagem('⚠️ Servidor pode estar offline. Tentando conexão alternativa...', 'erro');
-        }
-        
         const requestBody = {
             ra: ra,
-            senha: senha,
-            action: action
+            senha: senha
         };
         
+        // ✅ CORREÇÃO: Remover o campo 'action' e usar endpoints diferentes
         if (isCadastro) {
             requestBody.nome = nome;
             requestBody.serie = serie;
+            // Para cadastro, usar endpoint específico se existir
+            var endpoint = CONFIG.ENDPOINTS.LOGIN; // Ou '/api/usuarios/cadastro' se existir
+        } else {
+            // Para login, manter o endpoint padrão
+            var endpoint = CONFIG.ENDPOINTS.LOGIN;
         }
         
-        console.log(`📤 Enviando ${action}...`);
+        console.log(`📤 Enviando ${action}...`, requestBody);
         
-        const data = await fazerRequisicaoComTentativas(CONFIG.ENDPOINTS.LOGIN, {
+        const data = await fazerRequisicaoComTentativas(endpoint, {
             body: JSON.stringify(requestBody)
         });
         
@@ -658,7 +656,9 @@ async function registrar() {
                 window.location.href = ROTAS.MENU;
             }, 1500);
         } else {
-            mostrarMensagem(`❌ ${data.error}`, 'erro');
+            // ✅ CORREÇÃO: Verificar diferentes formatos de resposta de erro
+            const mensagemErro = data.error || data.message || 'Erro desconhecido';
+            mostrarMensagem(`❌ ${mensagemErro}`, 'erro');
         }
         
     } catch (error) {
@@ -675,8 +675,6 @@ async function registrar() {
         mostrarLoading(false);
     }
 }
-
-// ✅ MODO OFFLINE (Fallback)
 function modoOffline() {
     console.log('🔌 Modo offline ativado');
     mostrarMensagem('⚠️ Modo offline - Dados salvos localmente', 'erro');
