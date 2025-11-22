@@ -291,177 +291,297 @@
     </div>
 </div>
 <script>
-     // CONFIGURAÇÕES
-        const CONFIG = {
-            API_URL: 'https://coliseum-api.onrender.com',
-            ENDPOINTS: { LOGIN: '/api/usuarios' },
-            TIMEOUT: 10000
-        };
+ // CONFIGURAÇÕES
+const CONFIG = {
+    API_URL: 'https://coliseum-api.onrender.com',
+    ENDPOINTS: { LOGIN: '/api/usuarios' },
+    TIMEOUT: 10000
+};
 
-        const ROTAS = { MENU: '/menu' };
-        const PROXY_SERVERS = [
-            'https://api.allorigins.win/raw?url=',
-            'https://cors-anywhere.herokuapp.com/',
-            'https://corsproxy.io/?',
-        ];
+const ROTAS = { MENU: '/menu' };
+const PROXY_SERVERS = [
+    'https://api.allorigins.win/raw?url=',
+    'https://cors-anywhere.herokuapp.com/',
+    'https://corsproxy.io/?',
+];
 
-        // ESTADO
-        let carregando = false;
+// ESTADO
+let carregando = false;
 
-        // INICIALIZAÇÃO
-        document.addEventListener('DOMContentLoaded', inicializarSistema);
+// INICIALIZAÇÃO
+document.addEventListener('DOMContentLoaded', inicializarSistema);
 
-        function inicializarSistema() {
-            console.log('🚀 Sistema inicializado');
-            configurarEventListeners();
+function inicializarSistema() {
+    console.log('🚀 Sistema inicializado');
+    configurarEventListeners();
+}
+
+function configurarEventListeners() {
+    // Toggle senha - com verificação
+    const toggleSenha = document.getElementById('toggleSenha');
+    const senhaInput = document.getElementById('senha');
+    
+    if (toggleSenha && senhaInput) {
+        toggleSenha.addEventListener('click', () => {
+            const isPassword = senhaInput.type === 'password';
+            senhaInput.type = isPassword ? 'text' : 'password';
+            toggleSenha.textContent = isPassword ? '🔒' : '👁️';
+        });
+    }
+
+    // Botão entrar - com verificação
+    const btnEntrar = document.getElementById('btnEntrar');
+    if (btnEntrar) {
+        btnEntrar.addEventListener('click', handleAcesso);
+    }
+
+    // Enter para submeter - com verificação
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleAcesso();
+            }
+        });
+    });
+}
+
+// HANDLER PRINCIPAL
+async function handleAcesso() {
+    if (carregando) return;
+
+    const dados = coletarDadosFormulario();
+    if (!validarDados(dados)) return;
+
+    carregando = true;
+    mostrarLoading(true, 'Entrando...');
+
+    try {
+        const resultado = await fazerRequisicao(dados);
+        if (resultado.success) {
+            handleSucesso(resultado);
+        } else {
+            handleErro(resultado);
         }
+    } catch (error) {
+        console.error('Erro no acesso:', error);
+        mostrarMensagem(getMensagemErro(error), 'erro');
+    } finally {
+        carregando = false;
+        mostrarLoading(false);
+    }
+}
 
-        function configurarEventListeners() {
-            // Toggle senha
-            document.getElementById('toggleSenha')?.addEventListener('click', () => {
-                const senhaInput = document.getElementById('senha');
-                const isPassword = senhaInput.type === 'password';
-                senhaInput.type = isPassword ? 'text' : 'password';
-                document.getElementById('toggleSenha').textContent = isPassword ? '🔒' : '👁️';
+function coletarDadosFormulario() {
+    const raInput = document.getElementById('ra');
+    const senhaInput = document.getElementById('senha');
+    
+    return {
+        ra: raInput ? raInput.value.trim() : '',
+        senha: senhaInput ? senhaInput.value : ''
+    };
+}
+
+function validarDados(dados) {
+    const { ra, senha } = dados;
+
+    if (!ra || !senha) {
+        mostrarMensagem('❌ RA e senha são obrigatórios!', 'erro');
+        return false;
+    }
+    if (ra.length < 3) {
+        mostrarMensagem('❌ RA deve ter pelo menos 3 caracteres!', 'erro');
+        return false;
+    }
+    if (senha.length < 4) {
+        mostrarMensagem('❌ Senha deve ter pelo menos 4 caracteres!', 'erro');
+        return false;
+    }
+    return true;
+}
+
+// REQUISIÇÕES
+async function fazerRequisicao(dados) {
+    const { ra, senha } = dados;
+    const body = { ra, senha };
+    const endpoint = CONFIG.ENDPOINTS.LOGIN;
+
+    for (let i = 0; i < PROXY_SERVERS.length; i++) {
+        try {
+            const url = PROXY_SERVERS[i] + encodeURIComponent(CONFIG.API_URL + endpoint);
+            console.log(`🔄 Tentando proxy ${i + 1}: ${PROXY_SERVERS[i]}`);
+            
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(body),
+                signal: controller.signal
             });
 
-            // Botões principais
-            document.getElementById('btnEntrar').addEventListener('click', handleAcesso);
-            // Enter para submeter
-            document.querySelectorAll('input').forEach(input => {
-                input.addEventListener('keypress', (e) => e.key === 'Enter' && handleAcesso());
-            });
-        }
-
-        // HANDLER PRINCIPAL
-        async function handleAcesso() {
-            if (carregando) return;
-
-            const dados = coletarDadosFormulario();
-            if (!validarDados(dados)) return;
-
-            carregando = true;
-            mostrarLoading(true, 'Entrando...');
-
-            try {
-                const resultado = await fazerRequisicao(dados);
-                resultado.success ? handleSucesso(resultado) : handleErro(resultado);
-            } catch (error) {
-                mostrarMensagem(getMensagemErro(error), 'erro');
-            } finally {
-                carregando = false;
-                mostrarLoading(false);
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
             }
-        }
-
-        function coletarDadosFormulario() {
-            return {
-                ra: document.getElementById('ra').value.trim(),
-                senha: document.getElementById('senha').value
-            };
-        }
-
-        function validarDados(dados) {
-            const { ra, senha } = dados;
-
-            if (!ra || !senha) {
-                mostrarMensagem('❌ RA e senha são obrigatórios!', 'erro');
-                return false;
+            
+            const result = await response.json();
+            console.log('✅ Resposta da API:', result);
+            return result;
+            
+        } catch (error) {
+            console.warn(`❌ Tentativa ${i + 1} falhou:`, error.message);
+            if (i === PROXY_SERVERS.length - 1) {
+                throw new Error(`Todos os proxies falharam: ${error.message}`);
             }
-            if (ra.length < 3) {
-                mostrarMensagem('❌ RA deve ter pelo menos 3 caracteres!', 'erro');
-                return false;
-            }
-            if (senha.length < 4) {
-                mostrarMensagem('❌ Senha deve ter pelo menos 4 caracteres!', 'erro');
-                return false;
-            }
-            return true;
+            await new Promise(resolve => setTimeout(resolve, 1000));
         }
+    }
+}
 
-        // REQUISIÇÕES
-        async function fazerRequisicao(dados) {
-            const { ra, senha } = dados;
-            const body = { ra, senha };
-            const endpoint = CONFIG.ENDPOINTS.LOGIN;
+function handleSucesso(resultado) {
+    console.log('✅ Login bem-sucedido:', resultado);
+    mostrarMensagem(`✅ ${resultado.message || 'Login realizado com sucesso!'}`, 'sucesso');
+    salvarDadosUsuario(resultado.usuario);
+    setTimeout(() => {
+        window.location.href = ROTAS.MENU;
+    }, 1500);
+}
 
-            for (let i = 0; i < PROXY_SERVERS.length; i++) {
-                try {
-                    const url = PROXY_SERVERS[i] + encodeURIComponent(CONFIG.API_URL + endpoint);
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
+function handleErro(resultado) {
+    console.error('❌ Erro no login:', resultado);
+    mostrarMensagem(`❌ ${resultado.error || resultado.message || 'Erro desconhecido'}`, 'erro');
+}
 
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(body),
-                        signal: controller.signal
-                    });
+// UTILITÁRIOS
+function salvarDadosUsuario(usuario) {
+    if (!usuario) return;
+    
+    localStorage.setItem('usuario', JSON.stringify(usuario));
+    localStorage.setItem('usuarioLogado', 'true');
+    localStorage.setItem('usuarioNome', usuario.nome || 'Usuário');
+    localStorage.setItem('usuarioRA', usuario.ra || '');
+    
+    console.log('💾 Dados do usuário salvos:', usuario.nome);
+}
 
-                    clearTimeout(timeoutId);
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    
-                    return await response.json();
-                } catch (error) {
-                    console.warn(`Tentativa ${i + 1} falhou:`, error.message);
-                    if (i === PROXY_SERVERS.length - 1) throw error;
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-            }
+function mostrarMensagem(mensagem, tipo) {
+    let msg = document.getElementById('mensagemGlobal');
+    if (!msg) {
+        msg = document.createElement('div');
+        msg.id = 'mensagemGlobal';
+        msg.className = 'mensagem';
+        document.body.appendChild(msg);
+    }
+    msg.textContent = mensagem;
+    msg.className = `mensagem ${tipo}`;
+    msg.style.display = 'block';
+    
+    setTimeout(() => {
+        if (msg) {
+            msg.style.display = 'none';
         }
+    }, 5000);
+}
 
-        function handleSucesso(resultado) {
-            mostrarMensagem(`✅ ${resultado.message}`, 'sucesso');
-            salvarDadosUsuario(resultado.usuario);
-            setTimeout(() => window.location.href = ROTAS.MENU, 1500);
+function mostrarLoading(mostrar, texto = 'Carregando...') {
+    let loading = document.getElementById('loadingGlobal');
+    
+    if (mostrar) {
+        if (!loading) {
+            loading = document.createElement('div');
+            loading.id = 'loadingGlobal';
+            loading.innerHTML = `
+                <div class="spinner"></div>
+                <div>${texto}</div>
+            `;
+            document.body.appendChild(loading);
         }
+        loading.style.display = 'flex';
+    } else if (loading) {
+        loading.style.display = 'none';
+    }
+}
 
-        function handleErro(resultado) {
-            mostrarMensagem(`❌ ${resultado.error || resultado.message}`, 'erro');
-        }
+function getMensagemErro(error) {
+    console.error('🔧 Processando erro:', error);
+    
+    if (error.name === 'AbortError' || error.message.includes('timeout') || error.message.includes('Timeout')) {
+        return '⏰ Timeout - Servidor demorou para responder';
+    }
+    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        return '🌐 Erro de conexão - Verifique sua internet';
+    }
+    if (error.message.includes('proxies falharam')) {
+        return '🔧 Todos os servidores proxy falharam - Tente novamente';
+    }
+    
+    return `❌ Erro: ${error.message || 'Erro desconhecido'}`;
+}
 
-        // UTILITÁRIOS
-        function salvarDadosUsuario(usuario) {
-            if (!usuario) return;
-            localStorage.setItem('usuario', JSON.stringify(usuario));
-            localStorage.setItem('usuarioLogado', 'true');
-            localStorage.setItem('usuarioNome', usuario.nome || 'Usuário');
-        }
+// Adicione este CSS para os elementos dinâmicos
+const style = document.createElement('style');
+style.textContent = `
+    .mensagem {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: bold;
+        z-index: 10000;
+        max-width: 90%;
+        text-align: center;
+    }
+    
+    .mensagem.sucesso {
+        background: #4CAF50;
+        color: white;
+    }
+    
+    .mensagem.erro {
+        background: #f44336;
+        color: white;
+    }
+    
+    #loadingGlobal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        color: white;
+        z-index: 9999;
+        font-size: 18px;
+    }
+    
+    .spinner {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top: 4px solid white;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 10px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+`;
 
-        function mostrarMensagem(mensagem, tipo) {
-            let msg = document.getElementById('mensagemGlobal');
-            if (!msg) {
-                msg = document.createElement('div');
-                msg.id = 'mensagemGlobal';
-                msg.className = 'mensagem';
-                document.body.appendChild(msg);
-            }
-            msg.textContent = mensagem;
-            msg.className = `mensagem ${tipo}`;
-            msg.style.display = 'block';
-            setTimeout(() => msg.style.display = 'none', 5000);
-        }
-
-        function mostrarLoading(mostrar, texto = 'Carregando...') {
-            let loading = document.getElementById('loadingGlobal');
-            if (mostrar) {
-                if (!loading) {
-                    loading = document.createElement('div');
-                    loading.id = 'loadingGlobal';
-                    loading.innerHTML = `<div class="spinner"></div><div>${texto}</div>`;
-                    document.body.appendChild(loading);
-                }
-                loading.style.display = 'flex';
-            } else if (loading) {
-                loading.style.display = 'none';
-            }
-        }
-
-        function getMensagemErro(error) {
-            if (error.message.includes('504') || error.message.includes('Timeout')) return '⏰ Timeout - Servidor demorou para responder';
-            if (error.message.includes('Failed to fetch')) return '🌐 Erro de conexão';
-            return '❌ Erro interno';
-        }
+document.head.appendChild(style);
 </script>
 </body>
 </html>
