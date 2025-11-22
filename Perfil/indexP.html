@@ -637,7 +637,7 @@ const GerenciadorInterface = {
         this.atualizarInformacoes(usuario, progresso, pontosParaProximo);
         this.atualizarRanking(usuario, nivelAtual, pontuacao);
         this.atualizarEstatisticas(usuario);
-        this.adicionarBotaoLogoutFlutuante(); // ✅ BOTÃO FLUTUANTE ADICIONADO
+        this.adicionarBotaoLogoutInferior(); // ✅ BOTÃO NA PARTE DE BAIXO
     },
 
     // ✅ PERFIL PRINCIPAL
@@ -658,26 +658,27 @@ const GerenciadorInterface = {
         `;
     },
 
-    // ✅ BOTÃO LOGOUT FLUTUANTE (NA FRENTE DE TODOS)
-    adicionarBotaoLogoutFlutuante() {
+    // ✅ BOTÃO LOGOUT NA PARTE DE BAIXO
+    adicionarBotaoLogoutInferior() {
         // Remove botão anterior se existir
-        const botaoAnterior = document.getElementById('btn-logout-flutuante');
+        const botaoAnterior = document.getElementById('btn-logout-inferior');
         if (botaoAnterior) botaoAnterior.remove();
 
-        // Cria o botão flutuante
+        // Encontra o container principal para adicionar no final
+        const containerPrincipal = document.querySelector('.container') || document.body;
+        
+        // Cria o botão
         const botaoLogout = document.createElement('button');
-        botaoLogout.id = 'btn-logout-flutuante';
-        botaoLogout.innerHTML = '🚪 Sair';
+        botaoLogout.id = 'btn-logout-inferior';
+        botaoLogout.innerHTML = '🚪 Sair da Conta';
         botaoLogout.onclick = fazerLogout;
         
-        document.body.appendChild(botaoLogout);
+        // Adiciona ao final do container principal
+        containerPrincipal.appendChild(botaoLogout);
 
-        // Adiciona os estilos diretamente
+        // Aplica os estilos diretamente
         Object.assign(botaoLogout.style, {
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-            width: '120px',
+            width: '100%',
             padding: '12px',
             background: 'linear-gradient(135deg, #ff4444, #cc0000)',
             color: 'white',
@@ -686,9 +687,9 @@ const GerenciadorInterface = {
             fontSize: '16px',
             fontWeight: 'bold',
             cursor: 'pointer',
-            zIndex: '10000', // ✅ VALOR ALTO PARA FICAR NA FRENTE
+            marginTop: '200px', // ✅ SEU MARGIN TOP MANTIDO
             transition: 'all 0.3s ease',
-            boxShadow: '0 4px 15px rgba(255, 68, 68, 0.4)'
+            display: 'block'
         });
 
         // Efeitos hover
@@ -699,7 +700,7 @@ const GerenciadorInterface = {
 
         botaoLogout.addEventListener('mouseleave', () => {
             botaoLogout.style.transform = 'translateY(0)';
-            botaoLogout.style.boxShadow = '0 4px 15px rgba(255, 68, 68, 0.4)';
+            botaoLogout.style.boxShadow = 'none';
         });
     },
 
@@ -823,9 +824,9 @@ const GerenciadorInterface = {
             if (container) container.innerHTML = template;
         });
 
-        // Remove botão flutuante se existir
-        const botaoFlutuante = document.getElementById('btn-logout-flutuante');
-        if (botaoFlutuante) botaoFlutuante.remove();
+        // Remove botão de logout se existir
+        const botaoLogout = document.getElementById('btn-logout-inferior');
+        if (botaoLogout) botaoLogout.remove();
     }
 };
 
