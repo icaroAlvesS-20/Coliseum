@@ -659,51 +659,40 @@ const GerenciadorInterface = {
     },
 
     // ✅ BOTÃO LOGOUT NA PARTE DE BAIXO
-    adicionarBotaoLogoutInferior() {
-        // Remove botão anterior se existir
-        const botaoAnterior = document.getElementById('btn-logout-inferior');
-        if (botaoAnterior) botaoAnterior.remove();
+  // ✅ BOTÃO LOGOUT DENTRO DO PERFIL
+adicionarBotaoLogoutInferior() {
+    const containerPerfil = document.getElementById("nome-usuario-container");
+    if (!containerPerfil) return;
 
-        // Encontra o container principal para adicionar no final
-        const containerPrincipal = document.querySelector('.container') || document.body;
-        
-        // Cria o botão
-        const botaoLogout = document.createElement('button');
-        botaoLogout.id = 'btn-logout-inferior';
-        botaoLogout.innerHTML = '🚪 Sair da Conta';
-        botaoLogout.onclick = fazerLogout;
-        
-        // Adiciona ao final do container principal
-        containerPrincipal.appendChild(botaoLogout);
+    // Remove botão anterior se existir
+    const botaoAnterior = document.getElementById('btn-logout-inferior');
+    if (botaoAnterior) botaoAnterior.remove();
 
-        // Aplica os estilos diretamente
-        Object.assign(botaoLogout.style, {
-            width: '100%',
-            padding: '12px',
-            background: 'linear-gradient(135deg, #ff4444, #cc0000)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '16px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            marginTop: '200px', // ✅ SEU MARGIN TOP MANTIDO
-            transition: 'all 0.3s ease',
-            display: 'block'
-        });
+    // Cria o botão DENTRO do perfil
+    const botaoLogout = document.createElement('button');
+    botaoLogout.id = 'btn-logout-inferior';
+    botaoLogout.innerHTML = '🚪 Sair da Conta';
+    botaoLogout.onclick = fazerLogout;
+    
+    // Adiciona ao FINAL do container do perfil
+    containerPerfil.appendChild(botaoLogout);
 
-        // Efeitos hover
-        botaoLogout.addEventListener('mouseenter', () => {
-            botaoLogout.style.transform = 'translateY(-2px)';
-            botaoLogout.style.boxShadow = '0 6px 20px rgba(255, 68, 68, 0.6)';
-        });
-
-        botaoLogout.addEventListener('mouseleave', () => {
-            botaoLogout.style.transform = 'translateY(0)';
-            botaoLogout.style.boxShadow = 'none';
-        });
-    },
-
+    // Estilos (mais discreto)
+    Object.assign(botaoLogout.style, {
+        width: '100%',
+        padding: '10px',
+        background: 'linear-gradient(135deg, #ff4444, #cc0000)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '8px',
+        fontSize: '14px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        marginTop: '15px', // ✅ Margem menor
+        transition: 'all 0.3s ease',
+        display: 'block'
+    });
+},
     // ✅ INFORMAÇÕES DETALHADAS
     atualizarInformacoes(usuario, progresso, pontosParaProximo) {
         const container = document.getElementById("RA-container");
