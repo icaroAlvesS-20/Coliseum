@@ -152,28 +152,29 @@
             object-fit: cover;
         }
 
-.btn-logout {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(135deg, #ff4444, #cc0000);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 200px;
-    transition: all 0.3s ease;
-}
+        .btn-logout {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
 
-.btn-logout:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(255, 68, 68, 0.4);
-}
+        .btn-logout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 68, 68, 0.4);
+        }
 
-.btn-logout:active {
-    transform: translateY(0);
-}
+        .btn-logout:active {
+            transform: translateY(0);
+        }
+
         /* Tipografia ajustada */
         h2 {
             color: #ffcf00;
@@ -466,12 +467,13 @@
             </div>
 
             <div class="bloco-cinza-escuro3" id="estatisticas-container">
-            <button onclick="fazerLogout()" class="btn-logout">Sair</button>
+                <!-- Estatísticas serão carregadas pelo JavaScript -->
             </div>
         </div>
 
-        <div class="btn-logout-container">
-           
+        <!-- Botão de logout fixo na parte inferior -->
+        <div style="margin-top: 20px; text-align: center;">
+            <button onclick="fazerLogout()" class="btn-logout">🚪 Sair da Conta</button>
         </div>
     </div>
 
@@ -621,6 +623,7 @@ const GerenciadorUsuario = {
         Object.values(this.chaves).forEach(chave => {
             localStorage.removeItem(chave);
         });
+        console.log('🗑️ Todos os dados do usuário foram removidos');
     }
 };
 
@@ -637,7 +640,6 @@ const GerenciadorInterface = {
         this.atualizarInformacoes(usuario, progresso, pontosParaProximo);
         this.atualizarRanking(usuario, nivelAtual, pontuacao);
         this.atualizarEstatisticas(usuario);
-        this.adicionarBotaoLogoutInferior(); // ✅ BOTÃO NA PARTE DE BAIXO
     },
 
     // ✅ PERFIL PRINCIPAL
@@ -658,7 +660,6 @@ const GerenciadorInterface = {
         `;
     },
 
-  
     atualizarInformacoes(usuario, progresso, pontosParaProximo) {
         const container = document.getElementById("RA-container");
         if (!container) return;
@@ -777,10 +778,6 @@ const GerenciadorInterface = {
             const container = document.getElementById(containerId);
             if (container) container.innerHTML = template;
         });
-
-        // Remove botão de logout se existir
-        const botaoLogout = document.getElementById('btn-logout-inferior');
-        if (botaoLogout) botaoLogout.remove();
     }
 };
 
@@ -855,11 +852,21 @@ function carregarRankingCompleto() {
     window.location.href = CONFIG.ROTAS.RANKING;
 }
 
+// ✅ FUNÇÃO DE LOGOUT CORRIGIDA
 function fazerLogout() {
-    if (confirm('Tem certeza que deseja sair?')) {
+    if (confirm('Tem certeza que deseja sair da sua conta?')) {
+        console.log('🚪 Iniciando logout...');
+        
+        // Limpar dados do usuário
         GerenciadorUsuario.limparDados();
-        alert('Logout realizado!');
-        window.location.href = CONFIG.ROTAS.LOGIN;
+        
+        // Mostrar mensagem de confirmação
+        alert('✅ Logout realizado com sucesso!');
+        
+        // Redirecionar para página de login
+        setTimeout(() => {
+            window.location.href = CONFIG.ROTAS.LOGIN;
+        }, 500);
     }
 }
 
