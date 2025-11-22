@@ -129,22 +129,6 @@
         padding: 5px;
     }
 
-    .campo-opcional {
-        display: none;
-    }
-
-    .modo-info {
-        background: rgba(255, 207, 0, 0.1);
-        padding: 14px;
-        border-radius: 10px;
-        margin: 10px 0 20px 0;
-        font-size: 14px;
-        text-align: center;
-        border-left: 4px solid #ffcf00;
-        color: #ffcf00;
-        line-height: 1.4;
-    }
-
     .btn-registrar {
         width: 100%;
         padding: 17px;
@@ -168,76 +152,7 @@
     .btn-registrar:active {
         transform: translateY(0);
     }
-    .btn-cadastro {
-        width: 100%;
-        padding: 17px;
-        background: linear-gradient(135deg, #000000, #000000);
-        color: #ffcf00;
-        border: none;
-        border-radius: 12px;
-        font-size: 17px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        margin-top: 5px;
-    }
 
-    .btn-cadastro:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    }
-
-    .btn-cadastro:active {
-        transform: translateY(0);
-    }
-       .btn-concluir {
-        width: 100%;
-        padding: 17px;
-        background: linear-gradient(135deg, #000000, #000000);
-        color: #ffcf00;
-        border: none;
-        border-radius: 12px;
-        font-size: 17px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        margin-top: 5px;
-    }
-
-    .btn-concluir:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(255, 207, 0, 0.4);
-    }
-
-    .btn-concluir:active {
-        transform: translateY(0);
-    }
-    .btn-voltar {
-        width: 100%;
-        padding: 17px;
-        background: linear-gradient(135deg, #ffcf00, #ff9900);
-        color: #000000;
-        border: none;
-        border-radius: 12px;
-        font-size: 17px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(255, 207, 0, 0.3);
-        margin-top: 5px;
-        display: none; /* Inicialmente escondido */
-    }
-
-    .btn-voltar:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    }
-
-    .btn-voltar:active {
-        transform: translateY(0);
-    }
     .mensagem {
         position: fixed;
         top: 20px;
@@ -326,13 +241,6 @@
         .btn-registrar {
             padding: 16px;
         }
-        .btn-cadastro {
-            padding: 16px;
-       }
-     .btn-voltar {
-            padding: 16px;
-       }
-    
     }
 
     @media (max-width: 360px) {
@@ -371,16 +279,6 @@
             <input type="text" id="ra" placeholder="Digite seu RA" autocomplete="username">
         </div>
 
-        <div class="form-group campo-opcional" id="nome-group">
-            <label for="nome">Nome Completo</label>
-            <input type="text" id="nome" placeholder="Digite seu nome completo"> 
-        </div>
-
-        <div class="form-group campo-opcional" id="serie-group">
-            <label for="serie">Série</label>
-            <input type="text" id="serie" placeholder="Ex: 1 ANO"> 
-        </div>
-
         <div class="form-group">
             <label for="senha">Senha</label>
             <div class="password-container">
@@ -388,18 +286,8 @@
                 <button type="button" id="toggleSenha" class="toggle-password">👁️</button>
             </div>
         </div>
-
-        <div id="modoInfo" class="modo-info">
-            💡 Não tem uma conta? Cadastre-se
-        </div>
         
         <button class="btn-registrar" id="btnEntrar">Entrar</button>
-        
-        <button class="btn-cadastro" id="btnCadastro">Cadastrar</button>
-        
-        <!-- BOTÃO VOLTAR - SÓ APARECE NO CADASTRO -->
-        <button class="btn-voltar" id="btnVoltar">Voltar para Login</button>
-
     </div>
 </div>
 <script>
@@ -418,7 +306,7 @@
         ];
 
         // ESTADO
-        const Estado = { modoCadastro: false, carregando: false };
+        let carregando = false;
 
         // INICIALIZAÇÃO
         document.addEventListener('DOMContentLoaded', inicializarSistema);
@@ -426,7 +314,6 @@
         function inicializarSistema() {
             console.log('🚀 Sistema inicializado');
             configurarEventListeners();
-            voltarParaLogin();
         }
 
         function configurarEventListeners() {
@@ -440,48 +327,21 @@
 
             // Botões principais
             document.getElementById('btnEntrar').addEventListener('click', handleAcesso);
-            document.getElementById('btnCadastro').addEventListener('click', alternarParaCadastro);
-            document.getElementById('btnVoltar').addEventListener('click', voltarParaLogin);
-
             // Enter para submeter
             document.querySelectorAll('input').forEach(input => {
                 input.addEventListener('keypress', (e) => e.key === 'Enter' && handleAcesso());
             });
         }
 
-        // GERENCIAMENTO DE FORMULÁRIO
-        function alternarParaCadastro() {
-            mostrarElementosCadastro(true);
-            Estado.modoCadastro = true;
-        }
-
-        function voltarParaLogin() {
-            mostrarElementosCadastro(false);
-            Estado.modoCadastro = false;
-            document.getElementById('nome').value = '';
-            document.getElementById('serie').value = '';
-        }
-
-        function mostrarElementosCadastro(mostrar) {
-            document.getElementById('nome-group').style.display = mostrar ? 'block' : 'none';
-            document.getElementById('serie-group').style.display = mostrar ? 'block' : 'none';
-            document.getElementById('btnCadastro').style.display = mostrar ? 'none' : 'block';
-            document.getElementById('btnVoltar').style.display = mostrar ? 'block' : 'none';
-            document.getElementById('btnEntrar').textContent = mostrar ? 'Concluir Cadastro' : 'Entrar';
-            document.getElementById('modoInfo').textContent = mostrar 
-                ? '💡 Preencha todos os campos para cadastrar' 
-                : '💡 Não tem uma conta? Cadastre-se';
-        }
-
         // HANDLER PRINCIPAL
         async function handleAcesso() {
-            if (Estado.carregando) return;
+            if (carregando) return;
 
             const dados = coletarDadosFormulario();
             if (!validarDados(dados)) return;
 
-            Estado.carregando = true;
-            mostrarLoading(true, Estado.modoCadastro ? 'Cadastrando...' : 'Entrando...');
+            carregando = true;
+            mostrarLoading(true, 'Entrando...');
 
             try {
                 const resultado = await fazerRequisicao(dados);
@@ -489,7 +349,7 @@
             } catch (error) {
                 mostrarMensagem(getMensagemErro(error), 'erro');
             } finally {
-                Estado.carregando = false;
+                carregando = false;
                 mostrarLoading(false);
             }
         }
@@ -497,15 +357,12 @@
         function coletarDadosFormulario() {
             return {
                 ra: document.getElementById('ra').value.trim(),
-                senha: document.getElementById('senha').value,
-                nome: document.getElementById('nome').value.trim(),
-                serie: document.getElementById('serie').value.trim(),
-                isCadastro: Estado.modoCadastro
+                senha: document.getElementById('senha').value
             };
         }
 
         function validarDados(dados) {
-            const { ra, senha, nome, serie, isCadastro } = dados;
+            const { ra, senha } = dados;
 
             if (!ra || !senha) {
                 mostrarMensagem('❌ RA e senha são obrigatórios!', 'erro');
@@ -519,17 +376,13 @@
                 mostrarMensagem('❌ Senha deve ter pelo menos 4 caracteres!', 'erro');
                 return false;
             }
-            if (isCadastro && (!nome || !serie)) {
-                mostrarMensagem('❌ Para cadastro, preencha todos os campos!', 'erro');
-                return false;
-            }
             return true;
         }
 
         // REQUISIÇÕES
         async function fazerRequisicao(dados) {
-            const { ra, senha, nome, serie, isCadastro } = dados;
-            const body = isCadastro ? { ra, senha, nome, serie } : { ra, senha };
+            const { ra, senha } = dados;
+            const body = { ra, senha };
             const endpoint = CONFIG.ENDPOINTS.LOGIN;
 
             for (let i = 0; i < PROXY_SERVERS.length; i++) {
