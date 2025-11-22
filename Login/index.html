@@ -291,7 +291,7 @@
     </div>
 </div>
 <script>
- // CONFIGURAÇÕES
+// CONFIGURAÇÕES
 const CONFIG = {
     API_URL: 'https://coliseum-api.onrender.com',
     ENDPOINTS: { LOGIN: '/api/usuarios' },
@@ -399,48 +399,110 @@ function validarDados(dados) {
     return true;
 }
 
-// REQUISIÇÕES
+// REQUISIÇÕES - CÓDIGO CORRIGIDO
 async function fazerRequisicao(dados) {
     const { ra, senha } = dados;
-    const body = { ra, senha };
+    
+    // CORREÇÃO: Verificar se os dados estão chegando corretamente
+    console.log('📤 Dados sendo enviados:', { ra, senha });
+    
+    // CORREÇÃO: Tentar diferentes formatos de body que a API pode esperar
+    const bodies = [
+        { ra, senha }, // Formato original
+        { RA: ra, senha: senha }, // Com RA em maiúsculo
+        { ra: ra, password: senha }, // Com password em inglês
+        { usuario: ra, senha: senha }, // Com chave usuario
+        { login: ra, senha: senha } // Com chave login
+    ];
+
     const endpoint = CONFIG.ENDPOINTS.LOGIN;
 
-    for (let i = 0; i < PROXY_SERVERS.length; i++) {
-        try {
-            const url = PROXY_SERVERS[i] + encodeURIComponent(CONFIG.API_URL + endpoint);
-            console.log(`🔄 Tentando proxy ${i + 1}: ${PROXY_SERVERS[i]}`);
-            
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
+    for (let bodyIndex = 0; bodyIndex < bodies.length; bodyIndex++) {
+        const body = bodies[bodyIndex];
+        
+        for (let proxyIndex = 0; proxyIndex < PROXY_SERVERS.length; proxyIndex++) {
+            try {
+                const url = PROXY_SERVERS[proxyIndex] + encodeURIComponent(CONFIG.API_URL + endpoint);
+                console.log(`🔄 Tentativa ${bodyIndex + 1}-${proxyIndex + 1}:`, { 
+                    proxy: PROXY_SERVERS[proxyIndex],
+                    body: body 
+                });
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
 
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(body),
-                signal: controller.signal
-            });
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(body),
+                    signal: controller.signal
+                });
 
-            clearTimeout(timeoutId);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
+                clearTimeout(timeoutId);
+                
+                console.log('📥 Status da resposta:', response.status);
+                
+                if (!response.ok) {
+                    // Se for erro 400, tentar próximo formato de body
+                    if (response.status === 400 && bodyIndex < bodies.length - 1) {
+                        console.log(`❌ Formato ${bodyIndex + 1} falhou, tentando próximo...`);
+                        continue;
+                    }
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ Resposta da API:', result);
+                return result;
+                
+            } catch (error) {
+                console.warn(`❌ Tentativa ${bodyIndex + 1}-${proxyIndex + 1} falhou:`, error.message);
+                
+                // Se é o último body e último proxy, lançar erro
+                if (bodyIndex === bodies.length - 1 && proxyIndex === PROXY_SERVERS.length - 1) {
+                    throw new Error(`Todas as tentativas falharam: ${error.message}`);
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
-            
-            const result = await response.json();
-            console.log('✅ Resposta da API:', result);
-            return result;
-            
-        } catch (error) {
-            console.warn(`❌ Tentativa ${i + 1} falhou:`, error.message);
-            if (i === PROXY_SERVERS.length - 1) {
-                throw new Error(`Todos os proxies falharam: ${error.message}`);
-            }
-            await new Promise(resolve => setTimeout(resolve, 1000));
         }
     }
+}
+
+// CORREÇÃO: Função para testar a API diretamente
+async function testarAPI() {
+    console.log('🧪 Testando API diretamente...');
+    
+    const testData = [
+        { ra: "123", senha: "123456" },
+        { RA: "123", senha: "123456" },
+        { ra: "123", password: "123456" }
+    ];
+    
+    for (let test of testData) {
+        try {
+            const response = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://coliseum-api.onrender.com/api/usuarios'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(test)
+            });
+            
+            const result = await response.json();
+            console.log(`🧪 Teste com ${JSON.stringify(test)}:`, result);
+            
+            if (response.ok) {
+                console.log('✅ Formato correto encontrado:', test);
+                return test;
+            }
+        } catch (error) {
+            console.log(`❌ Teste falhou:`, error);
+        }
+    }
+    
+    return null;
 }
 
 function handleSucesso(resultado) {
@@ -454,7 +516,25 @@ function handleSucesso(resultado) {
 
 function handleErro(resultado) {
     console.error('❌ Erro no login:', resultado);
-    mostrarMensagem(`❌ ${resultado.error || resultado.message || 'Erro desconhecido'}`, 'erro');
+    
+    // CORREÇÃO: Mensagens de erro mais específicas
+    let mensagemErro = 'Erro desconhecido';
+    
+    if (resultado.error) {
+        mensagemErro = resultado.error;
+    } else if (resultado.message) {
+        mensagemErro = resultado.message;
+    } else if (resultado.errors) {
+        mensagemErro = Object.values(resultado.errors).join(', ');
+    }
+    
+    mostrarMensagem(`❌ ${mensagemErro}`, 'erro');
+    
+    // CORREÇÃO: Se for erro de credenciais, testar a API
+    if (mensagemErro.includes('RA e senha') || mensagemErro.includes('credenciais')) {
+        console.log('🔍 Testando formatos da API...');
+        testarAPI();
+    }
 }
 
 // UTILITÁRIOS
@@ -582,6 +662,24 @@ style.textContent = `
 `;
 
 document.head.appendChild(style);
+
+// CORREÇÃO: Botão para testar a API
+const testButton = document.createElement('button');
+testButton.textContent = '🧪 Testar API';
+testButton.style.cssText = `
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    background: #ff9800;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 10000;
+`;
+testButton.addEventListener('click', testarAPI);
+document.body.appendChild(testButton);
 </script>
 </body>
 </html>
