@@ -671,6 +671,7 @@
             <div class="ranking-header">
                 <span>Posição</span>
                 <span>Usuário</span>
+                <span>RA</span>
                 <span>Série</span>
                 <span>Desafios</span>
                 <span>Pontuação</span>
@@ -820,6 +821,10 @@ class RankingManager {
                         <div class="stat-item">
                             <div class="stat-label-small">Série</div>
                             <div class="stat-value serie-value">${user.serie || '-'}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label-small">RA</div>
+                            <div class="stat-value RA-value">${user.RA || '-'}</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-label-small">Desafios</div>
