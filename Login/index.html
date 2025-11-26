@@ -295,21 +295,15 @@
 const CONFIG = {
     API_URL: 'https://coliseum-api.onrender.com',
     ENDPOINTS: { 
-        LOGIN: '/api/usuarios',
-        CADASTRO: '/api/usuarios'
+        LOGIN: '/api/login'
     },
-    TIMEOUT: 10000
+    TIMEOUT: 15000
 };
 
 const ROTAS = { 
-    MENU: '/menu',
-    ADMIN: '/admin'
+    MENU: 'menu.html',
+    ADMIN: 'admin.html'
 };
-
-const PROXY_SERVERS = [
-    'https://corsproxy.io/?',
-    'https://api.allorigins.win/raw?url='
-];
 
 // ESTADO
 let carregando = false;
@@ -318,7 +312,7 @@ let carregando = false;
 document.addEventListener('DOMContentLoaded', inicializarSistema);
 
 function inicializarSistema() {
-    console.log('🚀 Sistema inicializado');
+    console.log('🚀 Sistema de login inicializado');
     configurarEventListeners();
     verificarUsuarioLogado();
 }
@@ -350,12 +344,6 @@ function configurarEventListeners() {
     const btnEntrar = document.getElementById('btnEntrar');
     if (btnEntrar) {
         btnEntrar.addEventListener('click', handleAcesso);
-    }
-
-    // Botão cadastrar (se existir)
-    const btnCadastrar = document.getElementById('btnCadastrar');
-    if (btnCadastrar) {
-        btnCadastrar.addEventListener('click', handleCadastro);
     }
 
     // Enter para submeter
@@ -394,155 +382,72 @@ async function handleAcesso() {
     }
 }
 
-// HANDLER CADASTRO
-async function handleCadastro() {
-    if (carregando) return;
-
-    const dados = coletarDadosFormulario();
-    if (!validarDados(dados)) return;
-
-    // Para cadastro, precisamos de mais dados
-    const nome = prompt('Digite seu nome completo:');
-    const serie = prompt('Digite sua série (ex: 1º Ano, 2º EM):');
-    
-    if (!nome || !serie) {
-        mostrarMensagem('❌ Nome e série são obrigatórios para cadastro!', 'erro');
-        return;
-    }
-
-    carregando = true;
-    mostrarLoading(true, 'Cadastrando...');
-
-    try {
-        const resultado = await fazerCadastro({ ...dados, nome, serie });
-        if (resultado.success) {
-            mostrarMensagem('✅ Cadastro realizado com sucesso! Faça login.', 'sucesso');
-            // Limpa os campos
-            document.getElementById('ra').value = '';
-            document.getElementById('senha').value = '';
-        } else {
-            handleErroCadastro(resultado);
-        }
-    } catch (error) {
-        console.error('Erro no cadastro:', error);
-        mostrarMensagem(getMensagemErro(error), 'erro');
-    } finally {
-        carregando = false;
-        mostrarLoading(false);
-    }
-}
-
-// FUNÇÕES DE API CORRIGIDAS
+// FUNÇÃO DE LOGIN
 async function fazerLogin(dados) {
     const { ra, senha } = dados;
     
-    console.log('📤 Tentando login com:', { ra, senha });
+    console.log('📤 Tentando login com:', { ra: ra.toString().trim() });
     
     const body = { 
         ra: ra.toString().trim(), 
-        senha: senha.toString().trim(),
-        action: 'login' // Adicionando action para diferenciar do cadastro
+        senha: senha.toString().trim()
     };
 
-    for (let proxyIndex = 0; proxyIndex < PROXY_SERVERS.length; proxyIndex++) {
-        try {
-            const url = PROXY_SERVERS[proxyIndex] + encodeURIComponent(CONFIG.API_URL + CONFIG.ENDPOINTS.LOGIN);
-            console.log(`🔄 Usando proxy ${proxyIndex + 1}`);
-            
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
+    // ✅ TENTAR DIRETO PRIMEIRO (sem proxy)
+    try {
+        console.log('🔄 Tentando requisição direta...');
+        const directResponse = await fetch(CONFIG.API_URL + CONFIG.ENDPOINTS.LOGIN, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
 
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(body),
-                signal: controller.signal
-            });
-
-            clearTimeout(timeoutId);
-            
-            console.log('📥 Status:', response.status);
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`HTTP ${response.status}: ${errorText}`);
-            }
-            
-            const result = await response.json();
-            console.log('✅ Resposta do login:', result);
-            
-            // A API pode retornar success: true/false ou status diferente
-            if (result.success || result.usuario) {
-                return { success: true, ...result };
-            } else {
-                return { success: false, ...result };
-            }
-            
-        } catch (error) {
-            console.warn(`❌ Proxy ${proxyIndex + 1} falhou:`, error.message);
-            if (proxyIndex === PROXY_SERVERS.length - 1) {
-                throw new Error(`Todos os proxies falharam: ${error.message}`);
-            }
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-    }
-}
-
-async function fazerCadastro(dados) {
-    const { ra, senha, nome, serie } = dados;
-    
-    console.log('📤 Tentando cadastro com:', { ra, senha, nome, serie });
-    
-    const body = { 
-        ra: ra.toString().trim(), 
-        senha: senha.toString().trim(),
-        nome: nome.trim(),
-        serie: serie.trim(),
-        action: 'cadastro'
-    };
-
-    for (let proxyIndex = 0; proxyIndex < PROXY_SERVERS.length; proxyIndex++) {
-        try {
-            const url = PROXY_SERVERS[proxyIndex] + encodeURIComponent(CONFIG.API_URL + CONFIG.ENDPOINTS.CADASTRO);
-            console.log(`🔄 Usando proxy ${proxyIndex + 1} para cadastro`);
-            
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(body),
-                signal: controller.signal
-            });
-
-            clearTimeout(timeoutId);
-            
-            console.log('📥 Status do cadastro:', response.status);
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`HTTP ${response.status}: ${errorText}`);
-            }
-            
-            const result = await response.json();
-            console.log('✅ Resposta do cadastro:', result);
-            
+        console.log('📥 Status direto:', directResponse.status);
+        
+        if (directResponse.ok) {
+            const result = await directResponse.json();
+            console.log('✅ Login bem-sucedido (direto)');
             return result;
-            
-        } catch (error) {
-            console.warn(`❌ Proxy ${proxyIndex + 1} falhou no cadastro:`, error.message);
-            if (proxyIndex === PROXY_SERVERS.length - 1) {
-                throw new Error(`Todos os proxies falharam: ${error.message}`);
-            }
-            await new Promise(resolve => setTimeout(resolve, 1000));
+        } else {
+            const errorText = await directResponse.text();
+            throw new Error(`HTTP ${directResponse.status}: ${errorText}`);
         }
+    } catch (directError) {
+        console.log('🔄 Direto falhou, tentando com proxy...', directError.message);
+    }
+
+    // ✅ FALLBACK COM PROXY SIMPLES
+    try {
+        const PROXY_URL = 'https://corsproxy.io/?';
+        const url = PROXY_URL + encodeURIComponent(CONFIG.API_URL + CONFIG.ENDPOINTS.LOGIN);
+        
+        console.log('🔄 Tentando com proxy...');
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+
+        console.log('📥 Status proxy:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Login bem-sucedido (proxy)');
+        return result;
+        
+    } catch (proxyError) {
+        console.error('❌ Proxy também falhou:', proxyError);
+        throw new Error('Não foi possível conectar ao servidor. Tente novamente.');
     }
 }
 
@@ -605,51 +510,7 @@ function handleErroLogin(resultado) {
     if (mensagemErro.includes('incorretos') || mensagemErro.includes('inválido')) {
         mensagemErro = 'RA ou senha incorretos!';
     } else if (mensagemErro.includes('não existe') || mensagemErro.includes('encontrado')) {
-        mensagemErro = 'Usuário não encontrado. Deseja se cadastrar?';
-        
-        // Adiciona botão de cadastro se não existir
-        setTimeout(() => {
-            if (!document.getElementById('btnCadastrar')) {
-                const cadastrarBtn = document.createElement('button');
-                cadastrarBtn.id = 'btnCadastrar';
-                cadastrarBtn.textContent = '📝 Cadastrar';
-                cadastrarBtn.style.cssText = `
-                    margin-top: 10px;
-                    padding: 8px 16px;
-                    background: #2196F3;
-                    color: white;
-                    border: none;
-                    border-radius: 5px;
-                    cursor: pointer;
-                `;
-                cadastrarBtn.addEventListener('click', handleCadastro);
-                
-                const mensagemDiv = document.getElementById('mensagemGlobal');
-                if (mensagemDiv) {
-                    mensagemDiv.appendChild(document.createElement('br'));
-                    mensagemDiv.appendChild(cadastrarBtn);
-                }
-            }
-        }, 100);
-    }
-    
-    mostrarMensagem(`❌ ${mensagemErro}`, 'erro');
-}
-
-function handleErroCadastro(resultado) {
-    console.error('❌ Erro no cadastro:', resultado);
-    
-    let mensagemErro = 'Erro desconhecido no cadastro';
-    
-    if (resultado.error) {
-        mensagemErro = resultado.error;
-    } else if (resultado.message) {
-        mensagemErro = resultado.message;
-    }
-    
-    // Mensagens específicas para cadastro
-    if (mensagemErro.includes('já existe') || mensagemErro.includes('duplicado')) {
-        mensagemErro = 'RA já cadastrado! Tente fazer login.';
+        mensagemErro = 'Usuário não encontrado. Verifique seu RA.';
     }
     
     mostrarMensagem(`❌ ${mensagemErro}`, 'erro');
@@ -664,11 +525,12 @@ function salvarDadosUsuario(usuario) {
     localStorage.setItem('usuarioRA', usuario.ra || '');
     localStorage.setItem('usuarioSerie', usuario.serie || '');
     localStorage.setItem('usuarioPontuacao', usuario.pontuacao || '0');
+    localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados || '0');
     
     console.log('💾 Dados do usuário salvos:', usuario.nome);
 }
 
-// UTILITÁRIOS (mantidos iguais)
+// UTILITÁRIOS
 function mostrarMensagem(mensagem, tipo) {
     let msg = document.getElementById('mensagemGlobal');
     if (!msg) {
@@ -714,10 +576,10 @@ function getMensagemErro(error) {
         return '⏰ Servidor demorou para responder';
     }
     if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-        return '🌐 Erro de conexão';
+        return '🌐 Erro de conexão. Verifique sua internet.';
     }
     if (error.message.includes('proxies falharam')) {
-        return '🔧 Erro temporário, tente novamente';
+        return '🔧 Erro temporário no servidor. Tente novamente.';
     }
     
     return `❌ ${error.message || 'Erro desconhecido'}`;
