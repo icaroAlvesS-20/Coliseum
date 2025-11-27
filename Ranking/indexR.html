@@ -724,6 +724,70 @@ function verificarLoginRanking() {
     return true; // Ranking pode ser visto por todos
 }
 
+// ✅ FUNÇÃO DE REQUISIÇÃO MELHORADA
+async function fetchAPI(endpoint, options = {}) {
+    const targetURL = `${API_URL}${endpoint}`;
+    
+    try {
+        console.log(`🌐 Fazendo requisição para: ${targetURL}`);
+        
+        const config = {
+            method: options.method || 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                ...options.headers
+            },
+            mode: 'cors'
+        };
+        
+        if (options.body) {
+            config.body = JSON.stringify(options.body);
+        }
+        
+        const response = await fetch(targetURL, config);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Erro ${response.status}: ${errorText}`);
+        }
+        
+        const text = await response.text();
+        return text ? JSON.parse(text) : { success: true };
+        
+    } catch (error) {
+        console.error('❌ Erro na requisição:', error);
+        
+        // Tentar com proxy se for erro de CORS
+        if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+            console.log('🔄 Tentando com proxy CORS...');
+            try {
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetURL)}`;
+                const proxyResponse = await fetch(proxyUrl, {
+                    method: options.method || 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: options.body ? JSON.stringify(options.body) : undefined
+                });
+                
+                if (!proxyResponse.ok) {
+                    throw new Error(`Proxy error: ${proxyResponse.status}`);
+                }
+                
+                const text = await proxyResponse.text();
+                return text ? JSON.parse(text) : { success: true };
+                
+            } catch (proxyError) {
+                console.error('❌ Erro também com proxy:', proxyError);
+                throw new Error('Falha na conexão com o servidor');
+            }
+        }
+        
+        throw error;
+    }
+}
+
 class RankingManager {
     constructor() {
         console.log('✅ RankingManager INICIADO');
@@ -738,6 +802,8 @@ class RankingManager {
         this.totalUsuarios = document.getElementById('total-usuarios');
         this.totalDesafios = document.getElementById('total-desafios');
         this.totalPontos = document.getElementById('total-pontos');
+        
+        // ✅ CARREGAR RANKING AUTOMATICAMENTE
         this.carregarRanking();
     }
 
@@ -747,14 +813,8 @@ class RankingManager {
             
             this.rankingList.innerHTML = '<div class="loading">🔄 Conectando ao servidor...</div>';
             
-            const response = await fetch(`${API_URL}/api/ranking`);
-            console.log('📡 Status:', response.status);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            
-            const data = await response.json();
+            // ✅ USAR FUNÇÃO fetchAPI CORRIGIDA
+            const data = await fetchAPI('/api/ranking');
             console.log('✅ Dados recebidos:', data);
             
             this.exibirRanking(data);
@@ -799,6 +859,9 @@ class RankingManager {
             const isUsuarioAtual = user.id && user.id.toString() === usuarioAtualId;
             const highlightClass = isUsuarioAtual ? 'ranking-item-destaque' : '';
             
+            // ✅ CORREÇÃO: RA VISÍVEL - Adicionar RA nos detalhes do usuário
+            const raDisplay = user.ra ? `RA: ${user.ra}` : 'RA: --';
+            
             // Gerar dados de exemplo para demonstração
             const detalhesPontuacao = this.gerarDetalhesPontuacao(user);
             
@@ -813,18 +876,21 @@ class RankingManager {
                                     ${user.nome || 'Usuário'} 
                                     ${isUsuarioAtual ? '<span style="color: #ffd700; font-size: 12px;"> (Você)</span>' : ''}
                                 </div>
-                                <div class="user-serie">${user.serie || 'Série não informada'}</div>
+                                <div class="user-serie">
+                                    ${user.serie || 'Série não informada'} 
+                                    <span style="color: #4fc3f7; font-size: 0.8em; margin-left: 8px;">${raDisplay}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="ranking-item-stats">
                         <div class="stat-item">
-                            <div class="stat-label-small">Série</div>
-                            <div class="stat-value serie-value">${user.serie || '-'}</div>
+                            <div class="stat-label-small">RA</div>
+                            <div class="stat-value RA-value" style="color: #4fc3f7; font-weight: bold;">${user.ra || '--'}</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-label-small">RA</div>
-                            <div class="stat-value RA-value">${user.RA || '-'}</div>
+                            <div class="stat-label-small">Série</div>
+                            <div class="stat-value serie-value">${user.serie || '-'}</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-label-small">Desafios</div>
@@ -843,6 +909,14 @@ class RankingManager {
                             <span>Total: ${user.pontuacao || 0} pts</span>
                         </div>
                         <div class="detalhes-grid">
+                            <div class="detalhe-item">
+                                <span class="detalhe-label">RA:</span>
+                                <span class="detalhe-valor" style="color: #4fc3f7; font-weight: bold;">${user.ra || 'Não informado'}</span>
+                            </div>
+                            <div class="detalhe-item">
+                                <span class="detalhe-label">Série:</span>
+                                <span class="detalhe-valor">${user.serie || 'Não informada'}</span>
+                            </div>
                             <div class="detalhe-item">
                                 <span class="detalhe-label">Desafios Completos:</span>
                                 <span class="detalhe-valor desafio-completo">${user.desafiosCompletados || 0}</span>
@@ -864,15 +938,12 @@ class RankingManager {
                         </div>
                     </div>
                     
-                    <button class="expandir-detalhes" onclick="this.toggleDetalhes('${user.id}')">
-                        <i class="fas fa-chevron-down"></i> Ver detalhes
+                    <button class="expandir-detalhes" onclick="toggleDetalhes('${user.id}')">
+                        📊 Ver detalhes
                     </button>
                 </div>
             `;
         }).join('');
-        
-        // Adicionar funcionalidade de toggle aos botões
-        this.adicionarFuncionalidadeToggle();
     }
 
     // Gerar dados de exemplo para demonstração
@@ -895,22 +966,6 @@ class RankingManager {
         if (media >= 15) return 'pontuacao-alta';
         if (media >= 10) return 'pontuacao-media';
         return 'pontuacao-baixa';
-    }
-
-    adicionarFuncionalidadeToggle() {
-        // Adicionar funcionalidade de toggle aos botões de detalhes
-        window.toggleDetalhes = function(userId) {
-            const detalhes = document.getElementById(`detalhes-${userId}`);
-            const botao = event.target.closest('.expandir-detalhes');
-            
-            if (detalhes.style.display === 'none') {
-                detalhes.style.display = 'block';
-                botao.innerHTML = '<i class="fas fa-chevron-up"></i> Ocultar detalhes';
-            } else {
-                detalhes.style.display = 'none';
-                botao.innerHTML = '<i class="fas fa-chevron-down"></i> Ver detalhes';
-            }
-        };
     }
 
     atualizarEstatisticas(ranking) {
@@ -946,11 +1001,26 @@ class RankingManager {
     }
 }
 
-// ✅ INICIALIZAÇÃO RANKING
+// ✅ FUNÇÃO TOGGLE DETALHES (CORRIGIDA)
+function toggleDetalhes(userId) {
+    const detalhes = document.getElementById(`detalhes-${userId}`);
+    const botao = event.target.closest('.expandir-detalhes');
+    
+    if (detalhes.style.display === 'none') {
+        detalhes.style.display = 'block';
+        botao.innerHTML = '📊 Ocultar detalhes';
+    } else {
+        detalhes.style.display = 'none';
+        botao.innerHTML = '📊 Ver detalhes';
+    }
+}
+
+// ✅ INICIALIZAÇÃO RANKING AUTOMÁTICA
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📄 Ranking carregado');
+    console.log('📄 Ranking carregado - INICIANDO AUTOMATICAMENTE');
     window.rankingManager = new RankingManager();
 });
+    
 </script>
 </body>
 </html>
