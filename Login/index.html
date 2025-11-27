@@ -298,7 +298,6 @@ const CONFIG = {
 
 const ROTAS = { 
     MENU: 'menu.html',
-    ADMIN: 'admin.html'
 };
 
 // USUÁRIOS PARA TESTE (ENQUANTO O BACKEND NÃO ESTÁ PRONTO)
@@ -379,6 +378,7 @@ function configurarEventListeners() {
 }
 
 // HANDLER PRINCIPAL - LOGIN SIMPLIFICADO
+// HANDLER PRINCIPAL DE LOGIN - VERSÃO CORRIGIDA
 async function handleLogin() {
     const ra = document.getElementById('ra')?.value.trim();
     const senha = document.getElementById('senha')?.value;
@@ -389,50 +389,98 @@ async function handleLogin() {
         return;
     }
 
-    if (ra.length < 3) {
-        mostrarMensagem('❌ RA deve ter pelo menos 3 caracteres!', 'erro');
-        return;
-    }
-
-    if (senha.length < 4) {
-        mostrarMensagem('❌ Senha deve ter pelo menos 4 caracteres!', 'erro');
-        return;
-    }
-
     mostrarLoading(true, 'Verificando login...');
 
-    // Simular delay de rede
-    setTimeout(() => {
-        // Verificar usuário de teste
-        if (USUARIOS_TESTE[ra] && senha === '123456') {
-            const usuario = USUARIOS_TESTE[ra];
-            console.log('✅ Login bem-sucedido:', usuario.nome);
+    try {
+        // PRIMEIRO: Tentar login com a API real
+        console.log('🔐 Tentando login via API...');
+        
+        const response = await fetch(`${CONFIG.API_URL}/api/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ra: ra,
+                senha: senha
+            })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
             
-            // Salvar dados do usuário
-            localStorage.setItem('usuario', JSON.stringify(usuario));
-            localStorage.setItem('usuarioLogado', 'true');
-            localStorage.setItem('usuarioNome', usuario.nome);
-            localStorage.setItem('usuarioRA', ra);
-            localStorage.setItem('usuarioSerie', usuario.serie);
-            localStorage.setItem('usuarioPontuacao', usuario.pontuacao);
-            localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados);
-            localStorage.setItem('usuarioIsAdmin', usuario.isAdmin ? 'true' : 'false');
-            
-            mostrarMensagem('✅ Login realizado com sucesso!', 'sucesso');
-            
-            // Redirecionar após breve delay
-            setTimeout(() => {
-                window.location.href = ROTAS.MENU;
-            }, 1500);
+            if (result.success && result.usuario) {
+                // ✅ Login bem-sucedido via API
+                console.log('✅ Login API bem-sucedido:', result.usuario.nome);
+                
+                // Salvar dados do usuário
+                localStorage.setItem('usuario', JSON.stringify(result.usuario));
+                localStorage.setItem('usuarioLogado', 'true');
+                localStorage.setItem('usuarioNome', result.usuario.nome);
+                localStorage.setItem('usuarioRA', result.usuario.ra);
+                localStorage.setItem('usuarioSerie', result.usuario.serie || '');
+                localStorage.setItem('usuarioCurso', result.usuario.curso || '');
+                localStorage.setItem('usuarioPontuacao', result.usuario.pontuacao || 0);
+                localStorage.setItem('usuarioDesafios', result.usuario.desafiosCompletados || 0);
+                localStorage.setItem('usuarioIsAdmin', result.usuario.isAdmin ? 'true' : 'false');
+                
+                mostrarMensagem('✅ Login realizado com sucesso!', 'sucesso');
+                
+                // Redirecionar
+                setTimeout(() => {
+                    const isAdmin = result.usuario.isAdmin || result.usuario.ra === 'admin';
+                    window.location.href = isAdmin ? ROTAS.ADMIN : ROTAS.MENU;
+                }, 1500);
+                
+            } else {
+                throw new Error(result.error || 'Credenciais inválidas');
+            }
             
         } else {
-            mostrarMensagem('❌ RA ou senha incorretos!', 'erro');
+            // Se a API falhar, usar dados de teste como fallback
+            console.log('🔄 API offline, usando dados de teste...');
+            await handleLoginFallback(ra, senha);
         }
-        
+
+    } catch (error) {
+        console.log('🔁 Tentando fallback...', error.message);
+        // Fallback para dados de teste
+        await handleLoginFallback(ra, senha);
+    } finally {
         mostrarLoading(false);
-    }, 1000);
+    }
 }
 
+// FALLBACK PARA LOGIN (QUANDO API ESTÁ OFFLINE)
+async function handleLoginFallback(ra, senha) {
+    // Verificar usuário de teste
+    if (USUARIOS_TESTE[ra] && senha === '123456') {
+        const usuario = USUARIOS_TESTE[ra];
+        console.log('✅ Login fallback bem-sucedido:', usuario.nome);
+        
+        // Salvar dados do usuário
+        localStorage.setItem('usuario', JSON.stringify(usuario));
+        localStorage.setItem('usuarioLogado', 'true');
+        localStorage.setItem('usuarioNome', usuario.nome);
+        localStorage.setItem('usuarioRA', ra);
+        localStorage.setItem('usuarioSerie', usuario.serie);
+        localStorage.setItem('usuarioCurso', usuario.curso);
+        localStorage.setItem('usuarioPontuacao', usuario.pontuacao);
+        localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados);
+        localStorage.setItem('usuarioIsAdmin', usuario.isAdmin ? 'true' : 'false');
+        
+        mostrarMensagem('✅ Login realizado com sucesso! (Modo Offline)', 'sucesso');
+        
+        // Redirecionar após breve delay
+        setTimeout(() => {
+            window.location.href = usuario.isAdmin ? ROTAS.ADMIN : ROTAS.MENU;
+        }, 1500);
+        
+    } else {
+        mostrarMensagem('❌ RA ou senha incorretos!', 'erro');
+    }
+}
+    
 // FUNÇÃO PARA TESTAR BACKEND (OPCIONAL)
 async function testarBackend() {
     try {
