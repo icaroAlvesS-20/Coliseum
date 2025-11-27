@@ -673,12 +673,12 @@ const filterButtons = document.querySelectorAll('.filter-btn');
 const searchInput = document.getElementById('course-search');
 const alertContainer = document.getElementById('alert-container');
 
-// Initialize
+// ✅ INICIALIZAÇÃO AUTOMÁTICA - CARREGA CURSOS DIRETO
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🚀 Inicializando página de Cursos Extras...');
     
     await loadUserData();
-    await loadCursos();
+    await loadCursos(); // ✅ CARREGA AUTOMATICAMENTE
     setupEventListeners();
     
     console.log('🎯 Página de cursos inicializada com sucesso!');
@@ -686,109 +686,94 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 // ✅ FUNÇÃO fetchAPI MELHORADA
 async function fetchAPI(endpoint, options = {}) {
-    const PROXY_URL = 'https://corsproxy.io/?';
     const targetURL = `${API_BASE_URL}${endpoint}`;
     
     try {
-        console.log(`🌐 Tentando conexão direta: ${targetURL}`);
+        console.log(`🌐 Fazendo requisição para: ${targetURL}`);
         
-        // PRIMEIRO: Tenta conexão direta sem proxy
-        try {
-            const directResponse = await fetch(targetURL, {
-                method: options.method || 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    ...options.headers
-                },
-                body: options.body ? JSON.stringify(options.body) : undefined
-            });
-
-            if (directResponse.ok) {
-                const data = await directResponse.json();
-                console.log('✅ Conexão direta funcionou!');
-                return data;
-            }
-        } catch (directError) {
-            console.log('❌ Conexão direta falhou, tentando proxy...');
-        }
-
-        // SEGUNDO: Tenta com proxy CORS
-        console.log(`🌐 Tentando com proxy: ${targetURL}`);
-        const proxyTarget = `${PROXY_URL}${encodeURIComponent(targetURL)}`;
-        
-        const response = await fetch(proxyTarget, {
+        const config = {
             method: options.method || 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 ...options.headers
             },
-            body: options.body ? JSON.stringify(options.body) : undefined
-        });
-
+            mode: 'cors'
+        };
+        
+        if (options.body) {
+            config.body = JSON.stringify(options.body);
+        }
+        
+        const response = await fetch(targetURL, config);
+        
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`Erro ${response.status}: ${errorText}`);
         }
         
-        return await response.json();
+        const text = await response.text();
+        return text ? JSON.parse(text) : { success: true };
         
     } catch (error) {
         console.error('❌ Erro na requisição:', error);
+        
+        // Tentar com proxy se for erro de CORS
+        if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+            console.log('🔄 Tentando com proxy CORS...');
+            try {
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetURL)}`;
+                const proxyResponse = await fetch(proxyUrl, {
+                    method: options.method || 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: options.body ? JSON.stringify(options.body) : undefined
+                });
+                
+                if (!proxyResponse.ok) {
+                    throw new Error(`Proxy error: ${proxyResponse.status}`);
+                }
+                
+                const text = await proxyResponse.text();
+                return text ? JSON.parse(text) : { success: true };
+                
+            } catch (proxyError) {
+                console.error('❌ Erro também com proxy:', proxyError);
+                throw new Error('Falha na conexão com o servidor');
+            }
+        }
+        
         throw error;
     }
 }
 
-// ✅ FUNÇÃO LOADCURSOS QUE TENTA DIFERENTES ESTRATÉGIAS
+// ✅ FUNÇÃO LOADCURSOS - CARREGA AUTOMATICAMENTE DA API
 async function loadCursos() {
     try {
         showLoading();
         console.log('🔄 Buscando cursos da API...');
 
-        // ESTRATÉGIA 1: Tenta endpoint principal
-        let cursosData;
-        try {
-            cursosData = await fetchAPI('/api/cursos');
-            console.log('✅ Cursos carregados do endpoint principal');
-        } catch (error) {
-            console.log('❌ Endpoint principal falhou, tentando alternativas...');
-            
-            // ESTRATÉGIA 2: Tenta endpoint sem filtros (se existir)
-            try {
-                cursosData = await fetchAPI('/api/cursos/all');
-                console.log('✅ Cursos carregados do endpoint /all');
-            } catch (error2) {
-                console.log('❌ Endpoint /all falhou, tentando /list...');
-                
-                // ESTRATÉGIA 3: Tenta endpoint list
-                try {
-                    cursosData = await fetchAPI('/api/cursos/list');
-                    console.log('✅ Cursos carregados ');
-                } catch (error3) {
-                    console.log('❌ Todos os endpoints falharam');
-                    throw new Error('Não foi possível conectar com os cursos');
-                }
-            }
-        }
-
+        // Tenta endpoint principal
+        const cursosData = await fetchAPI('/api/cursos');
+        
         cursos = Array.isArray(cursosData) ? cursosData : [];
         
         if (cursos.length === 0) {
-            showAlert('ℹ️ Nenhum curso encontrado.', 'info');
+            showAlert('ℹ️ Nenhum curso disponível no momento.', 'info');
         } else {
-            showAlert(`✅ ${cursos.length} cursos carregados com sucesso!`, 'success');
+            console.log(`✅ ${cursos.length} cursos carregados com sucesso!`);
         }
         
         displayCursos(cursos);
         
     } catch (error) {
-        console.error('❌ Erro crítico ao carregar cursos:', error);
+        console.error('❌ Erro ao carregar cursos:', error);
         
-        if (error.message.includes('500') && error.message.includes('ativo')) {
-            showAlert('🚨 ERRO: Campos "ativo" não existem no banco de dados. Contate o administrador.', 'error');
-        } else if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
-            showAlert('❌ Erro de conexão. Verifique sua internet e tente novamente.', 'error');
+        if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+            showAlert('❌ Erro de conexão. Verifique sua internet.', 'error');
+        } else if (error.message.includes('500')) {
+            showAlert('❌ Erro no servidor. Tente novamente mais tarde.', 'error');
         } else {
             showAlert('❌ ' + error.message, 'error');
         }
@@ -809,7 +794,7 @@ function showLoading() {
     coursesContainer.innerHTML = `
         <div class="loading">
             <i class="fas fa-spinner fa-spin"></i>
-            <p>Conectando...</p>
+            <p>Carregando cursos...</p>
         </div>
     `;
 }
@@ -913,11 +898,8 @@ function displayCursos() {
         coursesContainer.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-graduation-cap"></i>
-                <h3>Nenhum curso disponível</h3>
-                <p>Não foi possível carregar os cursos da API</p>
-                <button class="btn btn-primary" onclick="loadCursos()" style="margin-top: 15px;">
-                    <i class="fas fa-sync-alt"></i> Tentar Novamente
-                </button>
+                <h3>Nenhum curso encontrado</h3>
+                <p>Tente alterar os filtros ou termos de busca</p>
             </div>
         `;
         return;
