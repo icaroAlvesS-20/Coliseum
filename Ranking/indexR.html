@@ -5,633 +5,637 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ranking - Coliseum</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #000000 0%, #2d2d2d 100%);
-            color: #fff;
-            min-height: 100vh;
-            padding: 15px;
-            line-height: 1.4;
-        }
-
-        .container {
-            max-width: 100%;
-            margin: 0 auto;
-            background-color: #242424;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Header */
-        .header {
-            text-align: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #323232;
-        }
-
-        .title {
-            color: #ffd700;
-            font-size: 1.8em;
-            margin-bottom: 8px;
-            text-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
-        }
-
-        .subtitle {
-            color: #ccc;
-            font-size: 1em;
-        }
-
-        /* Sistema de pontuação */
-        .pontuacao-info {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #323232;
-            border-radius: 10px;
-            border-left: 4px solid #ffd700;
-        }
-
-        .pontuacao-info h3 {
-            color: #ffd700;
-            margin-bottom: 10px;
-            font-size: 1.1em;
-            text-align: center;
-        }
-
-        .regras-lista {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .regra-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #444;
-            font-size: 0.9em;
-        }
-
-        .regra-item:last-child {
-            border-bottom: none;
-        }
-
-        .regra-item span {
-            color: #ccc;
-        }
-
-        .regra-item strong {
-            color: #ffd700;
-        }
-
-        /* Stats container */
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #323232, #3a3a3a);
-            padding: 15px 10px;
-            border-radius: 10px;
-            text-align: center;
-            border: 1px solid #444;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
-        }
-
-        .stat-number {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #ffd700;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: #ccc;
-            font-size: 0.8em;
-        }
-
-        /* Ranking container */
-        .ranking-container {
-            background-color: #323232;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            border: 1px solid #444;
-        }
-
-        .ranking-header {
-            display: none;
-        }
-
-        .ranking-list {
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-
-        .ranking-item {
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-            border-bottom: 1px solid #444;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .ranking-item:hover {
-            background-color: #3a3a3a;
-            transform: translateX(5px);
-        }
-
-        .ranking-item:last-child {
-            border-bottom: none;
-        }
-
-        /* Destaque para os top 3 */
-        .ranking-item:nth-child(1) {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), transparent);
-            border-left: 4px solid #ffd700;
-        }
-
-        .ranking-item:nth-child(2) {
-            background: linear-gradient(135deg, rgba(192, 192, 192, 0.1), transparent);
-            border-left: 4px solid #c0c0c0;
-        }
-
-        .ranking-item:nth-child(3) {
-            background: linear-gradient(135deg, rgba(205, 127, 50, 0.1), transparent);
-            border-left: 4px solid #cd7f32;
-        }
-
-        .ranking-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .posicao {
-            font-weight: bold;
-            font-size: 1.2em;
-            min-width: 30px;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .posicao-1 {
-            color: #ffd700;
-            background: rgba(255, 215, 0, 0.2);
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            border: 2px solid #ffd700;
-        }
-
-        .posicao-2 {
-            color: #c0c0c0;
-            background: rgba(192, 192, 192, 0.2);
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            border: 2px solid #c0c0c0;
-        }
-
-        .posicao-3 {
-            color: #cd7f32;
-            background: rgba(205, 127, 50, 0.2);
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            border: 2px solid #cd7f32;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex: 1;
-            margin-left: 10px;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #ffd700, #ffed4e);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #000;
-            font-size: 1em;
-            border: 2px solid #ffd700;
-        }
-
-        .user-details {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .user-name {
-            font-weight: 600;
-            font-size: 1em;
-            color: #fff;
-        }
-
-        .user-serie {
-            color: #ccc;
-            font-size: 0.8em;
-        }
-
-        .ranking-item-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            text-align: center;
-        }
-
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-            padding: 8px 5px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            transition: background 0.3s ease;
-        }
-
-        .stat-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .stat-label-small {
-            color: #aaa;
-            font-size: 0.75em;
-            margin-bottom: 3px;
-            font-weight: 500;
-        }
-
-        .stat-value {
-            font-weight: 600;
-            font-size: 0.9em;
-        }
-
-        .serie-value {
-            color: #aaa;
-        }
-
-        .desafios-value {
-            color: #4fc3f7;
-        }
-
-        .pontuacao-value {
-            color: #ffd700;
-            font-weight: bold;
-        }
-
-        /* Estados de loading e erro */
-        .loading, .error, .no-data {
-            text-align: center;
-            padding: 40px;
-            color: #ccc;
-            font-style: italic;
-        }
-
-        .error {
-            color: #ff6b6b;
-            background: rgba(255, 107, 107, 0.1);
-            border-radius: 10px;
-            margin: 10px;
-        }
-
-        .no-data {
-            background: rgba(255, 215, 0, 0.1);
-            border-radius: 10px;
-            margin: 10px;
-        }
-
-        /* Botão voltar */
-        .btn-voltar {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background: #ffcf00;
-            color: #000;
-            font-size: 24px;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.4);
-            transition: all 0.3s ease;
-        }
-
-        .btn-voltar:hover {
-            background: #e6b800;
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(255, 207, 0, 0.6);
-        }
-
-        /* Scrollbar personalizada */
-        .ranking-list::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .ranking-list::-webkit-scrollbar-track {
-            background: #242424;
-            border-radius: 3px;
-        }
-
-        .ranking-list::-webkit-scrollbar-thumb {
-            background: #ffd700;
-            border-radius: 3px;
-        }
-
-        .ranking-list::-webkit-scrollbar-thumb:hover {
-            background: #ffed4e;
-        }
-
-        /* Animações */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .ranking-item {
-            animation: fadeInUp 0.5s ease-out;
-        }
-
-        .ranking-item:nth-child(1) { animation-delay: 0.1s; }
-        .ranking-item:nth-child(2) { animation-delay: 0.2s; }
-        .ranking-item:nth-child(3) { animation-delay: 0.3s; }
-        .ranking-item:nth-child(4) { animation-delay: 0.4s; }
-        .ranking-item:nth-child(5) { animation-delay: 0.5s; }
-
-        /* Media Queries para telas maiores */
-        @media (min-width: 768px) {
-            body {
-                padding: 20px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
-            }
-            
-            .container {
-                max-width: 900px;
-                padding: 30px;
-            }
-            
-            .title {
-                font-size: 2.5em;
-            }
-            
-            .subtitle {
-                font-size: 1.1em;
-            }
-            
-            .stats-container {
-                gap: 15px;
-            }
-            
-            .stat-card {
-                padding: 20px;
-            }
-            
-            .stat-number {
-                font-size: 2em;
-            }
-            
-            .stat-label {
-                font-size: 0.9em;
-            }
-            
-            .ranking-header {
-                display: grid;
-                grid-template-columns: 80px 1fr 100px 100px 100px;
-                gap: 15px;
-                padding: 15px 20px;
-                background-color: #1a1a1a;
-                font-weight: bold;
-                color: #ffd700;
-                border-bottom: 1px solid #444;
-            }
-            
-            .ranking-item {
-                display: grid;
-                grid-template-columns: 80px 1fr 100px 100px 100px;
-                gap: 15px;
-                padding: 15px 20px;
-                flex-direction: row;
-            }
-            
-            .ranking-item-header, .ranking-item-stats {
-                display: contents;
-            }
-            
-            .user-details {
-                flex-direction: row;
-                align-items: center;
-                gap: 15px;
-            }
-            
-            .user-serie {
-                font-size: 0.9em;
-                background: rgba(255, 255, 255, 0.1);
-                padding: 4px 8px;
-                border-radius: 12px;
-            }
-            
-            .stat-item {
-                display: contents;
-                background: none;
-            }
-            
-            .stat-label-small {
-                display: none;
-            }
-            
-            .serie, .desafios-count, .pontuacao {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: 500;
-            }
-            
-            .serie {
-                color: #aaa;
-                font-size: 0.9em;
-            }
-            
-            .desafios-count {
-                color: #4fc3f7;
-            }
-            
-            .pontuacao {
-                color: #ffd700;
-                font-weight: bold;
-            }
-
-            .btn-voltar {
-                width: 60px;
-                height: 60px;
-                font-size: 28px;
-            }
-        }
-
-        /* Melhorias para telas muito pequenas */
-        @media (max-width: 360px) {
-            body {
-                padding: 10px;
-            }
-            
-            .container {
-                padding: 15px;
-            }
-            
-            .title {
-                font-size: 1.6em;
-            }
-            
-            .stat-card {
-                padding: 12px 8px;
-            }
-            
-            .stat-number {
-                font-size: 1.3em;
-            }
-            
-            .ranking-item {
-                padding: 12px;
-            }
-            
-            .user-avatar {
-                width: 35px;
-                height: 35px;
-                font-size: 0.9em;
-            }
-            
-            .user-name {
-                font-size: 0.9em;
-            }
-            
-            .btn-voltar {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
-                bottom: 15px;
-                right: 15px;
-            }
-        }
-
-        /* Novos estilos para detalhes de pontuação */
-        .pontuacao-detalhes {
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            font-size: 0.85em;
-        }
-
-        .detalhes-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            color: #ffd700;
-            font-weight: 600;
-        }
-
-        .detalhes-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 5px;
-        }
-
-        .detalhe-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 3px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .detalhe-item:last-child {
-            border-bottom: none;
-        }
-
-        .detalhe-label {
-            color: #aaa;
-        }
-
-        .detalhe-valor {
-            color: #fff;
-            font-weight: 500;
-        }
-
-        .desafio-completo {
-            color: #4fc3f7;
-        }
-
-        .pontuacao-alta {
-            color: #4caf50;
-        }
-
-        .pontuacao-media {
-            color: #ff9800;
-        }
-
-        .pontuacao-baixa {
-            color: #f44336;
-        }
-
-        .expandir-detalhes {
-            background: none;
-            border: none;
-            color: #ffd700;
-            cursor: pointer;
-            font-size: 0.8em;
-            margin-top: 5px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .expandir-detalhes:hover {
-            text-decoration: underline;
-        }
-
-        /* Destaque para o usuário atual */
-        .ranking-item-destaque {
-            background: rgba(255, 215, 0, 0.15) !important;
-            border: 2px solid #ffd700 !important;
-            border-radius: 8px;
-        }
+     * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    color: #fff;
+    min-height: 100vh;
+    padding: 15px;
+    line-height: 1.4;
+}
+
+.container {
+    max-width: 100%;
+    margin: 0 auto;
+    background-color: #242424;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #323232;
+}
+
+.title {
+    color: #ffd700;
+    font-size: 1.8em;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+}
+
+.subtitle {
+    color: #ccc;
+    font-size: 1em;
+}
+
+/* Sistema de pontuação */
+.pontuacao-info {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #323232;
+    border-radius: 10px;
+    border-left: 4px solid #ffd700;
+}
+
+.pontuacao-info h3 {
+    color: #ffd700;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    text-align: center;
+}
+
+.regras-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.regra-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #444;
+    font-size: 0.9em;
+}
+
+.regra-item:last-child {
+    border-bottom: none;
+}
+
+.regra-item span {
+    color: #ccc;
+}
+
+.regra-item strong {
+    color: #ffd700;
+}
+
+/* Stats container */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #323232, #3a3a3a);
+    padding: 15px 10px;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid #444;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+}
+
+.stat-number {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #ffd700;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    color: #ccc;
+    font-size: 0.8em;
+}
+
+/* Ranking container */
+.ranking-container {
+    background-color: #323232;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 1px solid #444;
+}
+
+.ranking-header {
+    display: none;
+}
+
+.ranking-list {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.ranking-item {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    border-bottom: 1px solid #444;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.ranking-item:hover {
+    background-color: #3a3a3a;
+    transform: translateX(5px);
+}
+
+.ranking-item:last-child {
+    border-bottom: none;
+}
+
+/* Destaque para os top 3 */
+.ranking-item:nth-child(1) {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), transparent);
+    border-left: 4px solid #ffd700;
+}
+
+.ranking-item:nth-child(2) {
+    background: linear-gradient(135deg, rgba(192, 192, 192, 0.1), transparent);
+    border-left: 4px solid #c0c0c0;
+}
+
+.ranking-item:nth-child(3) {
+    background: linear-gradient(135deg, rgba(205, 127, 50, 0.1), transparent);
+    border-left: 4px solid #cd7f32;
+}
+
+.ranking-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.posicao {
+    font-weight: bold;
+    font-size: 1.2em;
+    min-width: 30px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.posicao-1 {
+    color: #ffd700;
+    background: rgba(255, 215, 0, 0.2);
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 2px solid #ffd700;
+}
+
+.posicao-2 {
+    color: #c0c0c0;
+    background: rgba(192, 192, 192, 0.2);
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 2px solid #c0c0c0;
+}
+
+.posicao-3 {
+    color: #cd7f32;
+    background: rgba(205, 127, 50, 0.2);
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 2px solid #cd7f32;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    margin-left: 10px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #ffd700, #ffed4e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #000;
+    font-size: 1em;
+    border: 2px solid #ffd700;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 1em;
+    color: #fff;
+}
+
+.user-serie {
+    color: #ccc;
+    font-size: 0.8em;
+}
+
+.ranking-item-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    text-align: center;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 5px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    transition: background 0.3s ease;
+}
+
+.stat-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.stat-label-small {
+    color: #aaa;
+    font-size: 0.75em;
+    margin-bottom: 3px;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.serie-value {
+    color: #aaa;
+}
+
+.desafios-value {
+    color: #4fc3f7;
+}
+
+.pontuacao-value {
+    color: #ffd700;
+    font-weight: bold;
+}
+
+/* Estados de loading e erro */
+.loading, .error, .no-data {
+    text-align: center;
+    padding: 40px;
+    color: #ccc;
+    font-style: italic;
+    border-radius: 10px;
+    margin: 10px;
+}
+
+.error {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+}
+
+.no-data {
+    color: #ffd700;
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.loading {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Botão voltar */
+.btn-voltar {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: #ffcf00;
+    color: #000;
+    font-size: 24px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(255, 207, 0, 0.4);
+    transition: all 0.3s ease;
+}
+
+.btn-voltar:hover {
+    background: #e6b800;
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255, 207, 0, 0.6);
+}
+
+/* Scrollbar personalizada */
+.ranking-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ranking-list::-webkit-scrollbar-track {
+    background: #242424;
+    border-radius: 3px;
+}
+
+.ranking-list::-webkit-scrollbar-thumb {
+    background: #ffd700;
+    border-radius: 3px;
+}
+
+.ranking-list::-webkit-scrollbar-thumb:hover {
+    background: #ffed4e;
+}
+
+/* Animações */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ranking-item {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.ranking-item:nth-child(1) { animation-delay: 0.1s; }
+.ranking-item:nth-child(2) { animation-delay: 0.2s; }
+.ranking-item:nth-child(3) { animation-delay: 0.3s; }
+.ranking-item:nth-child(4) { animation-delay: 0.4s; }
+.ranking-item:nth-child(5) { animation-delay: 0.5s; }
+
+/* Media Queries para telas maiores */
+@media (min-width: 768px) {
+    body {
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+    
+    .container {
+        max-width: 900px;
+        padding: 30px;
+    }
+    
+    .title {
+        font-size: 2.5em;
+    }
+    
+    .subtitle {
+        font-size: 1.1em;
+    }
+    
+    .stats-container {
+        gap: 15px;
+    }
+    
+    .stat-card {
+        padding: 20px;
+    }
+    
+    .stat-number {
+        font-size: 2em;
+    }
+    
+    .stat-label {
+        font-size: 0.9em;
+    }
+    
+    .ranking-header {
+        display: grid;
+        grid-template-columns: 80px 1fr 100px 100px 100px;
+        gap: 15px;
+        padding: 15px 20px;
+        background-color: #1a1a1a;
+        font-weight: bold;
+        color: #ffd700;
+        border-bottom: 1px solid #444;
+    }
+    
+    .ranking-item {
+        display: grid;
+        grid-template-columns: 80px 1fr 100px 100px 100px;
+        gap: 15px;
+        padding: 15px 20px;
+        flex-direction: row;
+    }
+    
+    .ranking-item-header, .ranking-item-stats {
+        display: contents;
+    }
+    
+    .user-details {
+        flex-direction: row;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .user-serie {
+        font-size: 0.9em;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 4px 8px;
+        border-radius: 12px;
+    }
+    
+    .stat-item {
+        display: contents;
+        background: none;
+    }
+    
+    .stat-label-small {
+        display: none;
+    }
+    
+    .serie, .desafios-count, .pontuacao {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 500;
+    }
+    
+    .serie {
+        color: #aaa;
+        font-size: 0.9em;
+    }
+    
+    .desafios-count {
+        color: #4fc3f7;
+    }
+    
+    .pontuacao {
+        color: #ffd700;
+        font-weight: bold;
+    }
+
+    .btn-voltar {
+        width: 60px;
+        height: 60px;
+        font-size: 28px;
+    }
+}
+
+/* Melhorias para telas muito pequenas */
+@media (max-width: 360px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        padding: 15px;
+    }
+    
+    .title {
+        font-size: 1.6em;
+    }
+    
+    .stat-card {
+        padding: 12px 8px;
+    }
+    
+    .stat-number {
+        font-size: 1.3em;
+    }
+    
+    .ranking-item {
+        padding: 12px;
+    }
+    
+    .user-avatar {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9em;
+    }
+    
+    .user-name {
+        font-size: 0.9em;
+    }
+    
+    .btn-voltar {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+        bottom: 15px;
+        right: 15px;
+    }
+}
+
+/* Novos estilos para detalhes de pontuação */
+.pontuacao-detalhes {
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    font-size: 0.85em;
+}
+
+.detalhes-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    color: #ffd700;
+    font-weight: 600;
+}
+
+.detalhes-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+}
+
+.detalhe-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detalhe-item:last-child {
+    border-bottom: none;
+}
+
+.detalhe-label {
+    color: #aaa;
+}
+
+.detalhe-valor {
+    color: #fff;
+    font-weight: 500;
+}
+
+.desafio-completo {
+    color: #4fc3f7;
+}
+
+.pontuacao-alta {
+    color: #4caf50;
+}
+
+.pontuacao-media {
+    color: #ff9800;
+}
+
+.pontuacao-baixa {
+    color: #f44336;
+}
+
+.expandir-detalhes {
+    background: none;
+    border: none;
+    color: #ffd700;
+    cursor: pointer;
+    font-size: 0.8em;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.expandir-detalhes:hover {
+    text-decoration: underline;
+}
+
+/* Destaque para o usuário atual */
+.ranking-item-destaque {
+    background: rgba(255, 215, 0, 0.15) !important;
+    border: 2px solid #ffd700 !important;
+    border-radius: 8px;
+}
+        
     </style>
 </head>
 <body>
