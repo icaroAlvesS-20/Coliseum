@@ -286,7 +286,6 @@
                 <button type="button" id="toggleSenha" class="toggle-password">👁️</button>
             </div>
         </div>
-        
         <button class="btn-registrar" id="btnEntrar">Entrar</button>
     </div>
 </div>
@@ -296,8 +295,9 @@ const CONFIG = {
     API_URL: 'https://coliseum-api.onrender.com'
 };
 
+// ✅ CORREÇÃO: Definir a rota correta do menu
 const ROTAS = { 
-    MENU: 'menu.html'
+    MENU: '/menu'  // Ou use o caminho completo se necessário
 };
 
 // INICIALIZAÇÃO
@@ -327,10 +327,13 @@ function configurarEventListeners() {
         });
     }
 
-    // Botão entrar
+    // ✅ CORREÇÃO: Botão entrar com tratamento melhorado
     const btnEntrar = document.getElementById('btnEntrar');
     if (btnEntrar) {
         btnEntrar.addEventListener('click', handleLogin);
+        console.log('✅ Botão entrar configurado');
+    } else {
+        console.error('❌ Botão entrar não encontrado!');
     }
 
     // Enter para submeter
@@ -347,8 +350,10 @@ function configurarEventListeners() {
     }
 }
 
-// HANDLER PRINCIPAL DE LOGIN
+// ✅ CORREÇÃO: Função de login simplificada e robusta
 async function handleLogin() {
+    console.log('🎯 Botão entrar clicado!');
+    
     const ra = document.getElementById('ra')?.value.trim();
     const senha = document.getElementById('senha')?.value;
 
@@ -361,7 +366,7 @@ async function handleLogin() {
     mostrarLoading(true, 'Verificando login...');
 
     try {
-        console.log('🔐 Tentando login via API...');
+        console.log('🔐 Tentando login...', { ra });
         
         const response = await fetch(`${CONFIG.API_URL}/api/login`, {
             method: 'POST',
@@ -374,12 +379,15 @@ async function handleLogin() {
             })
         });
 
+        console.log('📡 Resposta do servidor:', response.status);
+
         if (response.ok) {
             const result = await response.json();
+            console.log('✅ Resposta da API:', result);
             
             if (result.success && result.usuario) {
-                // ✅ Login bem-sucedido via API
-                console.log('✅ Login API bem-sucedido:', result.usuario.nome);
+                // ✅ Login bem-sucedido
+                console.log('🎉 Login bem-sucedido:', result.usuario.nome);
                 
                 // Salvar dados do usuário
                 localStorage.setItem('usuario', JSON.stringify(result.usuario));
@@ -393,30 +401,87 @@ async function handleLogin() {
                 
                 mostrarMensagem('✅ Login realizado com sucesso!', 'sucesso');
                 
-                // Redirecionar para o menu
+                // ✅ CORREÇÃO: Redirecionamento garantido
+                console.log('🔄 Redirecionando para menu...');
                 setTimeout(() => {
                     window.location.href = ROTAS.MENU;
-                }, 1500);
+                }, 1000);
                 
             } else {
                 throw new Error(result.error || 'Credenciais inválidas');
             }
             
         } else {
+            const errorText = await response.text();
+            console.error('❌ Erro HTTP:', response.status, errorText);
             throw new Error('Erro na conexão com o servidor');
         }
 
     } catch (error) {
         console.error('❌ Erro no login:', error);
-        mostrarMensagem('❌ Erro ao fazer login. Tente novamente.', 'erro');
+        
+        // Mensagens de erro específicas
+        let mensagemErro = '❌ Erro ao fazer login. Tente novamente.';
+        
+        if (error.message.includes('Failed to fetch')) {
+            mensagemErro = '❌ Servidor indisponível. Tente mais tarde.';
+        } else if (error.message.includes('Credenciais inválidas')) {
+            mensagemErro = '❌ RA ou senha incorretos.';
+        } else if (error.message.includes('404')) {
+            mensagemErro = '❌ Usuário não encontrado.';
+        }
+        
+        mostrarMensagem(mensagemErro, 'erro');
     } finally {
         mostrarLoading(false);
     }
 }
 
-// UTILITÁRIOS
+// ✅ CORREÇÃO: Função de teste para verificar se o botão funciona
+function testarBotao() {
+    console.log('🧪 Testando botão entrar...');
+    const btnEntrar = document.getElementById('btnEntrar');
+    
+    if (btnEntrar) {
+        console.log('✅ Botão encontrado:', btnEntrar);
+        console.log('✅ ID do botão:', btnEntrar.id);
+        console.log('✅ Texto do botão:', btnEntrar.textContent);
+        
+        // Testar redirecionamento direto
+        btnEntrar.addEventListener('click', function() {
+            console.log('🎯 Clique no botão detectado!');
+            // Teste: remover esta linha depois de confirmar que funciona
+            // window.location.href = ROTAS.MENU;
+        });
+    } else {
+        console.error('❌ Botão não encontrado! Verifique o HTML:');
+        console.log('📋 Elementos com ID btnEntrar:', document.querySelectorAll('#btnEntrar'));
+    }
+}
+
+// ✅ CORREÇÃO: Versão alternativa mais simples
+function handleLoginSimples() {
+    console.log('🎯 Login simples acionado');
+    
+    const ra = document.getElementById('ra')?.value;
+    const senha = document.getElementById('senha')?.value;
+    
+    if (!ra || !senha) {
+        alert('Preencha RA e senha!');
+        return;
+    }
+    
+    // Simular login bem-sucedido
+    localStorage.setItem('usuarioLogado', 'true');
+    localStorage.setItem('usuarioNome', 'Usuário Teste');
+    localStorage.setItem('usuarioRA', ra);
+    
+    console.log('✅ Login simulado - Redirecionando...');
+    window.location.href = ROTAS.MENU;
+}
+
+// UTILITÁRIOS (mantidos iguais)
 function mostrarMensagem(mensagem, tipo) {
-    // Remover mensagem anterior se existir
     const mensagemAnterior = document.getElementById('mensagemGlobal');
     if (mensagemAnterior) {
         mensagemAnterior.remove();
@@ -444,7 +509,6 @@ function mostrarMensagem(mensagem, tipo) {
 
     document.body.appendChild(msg);
 
-    // Remover após 4 segundos
     setTimeout(() => {
         if (msg.parentNode) {
             msg.remove();
@@ -487,7 +551,6 @@ function mostrarLoading(mostrar, texto = 'Carregando...') {
                 font-size: 18px;
             `;
             
-            // Adicionar animação
             const style = document.createElement('style');
             style.textContent = `
                 @keyframes spin {
@@ -505,9 +568,13 @@ function mostrarLoading(mostrar, texto = 'Carregando...') {
     }
 }
 
-// Instruções de uso simplificadas
-console.log('🎯 Sistema de login inicializado');
-    
+// ✅ CORREÇÃO: Teste automático ao carregar
+console.log('🎯 Sistema de login carregado');
+
+// Para debug: testar imediatamente
+setTimeout(() => {
+    testarBotao();
+}, 1000);
 </script>
 </body>
 </html>
