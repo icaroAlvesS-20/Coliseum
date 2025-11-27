@@ -691,215 +691,340 @@
     <button class="btn-voltar" onclick="history.back()">←</button>
 
     <script>
-        console.log('🎯 RANKING CARREGADO!');
+console.log('🎯 RANKING CARREGADO!');
 
-        class RankingManager {
-            constructor() {
-                console.log('✅ RankingManager INICIADO');
-                
-                this.rankingList = document.getElementById('ranking-list');
-                this.totalUsuarios = document.getElementById('total-usuarios');
-                this.totalDesafios = document.getElementById('total-desafios');
-                this.totalPontos = document.getElementById('total-pontos');
-                
-                // Carregar ranking automaticamente
-                this.carregarRanking();
-            }
+const API_URL = 'https://coliseum-api.onrender.com';
 
-            async carregarRanking() {
-                try {
-                    console.log('🔄 Carregando ranking...');
-                    
-                    this.rankingList.innerHTML = '<div class="loading">🔄 Buscando dados do ranking...</div>';
-                    
-                    // Simular delay de rede
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    
-                    // Usar dados de exemplo
-                    const data = DADOS_EXEMPLO;
-                    console.log('✅ Dados carregados:', data);
-                    
-                    this.exibirRanking(data);
-                    this.atualizarEstatisticas(data);
-                    
-                } catch (error) {
-                    console.error('❌ Erro:', error);
-                    this.mostrarErro('Erro ao carregar ranking: ' + error.message);
+// ✅ ROTAS DO VERCEL
+const ROTAS = {
+    MENU: '/menu',
+    RANKING: '/ranking',
+    PERFIL: '/perfil',
+    AMIGOS: '/amigos',
+    DESAFIOS: '/desafios',
+    PROVAS: '/provas',
+    CONFIGURACAO: '/configuracao',
+    CONTATO: '/contato',
+    NAVEGADOR: '/navegador',
+    LOGIN: '/login'
+};
+
+// ✅ VERIFICAÇÃO DE LOGIN PARA RANKING (CORRIGIDA)
+function verificarLoginRanking() {
+    console.log('🔍 Verificando login para ranking...');
+    
+    // ✅ CORREÇÃO: Verificação unificada
+    const usuarioJSON = localStorage.getItem('usuario');
+    const usuarioId = localStorage.getItem('usuarioId');
+    
+    const usuarioLogado = (usuarioJSON && JSON.parse(usuarioJSON).id) || 
+                         (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined');
+    
+    if (!usuarioLogado) {
+        console.log('⚠️ Modo visitante - ranking público');
+    } else {
+        console.log('✅ Usuário logado');
+    }
+    
+    return true; // Ranking pode ser visto por todos
+}
+
+// ✅ FUNÇÃO DE REQUISIÇÃO MELHORADA
+async function fetchAPI(endpoint, options = {}) {
+    const targetURL = `${API_URL}${endpoint}`;
+    
+    try {
+        console.log(`🌐 Fazendo requisição para: ${targetURL}`);
+        
+        const config = {
+            method: options.method || 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                ...options.headers
+            },
+            mode: 'cors'
+        };
+        
+        if (options.body) {
+            config.body = JSON.stringify(options.body);
+        }
+        
+        const response = await fetch(targetURL, config);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Erro ${response.status}: ${errorText}`);
+        }
+        
+        const text = await response.text();
+        return text ? JSON.parse(text) : { success: true };
+        
+    } catch (error) {
+        console.error('❌ Erro na requisição:', error);
+        
+        // Tentar com proxy se for erro de CORS
+        if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+            console.log('🔄 Tentando com proxy CORS...');
+            try {
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetURL)}`;
+                const proxyResponse = await fetch(proxyUrl, {
+                    method: options.method || 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: options.body ? JSON.stringify(options.body) : undefined
+                });
+                
+                if (!proxyResponse.ok) {
+                    throw new Error(`Proxy error: ${proxyResponse.status}`);
                 }
-            }
-
-            exibirRanking(ranking) {
-                if (!ranking || ranking.length === 0) {
-                    this.rankingList.innerHTML = `
-                        <div class="no-data">
-                            <h3>📊 Nenhum dado disponível</h3>
-                            <p>Complete alguns desafios para aparecer no ranking!</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                // Simular usuário atual (para demonstração)
-                const usuarioAtualId = 1; // Icaro é o usuário atual
                 
-                this.rankingList.innerHTML = ranking.map((user, index) => {
-                    const isUsuarioAtual = user.id === usuarioAtualId;
-                    const highlightClass = isUsuarioAtual ? 'ranking-item-destaque' : '';
-                    
-                    const detalhesPontuacao = this.gerarDetalhesPontuacao(user);
-                    
-                    return `
-                        <div class="ranking-item ${highlightClass}">
-                            <div class="ranking-item-header">
-                                <div class="posicao posicao-${index + 1}">${index + 1}°</div>
-                                <div class="user-info">
-                                    <div class="user-avatar">${user.nome.charAt(0).toUpperCase()}</div>
-                                    <div class="user-details">
-                                        <div class="user-name">
-                                            ${user.nome} 
-                                            ${isUsuarioAtual ? '<span style="color: #ffd700; font-size: 12px;"> (Você)</span>' : ''}
-                                        </div>
-                                        <div class="user-serie">
-                                            ${user.serie}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="ranking-item-stats">
-                                <div class="stat-item">
-                                    <div class="stat-label-small">RA</div>
-                                    <div class="stat-value RA-value" style="color: #4fc3f7; font-weight: bold;">${user.ra}</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-label-small">Série</div>
-                                    <div class="stat-value serie-value">${user.serie}</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-label-small">Desafios</div>
-                                    <div class="stat-value desafios-value">${user.desafiosCompletados}</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-label-small">Pontuação</div>
-                                    <div class="stat-value pontuacao-value">${user.pontuacao}</div>
-                                </div>
-                            </div>
-                            
-                            <!-- Detalhes de pontuação expandíveis -->
-                            <div class="pontuacao-detalhes" id="detalhes-${user.id}">
-                                <div class="detalhes-header">
-                                    <span>📊 Detalhes de Pontuação</span>
-                                    <span>Total: ${user.pontuacao} pts</span>
-                                </div>
-                                <div class="detalhes-grid">
-                                    <div class="detalhe-item">
-                                        <span class="detalhe-label">RA:</span>
-                                        <span class="detalhe-valor" style="color: #4fc3f7; font-weight: bold;">${user.ra}</span>
-                                    </div>
-                                    <div class="detalhe-item">
-                                        <span class="detalhe-label">Série:</span>
-                                        <span class="detalhe-valor">${user.serie}</span>
-                                    </div>
-                                    <div class="detalhe-item">
-                                        <span class="detalhe-label">Desafios Completos:</span>
-                                        <span class="detalhe-valor desafio-completo">${user.desafiosCompletados}</span>
-                                    </div>
-                                    <div class="detalhe-item">
-                                        <span class="detalhe-label">Média por Desafio:</span>
-                                        <span class="detalhe-valor ${this.getClassPontuacaoMedia(user)}">
-                                            ${this.calcularMediaPontuacao(user)} pts
-                                        </span>
-                                    </div>
-                                    <div class="detalhe-item">
-                                        <span class="detalhe-label">Melhor Pontuação:</span>
-                                        <span class="detalhe-valor pontuacao-alta">${detalhesPontuacao.melhorPontuacao} pts</span>
-                                    </div>
-                                    <div class="detalhe-item">
-                                        <span class="detalhe-label">Desafios 100%:</span>
-                                        <span class="detalhe-valor pontuacao-alta">${detalhesPontuacao.desafiosPerfeitos}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <button class="expandir-detalhes" onclick="toggleDetalhes(${user.id})">
-                                📊 Ver detalhes
-                            </button>
-                        </div>
-                    `;
-                }).join('');
-            }
-
-            gerarDetalhesPontuacao(user) {
-                return {
-                    melhorPontuacao: Math.min(20, Math.floor(user.pontuacao / user.desafiosCompletados * 1.5)),
-                    desafiosPerfeitos: Math.floor(user.desafiosCompletados * 0.3),
-                    mediaAcertos: Math.floor(user.pontuacao / user.desafiosCompletados / 20 * 100)
-                };
-            }
-
-            calcularMediaPontuacao(user) {
-                if (!user.desafiosCompletados || user.desafiosCompletados === 0) return 0;
-                return (user.pontuacao / user.desafiosCompletados).toFixed(1);
-            }
-
-            getClassPontuacaoMedia(user) {
-                const media = this.calcularMediaPontuacao(user);
-                if (media >= 15) return 'pontuacao-alta';
-                if (media >= 10) return 'pontuacao-media';
-                return 'pontuacao-baixa';
-            }
-
-            atualizarEstatisticas(ranking) {
-                if (!ranking || ranking.length === 0) return;
-
-                const totalUsuarios = ranking.length;
-                const totalDesafios = ranking.reduce((sum, user) => sum + user.desafiosCompletados, 0);
-                const totalPontos = ranking.reduce((sum, user) => sum + user.pontuacao, 0);
-
-                this.totalUsuarios.textContent = totalUsuarios;
-                this.totalDesafios.textContent = totalDesafios;
-                this.totalPontos.textContent = totalPontos;
-            }
-
-            mostrarErro(mensagem) {
-                this.rankingList.innerHTML = `
-                    <div class="error">
-                        <h3>❌ Erro</h3>
-                        <p>${mensagem}</p>
-                        <button onclick="window.rankingManager.carregarRanking()" style="
-                            background: #ffd700; 
-                            color: #000; 
-                            border: none; 
-                            padding: 10px 20px; 
-                            border-radius: 5px; 
-                            cursor: pointer; 
-                            margin-top: 10px;
-                        ">
-                            🔄 Tentar Novamente
-                        </button>
-                    </div>
-                `;
+                const text = await proxyResponse.text();
+                return text ? JSON.parse(text) : { success: true };
+                
+            } catch (proxyError) {
+                console.error('❌ Erro também com proxy:', proxyError);
+                throw new Error('Falha na conexão com o servidor');
             }
         }
+        
+        throw error;
+    }
+}
 
-        // Função para alternar detalhes
-        function toggleDetalhes(userId) {
-            const detalhes = document.getElementById(`detalhes-${userId}`);
-            const botao = event.target;
+class RankingManager {
+    constructor() {
+        console.log('✅ RankingManager INICIADO');
+        
+        // Verificar se pode carregar (modo visitante é permitido)
+        if (!verificarLoginRanking()) {
+            this.mostrarErro('Erro de autenticação');
+            return;
+        }
+        
+        this.rankingList = document.getElementById('ranking-list');
+        this.totalUsuarios = document.getElementById('total-usuarios');
+        this.totalDesafios = document.getElementById('total-desafios');
+        this.totalPontos = document.getElementById('total-pontos');
+        
+        // ✅ CARREGAR RANKING AUTOMATICAMENTE
+        this.carregarRanking();
+    }
+
+    async carregarRanking() {
+        try {
+            console.log('🔄 Carregando ranking...');
             
-            if (detalhes.style.display === 'none' || !detalhes.style.display) {
-                detalhes.style.display = 'block';
-                botao.innerHTML = '📊 Ocultar detalhes';
-            } else {
-                detalhes.style.display = 'none';
-                botao.innerHTML = '📊 Ver detalhes';
-            }
+            this.rankingList.innerHTML = '<div class="loading">🔄 Conectando ao servidor...</div>';
+            
+            // ✅ USAR FUNÇÃO fetchAPI CORRIGIDA
+            const data = await fetchAPI('/api/ranking');
+            console.log('✅ Dados recebidos:', data);
+            
+            this.exibirRanking(data);
+            this.atualizarEstatisticas(data);
+            
+        } catch (error) {
+            console.error('❌ Erro:', error);
+            this.mostrarErro('Erro ao carregar ranking: ' + error.message);
+        }
+    }
+
+    exibirRanking(ranking) {
+        if (!ranking || ranking.length === 0) {
+            this.rankingList.innerHTML = `
+                <div class="no-data">
+                    <h3>📊 Nenhum dado disponível</h3>
+                    <p>Complete alguns desafios para aparecer no ranking!</p>
+                </div>
+            `;
+            return;
         }
 
-        // Inicialização automática
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 Ranking carregado - INICIANDO AUTOMATICAMENTE');
-            window.rankingManager = new RankingManager();
-        });
+        // ✅ CORREÇÃO: Obter ID do usuário de forma padronizada
+        const usuarioJSON = localStorage.getItem('usuario');
+        let usuarioAtualId = null;
+        
+        if (usuarioJSON) {
+            try {
+                const usuario = JSON.parse(usuarioJSON);
+                usuarioAtualId = usuario.id;
+            } catch (e) {
+                console.error('Erro ao parsear usuario:', e);
+            }
+        }
+        
+        // Fallback para ID individual
+        if (!usuarioAtualId) {
+            usuarioAtualId = localStorage.getItem('usuarioId');
+        }
+        
+        this.rankingList.innerHTML = ranking.map((user, index) => {
+            const isUsuarioAtual = user.id && user.id.toString() === usuarioAtualId;
+            const highlightClass = isUsuarioAtual ? 'ranking-item-destaque' : '';
+            
+            // ✅ CORREÇÃO: RA VISÍVEL - Adicionar RA nos detalhes do usuário
+            const raDisplay = user.ra ? `RA: ${user.ra}` : 'RA: --';
+            
+            // Gerar dados de exemplo para demonstração
+            const detalhesPontuacao = this.gerarDetalhesPontuacao(user);
+            
+            return `
+                <div class="ranking-item ${highlightClass}" style="${isUsuarioAtual ? 'background: rgba(255, 215, 0, 0.2); border: 2px solid #ffd700;' : ''}">
+                    <div class="ranking-item-header">
+                        <div class="posicao posicao-${index + 1}">${index + 1}°</div>
+                        <div class="user-info">
+                            <div class="user-avatar">${user.nome ? user.nome.charAt(0).toUpperCase() : 'U'}</div>
+                            <div class="user-details">
+                                <div class="user-name">
+                                    ${user.nome || 'Usuário'} 
+                                    ${isUsuarioAtual ? '<span style="color: #ffd700; font-size: 12px;"> (Você)</span>' : ''}
+                                </div>
+                                <div class="user-serie">
+                                    ${user.serie || 'Série não informada'} 
+                                    <span style="color: #4fc3f7; font-size: 0.8em; margin-left: 8px;">${raDisplay}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ranking-item-stats">
+                        <div class="stat-item">
+                            <div class="stat-label-small">RA</div>
+                            <div class="stat-value RA-value" style="color: #4fc3f7; font-weight: bold;">${user.ra || '--'}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label-small">Série</div>
+                            <div class="stat-value serie-value">${user.serie || '-'}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label-small">Desafios</div>
+                            <div class="stat-value desafios-value">${user.desafiosCompletados || 0}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label-small">Pontuação</div>
+                            <div class="stat-value pontuacao-value">${user.pontuacao || 0}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Detalhes de pontuação expandíveis -->
+                    <div class="pontuacao-detalhes" id="detalhes-${user.id}" style="display: none;">
+                        <div class="detalhes-header">
+                            <span>📊 Detalhes de Pontuação</span>
+                            <span>Total: ${user.pontuacao || 0} pts</span>
+                        </div>
+                        <div class="detalhes-grid">
+                            <div class="detalhe-item">
+                                <span class="detalhe-label">RA:</span>
+                                <span class="detalhe-valor" style="color: #4fc3f7; font-weight: bold;">${user.ra || 'Não informado'}</span>
+                            </div>
+                            <div class="detalhe-item">
+                                <span class="detalhe-label">Série:</span>
+                                <span class="detalhe-valor">${user.serie || 'Não informada'}</span>
+                            </div>
+                            <div class="detalhe-item">
+                                <span class="detalhe-label">Desafios Completos:</span>
+                                <span class="detalhe-valor desafio-completo">${user.desafiosCompletados || 0}</span>
+                            </div>
+                            <div class="detalhe-item">
+                                <span class="detalhe-label">Média por Desafio:</span>
+                                <span class="detalhe-valor ${this.getClassPontuacaoMedia(user)}">
+                                    ${this.calcularMediaPontuacao(user)} pts
+                                </span>
+                            </div>
+                            <div class="detalhe-item">
+                                <span class="detalhe-label">Melhor Pontuação:</span>
+                                <span class="detalhe-valor pontuacao-alta">${detalhesPontuacao.melhorPontuacao} pts</span>
+                            </div>
+                            <div class="detalhe-item">
+                                <span class="detalhe-label">Desafios 100%:</span>
+                                <span class="detalhe-valor pontuacao-alta">${detalhesPontuacao.desafiosPerfeitos}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="expandir-detalhes" onclick="toggleDetalhes('${user.id}')">
+                        📊 Ver detalhes
+                    </button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Gerar dados de exemplo para demonstração
+    gerarDetalhesPontuacao(user) {
+        // Em um sistema real, estes dados viriam da API
+        return {
+            melhorPontuacao: Math.min(20, Math.floor((user.pontuacao || 0) / (user.desafiosCompletados || 1) * 1.5)),
+            desafiosPerfeitos: Math.floor((user.desafiosCompletados || 0) * 0.3),
+            mediaAcertos: Math.floor((user.pontuacao || 0) / (user.desafiosCompletados || 1) / 20 * 100)
+        };
+    }
+
+    calcularMediaPontuacao(user) {
+        if (!user.desafiosCompletados || user.desafiosCompletados === 0) return 0;
+        return (user.pontuacao / user.desafiosCompletados).toFixed(1);
+    }
+
+    getClassPontuacaoMedia(user) {
+        const media = this.calcularMediaPontuacao(user);
+        if (media >= 15) return 'pontuacao-alta';
+        if (media >= 10) return 'pontuacao-media';
+        return 'pontuacao-baixa';
+    }
+
+    atualizarEstatisticas(ranking) {
+        if (!ranking || ranking.length === 0) return;
+
+        const totalUsuarios = ranking.length;
+        const totalDesafios = ranking.reduce((sum, user) => sum + (user.desafiosCompletados || 0), 0);
+        const totalPontos = ranking.reduce((sum, user) => sum + (user.pontuacao || 0), 0);
+
+        this.totalUsuarios.textContent = totalUsuarios;
+        this.totalDesafios.textContent = totalDesafios;
+        this.totalPontos.textContent = totalPontos;
+    }
+
+    mostrarErro(mensagem) {
+        this.rankingList.innerHTML = `
+            <div class="error">
+                <h3>❌ Erro</h3>
+                <p>${mensagem}</p>
+                <button onclick="window.rankingManager.carregarRanking()" style="
+                    background: #ffd700; 
+                    color: #000; 
+                    border: none; 
+                    padding: 10px 20px; 
+                    border-radius: 5px; 
+                    cursor: pointer; 
+                    margin-top: 10px;
+                ">
+                    🔄 Tentar Novamente
+                </button>
+            </div>
+        `;
+    }
+}
+
+// ✅ FUNÇÃO TOGGLE DETALHES (CORRIGIDA)
+function toggleDetalhes(userId) {
+    const detalhes = document.getElementById(`detalhes-${userId}`);
+    const botao = event.target.closest('.expandir-detalhes');
+    
+    if (detalhes.style.display === 'none') {
+        detalhes.style.display = 'block';
+        botao.innerHTML = '📊 Ocultar detalhes';
+    } else {
+        detalhes.style.display = 'none';
+        botao.innerHTML = '📊 Ver detalhes';
+    }
+}
+
+// ✅ INICIALIZAÇÃO RANKING AUTOMÁTICA
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 Ranking carregado - INICIANDO AUTOMATICAMENTE');
+    window.rankingManager = new RankingManager();
+});
     </script>
 </body>
 </html>
