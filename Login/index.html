@@ -293,11 +293,7 @@
 <script>
 // CONFIGURAÇÕES
 const CONFIG = {
-    API_URL: 'https://coliseum-api.onrender.com',
-    ENDPOINTS: { 
-        LOGIN: '/api/login'
-    },
-    TIMEOUT: 15000
+    API_URL: 'https://coliseum-api.onrender.com'
 };
 
 const ROTAS = { 
@@ -305,27 +301,49 @@ const ROTAS = {
     ADMIN: 'admin.html'
 };
 
-// ESTADO
-let carregando = false;
+// USUÁRIOS PARA TESTE (ENQUANTO O BACKEND NÃO ESTÁ PRONTO)
+const USUARIOS_TESTE = {
+    '123456': { 
+        id: 1, 
+        nome: 'João Silva', 
+        serie: '1º Ano', 
+        curso: 'Álgebra', 
+        pontuacao: 150,
+        desafiosCompletados: 8
+    },
+    'admin': { 
+        id: 2, 
+        nome: 'Administrador', 
+        serie: 'Admin', 
+        curso: 'Todos', 
+        pontuacao: 0, 
+        desafiosCompletados: 0,
+        isAdmin: true 
+    },
+    '000115792886': {
+        id: 3,
+        nome: 'Maria Santos',
+        serie: '2º EM',
+        curso: 'Programação',
+        pontuacao: 75,
+        desafiosCompletados: 4
+    }
+};
 
 // INICIALIZAÇÃO
-document.addEventListener('DOMContentLoaded', inicializarSistema);
-
-function inicializarSistema() {
+document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Sistema de login inicializado');
-    configurarEventListeners();
-    verificarUsuarioLogado();
-}
-
-function verificarUsuarioLogado() {
-    const usuarioLogado = localStorage.getItem('usuarioLogado');
-    if (usuarioLogado === 'true') {
-        console.log('👤 Usuário já logado, redirecionando...');
-        setTimeout(() => {
-            window.location.href = ROTAS.MENU;
-        }, 1000);
+    
+    // Verificar se já está logado
+    if (localStorage.getItem('usuarioLogado') === 'true') {
+        console.log('✅ Usuário já logado');
+        const isAdmin = localStorage.getItem('usuarioIsAdmin') === 'true';
+        window.location.href = isAdmin ? ROTAS.ADMIN : ROTAS.MENU;
+        return;
     }
-}
+    
+    configurarEventListeners();
+});
 
 function configurarEventListeners() {
     // Toggle senha
@@ -333,7 +351,7 @@ function configurarEventListeners() {
     const senhaInput = document.getElementById('senha');
     
     if (toggleSenha && senhaInput) {
-        toggleSenha.addEventListener('click', () => {
+        toggleSenha.addEventListener('click', function() {
             const isPassword = senhaInput.type === 'password';
             senhaInput.type = isPassword ? 'text' : 'password';
             toggleSenha.textContent = isPassword ? '🔒' : '👁️';
@@ -343,211 +361,128 @@ function configurarEventListeners() {
     // Botão entrar
     const btnEntrar = document.getElementById('btnEntrar');
     if (btnEntrar) {
-        btnEntrar.addEventListener('click', handleAcesso);
+        btnEntrar.addEventListener('click', handleLogin);
     }
 
     // Enter para submeter
-    document.querySelectorAll('input').forEach(input => {
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handleAcesso();
-            }
+    if (document.getElementById('ra')) {
+        document.getElementById('ra').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') handleLogin();
         });
-    });
-}
-
-// HANDLER PRINCIPAL - LOGIN
-async function handleAcesso() {
-    if (carregando) return;
-
-    const dados = coletarDadosFormulario();
-    if (!validarDados(dados)) return;
-
-    carregando = true;
-    mostrarLoading(true, 'Entrando...');
-
-    try {
-        const resultado = await fazerLogin(dados);
-        if (resultado.success) {
-            handleSucesso(resultado);
-        } else {
-            handleErroLogin(resultado);
-        }
-    } catch (error) {
-        console.error('Erro no acesso:', error);
-        mostrarMensagem(getMensagemErro(error), 'erro');
-    } finally {
-        carregando = false;
-        mostrarLoading(false);
+    }
+    
+    if (document.getElementById('senha')) {
+        document.getElementById('senha').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') handleLogin();
+        });
     }
 }
 
-// FUNÇÃO DE LOGIN
-async function fazerLogin(dados) {
-    const { ra, senha } = dados;
-    
-    console.log('📤 Tentando login com:', { ra: ra.toString().trim() });
-    
-    const body = { 
-        ra: ra.toString().trim(), 
-        senha: senha.toString().trim()
-    };
+// HANDLER PRINCIPAL - LOGIN SIMPLIFICADO
+async function handleLogin() {
+    const ra = document.getElementById('ra')?.value.trim();
+    const senha = document.getElementById('senha')?.value;
 
-    // ✅ TENTAR DIRETO PRIMEIRO (sem proxy)
-    try {
-        console.log('🔄 Tentando requisição direta...');
-        const directResponse = await fetch(CONFIG.API_URL + CONFIG.ENDPOINTS.LOGIN, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(body)
-        });
-
-        console.log('📥 Status direto:', directResponse.status);
-        
-        if (directResponse.ok) {
-            const result = await directResponse.json();
-            console.log('✅ Login bem-sucedido (direto)');
-            return result;
-        } else {
-            const errorText = await directResponse.text();
-            throw new Error(`HTTP ${directResponse.status}: ${errorText}`);
-        }
-    } catch (directError) {
-        console.log('🔄 Direto falhou, tentando com proxy...', directError.message);
-    }
-
-    // ✅ FALLBACK COM PROXY SIMPLES
-    try {
-        const PROXY_URL = 'https://corsproxy.io/?';
-        const url = PROXY_URL + encodeURIComponent(CONFIG.API_URL + CONFIG.ENDPOINTS.LOGIN);
-        
-        console.log('🔄 Tentando com proxy...');
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(body)
-        });
-
-        console.log('📥 Status proxy:', response.status);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${errorText}`);
-        }
-        
-        const result = await response.json();
-        console.log('✅ Login bem-sucedido (proxy)');
-        return result;
-        
-    } catch (proxyError) {
-        console.error('❌ Proxy também falhou:', proxyError);
-        throw new Error('Não foi possível conectar ao servidor. Tente novamente.');
-    }
-}
-
-// FUNÇÕES AUXILIARES
-function coletarDadosFormulario() {
-    const raInput = document.getElementById('ra');
-    const senhaInput = document.getElementById('senha');
-    
-    return {
-        ra: raInput ? raInput.value.trim() : '',
-        senha: senhaInput ? senhaInput.value : ''
-    };
-}
-
-function validarDados(dados) {
-    const { ra, senha } = dados;
-
+    // Validação básica
     if (!ra || !senha) {
         mostrarMensagem('❌ RA e senha são obrigatórios!', 'erro');
-        return false;
+        return;
     }
+
     if (ra.length < 3) {
         mostrarMensagem('❌ RA deve ter pelo menos 3 caracteres!', 'erro');
-        return false;
+        return;
     }
+
     if (senha.length < 4) {
         mostrarMensagem('❌ Senha deve ter pelo menos 4 caracteres!', 'erro');
-        return false;
+        return;
     }
-    return true;
-}
 
-function handleSucesso(resultado) {
-    console.log('✅ Login bem-sucedido:', resultado);
-    
-    let mensagem = resultado.message || 'Login realizado com sucesso!';
-    mostrarMensagem(`✅ ${mensagem}`, 'sucesso');
-    
-    salvarDadosUsuario(resultado.usuario || resultado);
-    
+    mostrarLoading(true, 'Verificando login...');
+
+    // Simular delay de rede
     setTimeout(() => {
-        // Redireciona para admin se for admin, senão para menu normal
-        const isAdmin = resultado.usuario?.isAdmin || resultado.isAdmin;
-        window.location.href = isAdmin ? ROTAS.ADMIN : ROTAS.MENU;
-    }, 1500);
-}
-
-function handleErroLogin(resultado) {
-    console.error('❌ Erro no login:', resultado);
-    
-    let mensagemErro = 'Erro desconhecido no login';
-    
-    if (resultado.error) {
-        mensagemErro = resultado.error;
-    } else if (resultado.message) {
-        mensagemErro = resultado.message;
-    }
-    
-    // Mensagens mais amigáveis
-    if (mensagemErro.includes('incorretos') || mensagemErro.includes('inválido')) {
-        mensagemErro = 'RA ou senha incorretos!';
-    } else if (mensagemErro.includes('não existe') || mensagemErro.includes('encontrado')) {
-        mensagemErro = 'Usuário não encontrado. Verifique seu RA.';
-    }
-    
-    mostrarMensagem(`❌ ${mensagemErro}`, 'erro');
-}
-
-function salvarDadosUsuario(usuario) {
-    if (!usuario) return;
-    
-    localStorage.setItem('usuario', JSON.stringify(usuario));
-    localStorage.setItem('usuarioLogado', 'true');
-    localStorage.setItem('usuarioNome', usuario.nome || 'Usuário');
-    localStorage.setItem('usuarioRA', usuario.ra || '');
-    localStorage.setItem('usuarioSerie', usuario.serie || '');
-    localStorage.setItem('usuarioPontuacao', usuario.pontuacao || '0');
-    localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados || '0');
-    
-    console.log('💾 Dados do usuário salvos:', usuario.nome);
-}
-
-// UTILITÁRIOS
-function mostrarMensagem(mensagem, tipo) {
-    let msg = document.getElementById('mensagemGlobal');
-    if (!msg) {
-        msg = document.createElement('div');
-        msg.id = 'mensagemGlobal';
-        msg.className = 'mensagem';
-        document.body.appendChild(msg);
-    }
-    msg.textContent = mensagem;
-    msg.className = `mensagem ${tipo}`;
-    msg.style.display = 'block';
-    
-    setTimeout(() => {
-        if (msg) {
-            msg.style.display = 'none';
+        // Verificar usuário de teste
+        if (USUARIOS_TESTE[ra] && senha === '123456') {
+            const usuario = USUARIOS_TESTE[ra];
+            console.log('✅ Login bem-sucedido:', usuario.nome);
+            
+            // Salvar dados do usuário
+            localStorage.setItem('usuario', JSON.stringify(usuario));
+            localStorage.setItem('usuarioLogado', 'true');
+            localStorage.setItem('usuarioNome', usuario.nome);
+            localStorage.setItem('usuarioRA', ra);
+            localStorage.setItem('usuarioSerie', usuario.serie);
+            localStorage.setItem('usuarioPontuacao', usuario.pontuacao);
+            localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados);
+            localStorage.setItem('usuarioIsAdmin', usuario.isAdmin ? 'true' : 'false');
+            
+            mostrarMensagem('✅ Login realizado com sucesso!', 'sucesso');
+            
+            // Redirecionar após breve delay
+            setTimeout(() => {
+                window.location.href = usuario.isAdmin ? ROTAS.ADMIN : ROTAS.MENU;
+            }, 1500);
+            
+        } else {
+            mostrarMensagem('❌ RA ou senha incorretos!', 'erro');
         }
-    }, 5000);
+        
+        mostrarLoading(false);
+    }, 1000);
+}
+
+// FUNÇÃO PARA TESTAR BACKEND (OPCIONAL)
+async function testarBackend() {
+    try {
+        const response = await fetch(CONFIG.API_URL + '/api/health');
+        if (response.ok) {
+            console.log('✅ Backend online');
+            return true;
+        }
+    } catch (error) {
+        console.log('❌ Backend offline:', error.message);
+    }
+    return false;
+}
+
+// UTILITÁRIOS SIMPLIFICADOS
+function mostrarMensagem(mensagem, tipo) {
+    // Remover mensagem anterior se existir
+    const mensagemAnterior = document.getElementById('mensagemGlobal');
+    if (mensagemAnterior) {
+        mensagemAnterior.remove();
+    }
+
+    const msg = document.createElement('div');
+    msg.id = 'mensagemGlobal';
+    msg.textContent = mensagem;
+    msg.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 15px 25px;
+        border-radius: 10px;
+        font-weight: bold;
+        z-index: 10000;
+        max-width: 90%;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        background: ${tipo === 'sucesso' ? '#4CAF50' : '#f44336'};
+        color: white;
+        font-size: 16px;
+    `;
+
+    document.body.appendChild(msg);
+
+    // Remover após 4 segundos
+    setTimeout(() => {
+        if (msg.parentNode) {
+            msg.remove();
+        }
+    }, 4000);
 }
 
 function mostrarLoading(mostrar, texto = 'Carregando...') {
@@ -558,9 +493,43 @@ function mostrarLoading(mostrar, texto = 'Carregando...') {
             loading = document.createElement('div');
             loading.id = 'loadingGlobal';
             loading.innerHTML = `
-                <div class="spinner"></div>
+                <div style="
+                    border: 4px solid rgba(255, 255, 255, 0.3);
+                    border-radius: 50%;
+                    border-top: 4px solid white;
+                    width: 40px;
+                    height: 40px;
+                    animation: spin 1s linear infinite;
+                    margin-bottom: 10px;
+                "></div>
                 <div>${texto}</div>
             `;
+            loading.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                color: white;
+                z-index: 9999;
+                font-size: 18px;
+            `;
+            
+            // Adicionar animação
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+            
             document.body.appendChild(loading);
         }
         loading.style.display = 'flex';
@@ -569,82 +538,18 @@ function mostrarLoading(mostrar, texto = 'Carregando...') {
     }
 }
 
-function getMensagemErro(error) {
-    console.error('🔧 Processando erro:', error);
-    
-    if (error.name === 'AbortError' || error.message.includes('timeout')) {
-        return '⏰ Servidor demorou para responder';
-    }
-    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-        return '🌐 Erro de conexão. Verifique sua internet.';
-    }
-    if (error.message.includes('proxies falharam')) {
-        return '🔧 Erro temporário no servidor. Tente novamente.';
-    }
-    
-    return `❌ ${error.message || 'Erro desconhecido'}`;
-}
+// Adicionar instruções de uso
+console.log(`
+🎯 INSTRUÇÕES DE USO:
 
-// CSS para elementos dinâmicos
-const style = document.createElement('style');
-style.textContent = `
-    .mensagem {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 12px 20px;
-        border-radius: 8px;
-        font-weight: bold;
-        z-index: 10000;
-        max-width: 90%;
-        text-align: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-    
-    .mensagem.sucesso {
-        background: #4CAF50;
-        color: white;
-    }
-    
-    .mensagem.erro {
-        background: #f44336;
-        color: white;
-    }
-    
-    #loadingGlobal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        color: white;
-        z-index: 9999;
-        font-size: 18px;
-    }
-    
-    .spinner {
-        border: 4px solid rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        border-top: 4px solid white;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin-bottom: 10px;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-`;
+Para testar o login, use:
+• RA: 123456 | Senha: 123456 (Usuário normal)
+• RA: admin  | Senha: 123456 (Administrador)
+• RA: 000115792886 | Senha: 123456 (Usuário teste)
 
-document.head.appendChild(style);
+Para limpar o login, execute no console:
+localStorage.clear()
+`);
 </script>
 </body>
 </html>
