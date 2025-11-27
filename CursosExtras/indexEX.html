@@ -765,7 +765,9 @@ async function loadCursos() {
             console.log(`✅ ${cursos.length} cursos carregados com sucesso!`);
         }
         
-        displayCursos(cursos);
+        // ✅ DEFINIR FILTRO "TODAS AS MATÉRIAS" COMO PADRÃO
+        setDefaultFilter();
+        displayCursos();
         
     } catch (error) {
         console.error('❌ Erro ao carregar cursos:', error);
@@ -779,12 +781,33 @@ async function loadCursos() {
         }
         
         cursos = [];
-        displayCursos(cursos);
+        displayCursos();
     } finally {
-        filteredCursos = [...cursos];
         updateStats();
         console.log(`🎯 ${cursos.length} cursos processados`);
     }
+}
+
+// ✅ DEFINIR FILTRO "TODAS AS MATÉRIAS" COMO PADRÃO
+function setDefaultFilter() {
+    // Atualizar estado
+    filteredCursos = [...cursos];
+    
+    // Atualizar UI - marcar botão "Todas" como ativo
+    filterButtons.forEach(btn => {
+        if (btn.dataset.filter === 'all') {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    // Limpar campo de busca
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    
+    console.log('🎯 Filtro padrão aplicado: Todas as matérias');
 }
 
 // ✅ FUNÇÃO showLoading
