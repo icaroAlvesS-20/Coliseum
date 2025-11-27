@@ -422,7 +422,7 @@ async function handleLogin() {
             
             // Redirecionar após breve delay
             setTimeout(() => {
-                window.location.href = usuario.isAdmin ? ROTAS.ADMIN : ROTAS.MENU;
+                window.location.href = ROTAS.MENU;
             }, 1500);
             
         } else {
