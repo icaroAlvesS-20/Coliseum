@@ -297,36 +297,7 @@ const CONFIG = {
 };
 
 const ROTAS = { 
-    MENU: 'menu.html',
-};
-
-// USUÁRIOS PARA TESTE (ENQUANTO O BACKEND NÃO ESTÁ PRONTO)
-const USUARIOS_TESTE = {
-    '123456': { 
-        id: 1, 
-        nome: 'João Silva', 
-        serie: '1º Ano', 
-        curso: 'Álgebra', 
-        pontuacao: 150,
-        desafiosCompletados: 8
-    },
-    'admin': { 
-        id: 2, 
-        nome: 'Administrador', 
-        serie: 'Admin', 
-        curso: 'Todos', 
-        pontuacao: 0, 
-        desafiosCompletados: 0,
-        isAdmin: true 
-    },
-    '000115792886': {
-        id: 3,
-        nome: 'Maria Santos',
-        serie: '2º EM',
-        curso: 'Programação',
-        pontuacao: 75,
-        desafiosCompletados: 4
-    }
+    MENU: 'menu.html'
 };
 
 // INICIALIZAÇÃO
@@ -336,8 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Verificar se já está logado
     if (localStorage.getItem('usuarioLogado') === 'true') {
         console.log('✅ Usuário já logado');
-        const isAdmin = localStorage.getItem('usuarioIsAdmin') === 'true';
-        window.location.href = isAdmin ? ROTAS.ADMIN : ROTAS.MENU;
+        window.location.href = ROTAS.MENU;
         return;
     }
     
@@ -377,8 +347,7 @@ function configurarEventListeners() {
     }
 }
 
-// HANDLER PRINCIPAL - LOGIN SIMPLIFICADO
-// HANDLER PRINCIPAL DE LOGIN - VERSÃO CORRIGIDA
+// HANDLER PRINCIPAL DE LOGIN
 async function handleLogin() {
     const ra = document.getElementById('ra')?.value.trim();
     const senha = document.getElementById('senha')?.value;
@@ -392,7 +361,6 @@ async function handleLogin() {
     mostrarLoading(true, 'Verificando login...');
 
     try {
-        // PRIMEIRO: Tentar login com a API real
         console.log('🔐 Tentando login via API...');
         
         const response = await fetch(`${CONFIG.API_URL}/api/login`, {
@@ -422,14 +390,12 @@ async function handleLogin() {
                 localStorage.setItem('usuarioCurso', result.usuario.curso || '');
                 localStorage.setItem('usuarioPontuacao', result.usuario.pontuacao || 0);
                 localStorage.setItem('usuarioDesafios', result.usuario.desafiosCompletados || 0);
-                localStorage.setItem('usuarioIsAdmin', result.usuario.isAdmin ? 'true' : 'false');
                 
                 mostrarMensagem('✅ Login realizado com sucesso!', 'sucesso');
                 
-                // Redirecionar
+                // Redirecionar para o menu
                 setTimeout(() => {
-                    const isAdmin = result.usuario.isAdmin || result.usuario.ra === 'admin';
-                    window.location.href = isAdmin ? ROTAS.ADMIN : ROTAS.MENU;
+                    window.location.href = ROTAS.MENU;
                 }, 1500);
                 
             } else {
@@ -437,65 +403,18 @@ async function handleLogin() {
             }
             
         } else {
-            // Se a API falhar, usar dados de teste como fallback
-            console.log('🔄 API offline, usando dados de teste...');
-            await handleLoginFallback(ra, senha);
+            throw new Error('Erro na conexão com o servidor');
         }
 
     } catch (error) {
-        console.log('🔁 Tentando fallback...', error.message);
-        // Fallback para dados de teste
-        await handleLoginFallback(ra, senha);
+        console.error('❌ Erro no login:', error);
+        mostrarMensagem('❌ Erro ao fazer login. Tente novamente.', 'erro');
     } finally {
         mostrarLoading(false);
     }
 }
 
-// FALLBACK PARA LOGIN (QUANDO API ESTÁ OFFLINE)
-async function handleLoginFallback(ra, senha) {
-    // Verificar usuário de teste
-    if (USUARIOS_TESTE[ra] && senha === '123456') {
-        const usuario = USUARIOS_TESTE[ra];
-        console.log('✅ Login fallback bem-sucedido:', usuario.nome);
-        
-        // Salvar dados do usuário
-        localStorage.setItem('usuario', JSON.stringify(usuario));
-        localStorage.setItem('usuarioLogado', 'true');
-        localStorage.setItem('usuarioNome', usuario.nome);
-        localStorage.setItem('usuarioRA', ra);
-        localStorage.setItem('usuarioSerie', usuario.serie);
-        localStorage.setItem('usuarioCurso', usuario.curso);
-        localStorage.setItem('usuarioPontuacao', usuario.pontuacao);
-        localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados);
-        localStorage.setItem('usuarioIsAdmin', usuario.isAdmin ? 'true' : 'false');
-        
-        mostrarMensagem('✅ Login realizado com sucesso! (Modo Offline)', 'sucesso');
-        
-        // Redirecionar após breve delay
-        setTimeout(() => {
-            window.location.href = usuario.isAdmin ? ROTAS.ADMIN : ROTAS.MENU;
-        }, 1500);
-        
-    } else {
-        mostrarMensagem('❌ RA ou senha incorretos!', 'erro');
-    }
-}
-    
-// FUNÇÃO PARA TESTAR BACKEND (OPCIONAL)
-async function testarBackend() {
-    try {
-        const response = await fetch(CONFIG.API_URL + '/api/health');
-        if (response.ok) {
-            console.log('✅ Backend online');
-            return true;
-        }
-    } catch (error) {
-        console.log('❌ Backend offline:', error.message);
-    }
-    return false;
-}
-
-// UTILITÁRIOS SIMPLIFICADOS
+// UTILITÁRIOS
 function mostrarMensagem(mensagem, tipo) {
     // Remover mensagem anterior se existir
     const mensagemAnterior = document.getElementById('mensagemGlobal');
@@ -586,18 +505,9 @@ function mostrarLoading(mostrar, texto = 'Carregando...') {
     }
 }
 
-// Adicionar instruções de uso
-console.log(`
-🎯 INSTRUÇÕES DE USO:
-
-Para testar o login, use:
-• RA: 123456 | Senha: 123456 (Usuário normal)
-• RA: admin  | Senha: 123456 (Administrador)
-• RA: 000115792886 | Senha: 123456 (Usuário teste)
-
-Para limpar o login, execute no console:
-localStorage.clear()
-`);
+// Instruções de uso simplificadas
+console.log('🎯 Sistema de login inicializado');
+    
 </script>
 </body>
 </html>
