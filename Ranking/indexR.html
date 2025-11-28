@@ -91,6 +91,72 @@
             color: #ffd700;
         }
 
+        /* Filtros e ordenação */
+        .filtros-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: space-between;
+        }
+
+        .filtro-grupo {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filtro-btn {
+            background: #323232;
+            border: 1px solid #444;
+            color: #ccc;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .filtro-btn:hover {
+            background: #3a3a3a;
+        }
+
+        .filtro-btn.ativo {
+            background: #ffd700;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .busca-container {
+            display: flex;
+            align-items: center;
+            background: #323232;
+            border-radius: 20px;
+            padding: 5px 15px;
+            border: 1px solid #444;
+        }
+
+        .busca-input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            padding: 8px;
+            width: 180px;
+            font-size: 0.9em;
+        }
+
+        .busca-input:focus {
+            outline: none;
+        }
+
+        .busca-btn {
+            background: transparent;
+            border: none;
+            color: #ffd700;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
         /* Stats container */
         .stats-container {
             display: grid;
@@ -303,6 +369,66 @@
             font-weight: bold;
         }
 
+        /* Indicadores visuais */
+        .indicadores {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .indicador {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .indicador-ouro {
+            background: #ffd700;
+        }
+
+        .indicador-prata {
+            background: #c0c0c0;
+        }
+
+        .indicador-bronze {
+            background: #cd7f32;
+        }
+
+        .indicador-ativo {
+            background: #4caf50;
+        }
+
+        .indicador-inativo {
+            background: #f44336;
+        }
+
+        /* Barra de progresso */
+        .progresso-container {
+            margin-top: 8px;
+        }
+
+        .progresso-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: #aaa;
+            margin-bottom: 3px;
+        }
+
+        .progresso-bar {
+            height: 6px;
+            background: #444;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progresso-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ffed4e);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
         /* Estados de loading e erro */
         .loading, .error, .no-data {
             text-align: center;
@@ -395,6 +521,91 @@
         .ranking-item:nth-child(3) { animation-delay: 0.3s; }
         .ranking-item:nth-child(4) { animation-delay: 0.4s; }
         .ranking-item:nth-child(5) { animation-delay: 0.5s; }
+
+        /* Novos estilos para detalhes de pontuação */
+        .pontuacao-detalhes {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-size: 0.85em;
+            display: none;
+        }
+
+        .detalhes-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            color: #ffd700;
+            font-weight: 600;
+        }
+
+        .detalhes-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+        }
+
+        .detalhe-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detalhe-item:last-child {
+            border-bottom: none;
+        }
+
+        .detalhe-label {
+            color: #aaa;
+        }
+
+        .detalhe-valor {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .desafio-completo {
+            color: #4fc3f7;
+        }
+
+        .pontuacao-alta {
+            color: #4caf50;
+        }
+
+        .pontuacao-media {
+            color: #ff9800;
+        }
+
+        .pontuacao-baixa {
+            color: #f44336;
+        }
+
+        .expandir-detalhes {
+            background: none;
+            border: none;
+            color: #ffd700;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .expandir-detalhes:hover {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        /* Destaque para o usuário atual */
+        .ranking-item-destaque {
+            background: rgba(255, 215, 0, 0.15) !important;
+            border: 2px solid #ffd700 !important;
+            border-radius: 8px;
+        }
 
         /* Media Queries para telas maiores */
         @media (min-width: 768px) {
@@ -506,6 +717,11 @@
                 height: 60px;
                 font-size: 28px;
             }
+
+            .progresso-container {
+                grid-column: 1 / -1;
+                margin-top: 10px;
+            }
         }
 
         /* Melhorias para telas muito pequenas */
@@ -552,91 +768,6 @@
                 right: 15px;
             }
         }
-
-        /* Novos estilos para detalhes de pontuação */
-        .pontuacao-detalhes {
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            font-size: 0.85em;
-            display: none;
-        }
-
-        .detalhes-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            color: #ffd700;
-            font-weight: 600;
-        }
-
-        .detalhes-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 5px;
-        }
-
-        .detalhe-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 3px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .detalhe-item:last-child {
-            border-bottom: none;
-        }
-
-        .detalhe-label {
-            color: #aaa;
-        }
-
-        .detalhe-valor {
-            color: #fff;
-            font-weight: 500;
-        }
-
-        .desafio-completo {
-            color: #4fc3f7;
-        }
-
-        .pontuacao-alta {
-            color: #4caf50;
-        }
-
-        .pontuacao-media {
-            color: #ff9800;
-        }
-
-        .pontuacao-baixa {
-            color: #f44336;
-        }
-
-        .expandir-detalhes {
-            background: none;
-            border: none;
-            color: #ffd700;
-            cursor: pointer;
-            font-size: 0.8em;
-            margin-top: 5px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 5px;
-            border-radius: 5px;
-        }
-
-        .expandir-detalhes:hover {
-            background: rgba(255, 215, 0, 0.1);
-        }
-
-        /* Destaque para o usuário atual */
-        .ranking-item-destaque {
-            background: rgba(255, 215, 0, 0.15) !important;
-            border: 2px solid #ffd700 !important;
-            border-radius: 8px;
-        }
     </style>
 </head>
 <body>
@@ -656,6 +787,19 @@
                 </div>
             </div>
         </header>
+
+        <!-- Filtros e ordenação -->
+        <div class="filtros-container">
+            <div class="filtro-grupo">
+                <button class="filtro-btn ativo" data-filtro="todos">Todos</button>
+                <button class="filtro-btn" data-filtro="top10">Top 10</button>
+                <button class="filtro-btn" data-filtro="minha-serie">Minha Série</button>
+            </div>
+            <div class="busca-container">
+                <input type="text" class="busca-input" placeholder="Buscar por nome...">
+                <button class="busca-btn">🔍</button>
+            </div>
+        </div>
 
         <div class="stats-container">
             <div class="stat-card">
@@ -705,7 +849,7 @@ const ROTAS = {
     PROVAS: '/provas',
     CONFIGURACAO: '/configuracao',
     CONTATO: '/contato',
-    NAVEGADOR: '/navegador',
+    NAVEGADOR: '/navegator',
     LOGIN: '/login'
 };
 
@@ -808,8 +952,39 @@ class RankingManager {
         this.totalDesafios = document.getElementById('total-desafios');
         this.totalPontos = document.getElementById('total-pontos');
         
+        this.rankingData = [];
+        this.filtroAtual = 'todos';
+        this.termoBusca = '';
+        
+        this.configurarEventos();
+        
         // ✅ CARREGAR RANKING AUTOMATICAMENTE
         this.carregarRanking();
+    }
+
+    configurarEventos() {
+        // Filtros
+        document.querySelectorAll('.filtro-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
+                e.target.classList.add('ativo');
+                this.filtroAtual = e.target.dataset.filtro;
+                this.aplicarFiltros();
+            });
+        });
+        
+        // Busca
+        const buscaInput = document.querySelector('.busca-input');
+        const buscaBtn = document.querySelector('.busca-btn');
+        
+        buscaInput.addEventListener('input', (e) => {
+            this.termoBusca = e.target.value.toLowerCase();
+            this.aplicarFiltros();
+        });
+        
+        buscaBtn.addEventListener('click', () => {
+            this.aplicarFiltros();
+        });
     }
 
     async carregarRanking() {
@@ -822,13 +997,51 @@ class RankingManager {
             const data = await fetchAPI('/api/ranking');
             console.log('✅ Dados recebidos:', data);
             
-            this.exibirRanking(data);
+            this.rankingData = data;
+            this.aplicarFiltros();
             this.atualizarEstatisticas(data);
             
         } catch (error) {
             console.error('❌ Erro:', error);
             this.mostrarErro('Erro ao carregar ranking: ' + error.message);
         }
+    }
+
+    aplicarFiltros() {
+        let dadosFiltrados = [...this.rankingData];
+        
+        // Aplicar filtro
+        if (this.filtroAtual === 'top10') {
+            dadosFiltrados = dadosFiltrados.slice(0, 10);
+        } else if (this.filtroAtual === 'minha-serie') {
+            // Obter série do usuário atual
+            const usuarioJSON = localStorage.getItem('usuario');
+            let minhaSerie = '';
+            
+            if (usuarioJSON) {
+                try {
+                    const usuario = JSON.parse(usuarioJSON);
+                    minhaSerie = usuario.serie || '';
+                } catch (e) {
+                    console.error('Erro ao parsear usuario:', e);
+                }
+            }
+            
+            if (minhaSerie) {
+                dadosFiltrados = dadosFiltrados.filter(user => 
+                    user.serie && user.serie.toLowerCase() === minhaSerie.toLowerCase()
+                );
+            }
+        }
+        
+        // Aplicar busca
+        if (this.termoBusca) {
+            dadosFiltrados = dadosFiltrados.filter(user => 
+                user.nome && user.nome.toLowerCase().includes(this.termoBusca)
+            );
+        }
+        
+        this.exibirRanking(dadosFiltrados);
     }
 
     exibirRanking(ranking) {
@@ -860,6 +1073,9 @@ class RankingManager {
             usuarioAtualId = localStorage.getItem('usuarioId');
         }
         
+        // Encontrar pontuação máxima para calcular progresso
+        const pontuacaoMaxima = Math.max(...ranking.map(user => user.pontuacao || 0));
+        
         this.rankingList.innerHTML = ranking.map((user, index) => {
             const isUsuarioAtual = user.id && user.id.toString() === usuarioAtualId;
             const highlightClass = isUsuarioAtual ? 'ranking-item-destaque' : '';
@@ -869,6 +1085,9 @@ class RankingManager {
             
             // Gerar dados de exemplo para demonstração
             const detalhesPontuacao = this.gerarDetalhesPontuacao(user);
+            
+            // Calcular progresso em relação ao primeiro colocado
+            const progresso = pontuacaoMaxima > 0 ? (user.pontuacao || 0) / pontuacaoMaxima * 100 : 0;
             
             return `
                 <div class="ranking-item ${highlightClass}" style="${isUsuarioAtual ? 'background: rgba(255, 215, 0, 0.2); border: 2px solid #ffd700;' : ''}">
@@ -884,6 +1103,10 @@ class RankingManager {
                                 <div class="user-serie">
                                     ${user.serie || 'Série não informada'} 
                                     <span style="color: #4fc3f7; font-size: 0.8em; margin-left: 8px;">${raDisplay}</span>
+                                </div>
+                                <div class="indicadores">
+                                    ${index < 3 ? `<div class="indicador indicador-${index === 0 ? 'ouro' : index === 1 ? 'prata' : 'bronze'}"></div>` : ''}
+                                    <div class="indicador ${user.desafiosCompletados > 0 ? 'indicador-ativo' : 'indicador-inativo'}"></div>
                                 </div>
                             </div>
                         </div>
@@ -904,6 +1127,17 @@ class RankingManager {
                         <div class="stat-item">
                             <div class="stat-label-small">Pontuação</div>
                             <div class="stat-value pontuacao-value">${user.pontuacao || 0}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Barra de progresso -->
+                    <div class="progresso-container">
+                        <div class="progresso-label">
+                            <span>Progresso</span>
+                            <span>${Math.round(progresso)}%</span>
+                        </div>
+                        <div class="progresso-bar">
+                            <div class="progresso-fill" style="width: ${progresso}%"></div>
                         </div>
                     </div>
                     
