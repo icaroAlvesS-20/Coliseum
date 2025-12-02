@@ -426,7 +426,7 @@ async function handleLogin() {
         if (error.message.includes('Failed to fetch')) {
             mensagemErro = '❌ Servidor indisponível. Tente mais tarde.';
         } else if (error.message.includes('Credenciais inválidas')) {
-            mensagemErro = '❌ RA ou senha incorretos.';
+            mensagemErro = '❌ RA ou senha incorretos, fale com a secretaria.';
         } else if (error.message.includes('404')) {
             mensagemErro = '❌ Usuário não encontrado.';
         }
