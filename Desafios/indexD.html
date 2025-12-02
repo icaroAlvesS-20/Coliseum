@@ -738,12 +738,13 @@ async function atualizarDadosUsuario(usuario) {
     }
 }
 
-// ✅ REGISTRAR PONTUAÇÃO NO SERVIDOR (CORRIGIDO)
+// ✅ REGISTRAR PONTUAÇÃO NO SERVIDOR (ATUALIZADO)
 async function registrarPontuacaoNoServidor(acertos, totalPerguntas, pontos, sequencia, materia) {
     try {
         const usuarioId = obterUsuarioIdConsistente();
         
         console.log('🎯 Enviando desafio para usuarioId:', usuarioId);
+        console.log('📊 Dados do desafio:', { acertos, totalPerguntas, pontos, sequencia, materia });
 
         const porcentagemAcerto = Math.round((acertos / totalPerguntas) * 100);
 
@@ -758,7 +759,7 @@ async function registrarPontuacaoNoServidor(acertos, totalPerguntas, pontos, seq
             data: new Date().toISOString()
         };
 
-        console.log('📤 Dados enviados:', dadosDesafio);
+        console.log('📤 Enviando para API...', dadosDesafio);
 
         const response = await fetch(`${API_URL}/api/desafio-completo`, {
             method: 'POST',
@@ -770,23 +771,39 @@ async function registrarPontuacaoNoServidor(acertos, totalPerguntas, pontos, seq
 
         if (response.ok) {
             const result = await response.json();
-            console.log('✅ Sucesso:', result.message);
+            console.log('✅ Desafio registrado:', result.message);
             
             // Atualizar dados locais com resposta do servidor
             if (result.usuario) {
                 await atualizarDadosUsuario(result.usuario);
+                console.log('✅ Dados do usuário atualizados:', result.usuario);
             }
             
             return result;
         }
 
-        throw new Error(`Erro ${response.status}`);
+        // Se a API retornar erro
+        const errorText = await response.text();
+        console.error('❌ Erro da API:', errorText);
+        
+        throw new Error(`Erro ${response.status}: ${errorText}`);
         
     } catch (error) {
-        console.error('❌ Erro na requisição:', error);
+        console.error('❌ Erro ao registrar pontuação:', error.message);
+        
         // Mesmo offline, atualizar dados locais
+        console.log('📱 Fallback: atualizando dados locais');
         atualizarDadosLocais(acertos, totalPerguntas, pontos);
-        throw error;
+        
+        // Para não quebrar a experiência do usuário
+        return {
+            success: false,
+            message: 'Pontuação registrada localmente (modo offline)',
+            usuario: {
+                pontuacao: parseInt(localStorage.getItem('usuarioPontuacao') || '0'),
+                desafiosCompletados: parseInt(localStorage.getItem('usuarioDesafios') || '0')
+            }
+        };
     }
 }
 
@@ -1228,28 +1245,46 @@ class Questionario {
 
         // Registrar e sincronizar
         try {
-            await registrarPontuacaoNoServidor(
+            const resultado = await registrarPontuacaoNoServidor(
                 this.acertos, 
                 this.perguntasAtuais.length, 
                 pontos, 
                 sequencia, 
                 this.materiaAtual
             );
-            console.log('✅ Pontuação registrada com sucesso');
+            
+            if (resultado.success) {
+                console.log('✅ Pontuação registrada com sucesso:', resultado.message);
+                this.mostrarResultadoAnimado(this.acertos, this.perguntasAtuais.length, pontos, sequencia, resultado);
+            } else {
+                console.log('⚠️ Pontuação registrada localmente:', resultado.message);
+                this.mostrarResultadoAnimado(this.acertos, this.perguntasAtuais.length, pontos, sequencia, resultado);
+            }
         } catch (error) {
             console.error('❌ Erro ao registrar pontuação:', error);
+            this.mostrarResultadoAnimado(this.acertos, this.perguntasAtuais.length, pontos, sequencia, null);
         }
-        
-        this.mostrarResultadoAnimado(this.acertos, this.perguntasAtuais.length, pontos, sequencia);
     }
 
-    mostrarResultadoAnimado(acertos, total, pontosTotais, sequencia) {
+    mostrarResultadoAnimado(acertos, total, pontosTotais, sequencia, resultadoApi) {
         const percentual = Math.round((acertos / total) * 100);
         const emoji = percentual >= 90 ? '🎉' : percentual >= 70 ? '🎯' : percentual >= 50 ? '👍' : '💪';
         
         let mensagemBonus = '';
+        let mensagemStatus = '';
+        
         if (sequencia > 1) {
             mensagemBonus = `<div style="color: #ffd700; margin: 10px 0; font-size: 14px;">🔥 Sequência de ${sequencia} desafios perfeitos!</div>`;
+        }
+        
+        if (resultadoApi) {
+            if (resultadoApi.success) {
+                mensagemStatus = `<div style="color: #4CAF50; margin: 5px 0; font-size: 12px;">✓ Pontos sincronizados com o servidor</div>`;
+            } else {
+                mensagemStatus = `<div style="color: #ff9800; margin: 5px 0; font-size: 12px;">⚠️ Pontos salvos localmente</div>`;
+            }
+        } else {
+            mensagemStatus = `<div style="color: #ff9800; margin: 5px 0; font-size: 12px;">⚠️ Modo offline - pontos salvos localmente</div>`;
         }
 
         this.modalBody.innerHTML = `
@@ -1260,9 +1295,11 @@ class Questionario {
                 <div>
                     <div style="font-size: 28px; font-weight: bold; color: #ffd700; margin: 10px 0;">+${pontosTotais} pontos</div>
                     ${mensagemBonus}
+                    ${mensagemStatus}
                 </div>
                 <div style="color: #ccc; font-size: 12px; margin: 15px 0;">
-                    <small>Pontos registrados no seu perfil!</small>
+                    <small>Pontuação total: ${localStorage.getItem('usuarioPontuacao') || 0} pontos</small><br>
+                    <small>Desafios completos: ${localStorage.getItem('usuarioDesafios') || 0}</small>
                 </div>
                 <button class="btn-interno" style="width: 100%; margin-top: 15px;">Continuar</button>
             </div>
@@ -1297,13 +1334,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     console.log('👤 Usuário identificado:', localStorage.getItem('usuarioNome'));
     console.log('🔑 User ID:', localStorage.getItem('usuarioId'));
+    console.log('📊 Pontuação atual:', localStorage.getItem('usuarioPontuacao'));
+    console.log('🎯 Desafios completos:', localStorage.getItem('usuarioDesafios'));
     
     // Inicializar componentes
-    window.gerenciadorPraticas = new GerenciadorPraticas();
-    window.questionario = new Questionario();
-    
-    console.log("✅ Sistema de desafios inicializado!");
+    try {
+        window.gerenciadorPraticas = new GerenciadorPraticas();
+        window.questionario = new Questionario();
+        
+        console.log("✅ Sistema de desafios inicializado!");
+    } catch (error) {
+        console.error("❌ Erro ao inicializar sistema de desafios:", error);
+        alert("Erro ao carregar desafios. Por favor, recarregue a página.");
+    }
 });
+
+// ✅ FUNÇÕES AUXILIARES GLOBAIS
+function resetarProgresso() {
+    if (confirm('Tem certeza que deseja resetar todo o progresso? Isso irá zerar sua pontuação e desafios.')) {
+        localStorage.clear();
+        localStorage.setItem('sequencia', '0');
+        alert('Progresso resetado com sucesso!');
+        location.reload();
+    }
+}
+
+// ✅ EXPORTAR FUNÇÕES PARA USO GLOBAL
+window.verificarLoginDesafios = verificarLoginDesafios;
+window.registrarPontuacaoNoServidor = registrarPontuacaoNoServidor;
+window.resetarProgresso = resetarProgresso;
+
+console.log("✅ Script de desafios carregado com sucesso!");
     </script>
 </body>
 </html>
