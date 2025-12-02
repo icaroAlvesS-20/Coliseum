@@ -421,12 +421,12 @@ async function handleLogin() {
         console.error('❌ Erro no login:', error);
         
         // Mensagens de erro específicas
-        let mensagemErro = '❌ Erro ao fazer login. Tente novamente.';
+        let mensagemErro = '❌ Erro ao fazer login. Fale com a secretaria..';
         
         if (error.message.includes('Failed to fetch')) {
             mensagemErro = '❌ Servidor indisponível. Tente mais tarde.';
         } else if (error.message.includes('Credenciais inválidas')) {
-            mensagemErro = '❌ RA ou senha incorretos, fale com a secretaria.';
+            mensagemErro = '❌ RA ou senha incorretos.';
         } else if (error.message.includes('404')) {
             mensagemErro = '❌ Usuário não encontrado.';
         }
