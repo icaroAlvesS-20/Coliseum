@@ -13,7 +13,7 @@
         }
 
         body {
-        background: linear-gradient(135deg, #000000 0%, #2d2d2d 100%);
+            background: linear-gradient(135deg, #000000 0%, #2d2d2d 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -21,18 +21,6 @@
             padding: 20px;
         }
 
-        /* ===== CONTAINER PRINCIPAL ===== */
-        .container {
-            width: 400px;
-            margin: 20px auto;
-            padding: 30px;
-            background: #1a1a1a;
-            border-radius: 15px;
-            border: 2px solid #e6b800;
-            text-align: center;
-        }
-
-        /* ===== PRÁTICAS DIÁRIAS ===== */
         .praticas-diarias {
             width: 90%;
             max-width: 800px;
@@ -139,7 +127,6 @@
             color: #ffd700;
         }
 
-        /* ===== BOTÕES FIXOS ===== */
         .btn-voltar {
             position: fixed;
             bottom: 20px;
@@ -159,21 +146,6 @@
             justify-content: center;
         }
 
-        .btn-reset {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #ff4444;
-            color: white;
-            border: none;
-            padding: 12px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            min-height: 44px;
-        }
-
-        /* ===== MODAL ===== */
         .modal-perguntas {
             display: none;
             position: fixed;
@@ -330,15 +302,6 @@
             margin-bottom: 20px;
         }
 
-        .info-pontuacao {
-            margin: 10px 0;
-            padding: 8px;
-            background: rgba(255, 215, 0, 0.1);
-            border-radius: 5px;
-            font-size: 12px;
-            color: #ffd700;
-        }
-
         .pontos-ganhos {
             font-size: 28px;
             font-weight: bold;
@@ -347,99 +310,29 @@
             text-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
         }
 
-        /* ===== ESTADOS INTERATIVOS (DESKTOP) ===== */
-        @media (hover: hover) and (pointer: fine) {
-            .pratica-card:hover {
-                border-color: #e6b800;
-                transform: translateY(-2px);
-            }
-            
-            .btn-pratica:hover:not(:disabled) {
-                background: #ffd700;
-                transform: translateY(-1px);
-            }
-            
-            .btn-voltar:hover {
-                background: #e6b800;
-                transform: scale(1.1);
-            }
-            
-            .btn-reset:hover {
-                background: #ff0000;
-                transform: translateY(-1px);
-            }
-            
-            .alternativa-btn:hover {
-                border-color: #e6b800;
-                background: #333;
-            }
-            
-            .btn-proxima:hover, .btn-reiniciar:hover {
-                background: #ffd700;
-                transform: translateY(-1px);
-            }
-        }
-
-        /* ===== MOBILE (max-width: 768px) ===== */
         @media (max-width: 768px) {
             body {
                 padding: 10px;
                 align-items: flex-start;
-                min-height: 100vh;
-                height: auto;
-            }
-            
-            .container {
-                width: 95%;
-                padding: 20px;
-                margin: 10px auto;
             }
             
             .praticas-diarias {
                 width: 95%;
                 padding: 20px;
-                margin: 10px auto;
             }
             
-            input, button {
-                font-size: 16px;
-                padding: 12px;
-            }
-            
-            h1, .praticas-diarias h3 {
-                font-size: 1.5rem;
-            }
-            
-            /* PRÁTICAS MOBILE */
             #praticas-container {
                 grid-template-columns: 1fr;
                 gap: 12px;
-                margin-bottom: 15px;
-                padding: 0 5px;
             }
             
             .pratica-card {
                 padding: 15px;
                 min-height: 110px;
-                border-width: 1px;
-            }
-            
-            /* Desativa hover effects no mobile */
-            .pratica-card:hover {
-                border-color: #444;
-                transform: none;
-            }
-            
-            /* Efeito de toque no mobile */
-            .pratica-card:active {
-                border-color: #e6b800;
-                background: #333;
-                transform: scale(0.98);
             }
             
             .pratica-titulo {
                 font-size: 1rem;
-                margin-bottom: 6px;
             }
             
             .pratica-descricao {
@@ -451,38 +344,12 @@
                 font-size: 16px;
             }
             
-            .btn-pratica:active:not(:disabled) {
-                background: #ffd700;
-                transform: scale(0.98);
-            }
-            
-            /* BOTÕES FIXOS MOBILE */
             .btn-voltar {
                 width: 50px;
                 height: 50px;
                 bottom: 15px;
                 right: 15px;
                 font-size: 24px;
-            }
-            
-            .btn-reset {
-                top: 15px;
-                right: 15px;
-                padding: 10px 14px;
-                font-size: 14px;
-            }
-            
-            .btn-voltar:active {
-                transform: scale(0.9);
-            }
-            
-            .btn-reset:active {
-                transform: scale(0.95);
-            }
-            
-            /* MODAL MOBILE */
-            .modal-perguntas {
-                padding: 10px;
             }
             
             .modal-content {
@@ -496,136 +363,12 @@
             
             .pergunta-texto {
                 font-size: 16px;
-                margin-bottom: 15px;
             }
             
             .alternativa-btn {
                 padding: 12px;
                 font-size: 14px;
-                min-height: 50px;
             }
-            
-            .alternativa-btn:active {
-                border-color: #e6b800;
-                background: #333;
-                transform: scale(0.98);
-            }
-            
-            .btn-proxima, .btn-reiniciar {
-                padding: 12px 20px;
-                font-size: 16px;
-                width: 100%;
-                max-width: none;
-            }
-            
-            .btn-proxima:active, .btn-reiniciar:active {
-                transform: scale(0.98);
-            }
-            
-            .pontos-ganhos {
-                font-size: 24px;
-            }
-        }
-
-        /* ===== MOBILE PEQUENO (max-width: 480px) ===== */
-        @media (max-width: 480px) {
-            .container {
-                width: 98%;
-                padding: 15px;
-                margin: 5px auto;
-            }
-            
-            .praticas-diarias {
-                width: 98%;
-                padding: 15px;
-            }
-            
-            input, button {
-                padding: 14px;
-                margin: 8px 0;
-            }
-            
-            h1, .praticas-diarias h3 {
-                font-size: 1.3rem;
-            }
-            
-            #praticas-container {
-                gap: 10px;
-                padding: 0 2px;
-            }
-            
-            .pratica-card {
-                padding: 12px;
-                min-height: 100px;
-                border-radius: 8px;
-            }
-            
-            .pratica-titulo {
-                font-size: 0.9rem;
-            }
-            
-            .pratica-descricao {
-                font-size: 0.8rem;
-            }
-            
-            .btn-voltar {
-                width: 45px;
-                height: 45px;
-                bottom: 10px;
-                right: 10px;
-                font-size: 20px;
-            }
-            
-            .btn-reset {
-                top: 10px;
-                right: 10px;
-                padding: 8px 12px;
-                font-size: 12px;
-            }
-        }
-
-        /* ===== TABLET (769px - 1024px) ===== */
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .container {
-                width: 80%;
-                max-width: 500px;
-            }
-            
-            .praticas-diarias {
-                width: 85%;
-                max-width: 700px;
-            }
-            
-            #praticas-container {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 18px;
-            }
-            
-            .pratica-card {
-                padding: 18px;
-            }
-        }
-
-        /* ===== DESKTOP (min-width: 769px) ===== */
-        @media (min-width: 769px) {
-            .container {
-                width: 400px;
-            }
-        }
-
-        /* ===== PREVENIR ZOOM NO iOS ===== */
-        input, select, textarea, button {
-            font-size: 16px;
-        }
-
-        /* ===== SCROLL SUAVE ===== */
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            overflow-x: hidden;
-            width: 100%;
         }
     </style>
 </head>
@@ -634,18 +377,17 @@
         <h3> Desafios do Dia</h3>
         <div id="praticas-container">
         </div>
-        <p id="contador-praticas">Próximas práticas em: <span id="tempo-restante">24:00:00</span></p>
+        <p id="contador-praticas">Carregando desafios...</p>
     </div>
 
     <!-- Modal de Perguntas -->
     <div class="modal-perguntas" id="modalPerguntas">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>📝 Questionário</h3>
+                <h3>📝 Desafio</h3>
                 <button class="close-modal">&times;</button>
             </div>
             <div class="modal-body" id="modalBody">
-                <!-- Conteúdo das perguntas será injetado aqui -->
             </div>
         </div>
     </div>
@@ -655,49 +397,26 @@
     <script>
 const API_URL = 'https://coliseum-api.onrender.com';
 let praticaIndexAtual = 0;
+let desafioIdAtual = null;
+let respostasUsuario = [];
 
-// ✅ VERIFICAÇÃO DE LOGIN PARA DESAFIOS
+// ✅ VERIFICAÇÃO DE LOGIN
 function verificarLoginDesafios() {
     console.log('🔍 Verificando login para desafios...');
     
     const usuarioId = localStorage.getItem('usuarioId');
-    const usuarioLogado = localStorage.getItem('usuarioLogado');
-    
-    console.log('Dados de login:', { usuarioId, usuarioLogado });
-    
-    // Verificação mais flexível
     if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
-        console.log('✅ Usuário identificado para desafios');
-        if (!usuarioLogado || usuarioLogado !== 'true') {
-            localStorage.setItem('usuarioLogado', 'true');
-        }
+        console.log('✅ Usuário identificado');
         return true;
     }
     
-    // Tentar buscar em outras chaves
-    const usuarioJSON = localStorage.getItem('usuario');
-    if (usuarioJSON) {
-        try {
-            const usuario = JSON.parse(usuarioJSON);
-            if (usuario && usuario.id) {
-                console.log('✅ Usuário encontrado na chave "usuario"');
-                localStorage.setItem('usuarioId', usuario.id.toString());
-                localStorage.setItem('usuarioNome', usuario.nome || 'Jogador');
-                localStorage.setItem('usuarioLogado', 'true');
-                return true;
-            }
-        } catch (e) {
-            console.error('Erro ao parsear usuario:', e);
-        }
-    }
-    
-    console.log('❌ Usuário não logado - redirecionando...');
+    console.log('❌ Usuário não logado');
     window.location.href = '../Login/index.html';
     return false;
 }
 
-// ✅ OBTER USUÁRIO ID CONSISTENTE
-function obterUsuarioIdConsistente() {
+// ✅ OBTER USUÁRIO ID
+function obterUsuarioId() {
     let usuarioId = localStorage.getItem('usuarioId');
     
     if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
@@ -715,18 +434,16 @@ function obterUsuarioIdConsistente() {
 
     if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
         console.error('❌ ERRO: usuarioId não encontrado!');
-        const deviceId = 'device_' + Math.random().toString(36).substr(2, 9);
-        usuarioId = 'temp_' + deviceId;
-        localStorage.setItem('usuarioId', usuarioId);
+        window.location.href = '../Login/index.html';
+        return null;
     }
 
-    return usuarioId;
+    return parseInt(usuarioId);
 }
 
 // ✅ ATUALIZAR DADOS DO USUÁRIO
 async function atualizarDadosUsuario(usuario) {
     if (usuario && usuario.id) {
-        // Atualizar localStorage global
         localStorage.setItem('usuarioId', usuario.id.toString());
         localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
         localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
@@ -738,233 +455,96 @@ async function atualizarDadosUsuario(usuario) {
     }
 }
 
-// ✅ REGISTRAR PONTUAÇÃO NO SERVIDOR (ATUALIZADO)
-async function registrarPontuacaoNoServidor(acertos, totalPerguntas, pontos, sequencia, materia) {
+// ✅ CARREGAR DESAFIOS DO SERVIDOR
+async function carregarDesafiosDoServidor() {
     try {
-        const usuarioId = obterUsuarioIdConsistente();
+        console.log('🔄 Carregando desafios do servidor...');
+        const response = await fetch(`${API_URL}/api/desafios-ativos`);
         
-        console.log('🎯 Enviando desafio para usuarioId:', usuarioId);
-        console.log('📊 Dados do desafio:', { acertos, totalPerguntas, pontos, sequencia, materia });
+        if (!response.ok) {
+            throw new Error(`Erro ${response.status} ao carregar desafios`);
+        }
+        
+        const desafios = await response.json();
+        console.log(`✅ ${desafios.length} desafios carregados do servidor`);
+        return desafios;
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar desafios:', error);
+        throw error;
+    }
+}
 
-        const porcentagemAcerto = Math.round((acertos / totalPerguntas) * 100);
+// ✅ CARREGAR PERGUNTAS DO DESAFIO
+async function carregarPerguntasDesafio(desafioId) {
+    try {
+        console.log(`📝 Carregando perguntas do desafio ${desafioId}...`);
+        const response = await fetch(`${API_URL}/api/desafios/${desafioId}/perguntas`);
+        
+        if (!response.ok) {
+            throw new Error(`Erro ${response.status} ao carregar perguntas`);
+        }
+        
+        const desafio = await response.json();
+        console.log(`✅ ${desafio.perguntas.length} perguntas carregadas`);
+        return desafio;
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar perguntas:', error);
+        throw error;
+    }
+}
 
-        const dadosDesafio = {
-            usuarioId: parseInt(usuarioId),
-            pontuacaoGanha: parseInt(pontos),
-            acertos: parseInt(acertos),
-            totalPerguntas: parseInt(totalPerguntas),
-            porcentagemAcerto: porcentagemAcerto,
-            sequencia: parseInt(sequencia),
-            materia: materia,
-            data: new Date().toISOString()
-        };
+// ✅ VERIFICAR RESPOSTAS NO SERVIDOR
+async function verificarRespostasNoServidor(desafioId, respostas) {
+    try {
+        const usuarioId = obterUsuarioId();
+        if (!usuarioId) {
+            throw new Error('Usuário não identificado');
+        }
 
-        console.log('📤 Enviando para API...', dadosDesafio);
+        console.log('📤 Enviando respostas para verificação...', {
+            desafioId,
+            usuarioId,
+            respostas
+        });
 
-        const response = await fetch(`${API_URL}/api/desafio-completo`, {
+        const response = await fetch(`${API_URL}/api/desafios/${desafioId}/verificar`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(dadosDesafio)
+            body: JSON.stringify({
+                usuarioId: usuarioId,
+                respostas: respostas
+            })
         });
 
-        if (response.ok) {
-            const result = await response.json();
-            console.log('✅ Desafio registrado:', result.message);
-            
-            // Atualizar dados locais com resposta do servidor
-            if (result.usuario) {
-                await atualizarDadosUsuario(result.usuario);
-                console.log('✅ Dados do usuário atualizados:', result.usuario);
-            }
-            
-            return result;
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Erro ${response.status}: ${errorText}`);
         }
 
-        // Se a API retornar erro
-        const errorText = await response.text();
-        console.error('❌ Erro da API:', errorText);
+        const resultado = await response.json();
+        console.log('✅ Respostas verificadas:', resultado);
         
-        throw new Error(`Erro ${response.status}: ${errorText}`);
+        // Atualizar dados do usuário
+        if (resultado.usuario) {
+            await atualizarDadosUsuario(resultado.usuario);
+        }
+        
+        return resultado;
         
     } catch (error) {
-        console.error('❌ Erro ao registrar pontuação:', error.message);
-        
-        // Mesmo offline, atualizar dados locais
-        console.log('📱 Fallback: atualizando dados locais');
-        atualizarDadosLocais(acertos, totalPerguntas, pontos);
-        
-        // Para não quebrar a experiência do usuário
-        return {
-            success: false,
-            message: 'Pontuação registrada localmente (modo offline)',
-            usuario: {
-                pontuacao: parseInt(localStorage.getItem('usuarioPontuacao') || '0'),
-                desafiosCompletados: parseInt(localStorage.getItem('usuarioDesafios') || '0')
-            }
-        };
+        console.error('❌ Erro ao verificar respostas:', error);
+        throw error;
     }
 }
 
-// ✅ ATUALIZAR DADOS LOCAIS
-function atualizarDadosLocais(acertos, totalPerguntas, pontos) {
-    try {
-        const pontuacaoAtual = parseInt(localStorage.getItem('usuarioPontuacao') || '0');
-        const desafiosAtuais = parseInt(localStorage.getItem('usuarioDesafios') || '0');
-        
-        const novaPontuacao = pontuacaoAtual + pontos;
-        const novosDesafios = desafiosAtuais + 1;
-        
-        localStorage.setItem('usuarioPontuacao', novaPontuacao.toString());
-        localStorage.setItem('usuarioDesafios', novosDesafios.toString());
-        
-        console.log('📊 Dados locais atualizados:', {
-            pontuacao: novaPontuacao,
-            desafios: novosDesafios
-        });
-        
-    } catch (error) {
-        console.error('❌ Erro ao atualizar dados locais:', error);
-    }
-}
-
-// ✅ SISTEMA DE PONTUAÇÃO
-class SistemaPontuacao {
-    calcularPontuacao(acertos, totalPerguntas) {
-        const porcentagemBase = (acertos / totalPerguntas) * 100;
-        
-        let pontosBase = 0;
-        if (porcentagemBase >= 90) pontosBase = 20;
-        else if (porcentagemBase >= 75) pontosBase = 15;
-        else if (porcentagemBase >= 60) pontosBase = 10;
-        else if (porcentagemBase >= 50) pontosBase = 8;
-        else if (porcentagemBase >= 25) pontosBase = 5;
-        else pontosBase = 2;
-
-        if (acertos === totalPerguntas) {
-            pontosBase += 5;
-        }
-
-        const sequenciaAtual = parseInt(localStorage.getItem('sequencia') || '0');
-        if (sequenciaAtual > 1) {
-            const bonusSequencia = Math.min(sequenciaAtual, 10);
-            pontosBase += bonusSequencia;
-        }
-
-        return pontosBase;
-    }
-
-    atualizarSequencia(acertos, totalPerguntas) {
-        let sequencia = parseInt(localStorage.getItem('sequencia') || '0');
-        
-        if (acertos === totalPerguntas) {
-            sequencia++;
-            localStorage.setItem('sequencia', sequencia);
-        } else {
-            localStorage.setItem('sequencia', '0');
-        }
-        
-        return sequencia;
-    }
-}
-
-// ✅ BANCO DE PRÁTICAS
-const bancoPraticas = [
-    { 
-        materia: "Matemática", 
-        titulo: "Operações Fundamentais", 
-        descricao: "Cálculos do cotidiano",
-        perguntas: [
-            { pergunta: "Qual é o resultado de 25 × 4?", alternativas: ["80", "90", "100", "110"], correta: 2 },
-            { pergunta: "Quanto é 15% de 200?", alternativas: ["20", "25", "30", "35"], correta: 2 },
-            { pergunta: "Qual é a raiz quadrada de 64?", alternativas: ["6", "7", "8", "9"], correta: 2 },
-            { pergunta: "Quanto é 7² + 4³?", alternativas: ["49", "64", "113", "125"], correta: 2 }
-        ]
-    },
-    { 
-        materia: "Matemática", 
-        titulo: "Frações Práticas", 
-        descricao: "Usando frações no dia a dia",
-        perguntas: [
-            { pergunta: "Se comi 1/4 da pizza, quanto sobrou?", alternativas: ["1/2", "2/4", "3/4", "4/4"], correta: 2 },
-            { pergunta: "Quanto é 1/2 + 1/4?", alternativas: ["1/4", "2/4", "3/4", "4/4"], correta: 2 },
-            { pergunta: "Qual é a forma decimal de 3/5?", alternativas: ["0.3", "0.5", "0.6", "0.8"], correta: 2 },
-            { pergunta: "Quanto é 2/3 de 120?", alternativas: ["60", "70", "80", "90"], correta: 2 }
-        ]
-    },
-    { 
-        materia: "Português", 
-        titulo: "Gramática Essencial", 
-        descricao: "Regras fundamentais",
-        perguntas: [
-            { pergunta: "Qual é o plural de 'cão'?", alternativas: ["cães", "cãos", "cões", "cãs"], correta: 0 },
-            { pergunta: "Na frase 'Ela corre rápido', 'rápido' é:", alternativas: ["substantivo", "adjetivo", "advérbio", "verbo"], correta: 2 },
-            { pergunta: "Qual é o sujeito em 'Os alunos estudaram'?", alternativas: ["estudaram", "os", "alunos", "os alunos"], correta: 3 },
-            { pergunta: "Qual destes é um artigo definido?", alternativas: ["um", "uma", "o", "uns"], correta: 2 }
-        ]
-    },
-    { 
-        materia: "Português", 
-        titulo: "Ortografia Básica", 
-        descricao: "Escrita correta das palavras",
-        perguntas: [
-            { pergunta: "Qual está escrito corretamente?", alternativas: ["excessão", "exceção", "ecceção", "excesão"], correta: 1 },
-            { pergunta: "Complete: Ele ____ à escola", alternativas: ["foi", "fói", "foy", "foe"], correta: 0 },
-            { pergunta: "Qual está com a grafia correta?", alternativas: ["concerteza", "com certeza", "concerteza", "conserteza"], correta: 1 },
-            { pergunta: "Complete: ____ tarde", alternativas: ["Ha", "Ah", "Há", "A"], correta: 2 }
-        ]
-    },
-    { 
-        materia: "Ciências", 
-        titulo: "Corpo Humano", 
-        descricao: "Nosso organismo",
-        perguntas: [
-            { pergunta: "Quantos ossos tem o corpo humano adulto?", alternativas: ["156", "206", "256", "306"], correta: 1 },
-            { pergunta: "Qual órgão bombeia o sangue?", alternativas: ["Pulmão", "Coração", "Fígado", "Rim"], correta: 1 },
-            { pergunta: "Qual é o maior órgão do corpo humano?", alternativas: ["Coração", "Fígado", "Pele", "Cérebro"], correta: 2 },
-            { pergunta: "Onde ocorre a digestão dos alimentos?", alternativas: ["Pulmão", "Estômago", "Coração", "Rim"], correta: 1 }
-        ]
-    },
-    { 
-        materia: "Ciências", 
-        titulo: "Sistema Solar", 
-        descricao: "Nosso lugar no universo",
-        perguntas: [
-            { pergunta: "Qual é o planeta mais próximo do Sol?", alternativas: ["Vênus", "Marte", "Mercúrio", "Terra"], correta: 2 },
-            { pergunta: "Quantos planetas tem nosso sistema solar?", alternativas: ["7", "8", "9", "10"], correta: 1 },
-            { pergunta: "Qual é o planeta conhecido como 'planeta vermelho'?", alternativas: ["Vênus", "Marte", "Júpiter", "Saturno"], correta: 1 },
-            { pergunta: "Qual é o maior planeta do sistema solar?", alternativas: ["Terra", "Saturno", "Júpiter", "Netuno"], correta: 2 }
-        ]
-    },
-    { 
-        materia: "História", 
-        titulo: "Descobrimento do Brasil", 
-        descricao: "Chegada dos portugueses",
-        perguntas: [
-            { pergunta: "Em que ano Portugal descobriu o Brasil?", alternativas: ["1492", "1500", "1520", "1540"], correta: 1 },
-            { pergunta: "Quem comandava as caravelas portuguesas?", alternativas: ["Cristóvão Colombo", "Pedro Álvares Cabral", "Vasco da Gama", "Fernão de Magalhães"], correta: 1 },
-            { pergunta: "Qual foi o primeiro nome dado ao Brasil?", alternativas: ["Terra de Santa Cruz", "Pindorama", "Brasil Colônia", "América Portuguesa"], correta: 0 },
-            { pergunta: "De onde vieram os primeiros colonizadores?", alternativas: ["Espanha", "Portugal", "França", "Holanda"], correta: 1 }
-        ]
-    },
-    { 
-        materia: "História", 
-        titulo: "Independência do Brasil", 
-        descricao: "Fim do domínio português",
-        perguntas: [
-            { pergunta: "Em que ano o Brasil se tornou independente?", alternativas: ["1808", "1822", "1889", "1900"], correta: 1 },
-            { pergunta: "Quem proclamou a independência?", alternativas: ["Dom Pedro I", "Dom Pedro II", "Dom João VI", "Tiradentes"], correta: 0 },
-            { pergunta: "Onde foi proclamada a independência?", alternativas: ["Rio de Janeiro", "São Paulo", "Minas Gerais", "Bahia"], correta: 1 },
-            { pergunta: "Qual era o lema da independência?", alternativas: ["Liberdade ou Morte", "Independência ou Morte", "Pátria Livre", "Brasil Livre"], correta: 1 }
-        ]
-    }
-];
-
-// ✅ GERENCIADOR DE PRÁTICAS
-class GerenciadorPraticas {
+// ✅ GERENCIADOR DE DESAFIOS
+class GerenciadorDesafios {
     constructor() {
-        this.praticasHoje = [];
+        this.desafiosHoje = [];
         this.ultimaAtualizacao = this.getDataUltimaAtualizacao();
         
         if (this.elementosExistem()) {
@@ -973,15 +553,15 @@ class GerenciadorPraticas {
     }
 
     elementosExistem() {
-        return document.getElementById('praticas-container') && document.getElementById('tempo-restante');
+        return document.getElementById('praticas-container') && document.getElementById('contador-praticas');
     }
 
     getDataUltimaAtualizacao() {
-        return localStorage.getItem('ultimaAtualizacaoPraticas');
+        return localStorage.getItem('ultimaAtualizacaoDesafios');
     }
 
     salvarDataAtualizacao() {
-        localStorage.setItem('ultimaAtualizacaoPraticas', new Date().toISOString());
+        localStorage.setItem('ultimaAtualizacaoDesafios', new Date().toISOString());
     }
 
     precisaAtualizar() {
@@ -991,76 +571,113 @@ class GerenciadorPraticas {
         return diffHoras >= 24;
     }
 
-    selecionarPraticasDoDia() {
-        const seed = new Date().toDateString();
-        const random = this.geradorRandom(seed);
-        const embaralhado = [...bancoPraticas].sort(() => random() - 0.5);
-        return embaralhado.slice(0, 2);
-    }
-
-    geradorRandom(seed) {
-        let x = 0;
-        for (let i = 0; i < seed.length; i++) {
-            x = (x << 5) - x + seed.charCodeAt(i);
-            x |= 0;
+    async carregarDesafios() {
+        console.log('🔄 Carregando desafios...');
+        
+        const container = document.getElementById('praticas-container');
+        const contador = document.getElementById('contador-praticas');
+        
+        if (container) {
+            container.innerHTML = '<div style="color: #e6b800; padding: 20px;">Carregando desafios...</div>';
         }
-        return () => {
-            x = Math.sin(x) * 10000;
-            return x - Math.floor(x);
-        };
-    }
-
-    atualizarPraticas() {
-        if (this.precisaAtualizar()) {
-            console.log("🔄 Atualizando práticas do dia...");
-            this.praticasHoje = this.selecionarPraticasDoDia();
-            this.salvarDataAtualizacao();
-            this.salvarPraticasAtuais();
-            this.resetarPraticasConcluidas();
-        } else {
-            console.log("📋 Carregando práticas salvas...");
-            this.carregarPraticasSalvas();
+        
+        try {
+            const desafiosServidor = await carregarDesafiosDoServidor();
+            this.desafiosHoje = desafiosServidor.slice(0, 4); // Limitar a 4 desafios por dia
+            
+            if (this.precisaAtualizar()) {
+                this.salvarDataAtualizacao();
+                this.salvarDesafiosAtuais();
+                this.resetarDesafiosConcluidos();
+            } else {
+                this.carregarDesafiosSalvos();
+            }
+            
+            if (contador) {
+                contador.textContent = this.desafiosHoje.length > 0 
+                    ? 'Novos desafios em: 24:00:00' 
+                    : 'Nenhum desafio disponível no momento';
+            }
+            
+            this.renderizarDesafios();
+            
+        } catch (error) {
+            console.error('❌ Erro ao carregar desafios:', error);
+            if (container) {
+                container.innerHTML = '<div style="color: #ff4444; padding: 20px;">Erro ao carregar desafios. Tente novamente mais tarde.</div>';
+            }
+            if (contador) {
+                contador.textContent = 'Erro ao carregar desafios';
+            }
         }
-        this.renderizarPraticas();
     }
 
-    resetarPraticasConcluidas() {
+    resetarDesafiosConcluidos() {
         for (let i = 0; i < 10; i++) {
-            localStorage.removeItem(`pratica_${i}_concluida`);
+            localStorage.removeItem(`desafio_${i}_concluido`);
         }
     }
 
-    salvarPraticasAtuais() {
-        localStorage.setItem('praticasAtuais', JSON.stringify(this.praticasHoje));
+    salvarDesafiosAtuais() {
+        localStorage.setItem('desafiosAtuais', JSON.stringify(this.desafiosHoje));
     }
 
-    carregarPraticasSalvas() {
-        const salvas = localStorage.getItem('praticasAtuais');
-        this.praticasHoje = salvas ? JSON.parse(salvas) : this.selecionarPraticasDoDia();
+    carregarDesafiosSalvos() {
+        const salvas = localStorage.getItem('desafiosAtuais');
+        if (salvas) {
+            this.desafiosHoje = JSON.parse(salvas);
+        }
     }
 
     inicializar() {
-        this.atualizarPraticas();
+        this.carregarDesafios();
         this.iniciarContador();
     }
 
-    renderizarPraticas() {
+    renderizarDesafios() {
         const container = document.getElementById('praticas-container');
         if (!container) return;
 
+        if (this.desafiosHoje.length === 0) {
+            container.innerHTML = '<div style="color: #888; padding: 20px; text-align: center;">Nenhum desafio disponível no momento. Volte mais tarde!</div>';
+            return;
+        }
+
         container.innerHTML = '';
-        this.praticasHoje.forEach((pratica, index) => {
-            const concluida = localStorage.getItem(`pratica_${index}_concluida`);
+        
+        this.desafiosHoje.forEach((desafio, index) => {
+            const concluido = localStorage.getItem(`desafio_${index}_concluido`);
+            const materiasCores = {
+                'Matemática': '#4361ee',
+                'Português': '#f72585',
+                'Ciências': '#4cc9f0',
+                'História': '#ffcf00',
+                'Geografia': '#7209b7',
+                'Física': '#f8961e',
+                'Química': '#90be6d',
+                'Programação': '#2a9d8f'
+            };
+            
+            const cor = materiasCores[desafio.materia] || '#e6b800';
             
             const card = document.createElement('div');
             card.className = 'pratica-card';
+            card.style.borderColor = cor;
             card.innerHTML = `
-                <div class="pontuacao">+20 p</div>
-                <div class="materia-tag">${pratica.materia}</div>
-                <div class="pratica-titulo">${pratica.titulo}</div>
-                <div class="pratica-descricao">${pratica.descricao}</div>
-                <button class="btn-pratica ${concluida ? 'concluido' : ''}" data-index="${index}" ${concluida ? 'disabled' : ''}>
-                    ${concluida ? '✓ Concluído' : 'Iniciar Prática'}
+                <div class="pontuacao" style="background: ${cor}">+${desafio.pontuacao} p</div>
+                <div class="materia-tag" style="background: ${cor}">${desafio.materia}</div>
+                <div class="pratica-titulo">${desafio.titulo}</div>
+                <div class="pratica-descricao">${desafio.descricao || 'Teste seus conhecimentos'}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                    <small style="color: #aaa;">${desafio._count?.perguntas || '?'} perguntas • ${desafio.duracao || 15}min</small>
+                    <small style="color: #ffd700;">${desafio.nivel || 'Médio'}</small>
+                </div>
+                <button class="btn-pratica ${concluido ? 'concluido' : ''}" 
+                        data-index="${index}" 
+                        data-id="${desafio.id}"
+                        style="margin-top: 15px; background: ${cor}"
+                        ${concluido ? 'disabled' : ''}>
+                    ${concluido ? '✓ Concluído' : 'Iniciar Desafio'}
                 </button>
             `;
             container.appendChild(card);
@@ -1071,28 +688,29 @@ class GerenciadorPraticas {
 
     adicionarEventListeners() {
         document.querySelectorAll('.btn-pratica:not(:disabled)').forEach(btn => {
-            const newBtn = btn.cloneNode(true);
-            btn.parentNode.replaceChild(newBtn, btn);
-            newBtn.addEventListener('click', (e) => {
+            btn.addEventListener('click', (e) => {
                 const index = parseInt(e.target.dataset.index);
-                console.log(`🎯 Iniciando prática ${index}`);
+                const desafioId = e.target.dataset.id;
+                console.log(`🎯 Iniciando desafio ${index} (ID: ${desafioId})`);
                 praticaIndexAtual = index;
+                desafioIdAtual = desafioId;
+                respostasUsuario = [];
                 if (window.questionario) {
-                    window.questionario.abrirQuestionario(index);
+                    window.questionario.abrirQuestionario(desafioId);
                 }
             });
         });
     }
 
-    concluirPratica(index) {
-        localStorage.setItem(`pratica_${index}_concluida`, 'true');
-        console.log(`✅ Prática ${index} concluída`);
-        this.renderizarPraticas();
+    concluirDesafio(index) {
+        localStorage.setItem(`desafio_${index}_concluido`, 'true');
+        console.log(`✅ Desafio ${index} concluído`);
+        this.renderizarDesafios();
     }
 
     iniciarContador() {
-        const elementoContador = document.getElementById('tempo-restante');
-        if (!elementoContador) return;
+        const elementoContador = document.getElementById('contador-praticas');
+        if (!elementoContador || !elementoContador.textContent.includes('24:00:00')) return;
 
         const atualizarContador = () => {
             const agora = new Date();
@@ -1104,10 +722,10 @@ class GerenciadorPraticas {
             const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const segundos = Math.floor((diff % (1000 * 60)) / 1000);
             
-            elementoContador.textContent = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+            elementoContador.textContent = `Novos desafios em: ${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
             
             if (diff <= 0) {
-                this.atualizarPraticas();
+                this.carregarDesafios();
             }
         };
 
@@ -1116,7 +734,7 @@ class GerenciadorPraticas {
     }
 }
 
-// ✅ QUESTIONÁRIO COMPLETO
+// ✅ QUESTIONÁRIO
 class Questionario {
     constructor() {
         this.perguntasAtuais = [];
@@ -1125,6 +743,7 @@ class Questionario {
         this.modal = document.getElementById('modalPerguntas');
         this.modalBody = document.getElementById('modalBody');
         this.materiaAtual = '';
+        this.pontuacaoBase = 20;
         
         if (this.modal && this.modalBody) {
             this.inicializarEventos();
@@ -1144,26 +763,33 @@ class Questionario {
         }
     }
 
-    abrirQuestionario(praticaIndex) {
-        if (!window.gerenciadorPraticas?.praticasHoje[praticaIndex]) return;
-
-        // Verificar login antes de abrir questionário
+    async abrirQuestionario(desafioId) {
         if (!verificarLoginDesafios()) return;
 
-        const pratica = window.gerenciadorPraticas.praticasHoje[praticaIndex];
-        this.perguntasAtuais = [...pratica.perguntas];
         this.perguntaIndex = 0;
         this.acertos = 0;
-        this.materiaAtual = pratica.materia;
-        
-        this.mostrarPergunta();
-        
-        if (this.modal) this.modal.style.display = 'flex';
+        respostasUsuario = [];
+
+        try {
+            const desafioCompleto = await carregarPerguntasDesafio(desafioId);
+            this.perguntasAtuais = desafioCompleto.perguntas;
+            this.materiaAtual = desafioCompleto.materia || 'Geral';
+            this.pontuacaoBase = desafioCompleto.pontuacao || 20;
+            
+            console.log(`✅ ${this.perguntasAtuais.length} perguntas carregadas`);
+            this.mostrarPergunta();
+            
+            if (this.modal) this.modal.style.display = 'flex';
+            
+        } catch (error) {
+            console.error('❌ Erro ao carregar perguntas:', error);
+            alert('Erro ao carregar o desafio. Tente novamente.');
+        }
     }
 
     mostrarPergunta() {
         if (!this.modalBody || this.perguntaIndex >= this.perguntasAtuais.length) {
-            this.mostrarResultado();
+            this.terminarDesafio();
             return;
         }
 
@@ -1178,7 +804,9 @@ class Questionario {
             <div class="pergunta-texto">${pergunta.pergunta}</div>
             <div class="alternativas-container">
                 ${pergunta.alternativas.map((alt, index) => `
-                    <button class="alternativa-btn" data-index="${index}">${String.fromCharCode(65 + index)}) ${alt}</button>
+                    <button class="alternativa-btn" data-index="${index}">
+                        ${String.fromCharCode(65 + index)}) ${alt.texto}
+                    </button>
                 `).join('')}
             </div>
             <div class="feedback-container" style="display: none;">
@@ -1192,126 +820,104 @@ class Questionario {
 
     adicionarEventListenersPergunta() {
         document.querySelectorAll('.alternativa-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.verificarResposta(parseInt(e.target.dataset.index)));
+            btn.addEventListener('click', (e) => {
+                const respostaIndex = parseInt(e.target.dataset.index);
+                this.verificarResposta(respostaIndex);
+                respostasUsuario.push(respostaIndex);
+            });
         });
 
         const btnProxima = this.modalBody.querySelector('.btn-proxima');
-        if (btnProxima) btnProxima.addEventListener('click', () => this.proximaPergunta());
+        if (btnProxima) {
+            btnProxima.addEventListener('click', () => this.proximaPergunta());
+        }
     }
 
     verificarResposta(respostaIndex) {
-        const pergunta = this.perguntasAtuais[this.perguntaIndex];
         const alternativas = this.modalBody.querySelectorAll('.alternativa-btn');
         const feedbackContainer = this.modalBody.querySelector('.feedback-container');
         const feedbackTexto = this.modalBody.querySelector('#feedbackTexto');
 
         alternativas.forEach(btn => btn.style.pointerEvents = 'none');
 
-        alternativas.forEach((btn, index) => {
-            if (index === pergunta.correta) {
-                btn.style.background = '#4CAF50';
-                btn.style.color = 'white';
-            } else if (index === respostaIndex) {
-                btn.style.background = '#f44336';
-                btn.style.color = 'white';
-            }
-        });
+        // Marcar a resposta selecionada
+        alternativas[respostaIndex].style.background = '#f44336';
+        alternativas[respostaIndex].style.color = 'white';
 
-        if (respostaIndex === pergunta.correta) {
-            this.acertos++;
-            feedbackTexto.textContent = '✓ Resposta correta!';
-            feedbackTexto.style.color = '#4CAF50';
-        } else {
-            feedbackTexto.textContent = '✗ Resposta incorreta!';
-            feedbackTexto.style.color = '#f44336';
-        }
-
+        feedbackTexto.textContent = 'Resposta registrada!';
+        feedbackTexto.style.color = '#e6b800';
         feedbackContainer.style.display = 'block';
     }
 
     proximaPergunta() {
         this.perguntaIndex++;
-        this.perguntaIndex < this.perguntasAtuais.length ? this.mostrarPergunta() : this.mostrarResultado();
+        this.mostrarPergunta();
     }
 
-    async mostrarResultado() {
-        const percentual = Math.round((this.acertos / this.perguntasAtuais.length) * 100);
-        
-        const sistemaPontuacao = new SistemaPontuacao();
-        const pontos = sistemaPontuacao.calcularPontuacao(this.acertos, this.perguntasAtuais.length);
-        const sequencia = sistemaPontuacao.atualizarSequencia(this.acertos, this.perguntasAtuais.length);
-
-        console.log(`🎯 Pontuação calculada: ${pontos} pontos`);
-
-        // Registrar e sincronizar
+    async terminarDesafio() {
         try {
-            const resultado = await registrarPontuacaoNoServidor(
-                this.acertos, 
-                this.perguntasAtuais.length, 
-                pontos, 
-                sequencia, 
-                this.materiaAtual
-            );
+            const resultado = await verificarRespostasNoServidor(desafioIdAtual, respostasUsuario);
+            this.mostrarResultado(resultado);
             
-            if (resultado.success) {
-                console.log('✅ Pontuação registrada com sucesso:', resultado.message);
-                this.mostrarResultadoAnimado(this.acertos, this.perguntasAtuais.length, pontos, sequencia, resultado);
-            } else {
-                console.log('⚠️ Pontuação registrada localmente:', resultado.message);
-                this.mostrarResultadoAnimado(this.acertos, this.perguntasAtuais.length, pontos, sequencia, resultado);
-            }
         } catch (error) {
-            console.error('❌ Erro ao registrar pontuação:', error);
-            this.mostrarResultadoAnimado(this.acertos, this.perguntasAtuais.length, pontos, sequencia, null);
+            console.error('❌ Erro ao verificar respostas:', error);
+            this.mostrarResultado(null, error.message);
         }
     }
 
-    mostrarResultadoAnimado(acertos, total, pontosTotais, sequencia, resultadoApi) {
-        const percentual = Math.round((acertos / total) * 100);
-        const emoji = percentual >= 90 ? '🎉' : percentual >= 70 ? '🎯' : percentual >= 50 ? '👍' : '💪';
-        
-        let mensagemBonus = '';
-        let mensagemStatus = '';
-        
-        if (sequencia > 1) {
-            mensagemBonus = `<div style="color: #ffd700; margin: 10px 0; font-size: 14px;">🔥 Sequência de ${sequencia} desafios perfeitos!</div>`;
-        }
-        
-        if (resultadoApi) {
-            if (resultadoApi.success) {
-                mensagemStatus = `<div style="color: #4CAF50; margin: 5px 0; font-size: 12px;">✓ Pontos sincronizados com o servidor</div>`;
-            } else {
-                mensagemStatus = `<div style="color: #ff9800; margin: 5px 0; font-size: 12px;">⚠️ Pontos salvos localmente</div>`;
-            }
-        } else {
-            mensagemStatus = `<div style="color: #ff9800; margin: 5px 0; font-size: 12px;">⚠️ Modo offline - pontos salvos localmente</div>`;
-        }
+    mostrarResultado(resultadoApi, erro = null) {
+        if (!this.modalBody) return;
 
-        this.modalBody.innerHTML = `
-            <div class="resultado-final">
-                <div style="font-size: 48px; margin-bottom: 20px;">${emoji}</div>
-                <div style="color: #ffcf00; font-size: 24px; margin-bottom: 10px;">Desafio Concluído!</div>
-                <div style="color: #fff; font-size: 18px; margin-bottom: 15px;">${acertos}/${total} acertos (${percentual}%)</div>
-                <div>
-                    <div style="font-size: 28px; font-weight: bold; color: #ffd700; margin: 10px 0;">+${pontosTotais} pontos</div>
-                    ${mensagemBonus}
-                    ${mensagemStatus}
+        if (erro) {
+            this.modalBody.innerHTML = `
+                <div class="resultado-final">
+                    <div style="color: #f44336; font-size: 48px; margin-bottom: 20px;">❌</div>
+                    <div style="color: #f44336; font-size: 24px; margin-bottom: 10px;">Erro</div>
+                    <div style="color: #fff; font-size: 16px; margin-bottom: 20px;">
+                        ${erro}<br><br>
+                        Suas respostas foram salvas localmente.
+                    </div>
+                    <button class="btn-interno" style="background: #e6b800; color: #000; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px;">
+                        Fechar
+                    </button>
                 </div>
-                <div style="color: #ccc; font-size: 12px; margin: 15px 0;">
-                    <small>Pontuação total: ${localStorage.getItem('usuarioPontuacao') || 0} pontos</small><br>
-                    <small>Desafios completos: ${localStorage.getItem('usuarioDesafios') || 0}</small>
+            `;
+        } else if (resultadoApi) {
+            const { resultado, detalhes, usuario } = resultadoApi;
+            const acertos = resultado?.acertos || 0;
+            const total = resultado?.total || this.perguntasAtuais.length;
+            const percentual = Math.round((acertos / total) * 100);
+            const pontosGanhos = resultado?.pontuacaoGanha || 0;
+            const pontuacaoTotal = usuario?.pontuacao || parseInt(localStorage.getItem('usuarioPontuacao') || '0');
+            const desafiosCompletos = usuario?.desafiosCompletados || parseInt(localStorage.getItem('usuarioDesafios') || '0');
+
+            const emoji = percentual >= 90 ? '🎉' : percentual >= 70 ? '🎯' : percentual >= 50 ? '👍' : '💪';
+
+            this.modalBody.innerHTML = `
+                <div class="resultado-final">
+                    <div style="font-size: 48px; margin-bottom: 20px;">${emoji}</div>
+                    <div style="color: #ffcf00; font-size: 24px; margin-bottom: 10px;">Desafio Concluído!</div>
+                    <div style="color: #fff; font-size: 18px; margin-bottom: 15px;">${acertos}/${total} acertos (${percentual}%)</div>
+                    <div class="pontos-ganhos">+${pontosGanhos} pontos</div>
+                    <div style="color: #4CAF50; margin: 10px 0; font-size: 14px;">✓ Pontuação sincronizada com o servidor</div>
+                    <div style="color: #ccc; font-size: 12px; margin: 15px 0;">
+                        <small>Pontuação total: ${pontuacaoTotal} pontos</small><br>
+                        <small>Desafios completos: ${desafiosCompletos}</small>
+                    </div>
+                    <button class="btn-interno" style="background: #e6b800; color: #000; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px;">
+                        Continuar
+                    </button>
                 </div>
-                <button class="btn-interno" style="width: 100%; margin-top: 15px;">Continuar</button>
-            </div>
-        `;
+            `;
+        }
 
         setTimeout(() => {
-            const btnContinuar = this.modalBody.querySelector('.btn-interno');
-            if (btnContinuar) {
-                btnContinuar.addEventListener('click', () => {
+            const btnFechar = this.modalBody.querySelector('.btn-interno');
+            if (btnFechar) {
+                btnFechar.addEventListener('click', () => {
                     this.fecharModal();
-                    if (window.gerenciadorPraticas) {
-                        window.gerenciadorPraticas.concluirPratica(praticaIndexAtual);
+                    if (window.gerenciadorDesafios && resultadoApi) {
+                        window.gerenciadorDesafios.concluirDesafio(praticaIndexAtual);
                     }
                 });
             }
@@ -1320,51 +926,39 @@ class Questionario {
 
     fecharModal() {
         if (this.modal) this.modal.style.display = 'none';
+        this.perguntasAtuais = [];
+        this.perguntaIndex = 0;
+        this.acertos = 0;
+        respostasUsuario = [];
     }
 }
 
-// ✅ INICIALIZAÇÃO DESAFIOS
+// ✅ INICIALIZAÇÃO
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("🚀 Inicializando sistema de desafios...");
     
-    // Verificação crítica de usuário
     if (!verificarLoginDesafios()) {
         return;
     }
     
     console.log('👤 Usuário identificado:', localStorage.getItem('usuarioNome'));
     console.log('🔑 User ID:', localStorage.getItem('usuarioId'));
-    console.log('📊 Pontuação atual:', localStorage.getItem('usuarioPontuacao'));
-    console.log('🎯 Desafios completos:', localStorage.getItem('usuarioDesafios'));
     
-    // Inicializar componentes
     try {
-        window.gerenciadorPraticas = new GerenciadorPraticas();
+        window.gerenciadorDesafios = new GerenciadorDesafios();
         window.questionario = new Questionario();
         
         console.log("✅ Sistema de desafios inicializado!");
     } catch (error) {
         console.error("❌ Erro ao inicializar sistema de desafios:", error);
-        alert("Erro ao carregar desafios. Por favor, recarregue a página.");
+        const container = document.getElementById('praticas-container');
+        if (container) {
+            container.innerHTML = '<div style="color: #ff4444; padding: 20px; text-align: center;">Erro ao carregar desafios. Recarregue a página.</div>';
+        }
     }
 });
 
-// ✅ FUNÇÕES AUXILIARES GLOBAIS
-function resetarProgresso() {
-    if (confirm('Tem certeza que deseja resetar todo o progresso? Isso irá zerar sua pontuação e desafios.')) {
-        localStorage.clear();
-        localStorage.setItem('sequencia', '0');
-        alert('Progresso resetado com sucesso!');
-        location.reload();
-    }
-}
-
-// ✅ EXPORTAR FUNÇÕES PARA USO GLOBAL
-window.verificarLoginDesafios = verificarLoginDesafios;
-window.registrarPontuacaoNoServidor = registrarPontuacaoNoServidor;
-window.resetarProgresso = resetarProgresso;
-
-console.log("✅ Script de desafios carregado com sucesso!");
+console.log("✅ Script de desafios carregado!");
     </script>
 </body>
 </html>
