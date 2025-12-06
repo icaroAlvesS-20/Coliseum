@@ -374,65 +374,90 @@
 </head>
 <body>
     <div class="praticas-diarias">
-        <h3> Desafios do Dia</h3>
-        <div id="praticas-container">
-        </div>
+        <h3>Desafios do Dia</h3>
+        <div id="praticas-container"></div>
         <p id="contador-praticas">Carregando desafios...</p>
     </div>
 
-    <!-- Modal de Perguntas -->
     <div class="modal-perguntas" id="modalPerguntas">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>📝 Desafio</h3>
                 <button class="close-modal">&times;</button>
             </div>
-            <div class="modal-body" id="modalBody">
-            </div>
+            <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
 
     <button class="btn-voltar" onclick="history.back()">←</button>
 
     <script>
-const API_URL = 'https://coliseum-api.onrender.com';
+// ✅ URL DA API COM DETECÇÃO AUTOMÁTICA DE AMBIENTE
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:10000'
+    : 'https://coliseum-api.onrender.com';
+
 let praticaIndexAtual = 0;
 let desafioIdAtual = null;
 let respostasUsuario = [];
 
-// ✅ VERIFICAÇÃO DE LOGIN
-function verificarLoginDesafios() {
+// ✅ VERIFICAÇÃO DE LOGIN MELHORADA
+async function verificarLoginDesafios() {
     console.log('🔍 Verificando login para desafios...');
     
     const usuarioId = localStorage.getItem('usuarioId');
-    if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
-        console.log('✅ Usuário identificado');
-        return true;
+    const usuarioToken = localStorage.getItem('usuarioToken');
+    
+    if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
+        console.log('❌ Usuário não logado');
+        window.location.href = '../Login/index.html';
+        return false;
     }
     
-    console.log('❌ Usuário não logado');
-    window.location.href = '../Login/index.html';
-    return false;
+    // Verificar se o token ainda é válido
+    try {
+        const response = await fetch(`${API_URL}/api/usuarios/${usuarioId}`, {
+            headers: {
+                'Authorization': `Bearer ${usuarioToken || ''}`
+            }
+        });
+        
+        if (!response.ok) {
+            console.log('❌ Sessão expirada ou inválida');
+            localStorage.removeItem('usuarioId');
+            localStorage.removeItem('usuarioToken');
+            window.location.href = '../Login/index.html';
+            return false;
+        }
+        
+        console.log('✅ Usuário autenticado');
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Erro ao verificar login:', error);
+        // Em caso de erro de rede, permitir usar cache local
+        return usuarioId ? true : false;
+    }
 }
 
-// ✅ OBTER USUÁRIO ID
+// ✅ OBTER USUÁRIO ID COM VALIDAÇÃO
 function obterUsuarioId() {
-    let usuarioId = localStorage.getItem('usuarioId');
+    const usuarioId = localStorage.getItem('usuarioId');
     
     if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
         const usuarioJSON = localStorage.getItem('usuario');
         if (usuarioJSON) {
             try {
                 const usuario = JSON.parse(usuarioJSON);
-                usuarioId = usuario.id;
-                localStorage.setItem('usuarioId', usuarioId);
+                if (usuario && usuario.id) {
+                    localStorage.setItem('usuarioId', usuario.id.toString());
+                    return parseInt(usuario.id);
+                }
             } catch (e) {
                 console.error('Erro ao parsear usuario:', e);
             }
         }
-    }
-
-    if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
+        
         console.error('❌ ERRO: usuarioId não encontrado!');
         window.location.href = '../Login/index.html';
         return null;
@@ -441,9 +466,10 @@ function obterUsuarioId() {
     return parseInt(usuarioId);
 }
 
-// ✅ ATUALIZAR DADOS DO USUÁRIO
+// ✅ ATUALIZAR DADOS DO USUÁRIO COM CACHE
 async function atualizarDadosUsuario(usuario) {
     if (usuario && usuario.id) {
+        // Salvar dados principais
         localStorage.setItem('usuarioId', usuario.id.toString());
         localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
         localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
@@ -451,78 +477,161 @@ async function atualizarDadosUsuario(usuario) {
         localStorage.setItem('usuarioRA', usuario.ra || '');
         localStorage.setItem('usuarioSerie', usuario.serie || '');
         
+        // Salvar objeto completo no cache
+        localStorage.setItem('usuario', JSON.stringify(usuario));
+        
         console.log('✅ Dados do usuário atualizados:', usuario);
     }
 }
 
-// ✅ CARREGAR DESAFIOS DO SERVIDOR
+// ✅ CARREGAR DESAFIOS DO SERVIDOR COM RETRY E CACHE
 async function carregarDesafiosDoServidor() {
-    try {
-        console.log('🔄 Carregando desafios do servidor...');
-        const response = await fetch(`${API_URL}/api/desafios-ativos`);
-        
-        if (!response.ok) {
-            throw new Error(`Erro ${response.status} ao carregar desafios`);
+    let tentativas = 3;
+    
+    while (tentativas > 0) {
+        try {
+            console.log(`🔄 Carregando desafios do servidor (tentativa ${4-tentativas}/3)...`);
+            
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            
+            const response = await fetch(`${API_URL}/api/desafios-ativos`, {
+                signal: controller.signal,
+                headers: {
+                    'Cache-Control': 'no-cache'
+                }
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`Erro ${response.status} ao carregar desafios`);
+            }
+            
+            const desafios = await response.json();
+            console.log(`✅ ${desafios.length} desafios carregados do servidor`);
+            
+            // Atualizar cache
+            localStorage.setItem('desafiosCache', JSON.stringify({
+                desafios: desafios,
+                timestamp: Date.now(),
+                origem: 'servidor'
+            }));
+            
+            return desafios;
+            
+        } catch (error) {
+            tentativas--;
+            console.error(`❌ Erro ao carregar desafios:`, error.message);
+            
+            if (tentativas === 0) {
+                // Tentar carregar do cache
+                try {
+                    const cache = localStorage.getItem('desafiosCache');
+                    if (cache) {
+                        const cacheData = JSON.parse(cache);
+                        const idadeCache = Date.now() - cacheData.timestamp;
+                        const horasIdade = idadeCache / (1000 * 60 * 60);
+                        
+                        if (horasIdade < 24) { // Cache válido por 24 horas
+                            console.log(`📦 Usando cache de desafios (${Math.round(horasIdade*60)} minutos atrás)`);
+                            return cacheData.desafios;
+                        }
+                    }
+                } catch (cacheError) {
+                    console.error('Erro ao ler cache:', cacheError);
+                }
+                
+                throw new Error('Não foi possível carregar os desafios');
+            }
+            
+            // Aguardar antes de tentar novamente
+            await new Promise(resolve => setTimeout(resolve, 2000));
         }
-        
-        const desafios = await response.json();
-        console.log(`✅ ${desafios.length} desafios carregados do servidor`);
-        return desafios;
-        
-    } catch (error) {
-        console.error('❌ Erro ao carregar desafios:', error);
-        throw error;
     }
 }
 
-// ✅ CARREGAR PERGUNTAS DO DESAFIO
+// ✅ CARREGAR PERGUNTAS DO DESAFIO COM TRATAMENTO DE ERRO
 async function carregarPerguntasDesafio(desafioId) {
     try {
         console.log(`📝 Carregando perguntas do desafio ${desafioId}...`);
-        const response = await fetch(`${API_URL}/api/desafios/${desafioId}/perguntas`);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        
+        const response = await fetch(`${API_URL}/api/desafios/${desafioId}/perguntas`, {
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
         
         if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error('Desafio não encontrado ou expirado');
+            }
             throw new Error(`Erro ${response.status} ao carregar perguntas`);
         }
         
         const desafio = await response.json();
-        console.log(`✅ ${desafio.perguntas.length} perguntas carregadas`);
+        console.log(`✅ ${desafio.perguntas?.length || 0} perguntas carregadas`);
         return desafio;
         
     } catch (error) {
         console.error('❌ Erro ao carregar perguntas:', error);
+        
+        // Mostrar mensagem amigável ao usuário
+        if (error.name === 'AbortError') {
+            throw new Error('O servidor demorou muito para responder. Tente novamente.');
+        }
+        
         throw error;
     }
 }
 
-// ✅ VERIFICAR RESPOSTAS NO SERVIDOR
+// ✅ VERIFICAR RESPOSTAS NO SERVIDOR COM MELHOR TRATAMENTO
 async function verificarRespostasNoServidor(desafioId, respostas) {
     try {
         const usuarioId = obterUsuarioId();
         if (!usuarioId) {
-            throw new Error('Usuário não identificado');
+            throw new Error('Usuário não identificado. Faça login novamente.');
         }
 
         console.log('📤 Enviando respostas para verificação...', {
             desafioId,
             usuarioId,
-            respostas
+            totalRespostas: respostas.length
         });
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        
         const response = await fetch(`${API_URL}/api/desafios/${desafioId}/verificar`, {
             method: 'POST',
             headers: { 
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('usuarioToken') || ''}`
             },
             body: JSON.stringify({
                 usuarioId: usuarioId,
                 respostas: respostas
-            })
+            }),
+            signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(`Erro ${response.status}: ${errorText}`);
+            
+            if (response.status === 401 || response.status === 403) {
+                // Sessão expirada
+                localStorage.removeItem('usuarioId');
+                localStorage.removeItem('usuarioToken');
+                window.location.href = '../Login/index.html';
+                throw new Error('Sessão expirada. Faça login novamente.');
+            }
+            
+            throw new Error(`Erro ${response.status}: ${errorText || 'Erro ao verificar respostas'}`);
         }
 
         const resultado = await response.json();
@@ -537,11 +646,29 @@ async function verificarRespostasNoServidor(desafioId, respostas) {
         
     } catch (error) {
         console.error('❌ Erro ao verificar respostas:', error);
+        
+        // Salvar respostas localmente em caso de falha
+        if (desafioId && respostas.length > 0) {
+            try {
+                const respostasPendentes = JSON.parse(localStorage.getItem('respostasPendentes') || '[]');
+                respostasPendentes.push({
+                    desafioId,
+                    respostas,
+                    usuarioId: obterUsuarioId(),
+                    timestamp: Date.now()
+                });
+                localStorage.setItem('respostasPendentes', JSON.stringify(respostasPendentes));
+                console.log('💾 Respostas salvas localmente para envio posterior');
+            } catch (cacheError) {
+                console.error('Erro ao salvar respostas localmente:', cacheError);
+            }
+        }
+        
         throw error;
     }
 }
 
-// ✅ GERENCIADOR DE DESAFIOS
+// ✅ GERENCIADOR DE DESAFIOS ATUALIZADO
 class GerenciadorDesafios {
     constructor() {
         this.desafiosHoje = [];
@@ -557,7 +684,8 @@ class GerenciadorDesafios {
     }
 
     getDataUltimaAtualizacao() {
-        return localStorage.getItem('ultimaAtualizacaoDesafios');
+        const data = localStorage.getItem('ultimaAtualizacaoDesafios');
+        return data ? new Date(data) : null;
     }
 
     salvarDataAtualizacao() {
@@ -567,7 +695,8 @@ class GerenciadorDesafios {
     precisaAtualizar() {
         const ultima = this.getDataUltimaAtualizacao();
         if (!ultima) return true;
-        const diffHoras = (new Date() - new Date(ultima)) / (1000 * 60 * 60);
+        
+        const diffHoras = (Date.now() - ultima.getTime()) / (1000 * 60 * 60);
         return diffHoras >= 24;
     }
 
@@ -578,12 +707,18 @@ class GerenciadorDesafios {
         const contador = document.getElementById('contador-praticas');
         
         if (container) {
-            container.innerHTML = '<div style="color: #e6b800; padding: 20px;">Carregando desafios...</div>';
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div class="spinner" style="border: 4px solid #333; border-top: 4px solid #e6b800; border-radius: 50%; width: 40px; height: 40px; margin: 0 auto 20px; animation: spin 1s linear infinite;"></div>
+                    <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+                    <p style="color: #e6b800;">Carregando desafios...</p>
+                </div>
+            `;
         }
         
         try {
             const desafiosServidor = await carregarDesafiosDoServidor();
-            this.desafiosHoje = desafiosServidor.slice(0, 4); // Limitar a 4 desafios por dia
+            this.desafiosHoje = desafiosServidor.slice(0, 4);
             
             if (this.precisaAtualizar()) {
                 this.salvarDataAtualizacao();
@@ -603,9 +738,21 @@ class GerenciadorDesafios {
             
         } catch (error) {
             console.error('❌ Erro ao carregar desafios:', error);
+            
             if (container) {
-                container.innerHTML = '<div style="color: #ff4444; padding: 20px;">Erro ao carregar desafios. Tente novamente mais tarde.</div>';
+                const erroHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <div style="font-size: 48px; color: #ff4444; margin-bottom: 20px;">⚠️</div>
+                        <h3 style="color: #ff4444; margin-bottom: 10px;">Erro ao carregar desafios</h3>
+                        <p style="color: #ccc; margin-bottom: 20px;">${error.message || 'Tente novamente mais tarde'}</p>
+                        <button onclick="window.gerenciadorDesafios.carregarDesafios()" style="background: #e6b800; color: #000; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                            Tentar Novamente
+                        </button>
+                    </div>
+                `;
+                container.innerHTML = erroHTML;
             }
+            
             if (contador) {
                 contador.textContent = 'Erro ao carregar desafios';
             }
@@ -619,19 +766,66 @@ class GerenciadorDesafios {
     }
 
     salvarDesafiosAtuais() {
-        localStorage.setItem('desafiosAtuais', JSON.stringify(this.desafiosHoje));
+        const data = {
+            desafios: this.desafiosHoje,
+            timestamp: Date.now(),
+            versao: '1.0'
+        };
+        localStorage.setItem('desafiosAtuais', JSON.stringify(data));
     }
 
     carregarDesafiosSalvos() {
-        const salvas = localStorage.getItem('desafiosAtuais');
-        if (salvas) {
-            this.desafiosHoje = JSON.parse(salvas);
+        try {
+            const salvas = localStorage.getItem('desafiosAtuais');
+            if (salvas) {
+                const data = JSON.parse(salvas);
+                const idadeCache = Date.now() - data.timestamp;
+                const horasIdade = idadeCache / (1000 * 60 * 60);
+                
+                if (horasIdade < 24) {
+                    this.desafiosHoje = data.desafios;
+                    console.log(`📦 Carregados ${this.desafiosHoje.length} desafios do cache (${Math.round(horasIdade*60)} minutos atrás)`);
+                } else {
+                    console.log('📦 Cache expirado, buscando do servidor...');
+                    this.desafiosHoje = [];
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao carregar desafios salvos:', error);
+            this.desafiosHoje = [];
         }
     }
 
     inicializar() {
         this.carregarDesafios();
         this.iniciarContador();
+        
+        // Tentar enviar respostas pendentes
+        this.enviarRespostasPendentes();
+    }
+
+    async enviarRespostasPendentes() {
+        try {
+            const respostasPendentes = JSON.parse(localStorage.getItem('respostasPendentes') || '[]');
+            if (respostasPendentes.length === 0) return;
+            
+            console.log(`📤 Tentando enviar ${respostasPendentes.length} respostas pendentes...`);
+            
+            for (const pendente of respostasPendentes) {
+                try {
+                    await verificarRespostasNoServidor(pendente.desafioId, pendente.respostas);
+                    console.log(`✅ Resposta pendente enviada: ${pendente.desafioId}`);
+                } catch (error) {
+                    console.error(`❌ Falha ao enviar resposta pendente:`, error.message);
+                }
+            }
+            
+            // Limpar apenas as que foram enviadas com sucesso
+            localStorage.setItem('respostasPendentes', '[]');
+            
+        } catch (error) {
+            console.error('Erro ao processar respostas pendentes:', error);
+        }
     }
 
     renderizarDesafios() {
@@ -639,7 +833,16 @@ class GerenciadorDesafios {
         if (!container) return;
 
         if (this.desafiosHoje.length === 0) {
-            container.innerHTML = '<div style="color: #888; padding: 20px; text-align: center;">Nenhum desafio disponível no momento. Volte mais tarde!</div>';
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 48px; color: #888; margin-bottom: 20px;">📭</div>
+                    <h3 style="color: #888; margin-bottom: 10px;">Nenhum desafio disponível</h3>
+                    <p style="color: #aaa;">Novos desafios serão disponibilizados em breve!</p>
+                    <button onclick="window.gerenciadorDesafios.carregarDesafios()" style="background: #333; color: #e6b800; border: 1px solid #e6b800; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 20px;">
+                        Recarregar
+                    </button>
+                </div>
+            `;
             return;
         }
 
@@ -649,28 +852,37 @@ class GerenciadorDesafios {
             const concluido = localStorage.getItem(`desafio_${index}_concluido`);
             const materiasCores = {
                 'Matemática': '#4361ee',
+                'matematica': '#4361ee',
                 'Português': '#f72585',
+                'portugues': '#f72585',
                 'Ciências': '#4cc9f0',
+                'ciencias': '#4cc9f0',
                 'História': '#ffcf00',
+                'historia': '#ffcf00',
                 'Geografia': '#7209b7',
+                'geografia': '#7209b7',
                 'Física': '#f8961e',
+                'fisica': '#f8961e',
                 'Química': '#90be6d',
-                'Programação': '#2a9d8f'
+                'quimica': '#90be6d',
+                'Programação': '#2a9d8f',
+                'programacao': '#2a9d8f'
             };
             
-            const cor = materiasCores[desafio.materia] || '#e6b800';
+            const materiaKey = desafio.materia || 'Geral';
+            const cor = materiasCores[materiaKey] || '#e6b800';
             
             const card = document.createElement('div');
             card.className = 'pratica-card';
             card.style.borderColor = cor;
             card.innerHTML = `
                 <div class="pontuacao" style="background: ${cor}">+${desafio.pontuacao} p</div>
-                <div class="materia-tag" style="background: ${cor}">${desafio.materia}</div>
-                <div class="pratica-titulo">${desafio.titulo}</div>
-                <div class="pratica-descricao">${desafio.descricao || 'Teste seus conhecimentos'}</div>
+                <div class="materia-tag" style="background: ${cor}">${this.formatarMateria(materiaKey)}</div>
+                <div class="pratica-titulo">${this.escapeHTML(desafio.titulo)}</div>
+                <div class="pratica-descricao">${this.escapeHTML(desafio.descricao || 'Teste seus conhecimentos')}</div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                    <small style="color: #aaa;">${desafio._count?.perguntas || '?'} perguntas • ${desafio.duracao || 15}min</small>
-                    <small style="color: #ffd700;">${desafio.nivel || 'Médio'}</small>
+                    <small style="color: #aaa;">${desafio._count?.perguntas || desafio.perguntas?.length || '?'} perguntas • ${desafio.duracao || 15}min</small>
+                    <small style="color: #ffd700;">${this.formatarNivel(desafio.nivel)}</small>
                 </div>
                 <button class="btn-pratica ${concluido ? 'concluido' : ''}" 
                         data-index="${index}" 
@@ -686,15 +898,54 @@ class GerenciadorDesafios {
         setTimeout(() => this.adicionarEventListeners(), 100);
     }
 
+    formatarMateria(materia) {
+        const formatos = {
+            'matematica': 'Matemática',
+            'portugues': 'Português',
+            'ciencias': 'Ciências',
+            'historia': 'História',
+            'geografia': 'Geografia',
+            'fisica': 'Física',
+            'quimica': 'Química',
+            'programacao': 'Programação'
+        };
+        return formatos[materia] || materia;
+    }
+
+    formatarNivel(nivel) {
+        const formatos = {
+            'facil': 'Fácil',
+            'medio': 'Médio',
+            'dificil': 'Difícil',
+            'avancado': 'Avançado'
+        };
+        return formatos[nivel] || nivel;
+    }
+
+    escapeHTML(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     adicionarEventListeners() {
         document.querySelectorAll('.btn-pratica:not(:disabled)').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const index = parseInt(e.target.dataset.index);
                 const desafioId = e.target.dataset.id;
+                
+                if (!desafioId) {
+                    console.error('❌ Desafio ID não encontrado');
+                    alert('Erro: Desafio não disponível. Tente novamente.');
+                    return;
+                }
+                
                 console.log(`🎯 Iniciando desafio ${index} (ID: ${desafioId})`);
                 praticaIndexAtual = index;
                 desafioIdAtual = desafioId;
                 respostasUsuario = [];
+                
                 if (window.questionario) {
                     window.questionario.abrirQuestionario(desafioId);
                 }
@@ -706,6 +957,15 @@ class GerenciadorDesafios {
         localStorage.setItem(`desafio_${index}_concluido`, 'true');
         console.log(`✅ Desafio ${index} concluído`);
         this.renderizarDesafios();
+        
+        // Atualizar contador de desafios completos no cache do usuário
+        try {
+            const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+            usuario.desafiosCompletados = (usuario.desafiosCompletados || 0) + 1;
+            localStorage.setItem('usuario', JSON.stringify(usuario));
+        } catch (error) {
+            console.error('Erro ao atualizar cache do usuário:', error);
+        }
     }
 
     iniciarContador() {
@@ -713,20 +973,22 @@ class GerenciadorDesafios {
         if (!elementoContador || !elementoContador.textContent.includes('24:00:00')) return;
 
         const atualizarContador = () => {
-            const agora = new Date();
-            const proximaAtualizacao = new Date(agora);
+            const agora = Date.now();
+            const proximaAtualizacao = new Date();
             proximaAtualizacao.setHours(24, 0, 0, 0);
             
-            const diff = proximaAtualizacao - agora;
+            const diff = proximaAtualizacao.getTime() - agora;
+            
+            if (diff <= 0) {
+                this.carregarDesafios();
+                return;
+            }
+            
             const horas = Math.floor(diff / (1000 * 60 * 60));
             const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const segundos = Math.floor((diff % (1000 * 60)) / 1000);
             
             elementoContador.textContent = `Novos desafios em: ${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
-            
-            if (diff <= 0) {
-                this.carregarDesafios();
-            }
         };
 
         atualizarContador();
@@ -734,7 +996,7 @@ class GerenciadorDesafios {
     }
 }
 
-// ✅ QUESTIONÁRIO
+// ✅ QUESTIONÁRIO ATUALIZADO
 class Questionario {
     constructor() {
         this.perguntasAtuais = [];
@@ -751,20 +1013,18 @@ class Questionario {
     }
 
     inicializarEventos() {
-        const closeBtn = document.querySelector('.close-modal');
+        const closeBtn = this.modal.querySelector('.close-modal');
         if (closeBtn) {
             closeBtn.addEventListener('click', () => this.fecharModal());
         }
 
-        if (this.modal) {
-            this.modal.addEventListener('click', (e) => {
-                if (e.target === this.modal) this.fecharModal();
-            });
-        }
+        this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) this.fecharModal();
+        });
     }
 
     async abrirQuestionario(desafioId) {
-        if (!verificarLoginDesafios()) return;
+        if (!await verificarLoginDesafios()) return;
 
         this.perguntaIndex = 0;
         this.acertos = 0;
@@ -772,6 +1032,11 @@ class Questionario {
 
         try {
             const desafioCompleto = await carregarPerguntasDesafio(desafioId);
+            
+            if (!desafioCompleto || !desafioCompleto.perguntas || desafioCompleto.perguntas.length === 0) {
+                throw new Error('Desafio sem perguntas disponíveis');
+            }
+            
             this.perguntasAtuais = desafioCompleto.perguntas;
             this.materiaAtual = desafioCompleto.materia || 'Geral';
             this.pontuacaoBase = desafioCompleto.pontuacao || 20;
@@ -779,11 +1044,23 @@ class Questionario {
             console.log(`✅ ${this.perguntasAtuais.length} perguntas carregadas`);
             this.mostrarPergunta();
             
-            if (this.modal) this.modal.style.display = 'flex';
+            this.modal.style.display = 'flex';
             
         } catch (error) {
             console.error('❌ Erro ao carregar perguntas:', error);
-            alert('Erro ao carregar o desafio. Tente novamente.');
+            
+            // Mostrar mensagem amigável
+            this.modalBody.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 48px; color: #ff4444; margin-bottom: 20px;">❌</div>
+                    <h3 style="color: #ff4444; margin-bottom: 10px;">Erro ao carregar desafio</h3>
+                    <p style="color: #ccc; margin-bottom: 20px;">${error.message || 'Tente novamente mais tarde'}</p>
+                    <button onclick="this.closest('.modal-perguntas').style.display='none'" style="background: #e6b800; color: #000; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                        Fechar
+                    </button>
+                </div>
+            `;
+            this.modal.style.display = 'flex';
         }
     }
 
@@ -796,16 +1073,19 @@ class Questionario {
         const pergunta = this.perguntasAtuais[this.perguntaIndex];
         const progresso = ((this.perguntaIndex) / this.perguntasAtuais.length) * 100;
 
+        // ✅ SANITIZAÇÃO DE HTML
+        const perguntaText = this.escapeHTML(pergunta.pergunta);
+        
         this.modalBody.innerHTML = `
             <div class="progresso-container">
                 <div class="barra-progresso"><div class="progresso" style="width: ${progresso}%"></div></div>
                 <div class="contador-perguntas">${this.perguntaIndex + 1}/${this.perguntasAtuais.length}</div>
             </div>
-            <div class="pergunta-texto">${pergunta.pergunta}</div>
+            <div class="pergunta-texto">${perguntaText}</div>
             <div class="alternativas-container">
                 ${pergunta.alternativas.map((alt, index) => `
                     <button class="alternativa-btn" data-index="${index}">
-                        ${String.fromCharCode(65 + index)}) ${alt.texto}
+                        ${String.fromCharCode(65 + index)}) ${this.escapeHTML(alt.texto)}
                     </button>
                 `).join('')}
             </div>
@@ -816,6 +1096,13 @@ class Questionario {
         `;
 
         setTimeout(() => this.adicionarEventListenersPergunta(), 10);
+    }
+
+    escapeHTML(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     adicionarEventListenersPergunta() {
@@ -871,14 +1158,16 @@ class Questionario {
         if (erro) {
             this.modalBody.innerHTML = `
                 <div class="resultado-final">
-                    <div style="color: #f44336; font-size: 48px; margin-bottom: 20px;">❌</div>
-                    <div style="color: #f44336; font-size: 24px; margin-bottom: 10px;">Erro</div>
-                    <div style="color: #fff; font-size: 16px; margin-bottom: 20px;">
+                    <div style="color: #f44336; font-size: 48px; margin-bottom: 20px;">⚠️</div>
+                    <div style="color: #f44336; font-size: 24px; margin-bottom: 10px;">Erro na Conexão</div>
+                    <div style="color: #fff; font-size: 16px; margin-bottom: 20px; line-height: 1.5;">
                         ${erro}<br><br>
-                        Suas respostas foram salvas localmente.
+                        <small style="color: #aaa;">
+                            Suas respostas foram salvas e serão enviadas automaticamente quando a conexão voltar.
+                        </small>
                     </div>
-                    <button class="btn-interno" style="background: #e6b800; color: #000; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px;">
-                        Fechar
+                    <button class="btn-interno" onclick="window.questionario.fecharModal()" style="background: #e6b800; color: #000; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px;">
+                        Continuar
                     </button>
                 </div>
             `;
@@ -899,33 +1188,26 @@ class Questionario {
                     <div style="color: #ffcf00; font-size: 24px; margin-bottom: 10px;">Desafio Concluído!</div>
                     <div style="color: #fff; font-size: 18px; margin-bottom: 15px;">${acertos}/${total} acertos (${percentual}%)</div>
                     <div class="pontos-ganhos">+${pontosGanhos} pontos</div>
-                    <div style="color: #4CAF50; margin: 10px 0; font-size: 14px;">✓ Pontuação sincronizada com o servidor</div>
-                    <div style="color: #ccc; font-size: 12px; margin: 15px 0;">
-                        <small>Pontuação total: ${pontuacaoTotal} pontos</small><br>
-                        <small>Desafios completos: ${desafiosCompletos}</small>
+                    <div style="color: #4CAF50; margin: 10px 0; font-size: 14px;">
+                        <i class="fas fa-check-circle"></i> Pontuação sincronizada
                     </div>
-                    <button class="btn-interno" style="background: #e6b800; color: #000; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px;">
+                    <div style="color: #ccc; font-size: 12px; margin: 15px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <div><small><strong>Pontuação total:</strong> ${pontuacaoTotal} pontos</small></div>
+                        <div><small><strong>Desafios completos:</strong> ${desafiosCompletos}</small></div>
+                        ${usuario?.nome ? `<div><small><strong>Aluno:</strong> ${this.escapeHTML(usuario.nome)}</small></div>` : ''}
+                    </div>
+                    <button class="btn-interno" onclick="window.questionario.fecharModal(); if(window.gerenciadorDesafios) window.gerenciadorDesafios.concluirDesafio(${praticaIndexAtual});" style="background: #e6b800; color: #000; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px;">
                         Continuar
                     </button>
                 </div>
             `;
         }
 
-        setTimeout(() => {
-            const btnFechar = this.modalBody.querySelector('.btn-interno');
-            if (btnFechar) {
-                btnFechar.addEventListener('click', () => {
-                    this.fecharModal();
-                    if (window.gerenciadorDesafios && resultadoApi) {
-                        window.gerenciadorDesafios.concluirDesafio(praticaIndexAtual);
-                    }
-                });
-            }
-        }, 50);
+        // O evento do botão já está configurado no innerHTML
     }
 
     fecharModal() {
-        if (this.modal) this.modal.style.display = 'none';
+        this.modal.style.display = 'none';
         this.perguntasAtuais = [];
         this.perguntaIndex = 0;
         this.acertos = 0;
@@ -933,11 +1215,12 @@ class Questionario {
     }
 }
 
-// ✅ INICIALIZAÇÃO
+// ✅ INICIALIZAÇÃO MELHORADA
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("🚀 Inicializando sistema de desafios...");
     
-    if (!verificarLoginDesafios()) {
+    // Verificar login antes de tudo
+    if (!await verificarLoginDesafios()) {
         return;
     }
     
@@ -949,11 +1232,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.questionario = new Questionario();
         
         console.log("✅ Sistema de desafios inicializado!");
+        
+        // Adicionar listener para reconexão
+        window.addEventListener('online', () => {
+            console.log('🌐 Conexão restaurada');
+            if (window.gerenciadorDesafios) {
+                window.gerenciadorDesafios.enviarRespostasPendentes();
+            }
+        });
+        
+        window.addEventListener('offline', () => {
+            console.log('📴 Conexão perdida');
+            // Mostrar notificação
+            if (document.getElementById('praticas-container')) {
+                const container = document.getElementById('praticas-container');
+                const existingAlert = container.querySelector('.offline-alert');
+                if (!existingAlert) {
+                    const alert = document.createElement('div');
+                    alert.className = 'offline-alert';
+                    alert.style.cssText = 'background: #ff4444; color: white; padding: 10px; border-radius: 5px; margin-bottom: 10px; text-align: center;';
+                    alert.textContent = '⚠️ Você está offline. Algumas funcionalidades podem estar limitadas.';
+                    container.prepend(alert);
+                }
+            }
+        });
+        
     } catch (error) {
         console.error("❌ Erro ao inicializar sistema de desafios:", error);
         const container = document.getElementById('praticas-container');
         if (container) {
-            container.innerHTML = '<div style="color: #ff4444; padding: 20px; text-align: center;">Erro ao carregar desafios. Recarregue a página.</div>';
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 48px; color: #ff4444; margin-bottom: 20px;">❌</div>
+                    <h3 style="color: #ff4444; margin-bottom: 10px;">Erro Crítico</h3>
+                    <p style="color: #ccc; margin-bottom: 20px;">Não foi possível carregar os desafios. Por favor, recarregue a página.</p>
+                    <button onclick="location.reload()" style="background: #e6b800; color: #000; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                        Recarregar Página
+                    </button>
+                </div>
+            `;
         }
     }
 });
