@@ -329,6 +329,15 @@ function mostrarAmigos() {
 
 function mostrarDesafios() { 
     console.log('🎯 Redirecionando para Desafios...');
+    
+    if (!verificarLogin()) {
+        mostrarErro('⚠️ Faça login para acessar os desafios!');
+        setTimeout(() => {
+            window.location.href = ROTAS.LOGIN;
+        }, 1500);
+        return;
+    }
+    
     window.location.href = ROTAS.DESAFIOS;
 }
 
