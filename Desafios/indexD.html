@@ -423,7 +423,7 @@
 
 <button class="btn-voltar" onclick="window.location.href = '../indexM.html'">←</button>
 
-    <script>
+<script>
 // ✅ URL DA API COM DETECÇÃO AUTOMÁTICA DE AMBIENTE
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:10000'
@@ -524,7 +524,7 @@ async function atualizarDadosUsuario(usuario) {
     }
 }
 
-// ✅ CARREGAR DESAFIOS DO SERVIDOR COM RETRY E CACHE
+// ✅ CORREÇÃO PRINCIPAL: CARREGAR DESAFIOS ATIVOS CORRETAMENTE
 async function carregarDesafiosDoServidor() {
     let tentativas = 3;
     
@@ -535,7 +535,8 @@ async function carregarDesafiosDoServidor() {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000);
             
-            const response = await fetch(`${API_URL}/api/desafios-ativos`, {
+            // ✅ CORREÇÃO: Mudar de '/api/desafios-ativos' para '/api/desafios' e filtrar
+            const response = await fetch(`${API_URL}/api/desafios`, {
                 signal: controller.signal,
                 headers: {
                     'Cache-Control': 'no-cache'
@@ -548,17 +549,45 @@ async function carregarDesafiosDoServidor() {
                 throw new Error(`Erro ${response.status} ao carregar desafios`);
             }
             
-            const desafios = await response.json();
-            console.log(`✅ ${desafios.length} desafios carregados do servidor`);
+            const todosDesafios = await response.json();
+            
+            // ✅ FILTRAR APENAS DESAFIOS ATIVOS
+            const agora = new Date();
+            const desafiosAtivos = todosDesafios.filter(desafio => {
+                // Verificar se o desafio está ativo
+                const estaAtivo = desafio.status === 'ativo';
+                
+                // Verificar se não expirou
+                const naoExpirado = !desafio.dataFim || new Date(desafio.dataFim) > agora;
+                
+                // Verificar se já começou (se tiver data de início)
+                const jaComecou = !desafio.dataInicio || new Date(desafio.dataInicio) <= agora;
+                
+                // Verificar se tem perguntas
+                const temPerguntas = desafio.perguntas && 
+                    Array.isArray(desafio.perguntas) && 
+                    desafio.perguntas.length > 0;
+                
+                return estaAtivo && naoExpirado && jaComecou && temPerguntas;
+            });
+            
+            console.log(`✅ ${desafiosAtivos.length} desafios ativos de ${todosDesafios.length} total`);
+            
+            if (desafiosAtivos.length === 0) {
+                console.warn('⚠️ Nenhum desafio ativo encontrado. Verifique:');
+                console.warn('- Status dos desafios no admin');
+                console.warn('- Datas de expiração');
+                console.warn('- Se há perguntas cadastradas');
+            }
             
             // Atualizar cache
             localStorage.setItem('desafiosCache', JSON.stringify({
-                desafios: desafios,
+                desafios: desafiosAtivos,
                 timestamp: Date.now(),
                 origem: 'servidor'
             }));
             
-            return desafios;
+            return desafiosAtivos;
             
         } catch (error) {
             tentativas--;
@@ -877,7 +906,10 @@ class GerenciadorDesafios {
                 <div style="text-align: center; padding: 40px;">
                     <div style="font-size: 48px; color: #888; margin-bottom: 20px;">📭</div>
                     <h3 style="color: #888; margin-bottom: 10px;">Nenhum desafio disponível</h3>
-                    <p style="color: #aaa;">Novos desafios serão disponibilizados em breve!</p>
+                    <p style="color: #aaa;">
+                        Não há desafios ativos no momento.<br>
+                        <small>Verifique se há desafios cadastrados no painel administrativo.</small>
+                    </p>
                     <button onclick="window.gerenciadorDesafios.carregarDesafios()" style="background: #333; color: #e6b800; border: 1px solid #e6b800; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 20px;">
                         Recarregar
                     </button>
@@ -912,6 +944,21 @@ class GerenciadorDesafios {
             const materiaKey = desafio.materia || 'Geral';
             const cor = materiasCores[materiaKey] || '#e6b800';
             
+            // Calcular dias restantes se houver data de expiração
+            let diasRestantes = '';
+            if (desafio.dataFim) {
+                const agora = new Date();
+                const dataFim = new Date(desafio.dataFim);
+                const diffMs = dataFim - agora;
+                const diffDias = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                
+                if (diffDias > 0) {
+                    diasRestantes = `${diffDias} dia${diffDias > 1 ? 's' : ''}`;
+                } else {
+                    diasRestantes = 'Último dia!';
+                }
+            }
+            
             const card = document.createElement('div');
             card.className = 'pratica-card';
             card.style.borderColor = cor;
@@ -921,7 +968,10 @@ class GerenciadorDesafios {
                 <div class="pratica-titulo">${escapeHTML(desafio.titulo)}</div>
                 <div class="pratica-descricao">${escapeHTML(desafio.descricao || 'Teste seus conhecimentos')}</div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                    <small style="color: #aaa;">${desafio._count?.perguntas || desafio.perguntas?.length || '?'} perguntas • ${desafio.duracao || 15}min</small>
+                    <small style="color: #aaa;">
+                        ${desafio.perguntas?.length || '?'} perguntas • ${desafio.duracao || 15}min
+                        ${diasRestantes ? ` • ⏳ ${diasRestantes}` : ''}
+                    </small>
                     <small style="color: #ffd700;">${this.formatarNivel(desafio.nivel)}</small>
                 </div>
                 <button class="btn-pratica ${concluido ? 'concluido' : ''}" 
@@ -1351,6 +1401,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 console.log("✅ Script de desafios carregado!");
-    </script>
+</script>
 </body>
 </html>
