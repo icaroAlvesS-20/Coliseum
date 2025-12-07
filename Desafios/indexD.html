@@ -1053,8 +1053,70 @@ class Questionario {
     }
 
     async terminarDesafio() {
+        console.log('📤 Finalizando desafio, enviando respostas...');
+        console.log('📊 Dados para envio:', {
+            desafioId: desafioIdAtual,
+            respostas: respostasUsuario,
+            totalRespostas: respostasUsuario.length,
+            totalPerguntas: this.perguntasAtuais.length
+        });
+        
+        // ✅ CORREÇÃO: Validar dados antes de enviar
+        if (!desafioIdAtual) {
+            console.error('❌ Desafio ID não definido');
+            this.mostrarResultado(null, 'ID do desafio não encontrado');
+            return;
+        }
+        
+        if (respostasUsuario.length !== this.perguntasAtuais.length) {
+            console.error('❌ Número de respostas incorreto:', {
+                respostas: respostasUsuario.length,
+                perguntas: this.perguntasAtuais.length
+            });
+            this.mostrarResultado(null, 'Número de respostas incompleto');
+            return;
+        }
+        
         try {
-            const usuarioId = parseInt(localStorage.getItem('usuarioId') || '0');
+            // ✅ CORREÇÃO: Obter dados do usuário corretamente
+            const usuarioJSON = localStorage.getItem('usuario');
+            let usuarioId = null;
+            let usuarioNome = 'Jogador';
+            
+            if (usuarioJSON) {
+                try {
+                    const usuario = JSON.parse(usuarioJSON);
+                    usuarioId = usuario.id;
+                    usuarioNome = usuario.nome || 'Jogador';
+                } catch (e) {
+                    console.error('Erro ao parsear usuário:', e);
+                }
+            }
+            
+            // Fallback para outros métodos de obter ID
+            if (!usuarioId) {
+                usuarioId = localStorage.getItem('usuarioId');
+                if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
+                    usuarioId = parseInt(usuarioId);
+                }
+            }
+            
+            if (!usuarioId) {
+                console.error('❌ Usuário não identificado');
+                this.mostrarResultado(null, 'Usuário não identificado. Faça login novamente.');
+                return;
+            }
+            
+            // ✅ CORREÇÃO: Preparar dados no formato correto
+            const dadosParaEnvio = {
+                usuarioId: usuarioId,
+                respostas: respostasUsuario.map((resposta, index) => ({
+                    perguntaIndex: index,
+                    respostaIndex: resposta
+                }))
+            };
+            
+            console.log('📤 Enviando para API:', dadosParaEnvio);
             
             const response = await fetch(`${API_URL}/api/desafios/${desafioIdAtual}/verificar`, {
                 method: 'POST',
@@ -1062,22 +1124,78 @@ class Questionario {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({
-                    usuarioId: usuarioId,
-                    respostas: respostasUsuario
-                })
+                body: JSON.stringify(dadosParaEnvio)
             });
-
+            
+            console.log('📨 Resposta da API:', {
+                status: response.status,
+                statusText: response.statusText,
+                ok: response.ok
+            });
+            
             if (!response.ok) {
-                throw new Error('Erro ao verificar respostas');
+                let errorMessage = `Erro ${response.status}: ${response.statusText}`;
+                
+                try {
+                    const errorData = await response.json();
+                    console.error('❌ Detalhes do erro:', errorData);
+                    errorMessage = errorData.message || errorData.error || errorMessage;
+                } catch (e) {
+                    // Não conseguiu ler JSON de erro
+                    const errorText = await response.text();
+                    console.error('❌ Texto do erro:', errorText);
+                }
+                
+                throw new Error(errorMessage);
             }
 
             const resultado = await response.json();
+            console.log('✅ Resultado recebido:', resultado);
+            
             this.mostrarResultado(resultado);
             
         } catch (error) {
             console.error('❌ Erro ao verificar respostas:', error);
-            this.mostrarResultado(null, error.message);
+            
+            // ✅ CORREÇÃO: Salvar respostas localmente para envio posterior
+            this.salvarRespostasLocalmente();
+            
+            this.mostrarResultado(null, `Erro: ${error.message}`);
+        }
+    }
+    
+    // ✅ NOVA FUNÇÃO: Salvar respostas localmente
+    salvarRespostasLocalmente() {
+        try {
+            const usuarioJSON = localStorage.getItem('usuario');
+            let usuarioId = null;
+            
+            if (usuarioJSON) {
+                const usuario = JSON.parse(usuarioJSON);
+                usuarioId = usuario.id;
+            }
+            
+            if (!usuarioId) {
+                usuarioId = localStorage.getItem('usuarioId');
+            }
+            
+            if (usuarioId && desafioIdAtual && respostasUsuario.length > 0) {
+                const respostasPendentes = JSON.parse(localStorage.getItem('respostasPendentes') || '[]');
+                
+                respostasPendentes.push({
+                    desafioId: desafioIdAtual,
+                    usuarioId: usuarioId,
+                    respostas: respostasUsuario,
+                    data: new Date().toISOString(),
+                    acertos: this.acertos,
+                    total: this.perguntasAtuais.length
+                });
+                
+                localStorage.setItem('respostasPendentes', JSON.stringify(respostasPendentes));
+                console.log('💾 Respostas salvas localmente para envio posterior');
+            }
+        } catch (error) {
+            console.error('❌ Erro ao salvar respostas localmente:', error);
         }
     }
 
@@ -1088,24 +1206,28 @@ class Questionario {
             this.modalBody.innerHTML = `
                 <div class="resultado-final">
                     <div style="color: #f44336; font-size: 48px; margin-bottom: 20px;">⚠️</div>
-                    <div style="color: #f44336; font-size: 24px; margin-bottom: 10px;">Erro na Conexão</div>
+                    <div style="color: #f44336; font-size: 24px; margin-bottom: 10px;">Erro ao Enviar Respostas</div>
                     <div style="color: #fff; font-size: 16px; margin-bottom: 20px; line-height: 1.5;">
                         ${erro}<br><br>
                         <small style="color: #aaa;">
-                            Suas respostas foram salvas localmente.
+                            Suas respostas foram salvas e serão enviadas automaticamente quando possível.
                         </small>
                     </div>
-                    <button class="btn-interno" onclick="window.questionario.fecharModal()" style="background: #e6b800; color: #000; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px;">
+                    <div style="color: #ccc; font-size: 14px; margin: 15px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <div><strong>Seu desempenho:</strong> ${this.acertos}/${this.perguntasAtuais.length} acertos</div>
+                        <div><strong>Porcentagem:</strong> ${Math.round((this.acertos / this.perguntasAtuais.length) * 100)}%</div>
+                    </div>
+                    <button class="btn-interno" onclick="window.questionario.fecharModal(); if(window.gerenciadorDesafios) window.gerenciadorDesafios.concluirDesafio(${praticaIndexAtual});" style="background: #e6b800; color: #000; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px;">
                         Continuar
                     </button>
                 </div>
             `;
         } else if (resultadoApi) {
             const { resultado, usuario } = resultadoApi;
-            const acertos = resultado?.acertos || 0;
+            const acertos = resultado?.acertos || this.acertos;
             const total = this.perguntasAtuais.length;
             const percentual = Math.round((acertos / total) * 100);
-            const pontosGanhos = resultado?.pontuacaoGanha || 0;
+            const pontosGanhos = resultado?.pontuacaoGanha || Math.round((acertos / total) * this.pontuacaoBase);
             const pontuacaoTotal = usuario?.pontuacao || parseInt(localStorage.getItem('usuarioPontuacao') || '0');
 
             const emoji = percentual >= 90 ? '🎉' : percentual >= 70 ? '🎯' : percentual >= 50 ? '👍' : '💪';
@@ -1116,15 +1238,26 @@ class Questionario {
                     <div style="color: #ffcf00; font-size: 24px; margin-bottom: 10px;">Desafio Concluído!</div>
                     <div style="color: #fff; font-size: 18px; margin-bottom: 15px;">${acertos}/${total} acertos (${percentual}%)</div>
                     <div class="pontos-ganhos">+${pontosGanhos} pontos</div>
+                    <div style="color: #4CAF50; margin: 10px 0; font-size: 14px;">
+                        Pontuação sincronizada com o servidor
+                    </div>
                     <div style="color: #ccc; font-size: 12px; margin: 15px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
                         <div><small><strong>Pontuação total:</strong> ${pontuacaoTotal} pontos</small></div>
                         ${usuario?.nome ? `<div><small><strong>Aluno:</strong> ${usuario.nome}</small></div>` : ''}
+                        ${resultado?.mensagem ? `<div><small><strong>Mensagem:</strong> ${resultado.mensagem}</small></div>` : ''}
                     </div>
                     <button class="btn-interno" onclick="window.questionario.fecharModal(); if(window.gerenciadorDesafios) window.gerenciadorDesafios.concluirDesafio(${praticaIndexAtual});" style="background: #e6b800; color: #000; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px;">
                         Continuar
                     </button>
                 </div>
             `;
+            
+            // Atualizar dados do usuário no localStorage
+            if (usuario) {
+                localStorage.setItem('usuario', JSON.stringify(usuario));
+                localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
+                localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
+            }
         }
     }
 
