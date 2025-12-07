@@ -424,6 +424,7 @@
 <button class="btn-voltar" onclick="window.location.href = '../indexM.html'">←</button>
 
 <script>
+<script>
 // ✅ URL DA API COM DETECÇÃO AUTOMÁTICA DE AMBIENTE
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:10000'
@@ -432,6 +433,18 @@ const API_URL = window.location.hostname === 'localhost' || window.location.host
 let praticaIndexAtual = 0;
 let desafioIdAtual = null;
 let respostasUsuario = [];
+
+// ✅ FUNÇÃO PARA OBTER O CAMINHO CORRETO DOS ARQUIVOS
+function getBasePath() {
+    // Verifica se estamos no Vercel (produção) ou localmente
+    if (window.location.hostname.includes('vercel.app')) {
+        // No Vercel, todas as rotas estão na raiz devido ao vercel.json
+        return '/';
+    } else {
+        // Localmente, usa caminho relativo
+        return '../';
+    }
+}
 
 // ✅ FUNÇÃO DE ESCAPE HTML SEGURO
 function escapeHTML(text) {
@@ -449,8 +462,13 @@ async function verificarLoginDesafios() {
     const usuarioToken = localStorage.getItem('usuarioToken');
     
     if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
-        console.log('❌ Usuário não logado');
-        window.location.href = '../Login/index.html';
+        console.log('❌ Usuário não logado - redirecionando...');
+        
+        // ✅ USAR ROTA DO VERCEL
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 100);
+        
         return false;
     }
     
@@ -466,7 +484,12 @@ async function verificarLoginDesafios() {
             console.log('❌ Sessão expirada ou inválida');
             localStorage.removeItem('usuarioId');
             localStorage.removeItem('usuarioToken');
-            window.location.href = '../Login/index.html';
+            
+            // ✅ USAR ROTA DO VERCEL
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 100);
+            
             return false;
         }
         
@@ -499,7 +522,12 @@ function obterUsuarioId() {
         }
         
         console.error('❌ ERRO: usuarioId não encontrado!');
-        window.location.href = '../Login/index.html';
+        
+        // ✅ USAR ROTA DO VERCEL
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 100);
+        
         return null;
     }
 
@@ -524,7 +552,7 @@ async function atualizarDadosUsuario(usuario) {
     }
 }
 
-// ✅ CORREÇÃO PRINCIPAL: CARREGAR DESAFIOS ATIVOS CORRETAMENTE
+// ✅ FUNÇÃO PARA CARREGAR DESAFIOS ATIVOS
 async function carregarDesafiosDoServidor() {
     let tentativas = 3;
     
@@ -535,7 +563,7 @@ async function carregarDesafiosDoServidor() {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000);
             
-            // ✅ CORREÇÃO: Mudar de '/api/desafios-ativos' para '/api/desafios' e filtrar
+            // ✅ CORREÇÃO: Usar rota correta baseada no admin
             const response = await fetch(`${API_URL}/api/desafios`, {
                 signal: controller.signal,
                 headers: {
@@ -550,35 +578,51 @@ async function carregarDesafiosDoServidor() {
             }
             
             const todosDesafios = await response.json();
+            console.log(`📦 Total de desafios recebidos: ${todosDesafios.length}`);
             
-            // ✅ FILTRAR APENAS DESAFIOS ATIVOS
+            // ✅ CORREÇÃO: Filtrar desafios ativos corretamente
             const agora = new Date();
             const desafiosAtivos = todosDesafios.filter(desafio => {
-                // Verificar se o desafio está ativo
+                // Verificar se é um objeto válido
+                if (!desafio || typeof desafio !== 'object') return false;
+                
+                // Verificar status
                 const estaAtivo = desafio.status === 'ativo';
+                if (!estaAtivo) {
+                    console.log(`❌ Desafio ${desafio.id} não está ativo: ${desafio.status}`);
+                    return false;
+                }
                 
-                // Verificar se não expirou
-                const naoExpirado = !desafio.dataFim || new Date(desafio.dataFim) > agora;
+                // Verificar datas
+                if (desafio.dataFim) {
+                    const dataFim = new Date(desafio.dataFim);
+                    if (dataFim < agora) {
+                        console.log(`❌ Desafio ${desafio.id} expirou em: ${dataFim}`);
+                        return false;
+                    }
+                }
                 
-                // Verificar se já começou (se tiver data de início)
-                const jaComecou = !desafio.dataInicio || new Date(desafio.dataInicio) <= agora;
+                if (desafio.dataInicio) {
+                    const dataInicio = new Date(desafio.dataInicio);
+                    if (dataInicio > agora) {
+                        console.log(`❌ Desafio ${desafio.id} ainda não começou: ${dataInicio}`);
+                        return false;
+                    }
+                }
                 
                 // Verificar se tem perguntas
                 const temPerguntas = desafio.perguntas && 
                     Array.isArray(desafio.perguntas) && 
                     desafio.perguntas.length > 0;
                 
-                return estaAtivo && naoExpirado && jaComecou && temPerguntas;
+                if (!temPerguntas) {
+                    console.log(`❌ Desafio ${desafio.id} não tem perguntas`);
+                }
+                
+                return temPerguntas;
             });
             
-            console.log(`✅ ${desafiosAtivos.length} desafios ativos de ${todosDesafios.length} total`);
-            
-            if (desafiosAtivos.length === 0) {
-                console.warn('⚠️ Nenhum desafio ativo encontrado. Verifique:');
-                console.warn('- Status dos desafios no admin');
-                console.warn('- Datas de expiração');
-                console.warn('- Se há perguntas cadastradas');
-            }
+            console.log(`✅ ${desafiosAtivos.length} desafios ativos filtrados`);
             
             // Atualizar cache
             localStorage.setItem('desafiosCache', JSON.stringify({
@@ -611,7 +655,9 @@ async function carregarDesafiosDoServidor() {
                     console.error('Erro ao ler cache:', cacheError);
                 }
                 
-                throw new Error('Não foi possível carregar os desafios');
+                // Se não houver cache, retornar array vazio
+                console.warn('⚠️ Retornando array vazio de desafios');
+                return [];
             }
             
             // Aguardar antes de tentar novamente
@@ -620,7 +666,7 @@ async function carregarDesafiosDoServidor() {
     }
 }
 
-// ✅ CARREGAR PERGUNTAS DO DESAFIO COM TRATAMENTO DE ERRO
+// ✅ CARREGAR PERGUNTAS DO DESAFIO
 async function carregarPerguntasDesafio(desafioId) {
     try {
         console.log(`📝 Carregando perguntas do desafio ${desafioId}...`);
@@ -648,7 +694,6 @@ async function carregarPerguntasDesafio(desafioId) {
     } catch (error) {
         console.error('❌ Erro ao carregar perguntas:', error);
         
-        // Mostrar mensagem amigável ao usuário
         if (error.name === 'AbortError') {
             throw new Error('O servidor demorou muito para responder. Tente novamente.');
         }
@@ -657,7 +702,7 @@ async function carregarPerguntasDesafio(desafioId) {
     }
 }
 
-// ✅ VERIFICAR RESPOSTAS NO SERVIDOR COM MELHOR TRATAMENTO
+// ✅ VERIFICAR RESPOSTAS NO SERVIDOR
 async function verificarRespostasNoServidor(desafioId, respostas) {
     try {
         const usuarioId = obterUsuarioId();
@@ -696,7 +741,12 @@ async function verificarRespostasNoServidor(desafioId, respostas) {
                 // Sessão expirada
                 localStorage.removeItem('usuarioId');
                 localStorage.removeItem('usuarioToken');
-                window.location.href = '../Login/index.html';
+                
+                // ✅ USAR ROTA DO VERCEL
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 100);
+                
                 throw new Error('Sessão expirada. Faça login novamente.');
             }
             
@@ -737,7 +787,7 @@ async function verificarRespostasNoServidor(desafioId, respostas) {
     }
 }
 
-// ✅ GERENCIADOR DE DESAFIOS ATUALIZADO
+// ✅ GERENCIADOR DE DESAFIOS
 class GerenciadorDesafios {
     constructor() {
         this.desafiosHoje = [];
@@ -787,7 +837,10 @@ class GerenciadorDesafios {
         
         try {
             const desafiosServidor = await carregarDesafiosDoServidor();
+            console.log(`📊 Desafios recebidos do servidor: ${desafiosServidor.length}`);
+            
             this.desafiosHoje = desafiosServidor.slice(0, 4);
+            console.log(`🎯 Desafios para hoje: ${this.desafiosHoje.length}`);
             
             if (this.precisaAtualizar()) {
                 this.salvarDataAtualizacao();
@@ -963,9 +1016,9 @@ class GerenciadorDesafios {
             card.className = 'pratica-card';
             card.style.borderColor = cor;
             card.innerHTML = `
-                <div class="pontuacao" style="background: ${cor}">+${desafio.pontuacao} p</div>
+                <div class="pontuacao" style="background: ${cor}">+${desafio.pontuacao || 20} p</div>
                 <div class="materia-tag" style="background: ${cor}">${this.formatarMateria(materiaKey)}</div>
-                <div class="pratica-titulo">${escapeHTML(desafio.titulo)}</div>
+                <div class="pratica-titulo">${escapeHTML(desafio.titulo || 'Desafio sem título')}</div>
                 <div class="pratica-descricao">${escapeHTML(desafio.descricao || 'Teste seus conhecimentos')}</div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                     <small style="color: #aaa;">
@@ -1084,7 +1137,7 @@ class GerenciadorDesafios {
     }
 }
 
-// ✅ QUESTIONÁRIO ATUALIZADO
+// ✅ QUESTIONÁRIO
 class Questionario {
     constructor() {
         this.perguntasAtuais = [];
@@ -1137,7 +1190,6 @@ class Questionario {
         } catch (error) {
             console.error('❌ Erro ao carregar perguntas:', error);
             
-            // Mostrar mensagem amigável
             this.modalBody.innerHTML = `
                 <div style="text-align: center; padding: 40px;">
                     <div style="font-size: 48px; color: #ff4444; margin-bottom: 20px;">❌</div>
@@ -1169,7 +1221,6 @@ class Questionario {
             <div class="pergunta-texto">${escapeHTML(pergunta.pergunta)}</div>
             <div class="alternativas-container">
                 ${pergunta.alternativas.map((alt, index) => {
-                    // Extrair o texto da alternativa (pode ser string ou objeto)
                     const textoAlternativa = typeof alt === 'object' ? alt.texto || alt : alt;
                     return `
                     <button class="alternativa-btn" data-index="${index}">
@@ -1188,14 +1239,12 @@ class Questionario {
     }
 
     adicionarEventListenersPergunta() {
-        // Remover listeners antigos
         const oldBtns = this.modalBody.querySelectorAll('.alternativa-btn');
         oldBtns.forEach(btn => {
             const newBtn = btn.cloneNode(true);
             btn.parentNode.replaceChild(newBtn, btn);
         });
         
-        // Adicionar novos listeners
         document.querySelectorAll('.alternativa-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const respostaIndex = parseInt(e.target.dataset.index);
@@ -1206,11 +1255,8 @@ class Questionario {
 
         const btnProxima = this.modalBody.querySelector('.btn-proxima');
         if (btnProxima) {
-            // Remover listener antigo
             const newBtn = btnProxima.cloneNode(true);
             btnProxima.parentNode.replaceChild(newBtn, btnProxima);
-            
-            // Adicionar novo listener
             newBtn.addEventListener('click', () => this.proximaPergunta());
         }
     }
@@ -1222,17 +1268,14 @@ class Questionario {
         const feedbackExplicacao = this.modalBody.querySelector('#feedbackExplicacao');
         const perguntaAtual = this.perguntasAtuais[this.perguntaIndex];
 
-        // Desabilitar todos os botões
         alternativas.forEach(btn => {
             btn.disabled = true;
             btn.style.pointerEvents = 'none';
         });
 
-        // Verificar se a resposta está correta
         const respostaCorreta = perguntaAtual.correta;
         const acertou = respostaIndex === respostaCorreta;
 
-        // Marcar resposta do usuário
         if (acertou) {
             alternativas[respostaIndex].classList.add('correta');
             this.acertos++;
@@ -1240,12 +1283,10 @@ class Questionario {
             alternativas[respostaIndex].classList.add('incorreta');
         }
 
-        // Marcar resposta correta (se diferente)
         if (!acertou && respostaCorreta >= 0 && respostaCorreta < alternativas.length) {
             alternativas[respostaCorreta].classList.add('correta');
         }
 
-        // Mostrar feedback
         if (acertou) {
             feedbackTexto.textContent = '✅ Resposta Correta!';
             feedbackTexto.style.color = '#4CAF50';
@@ -1254,7 +1295,6 @@ class Questionario {
             feedbackTexto.style.color = '#f44336';
         }
 
-        // Mostrar explicação se houver
         if (perguntaAtual.explicacao) {
             feedbackExplicacao.textContent = perguntaAtual.explicacao;
             feedbackExplicacao.style.display = 'block';
@@ -1340,7 +1380,7 @@ class Questionario {
     }
 }
 
-// ✅ INICIALIZAÇÃO MELHORADA
+// ✅ INICIALIZAÇÃO
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("🚀 Inicializando sistema de desafios...");
     
@@ -1357,30 +1397,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.questionario = new Questionario();
         
         console.log("✅ Sistema de desafios inicializado!");
-        
-        // Adicionar listener para reconexão
-        window.addEventListener('online', () => {
-            console.log('🌐 Conexão restaurada');
-            if (window.gerenciadorDesafios) {
-                window.gerenciadorDesafios.enviarRespostasPendentes();
-            }
-        });
-        
-        window.addEventListener('offline', () => {
-            console.log('📴 Conexão perdida');
-            // Mostrar notificação
-            if (document.getElementById('praticas-container')) {
-                const container = document.getElementById('praticas-container');
-                const existingAlert = container.querySelector('.offline-alert');
-                if (!existingAlert) {
-                    const alert = document.createElement('div');
-                    alert.className = 'offline-alert';
-                    alert.style.cssText = 'background: #ff4444; color: white; padding: 10px; border-radius: 5px; margin-bottom: 10px; text-align: center;';
-                    alert.textContent = '⚠️ Você está offline. Algumas funcionalidades podem estar limitadas.';
-                    container.prepend(alert);
-                }
-            }
-        });
         
     } catch (error) {
         console.error("❌ Erro ao inicializar sistema de desafios:", error);
@@ -1401,6 +1417,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 console.log("✅ Script de desafios carregado!");
+</script>
 </script>
 </body>
 </html>
