@@ -433,169 +433,9 @@ let praticaIndexAtual = 0;
 let desafioIdAtual = null;
 let respostasUsuario = [];
 
-// ✅ VERIFICAÇÃO DE LOGIN FLEXÍVEL
-async function verificarLoginDesafios() {
-    console.log('🔍 Verificando login para desafios...');
-    
-    // ✅ MÚLTIPLAS FORMAS DE VERIFICAR LOGIN
-    const usuarioId = localStorage.getItem('usuarioId');
-    const usuarioToken = localStorage.getItem('usuarioToken');
-    const usuarioLogado = localStorage.getItem('usuarioLogado');
-    const usuarioJSON = localStorage.getItem('usuario');
-    
-    console.log('📊 Dados de login encontrados:', {
-        usuarioId,
-        temToken: !!usuarioToken,
-        usuarioLogado,
-        temUsuarioJSON: !!usuarioJSON
-    });
-    
-    // ✅ 1. Verificar se tem dados mínimos para considerar logado
-    let estaLogado = false;
-    let usuario = null;
-    
-    try {
-        if (usuarioJSON && usuarioJSON !== 'undefined') {
-            usuario = JSON.parse(usuarioJSON);
-            if (usuario && usuario.id) {
-                estaLogado = true;
-                console.log('✅ Usuário encontrado no localStorage:', usuario.nome);
-            }
-        }
-    } catch (e) {
-        console.log('⚠️ Erro ao parsear usuario JSON:', e);
-    }
-    
-    // ✅ 2. Verificar se tem ID direto
-    if (!estaLogado && usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
-        console.log('✅ Usuário identificado por ID:', usuarioId);
-        estaLogado = true;
-        
-        // Criar objeto usuário básico se não existir
-        if (!usuario) {
-            usuario = {
-                id: usuarioId,
-                nome: localStorage.getItem('usuarioNome') || 'Jogador',
-                serie: localStorage.getItem('usuarioSerie') || 'Não informada',
-                pontuacao: parseInt(localStorage.getItem('usuarioPontuacao') || '0'),
-                desafiosCompletados: parseInt(localStorage.getItem('usuarioDesafios') || '0')
-            };
-            localStorage.setItem('usuario', JSON.stringify(usuario));
-        }
-    }
-    
-    // ✅ 3. Verificar flag de logado
-    if (!estaLogado && usuarioLogado === 'true') {
-        console.log('✅ Usuário marcado como logado');
-        estaLogado = true;
-    }
-    
-    if (!estaLogado) {
-        console.log('❌ Nenhum dado de login encontrado. Redirecionando...');
-        
-        // Salvar URL atual para retornar após login
-        localStorage.setItem('redirectAfterLogin', window.location.pathname);
-        
-        // Redirecionar para login
-        setTimeout(() => {
-            window.location.href = '/login';
-        }, 100);
-        
-        return false;
-    }
-    
-    console.log('✅ Login verificado com sucesso:', usuario);
-    return true;
-}
-
-// ✅ OBTER USUÁRIO ID COM VALIDAÇÃO
-function obterUsuarioId() {
-    const usuarioId = localStorage.getItem('usuarioId');
-    
-    if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
-        // Tentar extrair do objeto usuario
-        const usuarioJSON = localStorage.getItem('usuario');
-        if (usuarioJSON) {
-            try {
-                const usuario = JSON.parse(usuarioJSON);
-                if (usuario && usuario.id) {
-                    console.log('✅ ID obtido do objeto usuario:', usuario.id);
-                    return parseInt(usuario.id);
-                }
-            } catch (e) {
-                console.error('Erro ao parsear usuario:', e);
-            }
-        }
-        
-        // Tentar obter de outras fontes
-        const usuarioNome = localStorage.getItem('usuarioNome');
-        const usuarioRA = localStorage.getItem('usuarioRA');
-        
-        console.warn('⚠️ ID de usuário não encontrado. Usando fallback.');
-        console.log('📊 Dados disponíveis:', {
-            usuarioNome,
-            usuarioRA,
-            usuarioJSON: !!usuarioJSON
-        });
-        
-        // Gerar ID temporário baseado no nome ou RA
-        let tempId = 0;
-        if (usuarioNome) {
-            tempId = hashCode(usuarioNome);
-        } else if (usuarioRA) {
-            tempId = hashCode(usuarioRA);
-        } else {
-            tempId = Math.floor(Math.random() * 1000000);
-        }
-        
-        console.log('🆔 ID temporário gerado:', tempId);
-        localStorage.setItem('usuarioId', tempId.toString());
-        return tempId;
-    }
-
-    return parseInt(usuarioId);
-}
-
-// ✅ FUNÇÃO AUXILIAR PARA GERAR HASH
-function hashCode(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32bit integer
-    }
-    return Math.abs(hash);
-}
-
-// ✅ ATUALIZAR DADOS DO USUÁRIO COM CACHE
-async function atualizarDadosUsuario(usuario) {
-    if (usuario && usuario.id) {
-        // Salvar dados principais
-        localStorage.setItem('usuarioId', usuario.id.toString());
-        localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
-        localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
-        localStorage.setItem('usuarioNome', usuario.nome || 'Jogador');
-        localStorage.setItem('usuarioRA', usuario.ra || '');
-        localStorage.setItem('usuarioSerie', usuario.serie || '');
-        localStorage.setItem('usuarioLogado', 'true');
-        
-        // Salvar objeto completo no cache
-        localStorage.setItem('usuario', JSON.stringify(usuario));
-        
-        console.log('✅ Dados do usuário atualizados:', usuario);
-    }
-}
-
-// ✅ FUNÇÃO PARA CARREGAR DESAFIOS ATIVOS
+// ✅ FUNÇÃO PARA CARREGAR DESAFIOS COM CORS CORRIGIDO
 async function carregarDesafiosDoServidor() {
     console.log('🔄 Iniciando carregamento de desafios...');
-    
-    // ✅ PRIMEIRO: Verificar se o usuário está logado de forma simples
-    const usuarioJSON = localStorage.getItem('usuario');
-    if (!usuarioJSON || usuarioJSON === 'undefined') {
-        console.log('⚠️ Nenhum usuário encontrado no localStorage');
-        // Não redireciona imediatamente, permite tentar carregar desafios
-    }
     
     let tentativas = 3;
     
@@ -604,14 +444,18 @@ async function carregarDesafiosDoServidor() {
             console.log(`🔄 Tentando buscar desafios (tentativa ${4-tentativas}/3)...`);
             
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
             
-            // Buscar todos os desafios
+            // ✅ CORREÇÃO CORS: Remover headers problemáticos
             const response = await fetch(`${API_URL}/api/desafios`, {
                 signal: controller.signal,
+                // ✅ HEADERS SIMPLIFICADOS para evitar problemas CORS
                 headers: {
-                    'Cache-Control': 'no-cache'
-                }
+                    'Accept': 'application/json',
+                    // Não incluir 'Cache-Control' ou 'Content-Type' para requisições GET
+                },
+                mode: 'cors', // Importante para CORS
+                credentials: 'omit' // Não enviar cookies para evitar CORS
             });
             
             clearTimeout(timeoutId);
@@ -685,6 +529,21 @@ async function carregarDesafiosDoServidor() {
             console.error(`❌ Erro ao carregar desafios:`, error.message);
             
             if (tentativas === 0) {
+                // Tentar uma requisição alternativa mais simples
+                try {
+                    console.log('🔄 Tentando requisição alternativa (sem headers)...');
+                    const response = await fetch(`${API_URL}/api/desafios`, {
+                        method: 'GET',
+                        mode: 'no-cors' // Modo mais permissivo
+                    });
+                    
+                    // Note: no-cors mode doesn't allow reading response
+                    console.log('⚠️ Modo no-cors não permite ler resposta');
+                    
+                } catch (altError) {
+                    console.error('❌ Falha na requisição alternativa:', altError);
+                }
+                
                 // Tentar carregar do cache
                 try {
                     const cache = localStorage.getItem('desafiosCache');
@@ -715,7 +574,58 @@ async function carregarDesafiosDoServidor() {
     return [];
 }
 
-// ✅ GERENCIADOR DE DESAFIOS (MANTENDO O MESMO CÓDIGO)
+// ✅ FUNÇÃO ALTERNATIVA USANDO JSONP (para contornar CORS)
+async function carregarDesafiosJSONP() {
+    return new Promise((resolve, reject) => {
+        console.log('🔄 Tentando carregar desafios via JSONP...');
+        
+        const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
+        const script = document.createElement('script');
+        
+        window[callbackName] = function(data) {
+            delete window[callbackName];
+            document.body.removeChild(script);
+            resolve(data);
+        };
+        
+        script.src = `${API_URL}/api/desafios?callback=${callbackName}`;
+        script.onerror = () => {
+            delete window[callbackName];
+            document.body.removeChild(script);
+            reject(new Error('JSONP request failed'));
+        };
+        
+        document.body.appendChild(script);
+    });
+}
+
+// ✅ FUNÇÃO PARA TESTAR CONEXÃO COM A API
+async function testarConexaoAPI() {
+    console.log('🔍 Testando conexão com a API...');
+    
+    try {
+        // Tentar uma requisição simples sem headers
+        const response = await fetch(`${API_URL}/api/desafios`, {
+            method: 'GET',
+            mode: 'cors',
+            credentials: 'omit'
+        });
+        
+        console.log('✅ Resposta bruta da API:', {
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers
+        });
+        
+        return response.ok;
+        
+    } catch (error) {
+        console.error('❌ Falha na conexão com API:', error);
+        return false;
+    }
+}
+
+// ✅ GERENCIADOR DE DESAFIOS COM CORREÇÃO DE TYPO
 class GerenciadorDesafios {
     constructor() {
         this.desafiosHoje = [];
@@ -764,6 +674,13 @@ class GerenciadorDesafios {
         }
         
         try {
+            // Primeiro testar a conexão
+            const conexaoOK = await testarConexaoAPI();
+            
+            if (!conexaoOK) {
+                throw new Error('Não foi possível conectar com o servidor');
+            }
+            
             const desafiosServidor = await carregarDesafiosDoServidor();
             console.log(`📊 Desafios recebidos: ${desafiosServidor.length}`);
             
@@ -801,18 +718,31 @@ class GerenciadorDesafios {
                 const erroHTML = `
                     <div style="text-align: center; padding: 40px;">
                         <div style="font-size: 48px; color: #ff4444; margin-bottom: 20px;">⚠️</div>
-                        <h3 style="color: #ff4444; margin-bottom: 10px;">Erro ao carregar desafios</h3>
-                        <p style="color: #ccc; margin-bottom: 20px;">Não foi possível carregar os desafios. Tente novamente mais tarde.</p>
-                        <button onclick="window.gerenciadorDesafios.carregarDesafios()" style="background: #e6b800; color: #000; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                            Tentar Novamente
-                        </button>
+                        <h3 style="color: #ff4444; margin-bottom: 10px;">Problema de Conexão</h3>
+                        <p style="color: #ccc; margin-bottom: 10px;">
+                            Não foi possível conectar com o servidor de desafios.
+                        </p>
+                        <p style="color: #888; font-size: 14px; margin-bottom: 20px;">
+                            <strong>Possíveis causas:</strong><br>
+                            • Problema de CORS com a API<br>
+                            • Servidor fora do ar<br>
+                            • Configuração incorreta de headers
+                        </p>
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <button onclick="window.gerenciadorDesafios.carregarDesafios()" style="background: #e6b800; color: #000; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                                Tentar Novamente
+                            </button>
+                            <button onclick="testarConexaoAPI()" style="background: #4361ee; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                                Testar Conexão
+                            </button>
+                        </div>
                     </div>
                 `;
                 container.innerHTML = erroHTML;
             }
             
             if (contador) {
-                contador.textContent = 'Erro ao carregar desafios';
+                contador.textContent = 'Erro de conexão com servidor';
             }
         }
     }
@@ -834,9 +764,9 @@ class GerenciadorDesafios {
 
     carregarDesafiosSalvos() {
         try {
-            const salvas = localStorage.getItem('desafiosAtuais');
+            const salvas = localStorage.getItem('desafiosAtuais'); // ✅ CORREÇÃO: era "salas"
             if (salvas) {
-                const data = JSON.parse(salas);
+                const data = JSON.parse(salvas);
                 const idadeCache = Date.now() - data.timestamp;
                 const horasIdade = idadeCache / (1000 * 60 * 60);
                 
@@ -873,11 +803,16 @@ class GerenciadorDesafios {
                     <h3 style="color: #888; margin-bottom: 10px;">Nenhum desafio disponível</h3>
                     <p style="color: #aaa;">
                         Não há desafios ativos no momento.<br>
-                        <small>Tente novamente mais tarde ou verifique no painel administrativo.</small>
+                        <small>Verifique o painel administrativo ou tente novamente mais tarde.</small>
                     </p>
-                    <button onclick="window.gerenciadorDesafios.carregarDesafios()" style="background: #333; color: #e6b800; border: 1px solid #e6b800; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 20px;">
-                        Recarregar
-                    </button>
+                    <div style="margin-top: 20px;">
+                        <button onclick="testarConexaoAPI()" style="background: #4361ee; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-right: 10px;">
+                            Testar API
+                        </button>
+                        <button onclick="window.gerenciadorDesafios.carregarDesafios()" style="background: #333; color: #e6b800; border: 1px solid #e6b800; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                            Recarregar
+                        </button>
+                    </div>
                 </div>
             `;
             return;
@@ -1025,19 +960,6 @@ class GerenciadorDesafios {
         localStorage.setItem(`desafio_${index}_concluido`, 'true');
         console.log(`✅ Desafio ${index} concluído`);
         this.renderizarDesafios();
-        
-        // Atualizar contador no cache
-        try {
-            const usuarioJSON = localStorage.getItem('usuario');
-            if (usuarioJSON) {
-                const usuario = JSON.parse(usuarioJSON);
-                usuario.desafiosCompletados = (usuario.desafiosCompletados || 0) + 1;
-                localStorage.setItem('usuario', JSON.stringify(usuario));
-                localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
-            }
-        } catch (error) {
-            console.error('Erro ao atualizar cache:', error);
-        }
     }
 
     iniciarContador() {
@@ -1068,57 +990,37 @@ class GerenciadorDesafios {
     }
 }
 
-// ✅ QUESTIONÁRIO (mantenha o mesmo código anterior)
-class Questionario {
-    // ... (mantenha o mesmo código da classe Questionario)
-}
-
-// ✅ INICIALIZAÇÃO FLEXÍVEL
+// ✅ INICIALIZAÇÃO
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("🚀 Inicializando sistema de desafios...");
     
-    // ✅ PRIMEIRO: Verificar dados de login no console
-    console.log('🔍 Dados de login disponíveis:');
-    console.log('- usuarioId:', localStorage.getItem('usuarioId'));
-    console.log('- usuarioLogado:', localStorage.getItem('usuarioLogado'));
-    console.log('- usuarioJSON:', localStorage.getItem('usuario'));
-    console.log('- usuarioNome:', localStorage.getItem('usuarioNome'));
-    console.log('- usuarioSerie:', localStorage.getItem('usuarioSerie'));
-    
-    // ✅ SEGUNDO: Tentar verificar login, mas não bloquear
-    let loginVerificado = false;
-    try {
-        loginVerificado = await verificarLoginDesafios();
-    } catch (error) {
-        console.error('❌ Erro na verificação de login:', error);
-        // Continua mesmo com erro
-    }
-    
-    console.log(`📊 Status do login: ${loginVerificado ? '✅ OK' : '⚠️ Não verificado'}`);
-    
-    // ✅ TERCEIRO: Inicializar mesmo sem login completo
     try {
         window.gerenciadorDesafios = new GerenciadorDesafios();
-        window.questionario = new Questionario();
         
-        console.log("✅ Sistema de desafios inicializado!");
-        
-        // ✅ ADICIONAR: Botão para visualizar dados do localStorage
+        // ✅ Adicionar botão de debug CORS
         const container = document.getElementById('praticas-container');
         if (container) {
-            const debugBtn = document.createElement('button');
-            debugBtn.innerHTML = '🔍 Ver Dados de Login';
-            debugBtn.style.cssText = 'background: #333; color: #ffcf00; border: 1px solid #ffcf00; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 12px; margin: 10px auto; display: block;';
-            debugBtn.onclick = () => {
-                alert('Dados do localStorage:\n' + 
-                      'usuarioId: ' + localStorage.getItem('usuarioId') + '\n' +
-                      'usuarioLogado: ' + localStorage.getItem('usuarioLogado') + '\n' +
-                      'usuarioNome: ' + localStorage.getItem('usuarioNome') + '\n' +
-                      'usuarioSerie: ' + localStorage.getItem('usuarioSerie') + '\n' +
-                      'usuarioJSON: ' + localStorage.getItem('usuario'));
-            };
-            container.parentNode.insertBefore(debugBtn, container.nextSibling);
+            const debugSection = document.createElement('div');
+            debugSection.innerHTML = `
+                <div style="text-align: center; margin-top: 20px; padding: 15px; background: rgba(255,207,0,0.1); border-radius: 10px; border: 1px solid #ffcf00;">
+                    <h4 style="color: #ffcf00; margin-bottom: 10px;">🔧 Debug CORS</h4>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <button onclick="testarConexaoAPI()" style="background: #4361ee; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            Testar API
+                        </button>
+                        <button onclick="window.gerenciadorDesafios.carregarDesafios()" style="background: #e6b800; color: #000; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            Recarregar
+                        </button>
+                        <button onclick="testarEndpointCORS()" style="background: #f72585; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            Testar CORS
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.parentNode.insertBefore(debugSection, container.nextSibling);
         }
+        
+        console.log("✅ Sistema de desafios inicializado!");
         
     } catch (error) {
         console.error("❌ Erro ao inicializar sistema de desafios:", error);
@@ -1137,6 +1039,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 });
+
+// ✅ FUNÇÃO PARA TESTAR ENDPOINT CORS
+async function testarEndpointCORS() {
+    console.log('🔍 Testando endpoint CORS...');
+    
+    const endpoints = [
+        '/api/desafios',
+        '/api/desafios-ativos',
+        '/api/ranking',
+        '/api/usuarios'
+    ];
+    
+    for (const endpoint of endpoints) {
+        try {
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                method: 'GET',
+                mode: 'cors',
+                credentials: 'omit'
+            });
+            
+            console.log(`${endpoint}: ${response.ok ? '✅ OK' : '❌ Falhou'} (${response.status})`);
+        } catch (error) {
+            console.log(`${endpoint}: ❌ ${error.message}`);
+        }
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
+}
+
+// ✅ EXPOR FUNÇÕES PARA DEBUG
+window.testarConexaoAPI = testarConexaoAPI;
+window.testarEndpointCORS = testarEndpointCORS;
 
 console.log("✅ Script de desafios carregado!");
 </script>
