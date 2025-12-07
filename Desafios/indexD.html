@@ -260,6 +260,28 @@
             align-items: center;
         }
 
+        .alternativa-btn:hover:not(:disabled) {
+            background: #333;
+            border-color: #e6b800;
+        }
+
+        .alternativa-btn.correta {
+            background: rgba(76, 175, 80, 0.2);
+            border-color: #4CAF50;
+            color: #4CAF50;
+        }
+
+        .alternativa-btn.incorreta {
+            background: rgba(244, 67, 54, 0.2);
+            border-color: #f44336;
+            color: #f44336;
+        }
+
+        .alternativa-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
         .feedback-container {
             text-align: center;
             margin: 20px 0;
@@ -269,6 +291,16 @@
             color: #e6b800;
             font-size: 16px;
             margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .feedback-explicacao {
+            color: #4CAF50;
+            font-size: 14px;
+            margin-top: 10px;
+            font-style: italic;
         }
 
         .btn-proxima, .btn-reiniciar {
@@ -400,6 +432,14 @@ const API_URL = window.location.hostname === 'localhost' || window.location.host
 let praticaIndexAtual = 0;
 let desafioIdAtual = null;
 let respostasUsuario = [];
+
+// ✅ FUNÇÃO DE ESCAPE HTML SEGURO
+function escapeHTML(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 // ✅ VERIFICAÇÃO DE LOGIN MELHORADA
 async function verificarLoginDesafios() {
@@ -744,7 +784,7 @@ class GerenciadorDesafios {
                     <div style="text-align: center; padding: 40px;">
                         <div style="font-size: 48px; color: #ff4444; margin-bottom: 20px;">⚠️</div>
                         <h3 style="color: #ff4444; margin-bottom: 10px;">Erro ao carregar desafios</h3>
-                        <p style="color: #ccc; margin-bottom: 20px;">${error.message || 'Tente novamente mais tarde'}</p>
+                        <p style="color: #ccc; margin-bottom: 20px;">${escapeHTML(error.message || 'Tente novamente mais tarde')}</p>
                         <button onclick="window.gerenciadorDesafios.carregarDesafios()" style="background: #e6b800; color: #000; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
                             Tentar Novamente
                         </button>
@@ -878,8 +918,8 @@ class GerenciadorDesafios {
             card.innerHTML = `
                 <div class="pontuacao" style="background: ${cor}">+${desafio.pontuacao} p</div>
                 <div class="materia-tag" style="background: ${cor}">${this.formatarMateria(materiaKey)}</div>
-                <div class="pratica-titulo">${this.escapeHTML(desafio.titulo)}</div>
-                <div class="pratica-descricao">${this.escapeHTML(desafio.descricao || 'Teste seus conhecimentos')}</div>
+                <div class="pratica-titulo">${escapeHTML(desafio.titulo)}</div>
+                <div class="pratica-descricao">${escapeHTML(desafio.descricao || 'Teste seus conhecimentos')}</div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                     <small style="color: #aaa;">${desafio._count?.perguntas || desafio.perguntas?.length || '?'} perguntas • ${desafio.duracao || 15}min</small>
                     <small style="color: #ffd700;">${this.formatarNivel(desafio.nivel)}</small>
@@ -922,16 +962,14 @@ class GerenciadorDesafios {
         return formatos[nivel] || nivel;
     }
 
-    escapeHTML(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
     adicionarEventListeners() {
         document.querySelectorAll('.btn-pratica:not(:disabled)').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            // Remover listeners antigos
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            
+            // Adicionar novo listener
+            newBtn.addEventListener('click', (e) => {
                 const index = parseInt(e.target.dataset.index);
                 const desafioId = e.target.dataset.id;
                 
@@ -1054,7 +1092,7 @@ class Questionario {
                 <div style="text-align: center; padding: 40px;">
                     <div style="font-size: 48px; color: #ff4444; margin-bottom: 20px;">❌</div>
                     <h3 style="color: #ff4444; margin-bottom: 10px;">Erro ao carregar desafio</h3>
-                    <p style="color: #ccc; margin-bottom: 20px;">${error.message || 'Tente novamente mais tarde'}</p>
+                    <p style="color: #ccc; margin-bottom: 20px;">${escapeHTML(error.message || 'Tente novamente mais tarde')}</p>
                     <button onclick="this.closest('.modal-perguntas').style.display='none'" style="background: #e6b800; color: #000; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
                         Fechar
                     </button>
@@ -1073,24 +1111,25 @@ class Questionario {
         const pergunta = this.perguntasAtuais[this.perguntaIndex];
         const progresso = ((this.perguntaIndex) / this.perguntasAtuais.length) * 100;
 
-        // ✅ SANITIZAÇÃO DE HTML
-        const perguntaText = this.escapeHTML(pergunta.pergunta);
-        
         this.modalBody.innerHTML = `
             <div class="progresso-container">
                 <div class="barra-progresso"><div class="progresso" style="width: ${progresso}%"></div></div>
                 <div class="contador-perguntas">${this.perguntaIndex + 1}/${this.perguntasAtuais.length}</div>
             </div>
-            <div class="pergunta-texto">${perguntaText}</div>
+            <div class="pergunta-texto">${escapeHTML(pergunta.pergunta)}</div>
             <div class="alternativas-container">
-                ${pergunta.alternativas.map((alt, index) => `
+                ${pergunta.alternativas.map((alt, index) => {
+                    // Extrair o texto da alternativa (pode ser string ou objeto)
+                    const textoAlternativa = typeof alt === 'object' ? alt.texto || alt : alt;
+                    return `
                     <button class="alternativa-btn" data-index="${index}">
-                        ${String.fromCharCode(65 + index)}) ${this.escapeHTML(alt.texto)}
+                        ${String.fromCharCode(65 + index)}) ${escapeHTML(textoAlternativa)}
                     </button>
-                `).join('')}
+                `}).join('')}
             </div>
             <div class="feedback-container" style="display: none;">
                 <div class="feedback-texto" id="feedbackTexto"></div>
+                <div class="feedback-explicacao" id="feedbackExplicacao" style="display: none;"></div>
                 <button class="btn-proxima">Próxima Pergunta</button>
             </div>
         `;
@@ -1098,14 +1137,15 @@ class Questionario {
         setTimeout(() => this.adicionarEventListenersPergunta(), 10);
     }
 
-    escapeHTML(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
     adicionarEventListenersPergunta() {
+        // Remover listeners antigos
+        const oldBtns = this.modalBody.querySelectorAll('.alternativa-btn');
+        oldBtns.forEach(btn => {
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+        });
+        
+        // Adicionar novos listeners
         document.querySelectorAll('.alternativa-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const respostaIndex = parseInt(e.target.dataset.index);
@@ -1116,7 +1156,12 @@ class Questionario {
 
         const btnProxima = this.modalBody.querySelector('.btn-proxima');
         if (btnProxima) {
-            btnProxima.addEventListener('click', () => this.proximaPergunta());
+            // Remover listener antigo
+            const newBtn = btnProxima.cloneNode(true);
+            btnProxima.parentNode.replaceChild(newBtn, btnProxima);
+            
+            // Adicionar novo listener
+            newBtn.addEventListener('click', () => this.proximaPergunta());
         }
     }
 
@@ -1124,15 +1169,47 @@ class Questionario {
         const alternativas = this.modalBody.querySelectorAll('.alternativa-btn');
         const feedbackContainer = this.modalBody.querySelector('.feedback-container');
         const feedbackTexto = this.modalBody.querySelector('#feedbackTexto');
+        const feedbackExplicacao = this.modalBody.querySelector('#feedbackExplicacao');
+        const perguntaAtual = this.perguntasAtuais[this.perguntaIndex];
 
-        alternativas.forEach(btn => btn.style.pointerEvents = 'none');
+        // Desabilitar todos os botões
+        alternativas.forEach(btn => {
+            btn.disabled = true;
+            btn.style.pointerEvents = 'none';
+        });
 
-        // Marcar a resposta selecionada
-        alternativas[respostaIndex].style.background = '#f44336';
-        alternativas[respostaIndex].style.color = 'white';
+        // Verificar se a resposta está correta
+        const respostaCorreta = perguntaAtual.correta;
+        const acertou = respostaIndex === respostaCorreta;
 
-        feedbackTexto.textContent = 'Resposta registrada!';
-        feedbackTexto.style.color = '#e6b800';
+        // Marcar resposta do usuário
+        if (acertou) {
+            alternativas[respostaIndex].classList.add('correta');
+            this.acertos++;
+        } else {
+            alternativas[respostaIndex].classList.add('incorreta');
+        }
+
+        // Marcar resposta correta (se diferente)
+        if (!acertou && respostaCorreta >= 0 && respostaCorreta < alternativas.length) {
+            alternativas[respostaCorreta].classList.add('correta');
+        }
+
+        // Mostrar feedback
+        if (acertou) {
+            feedbackTexto.textContent = '✅ Resposta Correta!';
+            feedbackTexto.style.color = '#4CAF50';
+        } else {
+            feedbackTexto.textContent = '❌ Resposta Incorreta';
+            feedbackTexto.style.color = '#f44336';
+        }
+
+        // Mostrar explicação se houver
+        if (perguntaAtual.explicacao) {
+            feedbackExplicacao.textContent = perguntaAtual.explicacao;
+            feedbackExplicacao.style.display = 'block';
+        }
+
         feedbackContainer.style.display = 'block';
     }
 
@@ -1161,7 +1238,7 @@ class Questionario {
                     <div style="color: #f44336; font-size: 48px; margin-bottom: 20px;">⚠️</div>
                     <div style="color: #f44336; font-size: 24px; margin-bottom: 10px;">Erro na Conexão</div>
                     <div style="color: #fff; font-size: 16px; margin-bottom: 20px; line-height: 1.5;">
-                        ${erro}<br><br>
+                        ${escapeHTML(erro)}<br><br>
                         <small style="color: #aaa;">
                             Suas respostas foram salvas e serão enviadas automaticamente quando a conexão voltar.
                         </small>
@@ -1189,12 +1266,12 @@ class Questionario {
                     <div style="color: #fff; font-size: 18px; margin-bottom: 15px;">${acertos}/${total} acertos (${percentual}%)</div>
                     <div class="pontos-ganhos">+${pontosGanhos} pontos</div>
                     <div style="color: #4CAF50; margin: 10px 0; font-size: 14px;">
-                        <i class="fas fa-check-circle"></i> Pontuação sincronizada
+                        Pontuação sincronizada
                     </div>
                     <div style="color: #ccc; font-size: 12px; margin: 15px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
                         <div><small><strong>Pontuação total:</strong> ${pontuacaoTotal} pontos</small></div>
                         <div><small><strong>Desafios completos:</strong> ${desafiosCompletos}</small></div>
-                        ${usuario?.nome ? `<div><small><strong>Aluno:</strong> ${this.escapeHTML(usuario.nome)}</small></div>` : ''}
+                        ${usuario?.nome ? `<div><small><strong>Aluno:</strong> ${escapeHTML(usuario.nome)}</small></div>` : ''}
                     </div>
                     <button class="btn-interno" onclick="window.questionario.fecharModal(); if(window.gerenciadorDesafios) window.gerenciadorDesafios.concluirDesafio(${praticaIndexAtual});" style="background: #e6b800; color: #000; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px;">
                         Continuar
@@ -1202,8 +1279,6 @@ class Questionario {
                 </div>
             `;
         }
-
-        // O evento do botão já está configurado no innerHTML
     }
 
     fecharModal() {
@@ -1265,7 +1340,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div style="text-align: center; padding: 40px;">
                     <div style="font-size: 48px; color: #ff4444; margin-bottom: 20px;">❌</div>
                     <h3 style="color: #ff4444; margin-bottom: 10px;">Erro Crítico</h3>
-                    <p style="color: #ccc; margin-bottom: 20px;">Não foi possível carregar os desafios. Por favor, recarregue a página.</p>
+                    <p style="color: #ccc; margin-bottom: 20px;">${escapeHTML(error.message || 'Não foi possível carregar os desafios. Por favor, recarregue a página.')}</p>
                     <button onclick="location.reload()" style="background: #e6b800; color: #000; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
                         Recarregar Página
                     </button>
