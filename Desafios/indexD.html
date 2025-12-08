@@ -877,7 +877,7 @@ class GerenciadorDesafios {
 
 // ✅ QUESTIONÁRIO
 class Questionario {
-     constructor() {
+    constructor() {
         this.perguntasAtuais = [];
         this.perguntaIndex = 0;
         this.acertos = 0;
@@ -887,64 +887,274 @@ class Questionario {
         this.pontuacaoBase = 20; // Pontuação máxima do desafio
         
         if (this.modal && this.modalBody) {
-            this.inicializarEventos();
+            this.inicializarEventos(); // ✅ AGORA ESTÁ DEFINIDA
         }
     }
 
-    // ... (mantenha os outros métodos iguais) ...
+    // ✅ FUNÇÃO ADICIONADA: Inicializar eventos do modal
+    inicializarEventos() {
+        const closeBtn = this.modal.querySelector('.close-modal');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.fecharModal());
+        }
 
-    // ✅ FUNÇÃO: Calcular pontuação proporcional baseada no número de perguntas
+        this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) this.fecharModal();
+        });
+    }
+
+    // ✅ FUNÇÃO: Abrir questionário
+    async abrirQuestionario(desafioId) {
+        try {
+            console.log(`📝 Carregando perguntas do desafio ${desafioId}...`);
+            
+            const response = await fetch(`${API_URL}/api/desafios/${desafioId}/perguntas`, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Desafio não encontrado ou expirado');
+            }
+            
+            const desafioCompleto = await response.json();
+            
+            if (!desafioCompleto || !desafioCompleto.perguntas || desafioCompleto.perguntas.length === 0) {
+                throw new Error('Desafio sem perguntas disponíveis');
+            }
+            
+            this.perguntasAtuais = desafioCompleto.perguntas;
+            this.materiaAtual = desafioCompleto.materia || 'Geral';
+            this.pontuacaoBase = desafioCompleto.pontuacao || 20;
+            
+            console.log(`✅ ${this.perguntasAtuais.length} perguntas carregadas`);
+            this.perguntaIndex = 0;
+            this.acertos = 0;
+            respostasUsuario = [];
+            
+            this.mostrarPergunta();
+            this.modal.style.display = 'flex';
+            
+        } catch (error) {
+            console.error('❌ Erro ao carregar perguntas:', error);
+            
+            this.modalBody.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 48px; color: #ff4444; margin-bottom: 20px;">❌</div>
+                    <h3 style="color: #ff4444; margin-bottom: 10px;">Erro ao carregar desafio</h3>
+                    <p style="color: #ccc; margin-bottom: 20px;">${error.message || 'Tente novamente mais tarde'}</p>
+                    <button onclick="this.closest('.modal-perguntas').style.display='none'" style="background: #e6b800; color: #000; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                        Fechar
+                    </button>
+                </div>
+            `;
+            this.modal.style.display = 'flex';
+        }
+    }
+
+    // ✅ FUNÇÃO: Mostrar pergunta atual
+    mostrarPergunta() {
+        if (!this.modalBody || this.perguntaIndex >= this.perguntasAtuais.length) {
+            this.terminarDesafio();
+            return;
+        }
+
+        const pergunta = this.perguntasAtuais[this.perguntaIndex];
+        const progresso = ((this.perguntaIndex) / this.perguntasAtuais.length) * 100;
+
+        this.modalBody.innerHTML = `
+            <div class="progresso-container">
+                <div class="barra-progresso"><div class="progresso" style="width: ${progresso}%"></div></div>
+                <div class="contador-perguntas">${this.perguntaIndex + 1}/${this.perguntasAtuais.length}</div>
+            </div>
+            <div class="pergunta-texto">${pergunta.pergunta}</div>
+            <div class="alternativas-container">
+                ${pergunta.alternativas.map((alt, index) => {
+                    const textoAlternativa = typeof alt === 'object' ? alt.texto || alt : alt;
+                    return `
+                    <button class="alternativa-btn" data-index="${index}">
+                        ${String.fromCharCode(65 + index)}) ${textoAlternativa}
+                    </button>
+                `}).join('')}
+            </div>
+            <div class="feedback-container" style="display: none;">
+                <div class="feedback-texto" id="feedbackTexto"></div>
+                <div class="feedback-explicacao" id="feedbackExplicacao" style="display: none;"></div>
+                <button class="btn-proxima">Próxima Pergunta</button>
+            </div>
+        `;
+
+        setTimeout(() => this.adicionarEventListenersPergunta(), 10);
+    }
+
+    // ✅ FUNÇÃO: Adicionar listeners às perguntas
+    adicionarEventListenersPergunta() {
+        document.querySelectorAll('.alternativa-btn').forEach(btn => {
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            
+            newBtn.addEventListener('click', (e) => {
+                const respostaIndex = parseInt(e.target.dataset.index);
+                this.verificarResposta(respostaIndex);
+                respostasUsuario.push(respostaIndex);
+            });
+        });
+
+        const btnProxima = this.modalBody.querySelector('.btn-proxima');
+        if (btnProxima) {
+            const newBtn = btnProxima.cloneNode(true);
+            btnProxima.parentNode.replaceChild(newBtn, btnProxima);
+            newBtn.addEventListener('click', () => this.proximaPergunta());
+        }
+    }
+
+    // ✅ FUNÇÃO: Verificar resposta
+    verificarResposta(respostaIndex) {
+        const alternativas = this.modalBody.querySelectorAll('.alternativa-btn');
+        const feedbackContainer = this.modalBody.querySelector('.feedback-container');
+        const feedbackTexto = this.modalBody.querySelector('#feedbackTexto');
+        const feedbackExplicacao = this.modalBody.querySelector('#feedbackExplicacao');
+        const perguntaAtual = this.perguntasAtuais[this.perguntaIndex];
+
+        alternativas.forEach(btn => {
+            btn.disabled = true;
+            btn.style.pointerEvents = 'none';
+        });
+
+        const respostaCorreta = perguntaAtual.correta;
+        const acertou = respostaIndex === respostaCorreta;
+
+        if (acertou) {
+            alternativas[respostaIndex].classList.add('correta');
+            this.acertos++;
+        } else {
+            alternativas[respostaIndex].classList.add('incorreta');
+        }
+
+        if (!acertou && respostaCorreta >= 0 && respostaCorreta < alternativas.length) {
+            alternativas[respostaCorreta].classList.add('correta');
+        }
+
+        if (acertou) {
+            feedbackTexto.textContent = '✅ Resposta Correta!';
+            feedbackTexto.style.color = '#4CAF50';
+        } else {
+            feedbackTexto.textContent = '❌ Resposta Incorreta';
+            feedbackTexto.style.color = '#f44336';
+        }
+
+        if (perguntaAtual.explicacao) {
+            feedbackExplicacao.textContent = perguntaAtual.explicacao;
+            feedbackExplicacao.style.display = 'block';
+        }
+
+        feedbackContainer.style.display = 'block';
+    }
+
+    // ✅ FUNÇÃO: Ir para próxima pergunta
+    proximaPergunta() {
+        this.perguntaIndex++;
+        this.mostrarPergunta();
+    }
+
+    // ✅ FUNÇÃO: Terminar desafio
+    async terminarDesafio() {
+        console.log('📤 Finalizando desafio...');
+        console.log('📊 Resumo:', {
+            acertos: this.acertos,
+            total: this.perguntasAtuais.length,
+            respostas: respostasUsuario
+        });
+        
+        // Calcular pontuação local
+        const resultadoLocal = this.calcularPontuacaoLocal();
+        
+        try {
+            // Tentar enviar para API
+            const usuarioJSON = localStorage.getItem('usuario');
+            let usuarioId = null;
+            
+            if (usuarioJSON) {
+                try {
+                    const usuario = JSON.parse(usuarioJSON);
+                    usuarioId = usuario.id;
+                } catch (e) {
+                    console.error('Erro ao parsear usuário:', e);
+                }
+            }
+            
+            if (!usuarioId) {
+                usuarioId = localStorage.getItem('usuarioId');
+            }
+            
+            if (usuarioId && desafioIdAtual) {
+                const dadosParaEnvio = {
+                    usuarioId: usuarioId,
+                    respostas: respostasUsuario.map((resposta, index) => ({
+                        perguntaIndex: index,
+                        respostaIndex: resposta
+                    }))
+                };
+                
+                console.log('📤 Enviando para API:', dadosParaEnvio);
+                
+                const response = await fetch(`${API_URL}/api/desafios/${desafioIdAtual}/verificar`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(dadosParaEnvio)
+                });
+                
+                if (response.ok) {
+                    const resultado = await response.json();
+                    console.log('✅ Resposta da API:', resultado);
+                    this.mostrarResultado(resultado);
+                } else {
+                    throw new Error(`Erro ${response.status}`);
+                }
+            } else {
+                throw new Error('Dados incompletos para enviar à API');
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao enviar para API:', error);
+            // Mostrar resultado local
+            this.mostrarResultado(null, error.message, resultadoLocal);
+        }
+    }
+
+    // ✅ FUNÇÃO: Calcular pontuação proporcional
     calcularPontuacaoLocal() {
         const totalPerguntas = this.perguntasAtuais.length;
         const percentual = this.acertos / totalPerguntas;
         
-        // ✅ DETECTAR QUANTAS PERGUNTAS E CALCULAR PONTUAÇÃO
         let valorPorPergunta = 0;
         let pontosGanhos = 0;
         
         if (totalPerguntas === 4) {
-            // Para 4 perguntas: cada uma vale 5 pontos (20/4)
-            valorPorPergunta = this.pontuacaoBase / 4; // 5 pontos cada
+            valorPorPergunta = this.pontuacaoBase / 4;
             pontosGanhos = Math.round(valorPorPergunta * this.acertos);
-            
         } else if (totalPerguntas === 5) {
-            // Para 5 perguntas: cada uma vale 4 pontos (20/5)
-            valorPorPergunta = this.pontuacaoBase / 5; // 4 pontos cada
+            valorPorPergunta = this.pontuacaoBase / 5;
             pontosGanhos = Math.round(valorPorPergunta * this.acertos);
-            
         } else if (totalPerguntas === 3) {
-            // Para 3 perguntas: cada uma vale ~6.67 pontos (20/3)
-            valorPorPergunta = this.pontuacaoBase / 3; // ~6.67 pontos cada
+            valorPorPergunta = this.pontuacaoBase / 3;
             pontosGanhos = Math.round(valorPorPergunta * this.acertos);
-            
         } else if (totalPerguntas === 6) {
-            // Para 6 perguntas: cada uma vale ~3.33 pontos (20/6)
-            valorPorPergunta = this.pontuacaoBase / 6; // ~3.33 pontos cada
+            valorPorPergunta = this.pontuacaoBase / 6;
             pontosGanhos = Math.round(valorPorPergunta * this.acertos);
-            
         } else if (totalPerguntas === 10) {
-            // Para 10 perguntas: cada uma vale 2 pontos (20/10)
-            valorPorPergunta = this.pontuacaoBase / 10; // 2 pontos cada
+            valorPorPergunta = this.pontuacaoBase / 10;
             pontosGanhos = Math.round(valorPorPergunta * this.acertos);
-            
         } else {
-            // Para qualquer outro número de perguntas: cálculo proporcional genérico
             valorPorPergunta = this.pontuacaoBase / totalPerguntas;
             pontosGanhos = Math.round(valorPorPergunta * this.acertos);
         }
         
-        // ✅ GARANTIR: Pontuação não negativa e não maior que a base
         pontosGanhos = Math.max(0, Math.min(pontosGanhos, this.pontuacaoBase));
-        
-        console.log('📊 Cálculo de pontuação:', {
-            totalPerguntas: totalPerguntas,
-            acertos: this.acertos,
-            percentual: Math.round(percentual * 100) + '%',
-            pontuacaoBase: this.pontuacaoBase,
-            valorPorPergunta: valorPorPergunta.toFixed(2),
-            pontosCalculados: pontosGanhos,
-            formula: `${this.acertos} acertos × ${valorPorPergunta.toFixed(2)} pts = ${pontosGanhos} pts`
-        });
         
         return {
             acertos: this.acertos,
@@ -955,7 +1165,7 @@ class Questionario {
         };
     }
 
-    // ✅ FUNÇÃO ATUALIZADA: Mostrar resultado com informações específicas
+    // ✅ FUNÇÃO: Mostrar resultado
     mostrarResultado(resultadoApi, erro = null, resultadoLocal = null) {
         if (!this.modalBody) return;
 
@@ -964,22 +1174,23 @@ class Questionario {
         let percentual = 0;
         let pontosGanhos = 0;
         let pontuacaoTotal = parseInt(localStorage.getItem('usuarioPontuacao') || '0');
-        let valorPorPergunta = 0;
         
-        // ✅ DETERMINAR PONTUAÇÃO BASE
         if (erro && resultadoLocal) {
-            // Usar cálculo local em caso de erro
             acertos = resultadoLocal.acertos;
             totalPerguntas = resultadoLocal.total;
             percentual = resultadoLocal.percentual;
             pontosGanhos = resultadoLocal.pontosGanhos;
-            valorPorPergunta = resultadoLocal.valorPorPergunta;
+            
+            // Atualizar pontuação local
+            const novaPontuacao = pontuacaoTotal + pontosGanhos;
+            localStorage.setItem('usuarioPontuacao', novaPontuacao.toString());
+            
+            const desafiosCompletados = parseInt(localStorage.getItem('usuarioDesafios') || '0') + 1;
+            localStorage.setItem('usuarioDesafios', desafiosCompletados.toString());
             
         } else if (resultadoApi) {
-            // Usar resultado da API
             const { resultado, usuario } = resultadoApi;
             acertos = resultado?.acertos || this.acertos;
-            totalPerguntas = this.perguntasAtuais.length;
             percentual = Math.round((acertos / totalPerguntas) * 100);
             pontosGanhos = resultado?.pontuacaoGanha || 0;
             
@@ -988,90 +1199,30 @@ class Questionario {
                 localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
                 localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
             }
-        } else {
-            // Calcular localmente se não tiver dados
-            const resultadoCalc = this.calcularPontuacaoLocal();
-            acertos = resultadoCalc.acertos;
-            percentual = resultadoCalc.percentual;
-            pontosGanhos = resultadoCalc.pontosGanhos;
-            valorPorPergunta = resultadoCalc.valorPorPergunta;
         }
         
-        // ✅ GARANTIR VALORES VÁLIDOS
-        pontosGanhos = Math.max(0, Math.min(pontosGanhos, this.pontuacaoBase));
+        // Emoji baseado no desempenho
+        let emoji = '😔';
+        if (percentual === 0) emoji = '😔';
+        else if (percentual < 50) emoji = '😐';
+        else if (percentual < 75) emoji = '🙂';
+        else if (percentual < 90) emoji = '😊';
+        else if (percentual < 100) emoji = '🎯';
+        else emoji = '🏆';
         
-        // ✅ DETECTAR CONFIGURAÇÃO DO DESAFIO
+        // Configuração do desafio
         let configDesafio = '';
-        if (totalPerguntas === 4) {
-            configDesafio = `(Cada pergunta vale 5 pontos)`;
-            valorPorPergunta = 5;
-        } else if (totalPerguntas === 5) {
-            configDesafio = `(Cada pergunta vale 4 pontos)`;
-            valorPorPergunta = 4;
-        } else if (totalPerguntas === 3) {
-            configDesafio = `(Cada pergunta vale ${Math.round(20/3)} pontos)`;
-            valorPorPergunta = Math.round(20/3);
-        } else if (totalPerguntas === 6) {
-            configDesafio = `(Cada pergunta vale ${Math.round(20/6)} pontos)`;
-            valorPorPergunta = Math.round(20/6);
-        } else if (totalPerguntas === 10) {
-            configDesafio = `(Cada pergunta vale 2 pontos)`;
-            valorPorPergunta = 2;
-        } else {
-            configDesafio = `(Cada pergunta vale ${Math.round(20/totalPerguntas)} pontos)`;
-            valorPorPergunta = Math.round(20/totalPerguntas);
-        }
+        if (totalPerguntas === 4) configDesafio = '(Cada pergunta vale 5 pontos)';
+        else if (totalPerguntas === 5) configDesafio = '(Cada pergunta vale 4 pontos)';
+        else if (totalPerguntas === 3) configDesafio = `(Cada pergunta vale ${Math.round(20/3)} pontos)`;
+        else if (totalPerguntas === 6) configDesafio = `(Cada pergunta vale ${Math.round(20/6)} pontos)`;
+        else if (totalPerguntas === 10) configDesafio = '(Cada pergunta vale 2 pontos)';
+        else configDesafio = `(Cada pergunta vale ${Math.round(20/totalPerguntas)} pontos)`;
         
-        // ✅ EMOJI BASEADO NO DESEMPENHO
-        let emoji = '😢';
-        let titulo = 'Pode melhorar!';
-        
-        if (percentual === 0) {
-            emoji = '😔';
-            titulo = 'Continue tentando!';
-        } else if (percentual < 25) {
-            emoji = '😟';
-            titulo = 'Você pode fazer melhor!';
-        } else if (percentual < 50) {
-            emoji = '😐';
-            titulo = 'Foi quase!';
-        } else if (percentual < 75) {
-            emoji = '🙂';
-            titulo = 'Bom trabalho!';
-        } else if (percentual < 90) {
-            emoji = '😊';
-            titulo = 'Muito bem!';
-        } else if (percentual < 100) {
-            emoji = '🎯';
-            titulo = 'Excelente!';
-        } else {
-            emoji = '🏆';
-            titulo = 'PERFEITO!';
-        }
-        
-        // ✅ CALCULAR PONTOS PERDIDOS
-        const pontosPerdidos = this.pontuacaoBase - pontosGanhos;
-        const acertosFaltando = totalPerguntas - acertos;
-        
-        // ✅ MENSAGEM PERSONALIZADA
-        let mensagemDetalhada = '';
-        if (acertos === 0) {
-            mensagemDetalhada = `Você perdeu ${pontosPerdidos} pontos por não acertar nenhuma pergunta.`;
-        } else if (acertos === totalPerguntas) {
-            mensagemDetalhada = `Parabéns! Você acertou todas e ganhou a pontuação máxima!`;
-        } else {
-            mensagemDetalhada = `Você acertou ${acertos} de ${totalPerguntas} perguntas. `;
-            mensagemDetalhada += `Cada acerto vale ${valorPorPergunta} pontos.`;
-            
-            if (acertosFaltando > 0) {
-                mensagemDetalhada += ` Faltaram ${acertosFaltando} acertos para a pontuação máxima.`;
-            }
-        }
-
-        const htmlResultado = `
+        this.modalBody.innerHTML = `
             <div class="resultado-final">
                 <div style="font-size: 48px; margin-bottom: 10px;">${emoji}</div>
-                <div style="color: #ffcf00; font-size: 24px; margin-bottom: 5px;">${titulo}</div>
+                <div style="color: #ffcf00; font-size: 24px; margin-bottom: 5px;">Desafio Concluído!</div>
                 
                 <div style="color: #fff; font-size: 18px; margin: 15px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
@@ -1090,27 +1241,16 @@ class Questionario {
                     <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 15px 0;">
                         <div style="font-size: 14px; color: #aaa;">Pontuação:</div>
                         <div class="pontos-ganhos" style="color: #ffd700; font-size: 28px; font-weight: bold;">
-                            ${pontosGanhos > 0 ? '+' : ''}${pontosGanhos} pontos
+                            +${pontosGanhos} pontos
                         </div>
                         <div style="font-size: 12px; color: #888;">
                             / ${this.pontuacaoBase} max
                         </div>
                     </div>
-                    
-                    <div style="color: #4CAF50; font-size: 14px; margin-top: 10px; padding: 8px; background: rgba(76, 175, 80, 0.1); border-radius: 6px;">
-                        ${mensagemDetalhada}
-                    </div>
                 </div>
-                
-                ${acertos < totalPerguntas ? `
-                    <div style="color: #f44336; font-size: 14px; margin: 10px 0; padding: 10px; background: rgba(244, 67, 54, 0.1); border-radius: 8px;">
-                        ⚠️ <strong>Pontos perdidos:</strong> ${pontosPerdidos} pts (${acertosFaltando} pergunta${acertosFaltando > 1 ? 's' : ''} errada${acertosFaltando > 1 ? 's' : ''})
-                    </div>
-                ` : ''}
                 
                 <div style="color: #ccc; font-size: 12px; margin: 15px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
                     <div><small><strong>Pontuação total:</strong> ${pontuacaoTotal} pontos</small></div>
-                    <div><small><strong>Próximo nível:</strong> ${Math.ceil(pontuacaoTotal / 100) * 100} pontos</small></div>
                 </div>
                 
                 <button class="btn-interno" onclick="window.questionario.fecharModal(); if(window.gerenciadorDesafios) window.gerenciadorDesafios.concluirDesafio(${praticaIndexAtual});" style="background: #e6b800; color: #000; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px;">
@@ -1118,121 +1258,9 @@ class Questionario {
                 </button>
             </div>
         `;
-        
-        this.modalBody.innerHTML = htmlResultado;
-        
-        // ✅ ATUALIZAR PONTUAÇÃO LOCALMENTE SE A API FALHOU
-        if (erro && pontosGanhos > 0) {
-            const novaPontuacao = pontuacaoTotal + pontosGanhos;
-            localStorage.setItem('usuarioPontuacao', novaPontuacao.toString());
-            
-            const desafiosCompletados = parseInt(localStorage.getItem('usuarioDesafios') || '0') + 1;
-            localStorage.setItem('usuarioDesafios', desafiosCompletados.toString());
-            
-            console.log('📈 Pontuação atualizada:', {
-                antiga: pontuacaoTotal,
-                ganhos: pontosGanhos,
-                nova: novaPontuacao
-            });
-        }
-    }
-    // ✅ NOVA FUNÇÃO: Salvar respostas localmente
-    salvarRespostasLocalmente() {
-        try {
-            const usuarioJSON = localStorage.getItem('usuario');
-            let usuarioId = null;
-            
-            if (usuarioJSON) {
-                const usuario = JSON.parse(usuarioJSON);
-                usuarioId = usuario.id;
-            }
-            
-            if (!usuarioId) {
-                usuarioId = localStorage.getItem('usuarioId');
-            }
-            
-            if (usuarioId && desafioIdAtual && respostasUsuario.length > 0) {
-                const respostasPendentes = JSON.parse(localStorage.getItem('respostasPendentes') || '[]');
-                
-                respostasPendentes.push({
-                    desafioId: desafioIdAtual,
-                    usuarioId: usuarioId,
-                    respostas: respostasUsuario,
-                    data: new Date().toISOString(),
-                    acertos: this.acertos,
-                    total: this.perguntasAtuais.length
-                });
-                
-                localStorage.setItem('respostasPendentes', JSON.stringify(respostasPendentes));
-                console.log('💾 Respostas salvas localmente para envio posterior');
-            }
-        } catch (error) {
-            console.error('❌ Erro ao salvar respostas localmente:', error);
-        }
     }
 
-    mostrarResultado(resultadoApi, erro = null) {
-        if (!this.modalBody) return;
-
-        if (erro) {
-            this.modalBody.innerHTML = `
-                <div class="resultado-final">
-                    <div style="color: #f44336; font-size: 48px; margin-bottom: 20px;">⚠️</div>
-                    <div style="color: #f44336; font-size: 24px; margin-bottom: 10px;">Erro ao Enviar Respostas</div>
-                    <div style="color: #fff; font-size: 16px; margin-bottom: 20px; line-height: 1.5;">
-                        ${erro}<br><br>
-                        <small style="color: #aaa;">
-                            Suas respostas foram salvas e serão enviadas automaticamente quando possível.
-                        </small>
-                    </div>
-                    <div style="color: #ccc; font-size: 14px; margin: 15px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-                        <div><strong>Seu desempenho:</strong> ${this.acertos}/${this.perguntasAtuais.length} acertos</div>
-                        <div><strong>Porcentagem:</strong> ${Math.round((this.acertos / this.perguntasAtuais.length) * 100)}%</div>
-                    </div>
-                    <button class="btn-interno" onclick="window.questionario.fecharModal(); if(window.gerenciadorDesafios) window.gerenciadorDesafios.concluirDesafio(${praticaIndexAtual});" style="background: #e6b800; color: #000; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px;">
-                        Continuar
-                    </button>
-                </div>
-            `;
-        } else if (resultadoApi) {
-            const { resultado, usuario } = resultadoApi;
-            const acertos = resultado?.acertos || this.acertos;
-            const total = this.perguntasAtuais.length;
-            const percentual = Math.round((acertos / total) * 100);
-            const pontosGanhos = resultado?.pontuacaoGanha || Math.round((acertos / total) * this.pontuacaoBase);
-            const pontuacaoTotal = usuario?.pontuacao || parseInt(localStorage.getItem('usuarioPontuacao') || '0');
-
-            const emoji = percentual >= 90 ? '🎉' : percentual >= 70 ? '🎯' : percentual >= 50 ? '👍' : '💪';
-
-            this.modalBody.innerHTML = `
-                <div class="resultado-final">
-                    <div style="font-size: 48px; margin-bottom: 20px;">${emoji}</div>
-                    <div style="color: #ffcf00; font-size: 24px; margin-bottom: 10px;">Desafio Concluído!</div>
-                    <div style="color: #fff; font-size: 18px; margin-bottom: 15px;">${acertos}/${total} acertos (${percentual}%)</div>
-                    <div class="pontos-ganhos">+${pontosGanhos} pontos</div>
-                    <div style="color: #4CAF50; margin: 10px 0; font-size: 14px;">
-                        Pontuação sincronizada com o servidor
-                    </div>
-                    <div style="color: #ccc; font-size: 12px; margin: 15px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-                        <div><small><strong>Pontuação total:</strong> ${pontuacaoTotal} pontos</small></div>
-                        ${usuario?.nome ? `<div><small><strong>Aluno:</strong> ${usuario.nome}</small></div>` : ''}
-                        ${resultado?.mensagem ? `<div><small><strong>Mensagem:</strong> ${resultado.mensagem}</small></div>` : ''}
-                    </div>
-                    <button class="btn-interno" onclick="window.questionario.fecharModal(); if(window.gerenciadorDesafios) window.gerenciadorDesafios.concluirDesafio(${praticaIndexAtual});" style="background: #e6b800; color: #000; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px;">
-                        Continuar
-                    </button>
-                </div>
-            `;
-            
-            // Atualizar dados do usuário no localStorage
-            if (usuario) {
-                localStorage.setItem('usuario', JSON.stringify(usuario));
-                localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
-                localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
-            }
-        }
-    }
-
+    // ✅ FUNÇÃO: Fechar modal
     fecharModal() {
         this.modal.style.display = 'none';
         this.perguntasAtuais = [];
