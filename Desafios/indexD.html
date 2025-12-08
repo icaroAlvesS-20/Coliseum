@@ -877,293 +877,265 @@ class GerenciadorDesafios {
 
 // ✅ QUESTIONÁRIO
 class Questionario {
-    constructor() {
+     constructor() {
         this.perguntasAtuais = [];
         this.perguntaIndex = 0;
         this.acertos = 0;
         this.modal = document.getElementById('modalPerguntas');
         this.modalBody = document.getElementById('modalBody');
         this.materiaAtual = '';
-        this.pontuacaoBase = 20;
+        this.pontuacaoBase = 20; // Pontuação máxima do desafio
         
         if (this.modal && this.modalBody) {
             this.inicializarEventos();
         }
     }
 
-    inicializarEventos() {
-        const closeBtn = this.modal.querySelector('.close-modal');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => this.fecharModal());
-        }
+    // ... (mantenha os outros métodos iguais) ...
 
-        this.modal.addEventListener('click', (e) => {
-            if (e.target === this.modal) this.fecharModal();
+    // ✅ FUNÇÃO: Calcular pontuação proporcional baseada no número de perguntas
+    calcularPontuacaoLocal() {
+        const totalPerguntas = this.perguntasAtuais.length;
+        const percentual = this.acertos / totalPerguntas;
+        
+        // ✅ DETECTAR QUANTAS PERGUNTAS E CALCULAR PONTUAÇÃO
+        let valorPorPergunta = 0;
+        let pontosGanhos = 0;
+        
+        if (totalPerguntas === 4) {
+            // Para 4 perguntas: cada uma vale 5 pontos (20/4)
+            valorPorPergunta = this.pontuacaoBase / 4; // 5 pontos cada
+            pontosGanhos = Math.round(valorPorPergunta * this.acertos);
+            
+        } else if (totalPerguntas === 5) {
+            // Para 5 perguntas: cada uma vale 4 pontos (20/5)
+            valorPorPergunta = this.pontuacaoBase / 5; // 4 pontos cada
+            pontosGanhos = Math.round(valorPorPergunta * this.acertos);
+            
+        } else if (totalPerguntas === 3) {
+            // Para 3 perguntas: cada uma vale ~6.67 pontos (20/3)
+            valorPorPergunta = this.pontuacaoBase / 3; // ~6.67 pontos cada
+            pontosGanhos = Math.round(valorPorPergunta * this.acertos);
+            
+        } else if (totalPerguntas === 6) {
+            // Para 6 perguntas: cada uma vale ~3.33 pontos (20/6)
+            valorPorPergunta = this.pontuacaoBase / 6; // ~3.33 pontos cada
+            pontosGanhos = Math.round(valorPorPergunta * this.acertos);
+            
+        } else if (totalPerguntas === 10) {
+            // Para 10 perguntas: cada uma vale 2 pontos (20/10)
+            valorPorPergunta = this.pontuacaoBase / 10; // 2 pontos cada
+            pontosGanhos = Math.round(valorPorPergunta * this.acertos);
+            
+        } else {
+            // Para qualquer outro número de perguntas: cálculo proporcional genérico
+            valorPorPergunta = this.pontuacaoBase / totalPerguntas;
+            pontosGanhos = Math.round(valorPorPergunta * this.acertos);
+        }
+        
+        // ✅ GARANTIR: Pontuação não negativa e não maior que a base
+        pontosGanhos = Math.max(0, Math.min(pontosGanhos, this.pontuacaoBase));
+        
+        console.log('📊 Cálculo de pontuação:', {
+            totalPerguntas: totalPerguntas,
+            acertos: this.acertos,
+            percentual: Math.round(percentual * 100) + '%',
+            pontuacaoBase: this.pontuacaoBase,
+            valorPorPergunta: valorPorPergunta.toFixed(2),
+            pontosCalculados: pontosGanhos,
+            formula: `${this.acertos} acertos × ${valorPorPergunta.toFixed(2)} pts = ${pontosGanhos} pts`
         });
+        
+        return {
+            acertos: this.acertos,
+            total: totalPerguntas,
+            percentual: Math.round(percentual * 100),
+            pontosGanhos: pontosGanhos,
+            valorPorPergunta: valorPorPergunta
+        };
     }
 
-    async abrirQuestionario(desafioId) {
-        try {
-            console.log(`📝 Carregando perguntas do desafio ${desafioId}...`);
+    // ✅ FUNÇÃO ATUALIZADA: Mostrar resultado com informações específicas
+    mostrarResultado(resultadoApi, erro = null, resultadoLocal = null) {
+        if (!this.modalBody) return;
+
+        let acertos = 0;
+        let totalPerguntas = this.perguntasAtuais.length;
+        let percentual = 0;
+        let pontosGanhos = 0;
+        let pontuacaoTotal = parseInt(localStorage.getItem('usuarioPontuacao') || '0');
+        let valorPorPergunta = 0;
+        
+        // ✅ DETERMINAR PONTUAÇÃO BASE
+        if (erro && resultadoLocal) {
+            // Usar cálculo local em caso de erro
+            acertos = resultadoLocal.acertos;
+            totalPerguntas = resultadoLocal.total;
+            percentual = resultadoLocal.percentual;
+            pontosGanhos = resultadoLocal.pontosGanhos;
+            valorPorPergunta = resultadoLocal.valorPorPergunta;
             
-            const response = await fetch(`${API_URL}/api/desafios/${desafioId}/perguntas`, {
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
+        } else if (resultadoApi) {
+            // Usar resultado da API
+            const { resultado, usuario } = resultadoApi;
+            acertos = resultado?.acertos || this.acertos;
+            totalPerguntas = this.perguntasAtuais.length;
+            percentual = Math.round((acertos / totalPerguntas) * 100);
+            pontosGanhos = resultado?.pontuacaoGanha || 0;
             
-            if (!response.ok) {
-                throw new Error('Desafio não encontrado ou expirado');
+            if (usuario?.pontuacao) {
+                pontuacaoTotal = usuario.pontuacao;
+                localStorage.setItem('usuarioPontuacao', usuario.pontuacao.toString());
+                localStorage.setItem('usuarioDesafios', usuario.desafiosCompletados.toString());
             }
+        } else {
+            // Calcular localmente se não tiver dados
+            const resultadoCalc = this.calcularPontuacaoLocal();
+            acertos = resultadoCalc.acertos;
+            percentual = resultadoCalc.percentual;
+            pontosGanhos = resultadoCalc.pontosGanhos;
+            valorPorPergunta = resultadoCalc.valorPorPergunta;
+        }
+        
+        // ✅ GARANTIR VALORES VÁLIDOS
+        pontosGanhos = Math.max(0, Math.min(pontosGanhos, this.pontuacaoBase));
+        
+        // ✅ DETECTAR CONFIGURAÇÃO DO DESAFIO
+        let configDesafio = '';
+        if (totalPerguntas === 4) {
+            configDesafio = `(Cada pergunta vale 5 pontos)`;
+            valorPorPergunta = 5;
+        } else if (totalPerguntas === 5) {
+            configDesafio = `(Cada pergunta vale 4 pontos)`;
+            valorPorPergunta = 4;
+        } else if (totalPerguntas === 3) {
+            configDesafio = `(Cada pergunta vale ${Math.round(20/3)} pontos)`;
+            valorPorPergunta = Math.round(20/3);
+        } else if (totalPerguntas === 6) {
+            configDesafio = `(Cada pergunta vale ${Math.round(20/6)} pontos)`;
+            valorPorPergunta = Math.round(20/6);
+        } else if (totalPerguntas === 10) {
+            configDesafio = `(Cada pergunta vale 2 pontos)`;
+            valorPorPergunta = 2;
+        } else {
+            configDesafio = `(Cada pergunta vale ${Math.round(20/totalPerguntas)} pontos)`;
+            valorPorPergunta = Math.round(20/totalPerguntas);
+        }
+        
+        // ✅ EMOJI BASEADO NO DESEMPENHO
+        let emoji = '😢';
+        let titulo = 'Pode melhorar!';
+        
+        if (percentual === 0) {
+            emoji = '😔';
+            titulo = 'Continue tentando!';
+        } else if (percentual < 25) {
+            emoji = '😟';
+            titulo = 'Você pode fazer melhor!';
+        } else if (percentual < 50) {
+            emoji = '😐';
+            titulo = 'Foi quase!';
+        } else if (percentual < 75) {
+            emoji = '🙂';
+            titulo = 'Bom trabalho!';
+        } else if (percentual < 90) {
+            emoji = '😊';
+            titulo = 'Muito bem!';
+        } else if (percentual < 100) {
+            emoji = '🎯';
+            titulo = 'Excelente!';
+        } else {
+            emoji = '🏆';
+            titulo = 'PERFEITO!';
+        }
+        
+        // ✅ CALCULAR PONTOS PERDIDOS
+        const pontosPerdidos = this.pontuacaoBase - pontosGanhos;
+        const acertosFaltando = totalPerguntas - acertos;
+        
+        // ✅ MENSAGEM PERSONALIZADA
+        let mensagemDetalhada = '';
+        if (acertos === 0) {
+            mensagemDetalhada = `Você perdeu ${pontosPerdidos} pontos por não acertar nenhuma pergunta.`;
+        } else if (acertos === totalPerguntas) {
+            mensagemDetalhada = `Parabéns! Você acertou todas e ganhou a pontuação máxima!`;
+        } else {
+            mensagemDetalhada = `Você acertou ${acertos} de ${totalPerguntas} perguntas. `;
+            mensagemDetalhada += `Cada acerto vale ${valorPorPergunta} pontos.`;
             
-            const desafioCompleto = await response.json();
-            
-            if (!desafioCompleto || !desafioCompleto.perguntas || desafioCompleto.perguntas.length === 0) {
-                throw new Error('Desafio sem perguntas disponíveis');
+            if (acertosFaltando > 0) {
+                mensagemDetalhada += ` Faltaram ${acertosFaltando} acertos para a pontuação máxima.`;
             }
-            
-            this.perguntasAtuais = desafioCompleto.perguntas;
-            this.materiaAtual = desafioCompleto.materia || 'Geral';
-            this.pontuacaoBase = desafioCompleto.pontuacao || 20;
-            
-            console.log(`✅ ${this.perguntasAtuais.length} perguntas carregadas`);
-            this.perguntaIndex = 0;
-            this.acertos = 0;
-            respostasUsuario = [];
-            
-            this.mostrarPergunta();
-            this.modal.style.display = 'flex';
-            
-        } catch (error) {
-            console.error('❌ Erro ao carregar perguntas:', error);
-            
-            this.modalBody.innerHTML = `
-                <div style="text-align: center; padding: 40px;">
-                    <div style="font-size: 48px; color: #ff4444; margin-bottom: 20px;">❌</div>
-                    <h3 style="color: #ff4444; margin-bottom: 10px;">Erro ao carregar desafio</h3>
-                    <p style="color: #ccc; margin-bottom: 20px;">${error.message || 'Tente novamente mais tarde'}</p>
-                    <button onclick="this.closest('.modal-perguntas').style.display='none'" style="background: #e6b800; color: #000; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                        Fechar
-                    </button>
+        }
+
+        const htmlResultado = `
+            <div class="resultado-final">
+                <div style="font-size: 48px; margin-bottom: 10px;">${emoji}</div>
+                <div style="color: #ffcf00; font-size: 24px; margin-bottom: 5px;">${titulo}</div>
+                
+                <div style="color: #fff; font-size: 18px; margin: 15px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div><strong>Perguntas:</strong> ${totalPerguntas}</div>
+                        <div><strong>Acertos:</strong> ${acertos}</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 10px;">
+                        <strong>Porcentagem:</strong> ${percentual}%
+                    </div>
+                    
+                    <div style="margin-bottom: 10px; color: #aaa; font-size: 14px;">
+                        ${configDesafio}
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 15px 0;">
+                        <div style="font-size: 14px; color: #aaa;">Pontuação:</div>
+                        <div class="pontos-ganhos" style="color: #ffd700; font-size: 28px; font-weight: bold;">
+                            ${pontosGanhos > 0 ? '+' : ''}${pontosGanhos} pontos
+                        </div>
+                        <div style="font-size: 12px; color: #888;">
+                            / ${this.pontuacaoBase} max
+                        </div>
+                    </div>
+                    
+                    <div style="color: #4CAF50; font-size: 14px; margin-top: 10px; padding: 8px; background: rgba(76, 175, 80, 0.1); border-radius: 6px;">
+                        ${mensagemDetalhada}
+                    </div>
                 </div>
-            `;
-            this.modal.style.display = 'flex';
-        }
-    }
-
-    mostrarPergunta() {
-        if (!this.modalBody || this.perguntaIndex >= this.perguntasAtuais.length) {
-            this.terminarDesafio();
-            return;
-        }
-
-        const pergunta = this.perguntasAtuais[this.perguntaIndex];
-        const progresso = ((this.perguntaIndex) / this.perguntasAtuais.length) * 100;
-
-        this.modalBody.innerHTML = `
-            <div class="progresso-container">
-                <div class="barra-progresso"><div class="progresso" style="width: ${progresso}%"></div></div>
-                <div class="contador-perguntas">${this.perguntaIndex + 1}/${this.perguntasAtuais.length}</div>
-            </div>
-            <div class="pergunta-texto">${pergunta.pergunta}</div>
-            <div class="alternativas-container">
-                ${pergunta.alternativas.map((alt, index) => {
-                    const textoAlternativa = typeof alt === 'object' ? alt.texto || alt : alt;
-                    return `
-                    <button class="alternativa-btn" data-index="${index}">
-                        ${String.fromCharCode(65 + index)}) ${textoAlternativa}
-                    </button>
-                `}).join('')}
-            </div>
-            <div class="feedback-container" style="display: none;">
-                <div class="feedback-texto" id="feedbackTexto"></div>
-                <div class="feedback-explicacao" id="feedbackExplicacao" style="display: none;"></div>
-                <button class="btn-proxima">Próxima Pergunta</button>
+                
+                ${acertos < totalPerguntas ? `
+                    <div style="color: #f44336; font-size: 14px; margin: 10px 0; padding: 10px; background: rgba(244, 67, 54, 0.1); border-radius: 8px;">
+                        ⚠️ <strong>Pontos perdidos:</strong> ${pontosPerdidos} pts (${acertosFaltando} pergunta${acertosFaltando > 1 ? 's' : ''} errada${acertosFaltando > 1 ? 's' : ''})
+                    </div>
+                ` : ''}
+                
+                <div style="color: #ccc; font-size: 12px; margin: 15px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                    <div><small><strong>Pontuação total:</strong> ${pontuacaoTotal} pontos</small></div>
+                    <div><small><strong>Próximo nível:</strong> ${Math.ceil(pontuacaoTotal / 100) * 100} pontos</small></div>
+                </div>
+                
+                <button class="btn-interno" onclick="window.questionario.fecharModal(); if(window.gerenciadorDesafios) window.gerenciadorDesafios.concluirDesafio(${praticaIndexAtual});" style="background: #e6b800; color: #000; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px;">
+                    Continuar
+                </button>
             </div>
         `;
-
-        setTimeout(() => this.adicionarEventListenersPergunta(), 10);
-    }
-
-    adicionarEventListenersPergunta() {
-        document.querySelectorAll('.alternativa-btn').forEach(btn => {
-            const newBtn = btn.cloneNode(true);
-            btn.parentNode.replaceChild(newBtn, btn);
-            
-            newBtn.addEventListener('click', (e) => {
-                const respostaIndex = parseInt(e.target.dataset.index);
-                this.verificarResposta(respostaIndex);
-                respostasUsuario.push(respostaIndex);
-            });
-        });
-
-        const btnProxima = this.modalBody.querySelector('.btn-proxima');
-        if (btnProxima) {
-            const newBtn = btnProxima.cloneNode(true);
-            btnProxima.parentNode.replaceChild(newBtn, btnProxima);
-            newBtn.addEventListener('click', () => this.proximaPergunta());
-        }
-    }
-
-    verificarResposta(respostaIndex) {
-        const alternativas = this.modalBody.querySelectorAll('.alternativa-btn');
-        const feedbackContainer = this.modalBody.querySelector('.feedback-container');
-        const feedbackTexto = this.modalBody.querySelector('#feedbackTexto');
-        const feedbackExplicacao = this.modalBody.querySelector('#feedbackExplicacao');
-        const perguntaAtual = this.perguntasAtuais[this.perguntaIndex];
-
-        alternativas.forEach(btn => {
-            btn.disabled = true;
-            btn.style.pointerEvents = 'none';
-        });
-
-        const respostaCorreta = perguntaAtual.correta;
-        const acertou = respostaIndex === respostaCorreta;
-
-        if (acertou) {
-            alternativas[respostaIndex].classList.add('correta');
-            this.acertos++;
-        } else {
-            alternativas[respostaIndex].classList.add('incorreta');
-        }
-
-        if (!acertou && respostaCorreta >= 0 && respostaCorreta < alternativas.length) {
-            alternativas[respostaCorreta].classList.add('correta');
-        }
-
-        if (acertou) {
-            feedbackTexto.textContent = '✅ Resposta Correta!';
-            feedbackTexto.style.color = '#4CAF50';
-        } else {
-            feedbackTexto.textContent = '❌ Resposta Incorreta';
-            feedbackTexto.style.color = '#f44336';
-        }
-
-        if (perguntaAtual.explicacao) {
-            feedbackExplicacao.textContent = perguntaAtual.explicacao;
-            feedbackExplicacao.style.display = 'block';
-        }
-
-        feedbackContainer.style.display = 'block';
-    }
-
-    proximaPergunta() {
-        this.perguntaIndex++;
-        this.mostrarPergunta();
-    }
-
-    async terminarDesafio() {
-        console.log('📤 Finalizando desafio, enviando respostas...');
-        console.log('📊 Dados para envio:', {
-            desafioId: desafioIdAtual,
-            respostas: respostasUsuario,
-            totalRespostas: respostasUsuario.length,
-            totalPerguntas: this.perguntasAtuais.length
-        });
         
-        // ✅ CORREÇÃO: Validar dados antes de enviar
-        if (!desafioIdAtual) {
-            console.error('❌ Desafio ID não definido');
-            this.mostrarResultado(null, 'ID do desafio não encontrado');
-            return;
-        }
+        this.modalBody.innerHTML = htmlResultado;
         
-        if (respostasUsuario.length !== this.perguntasAtuais.length) {
-            console.error('❌ Número de respostas incorreto:', {
-                respostas: respostasUsuario.length,
-                perguntas: this.perguntasAtuais.length
+        // ✅ ATUALIZAR PONTUAÇÃO LOCALMENTE SE A API FALHOU
+        if (erro && pontosGanhos > 0) {
+            const novaPontuacao = pontuacaoTotal + pontosGanhos;
+            localStorage.setItem('usuarioPontuacao', novaPontuacao.toString());
+            
+            const desafiosCompletados = parseInt(localStorage.getItem('usuarioDesafios') || '0') + 1;
+            localStorage.setItem('usuarioDesafios', desafiosCompletados.toString());
+            
+            console.log('📈 Pontuação atualizada:', {
+                antiga: pontuacaoTotal,
+                ganhos: pontosGanhos,
+                nova: novaPontuacao
             });
-            this.mostrarResultado(null, 'Número de respostas incompleto');
-            return;
-        }
-        
-        try {
-            // ✅ CORREÇÃO: Obter dados do usuário corretamente
-            const usuarioJSON = localStorage.getItem('usuario');
-            let usuarioId = null;
-            let usuarioNome = 'Jogador';
-            
-            if (usuarioJSON) {
-                try {
-                    const usuario = JSON.parse(usuarioJSON);
-                    usuarioId = usuario.id;
-                    usuarioNome = usuario.nome || 'Jogador';
-                } catch (e) {
-                    console.error('Erro ao parsear usuário:', e);
-                }
-            }
-            
-            // Fallback para outros métodos de obter ID
-            if (!usuarioId) {
-                usuarioId = localStorage.getItem('usuarioId');
-                if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
-                    usuarioId = parseInt(usuarioId);
-                }
-            }
-            
-            if (!usuarioId) {
-                console.error('❌ Usuário não identificado');
-                this.mostrarResultado(null, 'Usuário não identificado. Faça login novamente.');
-                return;
-            }
-            
-            // ✅ CORREÇÃO: Preparar dados no formato correto
-            const dadosParaEnvio = {
-                usuarioId: usuarioId,
-                respostas: respostasUsuario.map((resposta, index) => ({
-                    perguntaIndex: index,
-                    respostaIndex: resposta
-                }))
-            };
-            
-            console.log('📤 Enviando para API:', dadosParaEnvio);
-            
-            const response = await fetch(`${API_URL}/api/desafios/${desafioIdAtual}/verificar`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(dadosParaEnvio)
-            });
-            
-            console.log('📨 Resposta da API:', {
-                status: response.status,
-                statusText: response.statusText,
-                ok: response.ok
-            });
-            
-            if (!response.ok) {
-                let errorMessage = `Erro ${response.status}: ${response.statusText}`;
-                
-                try {
-                    const errorData = await response.json();
-                    console.error('❌ Detalhes do erro:', errorData);
-                    errorMessage = errorData.message || errorData.error || errorMessage;
-                } catch (e) {
-                    // Não conseguiu ler JSON de erro
-                    const errorText = await response.text();
-                    console.error('❌ Texto do erro:', errorText);
-                }
-                
-                throw new Error(errorMessage);
-            }
-
-            const resultado = await response.json();
-            console.log('✅ Resultado recebido:', resultado);
-            
-            this.mostrarResultado(resultado);
-            
-        } catch (error) {
-            console.error('❌ Erro ao verificar respostas:', error);
-            
-            // ✅ CORREÇÃO: Salvar respostas localmente para envio posterior
-            this.salvarRespostasLocalmente();
-            
-            this.mostrarResultado(null, `Erro: ${error.message}`);
         }
     }
-    
     // ✅ NOVA FUNÇÃO: Salvar respostas localmente
     salvarRespostasLocalmente() {
         try {
