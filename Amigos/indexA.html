@@ -771,8 +771,10 @@
             }
 
             iniciarChat(ra) {
-                const amigo = this.amigos.find(a => a.ra === ra);
-                alert(`💬 Iniciando chat com ${amigo.nome}...\n\n(Esta funcionalidade estará disponível em breve!)`);
+                const amigo = this.amigos.find(a => a.ra === ra); 
+                console.log('👥 Redirecionando para Chat...');
+                window.location.href = ROTAS.CHAT;
+}
             }
 
             salvarAmigos() {
@@ -790,3 +792,4 @@
     </script>
 </body>
 </html>
+
