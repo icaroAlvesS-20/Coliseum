@@ -5,56 +5,172 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat-Geral</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+     * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
 
-        body {
-            background: linear-gradient(135deg, #000000 0%, #000000 100%);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        h1 {
-            font-size: 30px;
-            color: yellow;
-            text-align: center;
-        }
-        
-        .CaixaDeConversa {
-            width: 300px;
-            height: 150px;
-            border: 3px solid #121212;
-            background-color: #242424;
-        }
+body {
+    background: linear-gradient(135deg, #000000 0%, #1a1a2e 50%, #16213e 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+    color: #f0f0f0;
+}
 
-        .btn-voltar {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #ffcf00;
-            color: #000;
-            font-size: 30px;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-voltar:hover {
-            background: #e6b800;
-            transform: scale(1.1);
-        }
+h1 {
+    font-size: 2.5rem;
+    color: #FFD700;
+    text-align: center;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+    font-weight: 700;
+    letter-spacing: 1px;
+    background: linear-gradient(45deg, #FFD700, #FFED4E);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.CaixaDeConversa {
+    width: 90%;
+    max-width: 400px;
+    height: 200px;
+    border: 3px solid #333;
+    background: linear-gradient(145deg, #1e1e1e 0%, #2d2d2d 100%);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 2.5rem;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.CaixaDeConversa::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #FFD700, #FFED4E);
+    border-radius: 16px 16px 0 0;
+}
+
+.btn-voltar {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #FFD700, #FFC700);
+    color: #000;
+    font-size: 2rem;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 6px 20px rgba(255, 215, 0, 0.3),
+        0 0 0 2px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-voltar:hover {
+    background: linear-gradient(145deg, #FFC700, #FFB300);
+    transform: scale(1.15) translateY(-5px);
+    box-shadow: 
+        0 10px 25px rgba(255, 215, 0, 0.5),
+        0 0 0 2px rgba(255, 215, 0, 0.2);
+}
+
+.btn-voltar:active {
+    transform: scale(1.05) translateY(0);
+    transition: transform 0.1s;
+}
+
+/* Efeito de brilho no botão */
+.btn-voltar::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #FFD700, #FFED4E, #FFD700);
+    border-radius: 50%;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.btn-voltar:hover::after {
+    opacity: 0.6;
+}
+
+/* Texto adicional para mostrar status */
+.status {
+    margin-top: 1rem;
+    color: #aaa;
+    font-size: 0.9rem;
+    text-align: center;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .CaixaDeConversa {
+        width: 95%;
+        height: 180px;
+    }
+    
+    .btn-voltar {
+        width: 60px;
+        height: 60px;
+        font-size: 1.7rem;
+        bottom: 20px;
+        right: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 15px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .CaixaDeConversa {
+        height: 160px;
+        padding: 15px;
+    }
+}
     </style>
 </head>
 <body>
@@ -67,5 +183,6 @@
     <button class="btn-voltar" onclick="history.back()">←</button>
 </body>
 </html>
+
 
 
