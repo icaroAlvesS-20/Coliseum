@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat-Geral</title>
     <style>
-     * {
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-    background: linear-gradient(135deg, #000000 0%, #1a1a2e 50%, #16213e 100%);
+    background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -21,130 +21,102 @@ body {
     align-items: center;
     padding: 20px;
     position: relative;
-    color: #f0f0f0;
 }
 
 h1 {
-    font-size: 2.5rem;
-    color: #FFD700;
+    font-size: 2.2rem;
+    color: yellow;
     text-align: center;
     margin-bottom: 2rem;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-    font-weight: 700;
-    letter-spacing: 1px;
-    background: linear-gradient(45deg, #FFD700, #FFED4E);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(255, 255, 0, 0.2);
 }
 
 .CaixaDeConversa {
     width: 90%;
-    max-width: 400px;
-    height: 200px;
-    border: 3px solid #333;
-    background: linear-gradient(145deg, #1e1e1e 0%, #2d2d2d 100%);
-    border-radius: 16px;
+    max-width: 350px;
+    height: 180px;
+    border: 3px solid #121212;
+    background-color: #242424;
+    border-radius: 12px;
     padding: 20px;
-    margin-bottom: 2.5rem;
-    box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
     position: relative;
     overflow: hidden;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.CaixaDeConversa::before {
+.CaixaDeConversa::after {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
+    width: 100%;
     height: 4px;
-    background: linear-gradient(90deg, #FFD700, #FFED4E);
-    border-radius: 16px 16px 0 0;
+    background: yellow;
 }
 
 .btn-voltar {
     position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 70px;
-    height: 70px;
+    bottom: 25px;
+    right: 25px;
+    width: 65px;
+    height: 65px;
     border-radius: 50%;
-    background: linear-gradient(145deg, #FFD700, #FFC700);
+    background: #ffcf00;
     color: #000;
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: bold;
     border: none;
     cursor: pointer;
     z-index: 1000;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 
-        0 6px 20px rgba(255, 215, 0, 0.3),
-        0 0 0 2px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(255, 207, 0, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .btn-voltar:hover {
-    background: linear-gradient(145deg, #FFC700, #FFB300);
-    transform: scale(1.15) translateY(-5px);
-    box-shadow: 
-        0 10px 25px rgba(255, 215, 0, 0.5),
-        0 0 0 2px rgba(255, 215, 0, 0.2);
+    background: #e6b800;
+    transform: scale(1.1);
+    box-shadow: 0 6px 18px rgba(255, 207, 0, 0.5);
 }
 
 .btn-voltar:active {
-    transform: scale(1.05) translateY(0);
+    transform: scale(1.05);
     transition: transform 0.1s;
 }
 
-/* Efeito de brilho no botão */
-.btn-voltar::after {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(45deg, #FFD700, #FFED4E, #FFD700);
-    border-radius: 50%;
-    z-index: -1;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.btn-voltar:hover::after {
-    opacity: 0.6;
-}
-
-/* Texto adicional para mostrar status */
 .status {
     margin-top: 1rem;
     color: #aaa;
     font-size: 0.9rem;
     text-align: center;
-    animation: pulse 2s infinite;
+    font-style: italic;
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
+/* Efeito de construção */
+.construcao {
+    display: inline-block;
+    animation: piscar 1.5s infinite;
+}
+
+@keyframes piscar {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 
 /* Responsividade */
 @media (max-width: 768px) {
     h1 {
-        font-size: 2rem;
+        font-size: 1.8rem;
     }
     
     .CaixaDeConversa {
         width: 95%;
-        height: 180px;
+        height: 160px;
+        max-width: 320px;
     }
     
     .btn-voltar {
@@ -157,18 +129,20 @@ h1 {
 }
 
 @media (max-width: 480px) {
-    body {
-        padding: 15px;
-    }
-    
     h1 {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
         margin-bottom: 1.5rem;
     }
     
     .CaixaDeConversa {
-        height: 160px;
+        height: 150px;
         padding: 15px;
+    }
+    
+    .btn-voltar {
+        width: 55px;
+        height: 55px;
+        font-size: 1.5rem;
     }
 }
     </style>
@@ -183,6 +157,7 @@ h1 {
     <button class="btn-voltar" onclick="history.back()">←</button>
 </body>
 </html>
+
 
 
 
