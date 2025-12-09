@@ -83,6 +83,7 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+            min-height: 300px;
         }
 
         .message {
@@ -358,6 +359,8 @@
             }
         }
     </style>
+    <!-- Adicionando Font Awesome diretamente no head -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="header">
@@ -393,7 +396,7 @@
                 placeholder="Digite sua mensagem aqui..."
                 maxlength="1000"
             >
-            <button class="send-button" id="sendButton" disabled>
+            <button class="send-button" id="sendButton" onclick="sendMessage()">
                 <i class="fas fa-paper-plane"></i> Enviar
             </button>
         </div>
@@ -414,11 +417,13 @@
         </div>
     </div>
 
-    <button class="btn-voltar" onclick="history.back()">←</button>
+    <button class="btn-voltar" onclick="history.back()">
+        <i class="fas fa-arrow-left"></i>
+    </button>
     
     <script>
         // Configurações
-        const API_URL = 'https://coliseum-api.onrender.com'; // Substitua pela sua URL
+        const API_URL = 'https://coliseum-api.onrender.com';
         let currentUser = null;
         let lastUpdate = new Date();
         let isTyping = false;
@@ -426,6 +431,8 @@
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', async () => {
+            console.log('Chat inicializando...');
+            
             // Adicionar animação CSS
             const style = document.createElement('style');
             style.textContent = `
@@ -440,12 +447,6 @@
             `;
             document.head.appendChild(style);
             
-            // Adicionar Font Awesome
-            const faLink = document.createElement('link');
-            faLink.rel = 'stylesheet';
-            faLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
-            document.head.appendChild(faLink);
-            
             // Verificar se usuário está logado
             await checkUserLogin();
             
@@ -457,6 +458,8 @@
             
             // Configurar eventos
             setupEventListeners();
+            
+            console.log('Chat inicializado com sucesso!');
         });
 
         // Verificar login do usuário
@@ -467,9 +470,16 @@
                 
                 if (userData) {
                     currentUser = JSON.parse(userData);
+                    console.log('Usuário logado:', currentUser.nome);
                     updateUserInfo();
-                    document.getElementById('sendButton').disabled = false;
+                    
+                    // Habilitar botão de enviar
+                    const sendButton = document.getElementById('sendButton');
+                    if (sendButton) {
+                        sendButton.disabled = false;
+                    }
                 } else {
+                    console.log('Nenhum usuário logado');
                     // Redirecionar para login se não estiver logado
                     showLoginAlert();
                 }
@@ -481,10 +491,17 @@
 
         function updateUserInfo() {
             if (currentUser) {
-                document.getElementById('userName').textContent = currentUser.nome;
-                // Estimar usuários online (poderia ser uma API real)
-                const online = Math.floor(Math.random() * 20) + 5; // Simulação
-                document.getElementById('onlineCount').textContent = online;
+                const userNameElement = document.getElementById('userName');
+                if (userNameElement) {
+                    userNameElement.textContent = currentUser.nome;
+                }
+                
+                // Estimar usuários online (simulação)
+                const online = Math.floor(Math.random() * 20) + 5;
+                const onlineCountElement = document.getElementById('onlineCount');
+                if (onlineCountElement) {
+                    onlineCountElement.textContent = online;
+                }
             }
         }
 
@@ -496,16 +513,24 @@
                         <i class="fas fa-exclamation-triangle" style="font-size: 3rem;"></i>
                         <h3>Login Necessário</h3>
                         <p>Você precisa fazer login para participar do chat.</p>
-                        <button onclick="window.location.href='login.html'" 
+                        <button onclick="window.location.href='index.html'" 
                                 style="margin-top: 20px; padding: 10px 20px; background: yellow; color: black; border: none; border-radius: 5px; cursor: pointer;">
                             Ir para Login
                         </button>
                     </div>
                 `;
             }
+            
             const messageInput = document.getElementById('messageInput');
             if (messageInput) {
                 messageInput.placeholder = "Faça login para enviar mensagens...";
+                messageInput.disabled = true;
+            }
+            
+            const sendButton = document.getElementById('sendButton');
+            if (sendButton) {
+                sendButton.disabled = true;
+                sendButton.innerHTML = '<i class="fas fa-lock"></i> Login Necessário';
             }
         }
 
@@ -535,7 +560,7 @@
             }
         }
 
-        // Exibir mensagens (CORRIGIDO)
+        // Exibir mensagens
         function displayMessages(messages) {
             const container = document.getElementById('messagesContainer');
             const emptyChat = document.getElementById('emptyChat');
@@ -574,7 +599,7 @@
             
             // Adicionar cada mensagem
             messages.forEach(msg => {
-                const isOwn = currentUser && msg.usuario && msg.usuarioId === currentUser.id;
+                const isOwn = currentUser && msg.usuarioId === currentUser.id;
                 const messageTime = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('pt-BR', {
                     hour: '2-digit',
                     minute: '2-digit'
@@ -614,19 +639,38 @@
             });
             
             // Scroll para a última mensagem
-            container.scrollTop = container.scrollHeight;
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 100);
         }
 
-        // Enviar mensagem
-        async function sendMessage() {
+        // Enviar mensagem - FUNÇÃO GLOBAL
+        window.sendMessage = async function() {
             const input = document.getElementById('messageInput');
             const button = document.getElementById('sendButton');
+            
+            if (!input || !button) {
+                console.error('Elementos não encontrados');
+                return;
+            }
+            
             const message = input.value.trim();
             
-            if (!message || !currentUser) return;
+            if (!message) {
+                showNotification('Digite uma mensagem primeiro!', 'error');
+                return;
+            }
+            
+            if (!currentUser) {
+                showNotification('Você precisa estar logado para enviar mensagens!', 'error');
+                return;
+            }
+            
+            console.log('Enviando mensagem:', message);
             
             // Desabilitar botão durante envio
             button.disabled = true;
+            const originalText = button.innerHTML;
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
             
             try {
@@ -642,11 +686,16 @@
                     })
                 });
                 
+                console.log('Resposta do servidor:', response.status);
+                
                 if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Erro na resposta:', errorText);
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const data = await response.json();
+                console.log('Dados da resposta:', data);
                 
                 if (data.success) {
                     // Limpar input
@@ -656,7 +705,7 @@
                     await loadMessages();
                     
                     // Feedback visual
-                    showNotification('Mensagem enviada!', 'success');
+                    showNotification('Mensagem enviada com sucesso!', 'success');
                 } else {
                     throw new Error(data.error || 'Erro ao enviar mensagem');
                 }
@@ -666,7 +715,7 @@
             } finally {
                 // Reabilitar botão
                 button.disabled = false;
-                button.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar';
+                button.innerHTML = originalText;
             }
         }
 
@@ -703,18 +752,21 @@
             const input = document.getElementById('messageInput');
             const button = document.getElementById('sendButton');
             
-            if (!input || !button) return;
+            if (!input || !button) {
+                console.error('Elementos não encontrados para configurar eventos');
+                return;
+            }
+            
+            console.log('Configurando event listeners...');
             
             // Enviar ao pressionar Enter
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    sendMessage();
+                    console.log('Enter pressionado, enviando mensagem...');
+                    window.sendMessage();
                 }
             });
-            
-            // Enviar ao clicar no botão
-            button.addEventListener('click', sendMessage);
             
             // Mostrar indicador de digitação
             input.addEventListener('input', () => {
@@ -730,10 +782,16 @@
                 }, 1000);
             });
             
-            // Habilitar botão quando houver texto
+            // Habilitar/desabilitar botão quando houver texto
             input.addEventListener('input', () => {
-                button.disabled = !input.value.trim() || !currentUser;
+                if (currentUser) {
+                    button.disabled = !input.value.trim();
+                } else {
+                    button.disabled = true;
+                }
             });
+            
+            console.log('Event listeners configurados com sucesso!');
         }
 
         // Utilitários
@@ -745,8 +803,17 @@
         }
 
         function showNotification(message, type = 'info') {
+            // Remover notificações anteriores
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            });
+            
             // Criar notificação
             const notification = document.createElement('div');
+            notification.className = 'notification';
             notification.style.cssText = `
                 position: fixed;
                 top: 20px;
@@ -758,9 +825,18 @@
                 z-index: 9999;
                 animation: slideIn 0.3s ease;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                min-width: 250px;
+                max-width: 400px;
             `;
             
-            notification.textContent = message;
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
             document.body.appendChild(notification);
             
             // Remover após 3 segundos
@@ -783,13 +859,38 @@
                     <i class="fas fa-exclamation-circle" style="font-size: 3rem;"></i>
                     <h3>Erro ao carregar mensagens</h3>
                     <p>${escapeHtml(message)}</p>
-                    <button onclick="loadMessages()" 
+                    <button onclick="location.reload()" 
                             style="margin-top: 20px; padding: 10px 20px; background: yellow; color: black; border: none; border-radius: 5px; cursor: pointer; font-family: inherit;">
-                        Tentar novamente
+                        Recarregar Página
                     </button>
                 </div>
             `;
         }
+        
+        // Testar a API
+        async function testAPI() {
+            try {
+                const response = await fetch(`${API_URL}/api/chat/mensagens/recentes`);
+                if (response.ok) {
+                    console.log('✅ API está funcionando!');
+                    return true;
+                } else {
+                    console.error('❌ API retornou erro:', response.status);
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Erro ao testar API:', error);
+                return false;
+            }
+        }
+        
+        // Testar a conexão quando a página carregar
+        window.onload = async function() {
+            const apiWorking = await testAPI();
+            if (!apiWorking) {
+                showNotification('⚠️ Não foi possível conectar ao servidor. Verifique sua conexão.', 'error');
+            }
+        };
     </script>
 </body>
 </html>
