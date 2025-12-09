@@ -269,11 +269,12 @@
                 <p>Simulados e exercícios</p>
             </a>
 
-            <a href="#" class="menu-card" onclick="mostrarConfig()">
-                <div class="card-icon">⚙️</div>
-                <h3>Configurações</h3>
-                <p>Ajustes do sistema</p>
-            </a>
+            <a href="#" class="menu-card" onclick="mostrarChatG()">
+                <div class="card-icon">💬</div>
+                <h3>Chat</h3></h3>
+                <p>Chat Geral</p>
+           </a>
+
         </div>
 
         <!-- NAVEGAÇÃO INFERIOR -->
@@ -346,6 +347,11 @@ function mostrarProvas() {
     window.location.href = ROTAS.PROVAS;
 }
 
+function mostrarChatG() { 
+    console.log('📝 Redirecionando para ChatG...');
+    window.location.href = ROTAS.CHATG;
+}
+    
 function mostrarConfig() { 
     console.log('⚙️ Redirecionando para Configuração...');
     window.location.href = ROTAS.CONFIGURACAO;
