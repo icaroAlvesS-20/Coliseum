@@ -91,6 +91,10 @@
       "src": "/chat",
       "dest": "/Chat/indexCH.html"
     },
+      {
+      "src": "/chat-geral",
+      "dest": "/ChatGeral/indexCG.html"
+    },
     {
       "src": "/",
       "dest": "/Login/index.html"
