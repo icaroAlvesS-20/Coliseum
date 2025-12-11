@@ -547,243 +547,508 @@
     </div>
 
     <button class="btn-voltar" onclick="history.back()">←</button>
-    <script>
-        // Sistema de Gerenciamento de Amigos
-        class SistemaAmigos {
-            constructor() {
-                this.amigos = JSON.parse(localStorage.getItem('amigos')) || [];
-                this.inicializar();
-            }
+<script>
+    // Sistema de Gerenciamento de Amigos (com Backend)
+    class SistemaAmigos {
+        constructor() {
+            this.usuarioId = localStorage.getItem('userId') || null;
+            this.usuarioNome = localStorage.getItem('userName') || 'Usuário';
+            this.amigos = [];
+            this.inicializar();
+        }
 
-            inicializar() {
-                console.log('👥 Sistema de amigos inicializado');
+        inicializar() {
+            console.log('👥 Sistema de amigos inicializado para:', this.usuarioNome);
+            if (this.usuarioId) {
                 this.carregarAmigos();
-                this.configurarEventos();
+            } else {
+                this.mostrarMensagemLogin();
             }
+            this.configurarEventos();
+        }
 
-            configurarEventos() {
-                const searchInput = document.getElementById('searchInput');
-                if (searchInput) {
-                    searchInput.addEventListener('input', (e) => {
-                        this.filtrarAmigos(e.target.value);
-                    });
-                }
-
-                const friendRAInput = document.getElementById('friendRAInput');
-                if (friendRAInput) {
-                    friendRAInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            this.adicionarAmigo();
-                        }
-                    });
-                }
-
-                const searchFriendInput = document.getElementById('searchFriendInput');
-                if (searchFriendInput) {
-                    searchFriendInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            this.realizarBusca();
-                        }
-                    });
-                }
-            }
-
-            carregarAmigos() {
-                const friendsList = document.getElementById('friendsList');
-                
-                if (this.amigos.length === 0) {
-                    friendsList.innerHTML = `
-                        <div class="empty-state">
-                            <div style="
-                                width: 80px; 
-                                height: 80px; 
-                                background: #555; 
-                                border-radius: 50%; 
-                                display: flex; 
-                                align-items: center; 
-                                justify-content: center; 
-                                font-size: 32px;
-                                color: #888;
-                                margin: 0 auto 15px;
-                            ">
-                                👥
-                            </div>
-                            <p>Nenhum amigo adicionado ainda</p>
-                            <p style="font-size: 12px; margin-top: 10px;">Clique em "Adicionar Amigo" para começar</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                friendsList.innerHTML = this.amigos.map(amigo => `
-                    <div class="friend-item" data-ra="${amigo.ra}">
-                        <div class="friend-avatar">
-                            ${amigo.nome.charAt(0).toUpperCase()}
-                        </div>
-                        <div class="friend-info">
-                            <div class="friend-name">${amigo.nome}</div>
-                            <div class="friend-details">
-                                RA: ${amigo.ra} • Série: ${amigo.serie || 'Não informada'}
-                            </div>
-                            <div class="friend-status">
-                                <span class="status-online">●</span> Online
-                            </div>
-                        </div>
-                        <div class="friend-actions">
-                            <button class="btn-action btn-chat" onclick="sistemaAmigos.iniciarChat('${amigo.ra}')">
-                                💬 Chat
-                            </button>
-                            <button class="btn-action btn-remove" onclick="sistemaAmigos.removerAmigo('${amigo.ra}')">
-                                🗑️ Remover
-                            </button>
-                        </div>
+        mostrarMensagemLogin() {
+            const friendsList = document.getElementById('friendsList');
+            friendsList.innerHTML = `
+                <div class="empty-state">
+                    <div style="
+                        width: 80px; 
+                        height: 80px; 
+                        background: #555; 
+                        border-radius: 50%; 
+                        display: flex; 
+                        align-items: center; 
+                        justify-content: center; 
+                        font-size: 32px;
+                        color: #888;
+                        margin: 0 auto 15px;
+                    ">
+                        🔒
                     </div>
-                `).join('');
-            }
+                    <p>Faça login para ver seus amigos</p>
+                    <p style="font-size: 12px; margin-top: 10px;">Você precisa estar logado para acessar o sistema de amigos</p>
+                    <button onclick="window.location.href='/login'" style="
+                        background: #ffcf00;
+                        color: #000;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        margin-top: 15px;
+                        cursor: pointer;
+                        font-weight: bold;
+                    ">
+                        Ir para Login
+                    </button>
+                </div>
+            `;
+        }
 
-            filtrarAmigos(termo) {
-                const friendsList = document.getElementById('friendsList');
-                const amigosFiltrados = this.amigos.filter(amigo => 
-                    amigo.nome.toLowerCase().includes(termo.toLowerCase()) ||
-                    amigo.ra.includes(termo)
-                );
+        async carregarAmigos() {
+            if (!this.usuarioId) return;
 
-                if (amigosFiltrados.length === 0) {
-                    friendsList.innerHTML = `
-                        <div class="empty-state">
-                            <p>Nenhum amigo encontrado</p>
-                        </div>
-                    `;
-                    return;
-                }
+            try {
+                const response = await fetch(`/api/amigos/usuarios/${this.usuarioId}/amigos`);
+                const data = await response.json();
 
-                friendsList.innerHTML = amigosFiltrados.map(amigo => `
-                    <div class="friend-item" data-ra="${amigo.ra}">
-                        <div class="friend-avatar">
-                            ${amigo.nome.charAt(0).toUpperCase()}
-                        </div>
-                        <div class="friend-info">
-                            <div class="friend-name">${amigo.nome}</div>
-                            <div class="friend-details">
-                                RA: ${amigo.ra} • Série: ${amigo.serie || 'Não informada'}
-                            </div>
-                            <div class="friend-status">
-                                <span class="status-online">●</span> Online
-                            </div>
-                        </div>
-                        <div class="friend-actions">
-                            <button class="btn-action btn-chat" onclick="sistemaAmigos.iniciarChat('${amigo.ra}')">
-                                💬 Chat
-                            </button>
-                            <button class="btn-action btn-remove" onclick="sistemaAmigos.removerAmigo('${amigo.ra}')">
-                                🗑️ Remover
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            abrirModalAdicionar() {
-                document.getElementById('addFriendModal').style.display = 'flex';
-                document.getElementById('friendNameInput').focus();
-            }
-
-            abrirModalBuscar() {
-                document.getElementById('searchFriendModal').style.display = 'flex';
-                document.getElementById('searchFriendInput').focus();
-            }
-
-            fecharModal() {
-                document.getElementById('addFriendModal').style.display = 'none';
-                document.getElementById('searchFriendModal').style.display = 'none';
-                
-                document.getElementById('friendNameInput').value = '';
-                document.getElementById('friendRAInput').value = '';
-                document.getElementById('searchFriendInput').value = '';
-            }
-
-            adicionarAmigo() {
-                const nome = document.getElementById('friendNameInput').value.trim();
-                const ra = document.getElementById('friendRAInput').value.trim();
-
-                if (!nome || !ra) {
-                    alert('Por favor, preencha nome e RA do amigo!');
-                    return;
-                }
-
-                if (this.amigos.some(amigo => amigo.ra === ra)) {
-                    alert('Este amigo já está na sua lista!');
-                    return;
-                }
-
-                const novoAmigo = {
-                    id: Date.now().toString(),
-                    nome: nome,
-                    ra: ra,
-                    serie: 'Série não informada',
-                    dataAdicao: new Date().toLocaleDateString('pt-BR')
-                };
-
-                this.amigos.push(novoAmigo);
-                this.salvarAmigos();
-                this.carregarAmigos();
-                this.fecharModal();
-
-                alert(`✅ ${nome} foi adicionado aos amigos!`);
-            }
-
-            realizarBusca() {
-                const termo = document.getElementById('searchFriendInput').value.trim();
-                
-                if (!termo) {
-                    alert('Por favor, digite um nome ou RA para buscar!');
-                    return;
-                }
-
-                const resultados = this.amigos.filter(amigo => 
-                    amigo.nome.toLowerCase().includes(termo.toLowerCase()) ||
-                    amigo.ra.includes(termo)
-                );
-
-                if (resultados.length === 0) {
-                    alert('❌ Nenhum amigo encontrado com esses dados.');
+                if (data.success) {
+                    this.amigos = data.amigos;
+                    this.renderizarAmigos();
                 } else {
-                    alert(`🔍 Encontrado: ${resultados[0].nome} (RA: ${resultados[0].ra})`);
+                    console.error('Erro ao carregar amigos:', data.error);
+                    this.mostrarMensagemErro(data.error);
                 }
-
-                this.fecharModal();
-            }
-
-            removerAmigo(ra) {
-                if (confirm('Tem certeza que deseja remover este amigo?')) {
-                    this.amigos = this.amigos.filter(amigo => amigo.ra !== ra);
-                    this.salvarAmigos();
-                    this.carregarAmigos();
-                    alert('Amigo removido com sucesso!');
-                }
-            }
-
-            iniciarChat(ra) {
-                const amigo = this.amigos.find(a => a.ra === ra);
-                if (amigo) {
-                    // Redirecionar para a página de chat
-                    window.location.href = '/chat';
-                }
-            }
-
-            salvarAmigos() {
-                localStorage.setItem('amigos', JSON.stringify(this.amigos));
+            } catch (error) {
+                console.error('Erro ao carregar amigos:', error);
+                this.carregarAmigosFallback(); // Fallback para localStorage
             }
         }
 
-        let sistemaAmigos;
+        carregarAmigosFallback() {
+            this.amigos = JSON.parse(localStorage.getItem('amigos')) || [];
+            this.renderizarAmigos();
+        }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        renderizarAmigos() {
+            const friendsList = document.getElementById('friendsList');
+            
+            if (!this.usuarioId) {
+                this.mostrarMensagemLogin();
+                return;
+            }
+
+            if (this.amigos.length === 0) {
+                friendsList.innerHTML = `
+                    <div class="empty-state">
+                        <div style="
+                            width: 80px; 
+                            height: 80px; 
+                            background: #555; 
+                            border-radius: 50%; 
+                            display: flex; 
+                            align-items: center; 
+                            justify-content: center; 
+                            font-size: 32px;
+                            color: #888;
+                            margin: 0 auto 15px;
+                        ">
+                            👥
+                        </div>
+                        <p>Nenhum amigo adicionado ainda</p>
+                        <p style="font-size: 12px; margin-top: 10px;">Clique em "Adicionar Amigo" para começar</p>
+                    </div>
+                `;
+                return;
+            }
+
+            friendsList.innerHTML = this.amigos.map(amigo => `
+                <div class="friend-item" data-id="${amigo.amigo.id}">
+                    <div class="friend-avatar">
+                        ${amigo.amigo.nome.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name">${amigo.amigo.nome}</div>
+                        <div class="friend-details">
+                            RA: ${amigo.amigo.ra} • Série: ${amigo.amigo.serie || 'Não informada'}
+                        </div>
+                        <div class="friend-status">
+                            <span class="status-online">●</span> Online
+                        </div>
+                    </div>
+                    <div class="friend-actions">
+                        <button class="btn-action btn-chat" onclick="sistemaAmigos.iniciarChat('${amigo.amigo.id}')">
+                            💬 Chat
+                        </button>
+                        <button class="btn-action btn-remove" onclick="sistemaAmigos.removerAmigo('${amigo.amigo.id}')">
+                            🗑️ Remover
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        configurarEventos() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    this.filtrarAmigos(e.target.value);
+                });
+            }
+
+            const friendRAInput = document.getElementById('friendRAInput');
+            if (friendRAInput) {
+                friendRAInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.adicionarAmigo();
+                    }
+                });
+            }
+
+            const searchFriendInput = document.getElementById('searchFriendInput');
+            if (searchFriendInput) {
+                searchFriendInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.realizarBusca();
+                    }
+                });
+            }
+        }
+
+        filtrarAmigos(termo) {
+            const amigosFiltrados = this.amigos.filter(amigo => 
+                amigo.amigo.nome.toLowerCase().includes(termo.toLowerCase()) ||
+                amigo.amigo.ra.includes(termo)
+            );
+
+            const friendsList = document.getElementById('friendsList');
+            
+            if (amigosFiltrados.length === 0) {
+                friendsList.innerHTML = `
+                    <div class="empty-state">
+                        <p>Nenhum amigo encontrado</p>
+                    </div>
+                `;
+                return;
+            }
+
+            friendsList.innerHTML = amigosFiltrados.map(amigo => `
+                <div class="friend-item" data-id="${amigo.amigo.id}">
+                    <div class="friend-avatar">
+                        ${amigo.amigo.nome.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name">${amigo.amigo.nome}</div>
+                        <div class="friend-details">
+                            RA: ${amigo.amigo.ra} • Série: ${amigo.amigo.serie || 'Não informada'}
+                        </div>
+                        <div class="friend-status">
+                            <span class="status-online">●</span> Online
+                        </div>
+                    </div>
+                    <div class="friend-actions">
+                        <button class="btn-action btn-chat" onclick="sistemaAmigos.iniciarChat('${amigo.amigo.id}')">
+                            💬 Chat
+                        </button>
+                        <button class="btn-action btn-remove" onclick="sistemaAmigos.removerAmigo('${amigo.amigo.id}')">
+                            🗑️ Remover
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        abrirModalAdicionar() {
+            if (!this.usuarioId) {
+                alert('Faça login para adicionar amigos!');
+                window.location.href = '/login';
+                return;
+            }
+            document.getElementById('addFriendModal').style.display = 'flex';
+            document.getElementById('friendNameInput').focus();
+        }
+
+        abrirModalBuscar() {
+            document.getElementById('searchFriendModal').style.display = 'flex';
+            document.getElementById('searchFriendInput').focus();
+        }
+
+        fecharModal() {
+            document.getElementById('addFriendModal').style.display = 'none';
+            document.getElementById('searchFriendModal').style.display = 'none';
+            
+            document.getElementById('friendNameInput').value = '';
+            document.getElementById('friendRAInput').value = '';
+            document.getElementById('searchFriendInput').value = '';
+        }
+
+        async adicionarAmigo() {
+            if (!this.usuarioId) {
+                alert('Faça login para adicionar amigos!');
+                return;
+            }
+
+            const nome = document.getElementById('friendNameInput').value.trim();
+            const ra = document.getElementById('friendRAInput').value.trim();
+
+            if (!nome || !ra) {
+                alert('Por favor, preencha nome e RA do amigo!');
+                return;
+            }
+
+            try {
+                // Primeiro buscar o usuário pelo RA
+                const searchResponse = await fetch(`/api/amigos/usuarios/buscar?query=${ra}&usuarioId=${this.usuarioId}`);
+                const searchData = await searchResponse.json();
+
+                if (!searchData.success || searchData.resultados.length === 0) {
+                    alert('Nenhum usuário encontrado com este RA!');
+                    return;
+                }
+
+                const usuarioEncontrado = searchData.resultados.find(u => 
+                    u.ra === ra || u.nome.toLowerCase().includes(nome.toLowerCase())
+                );
+
+                if (!usuarioEncontrado) {
+                    alert('Usuário não encontrado! Verifique o nome e RA.');
+                    return;
+                }
+
+                if (usuarioEncontrado.statusAmizade === 'aceito') {
+                    alert('Vocês já são amigos!');
+                    this.fecharModal();
+                    return;
+                }
+
+                if (usuarioEncontrado.statusAmizade === 'pendente') {
+                    alert('Já existe uma solicitação pendente para este usuário!');
+                    this.fecharModal();
+                    return;
+                }
+
+                // Enviar solicitação de amizade
+                const response = await fetch(`/api/amigos/usuarios/${this.usuarioId}/solicitar/${usuarioEncontrado.id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(`✅ Solicitação enviada para ${usuarioEncontrado.nome}!`);
+                    this.fecharModal();
+                    this.carregarAmigos(); // Recarregar lista
+                } else {
+                    alert(`❌ Erro: ${data.error || data.details}`);
+                }
+
+            } catch (error) {
+                console.error('Erro ao adicionar amigo:', error);
+                alert('Erro ao adicionar amigo. Tente novamente.');
+            }
+        }
+
+        async realizarBusca() {
+            const termo = document.getElementById('searchFriendInput').value.trim();
+            
+            if (!termo) {
+                alert('Por favor, digite um nome ou RA para buscar!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/amigos/usuarios/buscar?query=${termo}&usuarioId=${this.usuarioId}`);
+                const data = await response.json();
+
+                if (data.success && data.resultados.length > 0) {
+                    const resultados = data.resultados.map(user => `
+                        <div style="
+                            background: #242424;
+                            border-radius: 12px;
+                            padding: 15px;
+                            margin-bottom: 10px;
+                            border: 1px solid #555;
+                        ">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong style="color: #ffcf00;">${user.nome}</strong><br>
+                                    <small style="color: #888;">RA: ${user.ra} • Série: ${user.serie}</small>
+                                </div>
+                                ${user.statusAmizade ? 
+                                    `<span style="color: ${user.statusAmizade === 'aceito' ? '#00ff00' : '#ffcf00'};">
+                                        ${user.statusAmizade === 'aceito' ? '✅ Amigo' : '📩 Pendente'}
+                                    </span>` :
+                                    `<button onclick="sistemaAmigos.adicionarAmigoBusca('${user.id}', '${user.nome}')" 
+                                        style="
+                                            background: #ffcf00;
+                                            color: #000;
+                                            border: none;
+                                            padding: 8px 15px;
+                                            border-radius: 6px;
+                                            cursor: pointer;
+                                            font-weight: bold;
+                                            font-size: 12px;
+                                        ">
+                                        Adicionar
+                                    </button>`
+                                }
+                            </div>
+                        </div>
+                    `).join('');
+
+                    alert(`
+                        <div style="
+                            background: #323232;
+                            padding: 20px;
+                            border-radius: 15px;
+                            color: white;
+                            max-width: 400px;
+                        ">
+                            <h3 style="margin-bottom: 15px;">🔍 Resultados da Busca</h3>
+                            ${resultados}
+                            <div style="margin-top: 15px; text-align: center;">
+                                <button onclick="this.parentElement.parentElement.parentElement.close()" 
+                                    style="
+                                        background: #555;
+                                        color: white;
+                                        border: none;
+                                        padding: 10px 20px;
+                                        border-radius: 8px;
+                                        cursor: pointer;
+                                    ">
+                                    Fechar
+                                </button>
+                            </div>
+                        </div>
+                    `);
+                } else {
+                    alert('❌ Nenhum usuário encontrado com esses dados.');
+                }
+
+                this.fecharModal();
+            } catch (error) {
+                console.error('Erro na busca:', error);
+                alert('Erro ao buscar usuários. Tente novamente.');
+            }
+        }
+
+        async adicionarAmigoBusca(amigoId, amigoNome) {
+            if (!this.usuarioId) {
+                alert('Faça login para adicionar amigos!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/amigos/usuarios/${this.usuarioId}/solicitar/${amigoId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(`✅ Solicitação enviada para ${amigoNome}!`);
+                    this.carregarAmigos();
+                } else {
+                    alert(`❌ Erro: ${data.error || data.details}`);
+                }
+            } catch (error) {
+                console.error('Erro ao adicionar amigo:', error);
+                alert('Erro ao adicionar amigo. Tente novamente.');
+            }
+        }
+
+        async removerAmigo(amigoId) {
+            if (!confirm('Tem certeza que deseja remover este amigo?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/amigos/usuarios/${this.usuarioId}/amigos/${amigoId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Amigo removido com sucesso!');
+                    this.carregarAmigos();
+                } else {
+                    alert(`Erro: ${data.error || data.details}`);
+                }
+            } catch (error) {
+                console.error('Erro ao remover amigo:', error);
+                alert('Erro ao remover amigo. Tente novamente.');
+            }
+        }
+
+        iniciarChat(amigoId) {
+            const amigo = this.amigos.find(a => a.amigo.id === parseInt(amigoId));
+            if (amigo) {
+                // Redirecionar para o chat privado com o amigo
+                localStorage.setItem('chatAmigo', JSON.stringify(amigo.amigo));
+                window.location.href = `/chat?amigoId=${amigoId}`;
+            }
+        }
+
+        mostrarMensagemErro(mensagem) {
+            const friendsList = document.getElementById('friendsList');
+            friendsList.innerHTML = `
+                <div class="empty-state">
+                    <div style="
+                        width: 80px; 
+                        height: 80px; 
+                        background: #555; 
+                        border-radius: 50%; 
+                        display: flex; 
+                        align-items: center; 
+                        justify-content: center; 
+                        font-size: 32px;
+                        color: #ff4444;
+                        margin: 0 auto 15px;
+                    ">
+                        ⚠️
+                    </div>
+                    <p>Erro ao carregar amigos</p>
+                    <p style="font-size: 12px; margin-top: 10px;">${mensagem}</p>
+                    <button onclick="sistemaAmigos.carregarAmigos()" style="
+                        background: #ffcf00;
+                        color: #000;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        margin-top: 15px;
+                        cursor: pointer;
+                        font-weight: bold;
+                    ">
+                        Tentar Novamente
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    let sistemaAmigos;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Verificar se o usuário está logado
+        const userId = localStorage.getItem('userId');
+        const userName = localStorage.getItem('userName');
+        
+        if (userId && userName) {
+            console.log(`✅ Usuário logado: ${userName} (ID: ${userId})`);
             sistemaAmigos = new SistemaAmigos();
-            console.log('✅ Sistema de amigos carregado!');
-        });
-    </script>
+        } else {
+            console.log('⚠️ Usuário não logado, mostrando mensagem de login');
+            sistemaAmigos = new SistemaAmigos();
+        }
+    });
+</script>
 </body>
 </html>
+
 
 
