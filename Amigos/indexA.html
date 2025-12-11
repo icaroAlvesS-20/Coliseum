@@ -551,14 +551,19 @@
     // Sistema de Gerenciamento de Amigos (com Backend)
     class SistemaAmigos {
         constructor() {
-            this.usuarioId = localStorage.getItem('userId') || null;
+            this.usuarioId = localStorage.getItem('userId');
             this.usuarioNome = localStorage.getItem('userName') || 'Usuário';
             this.amigos = [];
+            this.API_BASE_URL = 'https://coliseum-api.onrender.com';
+            // this.API_BASE_URL = 'http://localhost:10000'; // Para desenvolvimento local
             this.inicializar();
         }
 
         inicializar() {
             console.log('👥 Sistema de amigos inicializado para:', this.usuarioNome);
+            console.log('🔧 ID do usuário:', this.usuarioId);
+            console.log('🌐 URL da API:', this.API_BASE_URL);
+            
             if (this.usuarioId) {
                 this.carregarAmigos();
             } else {
@@ -604,26 +609,40 @@
         }
 
         async carregarAmigos() {
-            if (!this.usuarioId) return;
+            if (!this.usuarioId) {
+                console.log('❌ ID do usuário não encontrado no localStorage');
+                return;
+            }
+
+            console.log(`🔍 Carregando amigos para usuário ID: ${this.usuarioId}`);
 
             try {
-                const response = await fetch(`/api/amigos/usuarios/${this.usuarioId}/amigos`);
+                const response = await fetch(`${this.API_BASE_URL}/api/amigos/usuarios/${this.usuarioId}/amigos`);
+                console.log('📡 Resposta da API:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+                
                 const data = await response.json();
+                console.log('📦 Dados recebidos:', data);
 
                 if (data.success) {
                     this.amigos = data.amigos;
+                    console.log(`✅ ${this.amigos.length} amigos carregados`);
                     this.renderizarAmigos();
                 } else {
-                    console.error('Erro ao carregar amigos:', data.error);
-                    this.mostrarMensagemErro(data.error);
+                    console.error('❌ Erro na resposta:', data.error);
+                    this.mostrarMensagemErro(data.error || 'Erro desconhecido');
                 }
             } catch (error) {
-                console.error('Erro ao carregar amigos:', error);
-                this.carregarAmigosFallback(); // Fallback para localStorage
+                console.error('❌ Erro ao carregar amigos:', error);
+                this.carregarAmigosFallback();
             }
         }
 
         carregarAmigosFallback() {
+            console.log('🔄 Usando fallback (localStorage)');
             this.amigos = JSON.parse(localStorage.getItem('amigos')) || [];
             this.renderizarAmigos();
         }
@@ -698,7 +717,7 @@
             if (friendRAInput) {
                 friendRAInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
-                        this.adicionarAmigo();
+                        this.adicionarAmigoModal();
                     }
                 });
             }
@@ -758,10 +777,12 @@
 
         abrirModalAdicionar() {
             if (!this.usuarioId) {
-                alert('Faça login para adicionar amigos!');
+                alert('⚠️ Faça login para adicionar amigos!');
                 window.location.href = '/login';
                 return;
             }
+            
+            console.log('📱 Abrindo modal de adicionar amigo');
             document.getElementById('addFriendModal').style.display = 'flex';
             document.getElementById('friendNameInput').focus();
         }
@@ -780,72 +801,105 @@
             document.getElementById('searchFriendInput').value = '';
         }
 
-        async adicionarAmigo() {
+        async adicionarAmigoModal() {
             if (!this.usuarioId) {
-                alert('Faça login para adicionar amigos!');
+                alert('⚠️ Faça login para adicionar amigos!');
                 return;
             }
 
             const nome = document.getElementById('friendNameInput').value.trim();
             const ra = document.getElementById('friendRAInput').value.trim();
 
+            console.log('📝 Dados do formulário:', { nome, ra });
+
             if (!nome || !ra) {
-                alert('Por favor, preencha nome e RA do amigo!');
+                alert('⚠️ Por favor, preencha nome e RA do amigo!');
                 return;
             }
 
+            // Primeiro, buscar usuário pelo RA
             try {
-                // Primeiro buscar o usuário pelo RA
-                const searchResponse = await fetch(`/api/amigos/usuarios/buscar?query=${ra}&usuarioId=${this.usuarioId}`);
+                console.log(`🔍 Buscando usuário com RA: ${ra}`);
+                
+                const searchResponse = await fetch(`${this.API_BASE_URL}/api/amigos/usuarios/buscar?query=${encodeURIComponent(ra)}&usuarioId=${this.usuarioId}`);
+                
+                if (!searchResponse.ok) {
+                    throw new Error(`Erro na busca: ${searchResponse.status}`);
+                }
+                
                 const searchData = await searchResponse.json();
+                console.log('🔍 Resultado da busca:', searchData);
 
-                if (!searchData.success || searchData.resultados.length === 0) {
-                    alert('Nenhum usuário encontrado com este RA!');
+                if (!searchData.success || !searchData.resultados || searchData.resultados.length === 0) {
+                    alert('❌ Nenhum usuário encontrado com este RA!');
                     return;
                 }
 
-                const usuarioEncontrado = searchData.resultados.find(u => 
-                    u.ra === ra || u.nome.toLowerCase().includes(nome.toLowerCase())
-                );
+                // Procurar por RA exato primeiro, depois por nome
+                let usuarioEncontrado = searchData.resultados.find(u => u.ra === ra);
+                if (!usuarioEncontrado) {
+                    usuarioEncontrado = searchData.resultados.find(u => 
+                        u.nome.toLowerCase().includes(nome.toLowerCase())
+                    );
+                }
 
                 if (!usuarioEncontrado) {
-                    alert('Usuário não encontrado! Verifique o nome e RA.');
+                    alert('❌ Usuário não encontrado! Verifique o nome e RA.');
                     return;
                 }
 
+                console.log('✅ Usuário encontrado:', usuarioEncontrado);
+
+                // Verificar status de amizade
                 if (usuarioEncontrado.statusAmizade === 'aceito') {
-                    alert('Vocês já são amigos!');
+                    alert('✅ Vocês já são amigos!');
                     this.fecharModal();
                     return;
                 }
 
                 if (usuarioEncontrado.statusAmizade === 'pendente') {
-                    alert('Já existe uma solicitação pendente para este usuário!');
+                    alert('📩 Já existe uma solicitação pendente para este usuário!');
                     this.fecharModal();
                     return;
                 }
 
                 // Enviar solicitação de amizade
-                const response = await fetch(`/api/amigos/usuarios/${this.usuarioId}/solicitar/${usuarioEncontrado.id}`, {
+                await this.enviarSolicitacaoAmizade(usuarioEncontrado.id);
+
+            } catch (error) {
+                console.error('❌ Erro ao adicionar amigo:', error);
+                alert('❌ Erro ao adicionar amigo: ' + error.message);
+            }
+        }
+
+        async enviarSolicitacaoAmizade(amigoId) {
+            try {
+                console.log(`📤 Enviando solicitação para amigo ID: ${amigoId}`);
+                
+                const response = await fetch(`${this.API_BASE_URL}/api/amigos/usuarios/${this.usuarioId}/solicitar/${amigoId}`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     }
                 });
 
+                console.log('📡 Status da resposta:', response.status);
+                
                 const data = await response.json();
+                console.log('📦 Dados da resposta:', data);
 
-                if (data.success) {
-                    alert(`✅ Solicitação enviada para ${usuarioEncontrado.nome}!`);
+                if (response.ok && data.success) {
+                    alert(`✅ Solicitação enviada com sucesso!`);
                     this.fecharModal();
                     this.carregarAmigos(); // Recarregar lista
                 } else {
-                    alert(`❌ Erro: ${data.error || data.details}`);
+                    throw new Error(data.error || data.details || 'Erro desconhecido');
                 }
 
             } catch (error) {
-                console.error('Erro ao adicionar amigo:', error);
-                alert('Erro ao adicionar amigo. Tente novamente.');
+                console.error('❌ Erro ao enviar solicitação:', error);
+                alert(`❌ Erro: ${error.message}`);
             }
         }
 
@@ -853,135 +907,163 @@
             const termo = document.getElementById('searchFriendInput').value.trim();
             
             if (!termo) {
-                alert('Por favor, digite um nome ou RA para buscar!');
+                alert('⚠️ Por favor, digite um nome ou RA para buscar!');
                 return;
             }
 
             try {
-                const response = await fetch(`/api/amigos/usuarios/buscar?query=${termo}&usuarioId=${this.usuarioId}`);
+                console.log(`🔍 Buscando por: "${termo}"`);
+                
+                const response = await fetch(`${this.API_BASE_URL}/api/amigos/usuarios/buscar?query=${encodeURIComponent(termo)}&usuarioId=${this.usuarioId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+                
                 const data = await response.json();
+                console.log('🔍 Resultados:', data);
 
-                if (data.success && data.resultados.length > 0) {
-                    const resultados = data.resultados.map(user => `
-                        <div style="
-                            background: #242424;
-                            border-radius: 12px;
-                            padding: 15px;
-                            margin-bottom: 10px;
-                            border: 1px solid #555;
-                        ">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div>
-                                    <strong style="color: #ffcf00;">${user.nome}</strong><br>
-                                    <small style="color: #888;">RA: ${user.ra} • Série: ${user.serie}</small>
-                                </div>
-                                ${user.statusAmizade ? 
-                                    `<span style="color: ${user.statusAmizade === 'aceito' ? '#00ff00' : '#ffcf00'};">
-                                        ${user.statusAmizade === 'aceito' ? '✅ Amigo' : '📩 Pendente'}
-                                    </span>` :
-                                    `<button onclick="sistemaAmigos.adicionarAmigoBusca('${user.id}', '${user.nome}')" 
-                                        style="
-                                            background: #ffcf00;
-                                            color: #000;
-                                            border: none;
-                                            padding: 8px 15px;
-                                            border-radius: 6px;
-                                            cursor: pointer;
-                                            font-weight: bold;
-                                            font-size: 12px;
-                                        ">
-                                        Adicionar
-                                    </button>`
-                                }
-                            </div>
-                        </div>
-                    `).join('');
-
-                    alert(`
-                        <div style="
-                            background: #323232;
-                            padding: 20px;
-                            border-radius: 15px;
-                            color: white;
-                            max-width: 400px;
-                        ">
-                            <h3 style="margin-bottom: 15px;">🔍 Resultados da Busca</h3>
-                            ${resultados}
-                            <div style="margin-top: 15px; text-align: center;">
-                                <button onclick="this.parentElement.parentElement.parentElement.close()" 
-                                    style="
-                                        background: #555;
-                                        color: white;
-                                        border: none;
-                                        padding: 10px 20px;
-                                        border-radius: 8px;
-                                        cursor: pointer;
-                                    ">
-                                    Fechar
-                                </button>
-                            </div>
-                        </div>
-                    `);
+                if (data.success && data.resultados && data.resultados.length > 0) {
+                    // Criar modal de resultados
+                    this.mostrarResultadosBusca(data.resultados);
                 } else {
                     alert('❌ Nenhum usuário encontrado com esses dados.');
                 }
 
-                this.fecharModal();
             } catch (error) {
-                console.error('Erro na busca:', error);
-                alert('Erro ao buscar usuários. Tente novamente.');
+                console.error('❌ Erro na busca:', error);
+                alert('❌ Erro ao buscar usuários: ' + error.message);
             }
+        }
+
+        mostrarResultadosBusca(resultados) {
+            // Criar um modal customizado para mostrar resultados
+            const modalHTML = `
+                <div style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.8);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 3000;
+                ">
+                    <div style="
+                        background: #323232;
+                        padding: 25px;
+                        border-radius: 15px;
+                        color: white;
+                        width: 90%;
+                        max-width: 500px;
+                        max-height: 80vh;
+                        overflow-y: auto;
+                        border: 1px solid #555;
+                    ">
+                        <h3 style="margin-bottom: 20px; color: #ffcf00;">🔍 Resultados da Busca</h3>
+                        <div style="margin-bottom: 20px;">
+                            ${resultados.map(user => `
+                                <div style="
+                                    background: #242424;
+                                    border-radius: 12px;
+                                    padding: 15px;
+                                    margin-bottom: 10px;
+                                    border: 1px solid #555;
+                                ">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <strong style="color: #ffcf00;">${user.nome}</strong><br>
+                                            <small style="color: #888;">RA: ${user.ra} • Série: ${user.serie || 'Não informada'}</small>
+                                        </div>
+                                        ${user.statusAmizade ? 
+                                            `<span style="color: ${user.statusAmizade === 'aceito' ? '#00ff00' : '#ffcf00'}; font-size: 12px;">
+                                                ${user.statusAmizade === 'aceito' ? '✅ Amigo' : '📩 Pendente'}
+                                            </span>` :
+                                            `<button onclick="sistemaAmigos.adicionarAmigoBusca(${user.id}, '${user.nome.replace(/'/g, "\\'")}')" 
+                                                style="
+                                                    background: #ffcf00;
+                                                    color: #000;
+                                                    border: none;
+                                                    padding: 8px 15px;
+                                                    border-radius: 6px;
+                                                    cursor: pointer;
+                                                    font-weight: bold;
+                                                    font-size: 12px;
+                                                ">
+                                                Adicionar
+                                            </button>`
+                                        }
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div style="text-align: center;">
+                            <button onclick="this.parentElement.parentElement.remove()" 
+                                style="
+                                    background: #555;
+                                    color: white;
+                                    border: none;
+                                    padding: 10px 20px;
+                                    border-radius: 8px;
+                                    cursor: pointer;
+                                ">
+                                Fechar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Adicionar o modal ao body
+            const modalDiv = document.createElement('div');
+            modalDiv.innerHTML = modalHTML;
+            document.body.appendChild(modalDiv.firstElementChild);
+            
+            this.fecharModal();
         }
 
         async adicionarAmigoBusca(amigoId, amigoNome) {
             if (!this.usuarioId) {
-                alert('Faça login para adicionar amigos!');
+                alert('⚠️ Faça login para adicionar amigos!');
                 return;
             }
 
             try {
-                const response = await fetch(`/api/amigos/usuarios/${this.usuarioId}/solicitar/${amigoId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                console.log(`📤 Adicionando amigo ID: ${amigoId} (${amigoNome})`);
+                await this.enviarSolicitacaoAmizade(amigoId);
+                
+            } catch (error) {
+                console.error('❌ Erro ao adicionar amigo:', error);
+                alert('❌ Erro ao adicionar amigo. Tente novamente.');
+            }
+        }
+
+        async removerAmigo(amigoId) {
+            if (!confirm('⚠️ Tem certeza que deseja remover este amigo?')) {
+                return;
+            }
+
+            try {
+                console.log(`🗑️ Removendo amigo ID: ${amigoId}`);
+                
+                const response = await fetch(`${this.API_BASE_URL}/api/amigos/usuarios/${this.usuarioId}/amigos/${amigoId}`, {
+                    method: 'DELETE'
                 });
 
                 const data = await response.json();
+                console.log('📦 Resposta da remoção:', data);
 
                 if (data.success) {
-                    alert(`✅ Solicitação enviada para ${amigoNome}!`);
+                    alert('✅ Amigo removido com sucesso!');
                     this.carregarAmigos();
                 } else {
                     alert(`❌ Erro: ${data.error || data.details}`);
                 }
             } catch (error) {
-                console.error('Erro ao adicionar amigo:', error);
-                alert('Erro ao adicionar amigo. Tente novamente.');
-            }
-        }
-
-        async removerAmigo(amigoId) {
-            if (!confirm('Tem certeza que deseja remover este amigo?')) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`/api/amigos/usuarios/${this.usuarioId}/amigos/${amigoId}`, {
-                    method: 'DELETE'
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    alert('Amigo removido com sucesso!');
-                    this.carregarAmigos();
-                } else {
-                    alert(`Erro: ${data.error || data.details}`);
-                }
-            } catch (error) {
-                console.error('Erro ao remover amigo:', error);
-                alert('Erro ao remover amigo. Tente novamente.');
+                console.error('❌ Erro ao remover amigo:', error);
+                alert('❌ Erro ao remover amigo. Tente novamente.');
             }
         }
 
@@ -1029,6 +1111,19 @@
                 </div>
             `;
         }
+
+        // Método para testar conexão com a API
+        async testarConexaoAPI() {
+            try {
+                const response = await fetch(`${this.API_BASE_URL}/api/health`);
+                const data = await response.json();
+                console.log('🔌 Status da API:', data);
+                return data.status === 'online';
+            } catch (error) {
+                console.error('❌ API offline:', error);
+                return false;
+            }
+        }
     }
 
     let sistemaAmigos;
@@ -1038,17 +1133,49 @@
         const userId = localStorage.getItem('userId');
         const userName = localStorage.getItem('userName');
         
+        console.log('🔍 Verificando login...');
+        console.log('📱 ID do usuário:', userId);
+        console.log('👤 Nome do usuário:', userName);
+        
         if (userId && userName) {
             console.log(`✅ Usuário logado: ${userName} (ID: ${userId})`);
             sistemaAmigos = new SistemaAmigos();
+            
+            // Testar conexão com a API
+            setTimeout(() => {
+                sistemaAmigos.testarConexaoAPI().then(online => {
+                    if (!online) {
+                        console.warn('⚠️ API parece estar offline, usando localStorage');
+                    }
+                });
+            }, 1000);
+            
         } else {
             console.log('⚠️ Usuário não logado, mostrando mensagem de login');
             sistemaAmigos = new SistemaAmigos();
         }
     });
+
+    // Funções globais para acesso via onclick
+    window.abrirModalAdicionar = function() {
+        if (sistemaAmigos) sistemaAmigos.abrirModalAdicionar();
+    };
+    
+    window.abrirModalBuscar = function() {
+        if (sistemaAmigos) sistemaAmigos.abrirModalBuscar();
+    };
+    
+    window.fecharModal = function() {
+        if (sistemaAmigos) sistemaAmigos.fecharModal();
+    };
+    
+    window.adicionarAmigo = function() {
+        if (sistemaAmigos) sistemaAmigos.adicionarAmigoModal();
+    };
+    
+    window.realizarBusca = function() {
+        if (sistemaAmigos) sistemaAmigos.realizarBusca();
+    };
 </script>
 </body>
 </html>
-
-
-
