@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Amigos - Coliseum</title>
-     <style>
-    * {
+    <style>
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -361,6 +361,38 @@
             opacity: 0.5;
         }
 
+        /* DEBUG INFO */
+        .debug-info {
+            background: #1a1a1a;
+            border: 1px solid #ffcf00;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            color: #ffcf00;
+        }
+
+        .debug-info h4 {
+            margin-bottom: 10px;
+            color: #ffcf00;
+        }
+
+        .debug-info p {
+            margin: 5px 0;
+        }
+
+        .debug-btn {
+            background: #ffcf00;
+            color: #000;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
         @media (max-width: 768px) {
             .container {
                 max-width: 100%;
@@ -434,7 +466,6 @@
         <!-- CABEÇALHO -->
         <div class="header">
             <div class="Topimg">
-                <!-- Ícone SVG inline para evitar erro 404 -->
                 <div style="
                     width: 100px; 
                     height: 100px; 
@@ -451,14 +482,18 @@
                 </div>
             </div>
             <h1>Amigos</h1>
+            <div id="debugHeader" class="debug-info" style="display: none;">
+                <h4>🔧 Modo Debug</h4>
+                <p id="debugUserInfo"></p>
+                <button class="debug-btn" onclick="toggleDebugMode()">Alternar Debug</button>
+            </div>
         </div>
 
         <!-- BLOCO PRINCIPAL -->
         <div class="bloco-cinza">
             <!-- BARRA DE BUSCA -->
             <div class="search-container">
-                <div class="buscfriends" onclick="sistemaAmigos.abrirModalBuscar()">
-                    <!-- Ícone SVG inline -->
+                <div class="buscfriends" onclick="abrirModalBuscar()">
                     <div style="
                         width: 40px; 
                         height: 40px; 
@@ -473,13 +508,12 @@
                         🔍
                     </div>
                 </div>
-                <input type="text" class="search-input" placeholder="Buscar amigos..." id="searchInput">
+                <input type="text" class="search-input" placeholder="Buscar amigos..." id="searchInput" oninput="filtrarAmigos(this.value)">
             </div>
 
             <!-- BOTÃO ADICIONAR AMIGO -->
             <div class="add-friend-btn" onclick="abrirModalAdicionar()">
                 <div class="addfriends">
-                    <!-- Ícone SVG inline -->
                     <div style="
                         width: 60px; 
                         height: 60px; 
@@ -499,7 +533,6 @@
 
             <!-- LISTA DE AMIGOS -->
             <div class="friends-list" id="friendsList">
-                <!-- Amigos serão carregados via JavaScript -->
                 <div class="empty-state">
                     <div style="
                         width: 80px; 
@@ -513,10 +546,9 @@
                         color: #888;
                         margin: 0 auto 15px;
                     ">
-                        👥
+                        ⏳
                     </div>
-                    <p>Nenhum amigo adicionado ainda</p>
-                    <p style="font-size: 12px; margin-top: 10px;">Clique em "Adicionar Amigo" para começar</p>
+                    <p>Carregando amigos...</p>
                 </div>
             </div>
         </div>
@@ -527,135 +559,425 @@
         <div class="modal-content">
             <h2>Adicionar Amigo</h2>
             <input type="text" class="modal-input" id="friendNameInput" placeholder="Nome do amigo">
-            <input type="text" class="modal-input" id="friendRAInput" placeholder="RA do amigo">
+            <input type="text" class="modal-input" id="friendRAInput" placeholder="RA do amigo (4 dígitos)">
             <div class="modal-buttons">
-                <button class="btn-cancel" onclick="sistemaAmigos.fecharModal()">Cancelar</button>
-                <button class="btn-confirm" onclick="sistemaAmigos.adicionarAmigo()">Adicionar</button>
+                <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-confirm" onclick="adicionarAmigo()">Adicionar</button>
+            </div>
+            <div id="addFriendDebug" style="margin-top: 15px; font-size: 12px; color: #888; display: none;">
+                <p>Debug info aparecerá aqui</p>
             </div>
         </div>
     </div>
 
+    <!-- MODAL BUSCAR AMIGO -->
     <div class="modal" id="searchFriendModal">
         <div class="modal-content">
             <h2>Buscar Amigo</h2>
             <input type="text" class="modal-input" id="searchFriendInput" placeholder="Digite o nome ou RA">
             <div class="modal-buttons">
-                <button class="btn-cancel" onclick="sistemaAmigos.fecharModal()">Cancelar</button>
-                <button class="btn-confirm" onclick="sistemaAmigos.realizarBusca()">Buscar</button>
+                <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-confirm" onclick="realizarBusca()">Buscar</button>
             </div>
         </div>
     </div>
 
+    <!-- DEBUG PANEL (inicialmente oculto) -->
+    <div id="debugPanel" style="
+        position: fixed;
+        bottom: 100px;
+        right: 20px;
+        background: rgba(0,0,0,0.9);
+        border: 1px solid #ffcf00;
+        border-radius: 10px;
+        padding: 15px;
+        width: 300px;
+        max-height: 400px;
+        overflow-y: auto;
+        display: none;
+        z-index: 999;
+        color: white;
+        font-size: 12px;
+    ">
+        <h4 style="color: #ffcf00; margin-bottom: 10px;">🔧 Console Debug</h4>
+        <div id="debugLog" style="margin-bottom: 10px; max-height: 300px; overflow-y: auto;">
+            <p>> Sistema iniciado...</p>
+        </div>
+        <input type="text" id="debugCommand" placeholder="Digite um comando" style="
+            width: 100%;
+            padding: 5px;
+            background: #323232;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        ">
+        <button onclick="executeDebugCommand()" style="
+            background: #ffcf00;
+            color: #000;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 11px;
+        ">Executar</button>
+        <button onclick="clearDebugLog()" style="
+            background: #555;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 5px;
+            font-size: 11px;
+        ">Limpar</button>
+    </div>
+
     <button class="btn-voltar" onclick="history.back()">←</button>
-<script>
-    // Sistema de Gerenciamento de Amigos (com Backend)
-    class SistemaAmigos {
-        constructor() {
-            this.usuarioId = localStorage.getItem('userId');
-            this.usuarioNome = localStorage.getItem('userName') || 'Usuário';
-            this.amigos = [];
-            this.API_BASE_URL = 'https://coliseum-api.onrender.com';
-            // this.API_BASE_URL = 'http://localhost:10000'; // Para desenvolvimento local
-            this.inicializar();
-        }
+    <button id="debugToggle" onclick="toggleDebugPanel()" style="
+        position: fixed;
+        bottom: 100px;
+        left: 20px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #ff4444;
+        color: white;
+        border: none;
+        cursor: pointer;
+        z-index: 999;
+        font-size: 20px;
+    ">🐛</button>
 
-        inicializar() {
-            console.log('👥 Sistema de amigos inicializado para:', this.usuarioNome);
-            console.log('🔧 ID do usuário:', this.usuarioId);
-            console.log('🌐 URL da API:', this.API_BASE_URL);
+    <script>
+        // ============================================
+        // SISTEMA DE AMIGOS - COMPLETO
+        // ============================================
+        
+        // Configurações
+        const CONFIG = {
+            API_URL: 'https://coliseum-api.onrender.com',
+            // API_URL: 'http://localhost:10000', // Para desenvolvimento local
+            DEBUG_MODE: true,
+            MAX_LOG_ENTRIES: 50
+        };
+
+        // Estado global
+        let sistemaAmigos = null;
+        let debugLog = [];
+        let debugPanelVisible = false;
+
+        // ============================================
+        // FUNÇÕES DE DEBUG
+        // ============================================
+        
+        function logDebug(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = { timestamp, message, type };
+            debugLog.push(logEntry);
             
-            if (this.usuarioId) {
-                this.carregarAmigos();
+            if (debugLog.length > CONFIG.MAX_LOG_ENTRIES) {
+                debugLog.shift();
+            }
+            
+            // Atualizar painel de debug se visível
+            if (debugPanelVisible) {
+                updateDebugPanel();
+            }
+            
+            // Log no console também
+            const colors = {
+                info: 'color: #3498db',
+                success: 'color: #2ecc71',
+                error: 'color: #e74c3c',
+                warning: 'color: #f39c12'
+            };
+            console.log(`%c[${timestamp}] ${message}`, colors[type] || colors.info);
+        }
+
+        function updateDebugPanel() {
+            const debugElement = document.getElementById('debugLog');
+            if (!debugElement) return;
+            
+            debugElement.innerHTML = debugLog.map(entry => {
+                const color = entry.type === 'error' ? '#e74c3c' : 
+                             entry.type === 'success' ? '#2ecc71' : 
+                             entry.type === 'warning' ? '#f39c12' : '#3498db';
+                return `<p style="color: ${color}; margin: 2px 0;">[${entry.timestamp}] ${entry.message}</p>`;
+            }).join('');
+            
+            debugElement.scrollTop = debugElement.scrollHeight;
+        }
+
+        function toggleDebugPanel() {
+            debugPanelVisible = !debugPanelVisible;
+            document.getElementById('debugPanel').style.display = debugPanelVisible ? 'block' : 'none';
+            document.getElementById('debugToggle').style.background = debugPanelVisible ? '#2ecc71' : '#ff4444';
+            
+            if (debugPanelVisible) {
+                updateDebugPanel();
+            }
+        }
+
+        function toggleDebugMode() {
+            CONFIG.DEBUG_MODE = !CONFIG.DEBUG_MODE;
+            document.getElementById('debugHeader').style.display = CONFIG.DEBUG_MODE ? 'block' : 'none';
+            logDebug(`Modo debug ${CONFIG.DEBUG_MODE ? 'ativado' : 'desativado'}`, 'info');
+        }
+
+        function executeDebugCommand() {
+            const commandInput = document.getElementById('debugCommand');
+            const command = commandInput.value.trim();
+            
+            if (!command) return;
+            
+            logDebug(`> ${command}`, 'info');
+            commandInput.value = '';
+            
+            // Comandos disponíveis
+            const commands = {
+                'test api': testAPIConnection,
+                'list users': listAllUsers,
+                'clear cache': clearLocalStorage,
+                'reload': () => location.reload(),
+                'help': showDebugHelp,
+                'status': showSystemStatus
+            };
+            
+            if (commands[command]) {
+                commands[command]();
             } else {
-                this.mostrarMensagemLogin();
+                logDebug(`Comando desconhecido: ${command}`, 'error');
             }
-            this.configurarEventos();
         }
 
-        mostrarMensagemLogin() {
-            const friendsList = document.getElementById('friendsList');
-            friendsList.innerHTML = `
-                <div class="empty-state">
-                    <div style="
-                        width: 80px; 
-                        height: 80px; 
-                        background: #555; 
-                        border-radius: 50%; 
-                        display: flex; 
-                        align-items: center; 
-                        justify-content: center; 
-                        font-size: 32px;
-                        color: #888;
-                        margin: 0 auto 15px;
-                    ">
-                        🔒
-                    </div>
-                    <p>Faça login para ver seus amigos</p>
-                    <p style="font-size: 12px; margin-top: 10px;">Você precisa estar logado para acessar o sistema de amigos</p>
-                    <button onclick="window.location.href='/login'" style="
-                        background: #ffcf00;
-                        color: #000;
-                        border: none;
-                        padding: 10px 20px;
-                        border-radius: 8px;
-                        margin-top: 15px;
-                        cursor: pointer;
-                        font-weight: bold;
-                    ">
-                        Ir para Login
-                    </button>
-                </div>
-            `;
+        function clearDebugLog() {
+            debugLog = [];
+            updateDebugPanel();
+            logDebug('Log limpo', 'info');
         }
 
-        async carregarAmigos() {
-            if (!this.usuarioId) {
-                console.log('❌ ID do usuário não encontrado no localStorage');
-                return;
-            }
-
-            console.log(`🔍 Carregando amigos para usuário ID: ${this.usuarioId}`);
-
+        // ============================================
+        // FUNÇÕES AUXILIARES
+        // ============================================
+        
+        async function testAPIConnection() {
+            logDebug('Testando conexão com API...', 'info');
             try {
-                const response = await fetch(`${this.API_BASE_URL}/api/amigos/usuarios/${this.usuarioId}/amigos`);
-                console.log('📡 Resposta da API:', response.status);
-                
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
-                }
-                
+                const response = await fetch(`${CONFIG.API_URL}/api/health`);
                 const data = await response.json();
-                console.log('📦 Dados recebidos:', data);
+                logDebug(`✅ API Online: ${data.status}`, 'success');
+                logDebug(`📊 Usuários: ${data.totalUsuarios || 0}`, 'info');
+                logDebug(`🤝 Amizades: ${data.totalAmizades || 0}`, 'info');
+            } catch (error) {
+                logDebug(`❌ API Offline: ${error.message}`, 'error');
+            }
+        }
 
-                if (data.success) {
-                    this.amigos = data.amigos;
-                    console.log(`✅ ${this.amigos.length} amigos carregados`);
-                    this.renderizarAmigos();
-                } else {
-                    console.error('❌ Erro na resposta:', data.error);
-                    this.mostrarMensagemErro(data.error || 'Erro desconhecido');
+        async function listAllUsers() {
+            logDebug('Buscando todos os usuários...', 'info');
+            try {
+                const response = await fetch(`${CONFIG.API_URL}/api/usuarios`);
+                const usuarios = await response.json();
+                logDebug(`✅ ${usuarios.length} usuários encontrados:`, 'success');
+                usuarios.slice(0, 5).forEach(user => {
+                    logDebug(`  👤 ${user.nome} (RA: ${user.ra}, ID: ${user.id})`, 'info');
+                });
+                if (usuarios.length > 5) {
+                    logDebug(`  ... e mais ${usuarios.length - 5} usuários`, 'info');
                 }
             } catch (error) {
-                console.error('❌ Erro ao carregar amigos:', error);
-                this.carregarAmigosFallback();
+                logDebug(`❌ Erro: ${error.message}`, 'error');
             }
         }
 
-        carregarAmigosFallback() {
-            console.log('🔄 Usando fallback (localStorage)');
-            this.amigos = JSON.parse(localStorage.getItem('amigos')) || [];
-            this.renderizarAmigos();
+        function clearLocalStorage() {
+            const amigos = JSON.parse(localStorage.getItem('amigos') || '[]');
+            localStorage.removeItem('amigos');
+            logDebug(`🗑️ Cache limpo (${amigos.length} amigos removidos)`, 'warning');
+            if (sistemaAmigos) {
+                sistemaAmigos.carregarAmigos();
+            }
         }
 
-        renderizarAmigos() {
-            const friendsList = document.getElementById('friendsList');
+        function showDebugHelp() {
+            logDebug('Comandos disponíveis:', 'info');
+            logDebug('  test api      - Testa conexão com a API', 'info');
+            logDebug('  list users    - Lista todos os usuários', 'info');
+            logDebug('  clear cache   - Limpa cache local', 'info');
+            logDebug('  reload        - Recarrega a página', 'info');
+            logDebug('  status        - Mostra status do sistema', 'info');
+            logDebug('  help          - Mostra esta ajuda', 'info');
+        }
+
+        function showSystemStatus() {
+            const userId = localStorage.getItem('userId');
+            const userName = localStorage.getItem('userName');
+            const amigos = JSON.parse(localStorage.getItem('amigos') || '[]');
             
-            if (!this.usuarioId) {
-                this.mostrarMensagemLogin();
-                return;
+            logDebug('Status do Sistema:', 'info');
+            logDebug(`👤 Usuário: ${userName || 'Não logado'}`, userId ? 'success' : 'error');
+            logDebug(`🆔 ID: ${userId || 'Não definido'}`, userId ? 'success' : 'error');
+            logDebug(`💾 Cache: ${amigos.length} amigos`, 'info');
+            logDebug(`🌐 API: ${CONFIG.API_URL}`, 'info');
+        }
+
+        // ============================================
+        // CLASSE PRINCIPAL DO SISTEMA
+        // ============================================
+        
+        class SistemaAmigos {
+            constructor() {
+                this.usuarioId = localStorage.getItem('userId');
+                this.usuarioNome = localStorage.getItem('userName');
+                this.amigos = [];
+                this.inicializar();
             }
 
-            if (this.amigos.length === 0) {
+            inicializar() {
+                logDebug('Sistema de amigos inicializando...', 'info');
+                logDebug(`Usuário: ${this.usuarioNome} (ID: ${this.usuarioId})`, 
+                    this.usuarioId ? 'success' : 'warning');
+                
+                this.atualizarInfoDebug();
+                
+                if (this.usuarioId) {
+                    this.carregarAmigos();
+                } else {
+                    this.mostrarMensagemLogin();
+                }
+                
+                this.configurarEventos();
+                this.testarConexaoInicial();
+            }
+
+            atualizarInfoDebug() {
+                const debugInfo = document.getElementById('debugUserInfo');
+                if (debugInfo) {
+                    debugInfo.innerHTML = `
+                        <p>👤 ${this.usuarioNome || 'Não logado'}</p>
+                        <p>🆔 ${this.usuarioId || 'Não definido'}</p>
+                        <p>💾 ${JSON.parse(localStorage.getItem('amigos') || '[]').length} amigos no cache</p>
+                    `;
+                }
+            }
+
+            async testarConexaoInicial() {
+                try {
+                    const response = await fetch(`${CONFIG.API_URL}/api/health`);
+                    const data = await response.json();
+                    logDebug(`✅ API conectada: ${data.status}`, 'success');
+                } catch (error) {
+                    logDebug(`⚠️ API pode estar offline`, 'warning');
+                }
+            }
+
+            async carregarAmigos() {
+                if (!this.usuarioId) {
+                    logDebug('Não há usuário logado', 'warning');
+                    return;
+                }
+
+                logDebug(`Carregando amigos do usuário ${this.usuarioId}...`, 'info');
+
+                try {
+                    const response = await fetch(`${CONFIG.API_URL}/api/amigos/usuarios/${this.usuarioId}/amigos`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    logDebug(`Resposta da API: ${JSON.stringify(data).substring(0, 100)}...`, 'info');
+                    
+                    if (data.success) {
+                        this.amigos = data.amigos || [];
+                        logDebug(`${this.amigos.length} amigos carregados`, 'success');
+                        this.renderizarAmigos();
+                        // Salvar no cache local
+                        localStorage.setItem('amigos', JSON.stringify(this.amigos));
+                    } else {
+                        logDebug(`Erro na resposta: ${data.error || 'Desconhecido'}`, 'error');
+                        this.carregarAmigosFallback();
+                    }
+                } catch (error) {
+                    logDebug(`Erro ao carregar amigos: ${error.message}`, 'error');
+                    this.carregarAmigosFallback();
+                }
+            }
+
+            carregarAmigosFallback() {
+                logDebug('Usando cache local como fallback', 'warning');
+                this.amigos = JSON.parse(localStorage.getItem('amigos')) || [];
+                this.renderizarAmigos();
+            }
+
+            renderizarAmigos() {
+                const friendsList = document.getElementById('friendsList');
+                
+                if (!this.usuarioId) {
+                    this.mostrarMensagemLogin();
+                    return;
+                }
+
+                if (this.amigos.length === 0) {
+                    friendsList.innerHTML = `
+                        <div class="empty-state">
+                            <div style="
+                                width: 80px; 
+                                height: 80px; 
+                                background: #555; 
+                                border-radius: 50%; 
+                                display: flex; 
+                                align-items: center; 
+                                justify-content: center; 
+                                font-size: 32px;
+                                color: #888;
+                                margin: 0 auto 15px;
+                            ">
+                                👥
+                            </div>
+                            <p>Nenhum amigo adicionado ainda</p>
+                            <p style="font-size: 12px; margin-top: 10px;">Clique em "Adicionar Amigo" para começar</p>
+                            ${CONFIG.DEBUG_MODE ? `
+                            <div style="margin-top: 20px; font-size: 11px; color: #ffcf00;">
+                                <p>💡 Dica: Use o botão 🐛 para debug</p>
+                            </div>` : ''}
+                        </div>
+                    `;
+                    return;
+                }
+
+                friendsList.innerHTML = this.amigos.map(amigo => `
+                    <div class="friend-item" data-id="${amigo.amigo?.id || amigo.id}">
+                        <div class="friend-avatar">
+                            ${(amigo.amigo?.nome || amigo.nome || '?').charAt(0).toUpperCase()}
+                        </div>
+                        <div class="friend-info">
+                            <div class="friend-name">${amigo.amigo?.nome || amigo.nome || 'Amigo'}</div>
+                            <div class="friend-details">
+                                RA: ${amigo.amigo?.ra || amigo.ra || 'N/A'} • 
+                                Série: ${amigo.amigo?.serie || amigo.serie || 'Não informada'}
+                            </div>
+                            <div class="friend-status">
+                                <span class="status-online">●</span> Online
+                            </div>
+                        </div>
+                        <div class="friend-actions">
+                            <button class="btn-action btn-chat" onclick="sistemaAmigos.iniciarChat('${amigo.amigo?.id || amigo.id}')">
+                                💬 Chat
+                            </button>
+                            <button class="btn-action btn-remove" onclick="sistemaAmigos.removerAmigo('${amigo.amigo?.id || amigo.id}')">
+                                🗑️ Remover
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            mostrarMensagemLogin() {
+                const friendsList = document.getElementById('friendsList');
                 friendsList.innerHTML = `
                     <div class="empty-state">
                         <div style="
@@ -670,513 +992,509 @@
                             color: #888;
                             margin: 0 auto 15px;
                         ">
-                            👥
+                            🔒
                         </div>
-                        <p>Nenhum amigo adicionado ainda</p>
-                        <p style="font-size: 12px; margin-top: 10px;">Clique em "Adicionar Amigo" para começar</p>
+                        <p>Faça login para ver seus amigos</p>
+                        <p style="font-size: 12px; margin-top: 10px;">Você precisa estar logado para acessar o sistema de amigos</p>
+                        <button onclick="window.location.href='/login'" style="
+                            background: #ffcf00;
+                            color: #000;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 8px;
+                            margin-top: 15px;
+                            cursor: pointer;
+                            font-weight: bold;
+                        ">
+                            Ir para Login
+                        </button>
                     </div>
                 `;
-                return;
             }
 
-            friendsList.innerHTML = this.amigos.map(amigo => `
-                <div class="friend-item" data-id="${amigo.amigo.id}">
-                    <div class="friend-avatar">
-                        ${amigo.amigo.nome.charAt(0).toUpperCase()}
-                    </div>
-                    <div class="friend-info">
-                        <div class="friend-name">${amigo.amigo.nome}</div>
-                        <div class="friend-details">
-                            RA: ${amigo.amigo.ra} • Série: ${amigo.amigo.serie || 'Não informada'}
-                        </div>
-                        <div class="friend-status">
-                            <span class="status-online">●</span> Online
-                        </div>
-                    </div>
-                    <div class="friend-actions">
-                        <button class="btn-action btn-chat" onclick="sistemaAmigos.iniciarChat('${amigo.amigo.id}')">
-                            💬 Chat
-                        </button>
-                        <button class="btn-action btn-remove" onclick="sistemaAmigos.removerAmigo('${amigo.amigo.id}')">
-                            🗑️ Remover
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
+            configurarEventos() {
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.addEventListener('input', (e) => {
+                        this.filtrarAmigos(e.target.value);
+                    });
+                }
 
-        configurarEventos() {
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    this.filtrarAmigos(e.target.value);
-                });
-            }
-
-            const friendRAInput = document.getElementById('friendRAInput');
-            if (friendRAInput) {
-                friendRAInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        this.adicionarAmigoModal();
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.fecharModal();
                     }
                 });
             }
 
-            const searchFriendInput = document.getElementById('searchFriendInput');
-            if (searchFriendInput) {
-                searchFriendInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        this.realizarBusca();
-                    }
-                });
-            }
-        }
-
-        filtrarAmigos(termo) {
-            const amigosFiltrados = this.amigos.filter(amigo => 
-                amigo.amigo.nome.toLowerCase().includes(termo.toLowerCase()) ||
-                amigo.amigo.ra.includes(termo)
-            );
-
-            const friendsList = document.getElementById('friendsList');
-            
-            if (amigosFiltrados.length === 0) {
-                friendsList.innerHTML = `
-                    <div class="empty-state">
-                        <p>Nenhum amigo encontrado</p>
-                    </div>
-                `;
-                return;
-            }
-
-            friendsList.innerHTML = amigosFiltrados.map(amigo => `
-                <div class="friend-item" data-id="${amigo.amigo.id}">
-                    <div class="friend-avatar">
-                        ${amigo.amigo.nome.charAt(0).toUpperCase()}
-                    </div>
-                    <div class="friend-info">
-                        <div class="friend-name">${amigo.amigo.nome}</div>
-                        <div class="friend-details">
-                            RA: ${amigo.amigo.ra} • Série: ${amigo.amigo.serie || 'Não informada'}
-                        </div>
-                        <div class="friend-status">
-                            <span class="status-online">●</span> Online
-                        </div>
-                    </div>
-                    <div class="friend-actions">
-                        <button class="btn-action btn-chat" onclick="sistemaAmigos.iniciarChat('${amigo.amigo.id}')">
-                            💬 Chat
-                        </button>
-                        <button class="btn-action btn-remove" onclick="sistemaAmigos.removerAmigo('${amigo.amigo.id}')">
-                            🗑️ Remover
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        abrirModalAdicionar() {
-            if (!this.usuarioId) {
-                alert('⚠️ Faça login para adicionar amigos!');
-                window.location.href = '/login';
-                return;
-            }
-            
-            console.log('📱 Abrindo modal de adicionar amigo');
-            document.getElementById('addFriendModal').style.display = 'flex';
-            document.getElementById('friendNameInput').focus();
-        }
-
-        abrirModalBuscar() {
-            document.getElementById('searchFriendModal').style.display = 'flex';
-            document.getElementById('searchFriendInput').focus();
-        }
-
-        fecharModal() {
-            document.getElementById('addFriendModal').style.display = 'none';
-            document.getElementById('searchFriendModal').style.display = 'none';
-            
-            document.getElementById('friendNameInput').value = '';
-            document.getElementById('friendRAInput').value = '';
-            document.getElementById('searchFriendInput').value = '';
-        }
-
-        async adicionarAmigoModal() {
-            if (!this.usuarioId) {
-                alert('⚠️ Faça login para adicionar amigos!');
-                return;
-            }
-
-            const nome = document.getElementById('friendNameInput').value.trim();
-            const ra = document.getElementById('friendRAInput').value.trim();
-
-            console.log('📝 Dados do formulário:', { nome, ra });
-
-            if (!nome || !ra) {
-                alert('⚠️ Por favor, preencha nome e RA do amigo!');
-                return;
-            }
-
-            // Primeiro, buscar usuário pelo RA
-            try {
-                console.log(`🔍 Buscando usuário com RA: ${ra}`);
-                
-                const searchResponse = await fetch(`${this.API_BASE_URL}/api/amigos/usuarios/buscar?query=${encodeURIComponent(ra)}&usuarioId=${this.usuarioId}`);
-                
-                if (!searchResponse.ok) {
-                    throw new Error(`Erro na busca: ${searchResponse.status}`);
-                }
-                
-                const searchData = await searchResponse.json();
-                console.log('🔍 Resultado da busca:', searchData);
-
-                if (!searchData.success || !searchData.resultados || searchData.resultados.length === 0) {
-                    alert('❌ Nenhum usuário encontrado com este RA!');
+            filtrarAmigos(termo) {
+                if (!termo) {
+                    this.renderizarAmigos();
                     return;
                 }
 
-                // Procurar por RA exato primeiro, depois por nome
-                let usuarioEncontrado = searchData.resultados.find(u => u.ra === ra);
-                if (!usuarioEncontrado) {
-                    usuarioEncontrado = searchData.resultados.find(u => 
-                        u.nome.toLowerCase().includes(nome.toLowerCase())
-                    );
-                }
-
-                if (!usuarioEncontrado) {
-                    alert('❌ Usuário não encontrado! Verifique o nome e RA.');
-                    return;
-                }
-
-                console.log('✅ Usuário encontrado:', usuarioEncontrado);
-
-                // Verificar status de amizade
-                if (usuarioEncontrado.statusAmizade === 'aceito') {
-                    alert('✅ Vocês já são amigos!');
-                    this.fecharModal();
-                    return;
-                }
-
-                if (usuarioEncontrado.statusAmizade === 'pendente') {
-                    alert('📩 Já existe uma solicitação pendente para este usuário!');
-                    this.fecharModal();
-                    return;
-                }
-
-                // Enviar solicitação de amizade
-                await this.enviarSolicitacaoAmizade(usuarioEncontrado.id);
-
-            } catch (error) {
-                console.error('❌ Erro ao adicionar amigo:', error);
-                alert('❌ Erro ao adicionar amigo: ' + error.message);
-            }
-        }
-
-        async enviarSolicitacaoAmizade(amigoId) {
-            try {
-                console.log(`📤 Enviando solicitação para amigo ID: ${amigoId}`);
-                
-                const response = await fetch(`${this.API_BASE_URL}/api/amigos/usuarios/${this.usuarioId}/solicitar/${amigoId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
+                const amigosFiltrados = this.amigos.filter(amigo => {
+                    const nome = amigo.amigo?.nome || amigo.nome || '';
+                    const ra = amigo.amigo?.ra || amigo.ra || '';
+                    return nome.toLowerCase().includes(termo.toLowerCase()) ||
+                           ra.includes(termo);
                 });
 
-                console.log('📡 Status da resposta:', response.status);
+                const friendsList = document.getElementById('friendsList');
                 
-                const data = await response.json();
-                console.log('📦 Dados da resposta:', data);
-
-                if (response.ok && data.success) {
-                    alert(`✅ Solicitação enviada com sucesso!`);
-                    this.fecharModal();
-                    this.carregarAmigos(); // Recarregar lista
-                } else {
-                    throw new Error(data.error || data.details || 'Erro desconhecido');
-                }
-
-            } catch (error) {
-                console.error('❌ Erro ao enviar solicitação:', error);
-                alert(`❌ Erro: ${error.message}`);
-            }
-        }
-
-        async realizarBusca() {
-            const termo = document.getElementById('searchFriendInput').value.trim();
-            
-            if (!termo) {
-                alert('⚠️ Por favor, digite um nome ou RA para buscar!');
-                return;
-            }
-
-            try {
-                console.log(`🔍 Buscando por: "${termo}"`);
-                
-                const response = await fetch(`${this.API_BASE_URL}/api/amigos/usuarios/buscar?query=${encodeURIComponent(termo)}&usuarioId=${this.usuarioId}`);
-                
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('🔍 Resultados:', data);
-
-                if (data.success && data.resultados && data.resultados.length > 0) {
-                    // Criar modal de resultados
-                    this.mostrarResultadosBusca(data.resultados);
-                } else {
-                    alert('❌ Nenhum usuário encontrado com esses dados.');
-                }
-
-            } catch (error) {
-                console.error('❌ Erro na busca:', error);
-                alert('❌ Erro ao buscar usuários: ' + error.message);
-            }
-        }
-
-        mostrarResultadosBusca(resultados) {
-            // Criar um modal customizado para mostrar resultados
-            const modalHTML = `
-                <div style="
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0,0,0,0.8);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 3000;
-                ">
-                    <div style="
-                        background: #323232;
-                        padding: 25px;
-                        border-radius: 15px;
-                        color: white;
-                        width: 90%;
-                        max-width: 500px;
-                        max-height: 80vh;
-                        overflow-y: auto;
-                        border: 1px solid #555;
-                    ">
-                        <h3 style="margin-bottom: 20px; color: #ffcf00;">🔍 Resultados da Busca</h3>
-                        <div style="margin-bottom: 20px;">
-                            ${resultados.map(user => `
-                                <div style="
-                                    background: #242424;
-                                    border-radius: 12px;
-                                    padding: 15px;
-                                    margin-bottom: 10px;
-                                    border: 1px solid #555;
-                                ">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <div>
-                                            <strong style="color: #ffcf00;">${user.nome}</strong><br>
-                                            <small style="color: #888;">RA: ${user.ra} • Série: ${user.serie || 'Não informada'}</small>
-                                        </div>
-                                        ${user.statusAmizade ? 
-                                            `<span style="color: ${user.statusAmizade === 'aceito' ? '#00ff00' : '#ffcf00'}; font-size: 12px;">
-                                                ${user.statusAmizade === 'aceito' ? '✅ Amigo' : '📩 Pendente'}
-                                            </span>` :
-                                            `<button onclick="sistemaAmigos.adicionarAmigoBusca(${user.id}, '${user.nome.replace(/'/g, "\\'")}')" 
-                                                style="
-                                                    background: #ffcf00;
-                                                    color: #000;
-                                                    border: none;
-                                                    padding: 8px 15px;
-                                                    border-radius: 6px;
-                                                    cursor: pointer;
-                                                    font-weight: bold;
-                                                    font-size: 12px;
-                                                ">
-                                                Adicionar
-                                            </button>`
-                                        }
-                                    </div>
-                                </div>
-                            `).join('')}
+                if (amigosFiltrados.length === 0) {
+                    friendsList.innerHTML = `
+                        <div class="empty-state">
+                            <p>Nenhum amigo encontrado</p>
+                            <p style="font-size: 12px; margin-top: 5px;">Tente outro termo de busca</p>
                         </div>
-                        <div style="text-align: center;">
-                            <button onclick="this.parentElement.parentElement.remove()" 
-                                style="
-                                    background: #555;
-                                    color: white;
-                                    border: none;
-                                    padding: 10px 20px;
-                                    border-radius: 8px;
-                                    cursor: pointer;
-                                ">
-                                Fechar
+                    `;
+                    return;
+                }
+
+                friendsList.innerHTML = amigosFiltrados.map(amigo => `
+                    <div class="friend-item" data-id="${amigo.amigo?.id || amigo.id}">
+                        <div class="friend-avatar">
+                            ${(amigo.amigo?.nome || amigo.nome || '?').charAt(0).toUpperCase()}
+                        </div>
+                        <div class="friend-info">
+                            <div class="friend-name">${amigo.amigo?.nome || amigo.nome || 'Amigo'}</div>
+                            <div class="friend-details">
+                                RA: ${amigo.amigo?.ra || amigo.ra || 'N/A'} • 
+                                Série: ${amigo.amigo?.serie || amigo.serie || 'Não informada'}
+                            </div>
+                            <div class="friend-status">
+                                <span class="status-online">●</span> Online
+                            </div>
+                        </div>
+                        <div class="friend-actions">
+                            <button class="btn-action btn-chat" onclick="sistemaAmigos.iniciarChat('${amigo.amigo?.id || amigo.id}')">
+                                💬 Chat
+                            </button>
+                            <button class="btn-action btn-remove" onclick="sistemaAmigos.removerAmigo('${amigo.amigo?.id || amigo.id}')">
+                                🗑️ Remover
                             </button>
                         </div>
                     </div>
-                </div>
-            `;
-            
-            // Adicionar o modal ao body
-            const modalDiv = document.createElement('div');
-            modalDiv.innerHTML = modalHTML;
-            document.body.appendChild(modalDiv.firstElementChild);
-            
-            this.fecharModal();
+                `).join('');
+            }
+
+            abrirModalAdicionar() {
+                if (!this.usuarioId) {
+                    alert('⚠️ Faça login para adicionar amigos!');
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                logDebug('Abrindo modal de adicionar amigo', 'info');
+                document.getElementById('addFriendModal').style.display = 'flex';
+                document.getElementById('friendNameInput').focus();
+            }
+
+            abrirModalBuscar() {
+                logDebug('Abrindo modal de busca', 'info');
+                document.getElementById('searchFriendModal').style.display = 'flex';
+                document.getElementById('searchFriendInput').focus();
+            }
+
+            fecharModal() {
+                document.getElementById('addFriendModal').style.display = 'none';
+                document.getElementById('searchFriendModal').style.display = 'none';
+                
+                document.getElementById('friendNameInput').value = '';
+                document.getElementById('friendRAInput').value = '';
+                document.getElementById('searchFriendInput').value = '';
+                
+                document.getElementById('addFriendDebug').style.display = 'none';
+                document.getElementById('addFriendDebug').innerHTML = '<p>Debug info aparecerá aqui</p>';
+            }
+
+            async adicionarAmigo() {
+                if (!this.usuarioId) {
+                    alert('⚠️ Faça login para adicionar amigos!');
+                    return;
+                }
+
+                const nome = document.getElementById('friendNameInput').value.trim();
+                const ra = document.getElementById('friendRAInput').value.trim();
+                const debugDiv = document.getElementById('addFriendDebug');
+
+                logDebug(`Tentando adicionar amigo: ${nome} (RA: ${ra})`, 'info');
+
+                if (!nome || !ra) {
+                    alert('⚠️ Por favor, preencha nome e RA do amigo!');
+                    return;
+                }
+
+                // Validar RA (4 dígitos)
+                if (!/^\d{4}$/.test(ra)) {
+                    alert('❌ RA inválido! Deve conter exatamente 4 dígitos.');
+                    return;
+                }
+
+                debugDiv.style.display = 'block';
+                debugDiv.innerHTML = '<p>🔍 Buscando usuário...</p>';
+
+                try {
+                    // 1. Buscar usuário pelo RA
+                    logDebug(`Buscando usuário com RA: ${ra}`, 'info');
+                    const searchResponse = await fetch(
+                        `${CONFIG.API_URL}/api/amigos/usuarios/buscar?query=${encodeURIComponent(ra)}&usuarioId=${this.usuarioId}`
+                    );
+
+                    if (!searchResponse.ok) {
+                        throw new Error(`HTTP ${searchResponse.status}: ${await searchResponse.text()}`);
+                    }
+
+                    const searchData = await searchResponse.json();
+                    logDebug(`Resultado da busca: ${JSON.stringify(searchData)}`, 'info');
+
+                    debugDiv.innerHTML = `
+                        <p>✅ Busca realizada</p>
+                        <p>Resultados: ${searchData.resultados?.length || 0}</p>
+                    `;
+
+                    if (!searchData.success || !searchData.resultados || searchData.resultados.length === 0) {
+                        debugDiv.innerHTML += '<p style="color: #ff4444;">❌ Nenhum usuário encontrado com este RA</p>';
+                        alert('❌ Nenhum usuário encontrado com este RA!');
+                        return;
+                    }
+
+                    // 2. Encontrar usuário exato
+                    const usuarioEncontrado = searchData.resultados.find(u => u.ra === ra);
+                    
+                    if (!usuarioEncontrado) {
+                        debugDiv.innerHTML += '<p style="color: #ff4444;">❌ RA não encontrado (usuário pode ter RA diferente)</p>';
+                        alert('❌ RA não encontrado! Verifique se o RA está correto.');
+                        return;
+                    }
+
+                    debugDiv.innerHTML += `
+                        <p>✅ Usuário encontrado: ${usuarioEncontrado.nome}</p>
+                        <p>Status de amizade: ${usuarioEncontrado.statusAmizade || 'Nenhum'}</p>
+                    `;
+
+                    // 3. Verificar status de amizade
+                    if (usuarioEncontrado.statusAmizade === 'aceito') {
+                        debugDiv.innerHTML += '<p style="color: #00ff00;">✅ Vocês já são amigos!</p>';
+                        alert('✅ Vocês já são amigos!');
+                        this.fecharModal();
+                        return;
+                    }
+
+                    if (usuarioEncontrado.statusAmizade === 'pendente') {
+                        debugDiv.innerHTML += '<p style="color: #ffcf00;">📩 Solicitação já enviada!</p>';
+                        alert('📩 Já existe uma solicitação pendente para este usuário!');
+                        this.fecharModal();
+                        return;
+                    }
+
+                    // 4. Enviar solicitação de amizade
+                    debugDiv.innerHTML += '<p>📤 Enviando solicitação de amizade...</p>';
+                    
+                    const addResponse = await fetch(
+                        `${CONFIG.API_URL}/api/amigos/usuarios/${this.usuarioId}/solicitar/${usuarioEncontrado.id}`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            }
+                        }
+                    );
+
+                    const addData = await addResponse.json();
+                    logDebug(`Resposta da solicitação: ${JSON.stringify(addData)}`, 'info');
+
+                    if (addResponse.ok && addData.success) {
+                        debugDiv.innerHTML += '<p style="color: #00ff00;">✅ Solicitação enviada com sucesso!</p>';
+                        logDebug(`Solicitação enviada para ${usuarioEncontrado.nome}`, 'success');
+                        
+                        alert(`✅ Solicitação enviada para ${usuarioEncontrado.nome}!`);
+                        this.fecharModal();
+                        this.carregarAmigos();
+                    } else {
+                        const errorMsg = addData.error || addData.details || 'Erro desconhecido';
+                        debugDiv.innerHTML += `<p style="color: #ff4444;">❌ ${errorMsg}</p>`;
+                        logDebug(`Erro ao enviar solicitação: ${errorMsg}`, 'error');
+                        alert(`❌ Erro: ${errorMsg}`);
+                    }
+
+                } catch (error) {
+                    debugDiv.innerHTML += `<p style="color: #ff4444;">❌ Erro: ${error.message}</p>`;
+                    logDebug(`Erro ao adicionar amigo: ${error.message}`, 'error');
+                    alert(`❌ Erro ao adicionar amigo: ${error.message}`);
+                }
+            }
+
+            async realizarBusca() {
+                const termo = document.getElementById('searchFriendInput').value.trim();
+                
+                if (!termo) {
+                    alert('⚠️ Por favor, digite um nome ou RA para buscar!');
+                    return;
+                }
+
+                logDebug(`Buscando por: "${termo}"`, 'info');
+
+                try {
+                    const response = await fetch(
+                        `${CONFIG.API_URL}/api/amigos/usuarios/buscar?query=${encodeURIComponent(termo)}&usuarioId=${this.usuarioId}`
+                    );
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    logDebug(`Resultados da busca: ${data.resultados?.length || 0} encontrados`, 'info');
+
+                    if (data.success && data.resultados && data.resultados.length > 0) {
+                        this.mostrarResultadosBusca(data.resultados);
+                    } else {
+                        alert('❌ Nenhum usuário encontrado com esses dados.');
+                    }
+
+                } catch (error) {
+                    logDebug(`Erro na busca: ${error.message}`, 'error');
+                    alert('❌ Erro ao buscar usuários. Tente novamente.');
+                }
+                
+                this.fecharModal();
+            }
+
+            mostrarResultadosBusca(resultados) {
+                const modalHTML = `
+                    <div style="
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.9);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 3000;
+                    ">
+                        <div style="
+                            background: #323232;
+                            padding: 25px;
+                            border-radius: 15px;
+                            color: white;
+                            width: 90%;
+                            max-width: 500px;
+                            max-height: 80vh;
+                            overflow-y: auto;
+                            border: 1px solid #555;
+                        ">
+                            <h3 style="margin-bottom: 20px; color: #ffcf00;">🔍 Resultados da Busca (${resultados.length})</h3>
+                            <div style="margin-bottom: 20px;">
+                                ${resultados.map(user => `
+                                    <div style="
+                                        background: #242424;
+                                        border-radius: 12px;
+                                        padding: 15px;
+                                        margin-bottom: 10px;
+                                        border: 1px solid #555;
+                                    ">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div>
+                                                <strong style="color: #ffcf00;">${user.nome}</strong><br>
+                                                <small style="color: #888;">RA: ${user.ra} • Série: ${user.serie || 'Não informada'}</small>
+                                            </div>
+                                            ${user.statusAmizade ? 
+                                                `<span style="color: ${user.statusAmizade === 'aceito' ? '#00ff00' : '#ffcf00'}; font-size: 12px;">
+                                                    ${user.statusAmizade === 'aceito' ? '✅ Amigo' : '📩 Pendente'}
+                                                </span>` :
+                                                `<button onclick="adicionarAmigoBusca(${user.id}, '${user.nome.replace(/'/g, "\\'")}')" 
+                                                    style="
+                                                        background: #ffcf00;
+                                                        color: #000;
+                                                        border: none;
+                                                        padding: 8px 15px;
+                                                        border-radius: 6px;
+                                                        cursor: pointer;
+                                                        font-weight: bold;
+                                                        font-size: 12px;
+                                                    ">
+                                                    Adicionar
+                                                </button>`
+                                            }
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div style="text-align: center;">
+                                <button onclick="this.parentElement.parentElement.remove()" 
+                                    style="
+                                        background: #555;
+                                        color: white;
+                                        border: none;
+                                        padding: 10px 20px;
+                                        border-radius: 8px;
+                                        cursor: pointer;
+                                    ">
+                                    Fechar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                const modalDiv = document.createElement('div');
+                modalDiv.innerHTML = modalHTML;
+                document.body.appendChild(modalDiv.firstElementChild);
+            }
+
+            async removerAmigo(amigoId) {
+                if (!confirm('⚠️ Tem certeza que deseja remover este amigo?')) {
+                    return;
+                }
+
+                logDebug(`Removendo amigo ID: ${amigoId}`, 'info');
+
+                try {
+                    const response = await fetch(
+                        `${CONFIG.API_URL}/api/amigos/usuarios/${this.usuarioId}/amigos/${amigoId}`,
+                        { method: 'DELETE' }
+                    );
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        logDebug(`Amigo ${amigoId} removido`, 'success');
+                        alert('✅ Amigo removido com sucesso!');
+                        this.carregarAmigos();
+                    } else {
+                        logDebug(`Erro ao remover: ${data.error || data.details}`, 'error');
+                        alert(`❌ Erro: ${data.error || data.details}`);
+                    }
+                } catch (error) {
+                    logDebug(`Erro ao remover amigo: ${error.message}`, 'error');
+                    alert('❌ Erro ao remover amigo. Tente novamente.');
+                }
+            }
+
+            iniciarChat(amigoId) {
+                const amigo = this.amigos.find(a => (a.amigo?.id || a.id) === parseInt(amigoId));
+                if (amigo) {
+                    logDebug(`Iniciando chat com amigo ID: ${amigoId}`, 'info');
+                    localStorage.setItem('chatAmigo', JSON.stringify(amigo.amigo || amigo));
+                    window.location.href = `/chat?amigoId=${amigoId}`;
+                } else {
+                    alert('Amigo não encontrado!');
+                }
+            }
         }
 
-        async adicionarAmigoBusca(amigoId, amigoNome) {
-            if (!this.usuarioId) {
+        // ============================================
+        // FUNÇÕES GLOBAIS
+        // ============================================
+        
+        function adicionarAmigoBusca(amigoId, amigoNome) {
+            if (!sistemaAmigos || !sistemaAmigos.usuarioId) {
                 alert('⚠️ Faça login para adicionar amigos!');
                 return;
             }
 
-            try {
-                console.log(`📤 Adicionando amigo ID: ${amigoId} (${amigoNome})`);
-                await this.enviarSolicitacaoAmizade(amigoId);
-                
-            } catch (error) {
-                console.error('❌ Erro ao adicionar amigo:', error);
-                alert('❌ Erro ao adicionar amigo. Tente novamente.');
-            }
-        }
-
-        async removerAmigo(amigoId) {
-            if (!confirm('⚠️ Tem certeza que deseja remover este amigo?')) {
-                return;
+            logDebug(`Adicionando amigo da busca: ${amigoNome} (ID: ${amigoId})`, 'info');
+            
+            // Remover modal de resultados
+            const resultModal = document.querySelector('div[style*="background: rgba(0,0,0,0.9)"]');
+            if (resultModal) {
+                resultModal.remove();
             }
 
-            try {
-                console.log(`🗑️ Removendo amigo ID: ${amigoId}`);
-                
-                const response = await fetch(`${this.API_BASE_URL}/api/amigos/usuarios/${this.usuarioId}/amigos/${amigoId}`, {
-                    method: 'DELETE'
-                });
-
-                const data = await response.json();
-                console.log('📦 Resposta da remoção:', data);
-
+            // Enviar solicitação
+            fetch(`${CONFIG.API_URL}/api/amigos/usuarios/${sistemaAmigos.usuarioId}/solicitar/${amigoId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
                 if (data.success) {
-                    alert('✅ Amigo removido com sucesso!');
-                    this.carregarAmigos();
+                    alert(`✅ Solicitação enviada para ${amigoNome}!`);
+                    if (sistemaAmigos) {
+                        sistemaAmigos.carregarAmigos();
+                    }
                 } else {
                     alert(`❌ Erro: ${data.error || data.details}`);
                 }
-            } catch (error) {
-                console.error('❌ Erro ao remover amigo:', error);
-                alert('❌ Erro ao remover amigo. Tente novamente.');
-            }
+            })
+            .catch(error => {
+                logDebug(`Erro ao adicionar amigo: ${error.message}`, 'error');
+                alert('❌ Erro ao adicionar amigo. Tente novamente.');
+            });
         }
 
-        iniciarChat(amigoId) {
-            const amigo = this.amigos.find(a => a.amigo.id === parseInt(amigoId));
-            if (amigo) {
-                // Redirecionar para o chat privado com o amigo
-                localStorage.setItem('chatAmigo', JSON.stringify(amigo.amigo));
-                window.location.href = `/chat?amigoId=${amigoId}`;
-            }
-        }
-
-        mostrarMensagemErro(mensagem) {
-            const friendsList = document.getElementById('friendsList');
-            friendsList.innerHTML = `
-                <div class="empty-state">
-                    <div style="
-                        width: 80px; 
-                        height: 80px; 
-                        background: #555; 
-                        border-radius: 50%; 
-                        display: flex; 
-                        align-items: center; 
-                        justify-content: center; 
-                        font-size: 32px;
-                        color: #ff4444;
-                        margin: 0 auto 15px;
-                    ">
-                        ⚠️
-                    </div>
-                    <p>Erro ao carregar amigos</p>
-                    <p style="font-size: 12px; margin-top: 10px;">${mensagem}</p>
-                    <button onclick="sistemaAmigos.carregarAmigos()" style="
-                        background: #ffcf00;
-                        color: #000;
-                        border: none;
-                        padding: 10px 20px;
-                        border-radius: 8px;
-                        margin-top: 15px;
-                        cursor: pointer;
-                        font-weight: bold;
-                    ">
-                        Tentar Novamente
-                    </button>
-                </div>
-            `;
-        }
-
-        // Método para testar conexão com a API
-        async testarConexaoAPI() {
-            try {
-                const response = await fetch(`${this.API_BASE_URL}/api/health`);
-                const data = await response.json();
-                console.log('🔌 Status da API:', data);
-                return data.status === 'online';
-            } catch (error) {
-                console.error('❌ API offline:', error);
-                return false;
-            }
-        }
-    }
-
-    let sistemaAmigos;
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // Verificar se o usuário está logado
-        const userId = localStorage.getItem('userId');
-        const userName = localStorage.getItem('userName');
+        // ============================================
+        // INICIALIZAÇÃO
+        // ============================================
         
-        console.log('🔍 Verificando login...');
-        console.log('📱 ID do usuário:', userId);
-        console.log('👤 Nome do usuário:', userName);
-        
-        if (userId && userName) {
-            console.log(`✅ Usuário logado: ${userName} (ID: ${userId})`);
-            sistemaAmigos = new SistemaAmigos();
+        document.addEventListener('DOMContentLoaded', function() {
+            logDebug('Página carregada', 'success');
             
-            // Testar conexão com a API
-            setTimeout(() => {
-                sistemaAmigos.testarConexaoAPI().then(online => {
-                    if (!online) {
-                        console.warn('⚠️ API parece estar offline, usando localStorage');
-                    }
-                });
-            }, 1000);
+            // Mostrar informações iniciais
+            const userId = localStorage.getItem('userId');
+            const userName = localStorage.getItem('userName');
             
-        } else {
-            console.log('⚠️ Usuário não logado, mostrando mensagem de login');
-            sistemaAmigos = new SistemaAmigos();
-        }
-    });
+            if (CONFIG.DEBUG_MODE) {
+                document.getElementById('debugHeader').style.display = 'block';
+            }
+            
+            if (userId && userName) {
+                logDebug(`Usuário logado: ${userName} (ID: ${userId})`, 'success');
+                sistemaAmigos = new SistemaAmigos();
+            } else {
+                logDebug('Usuário não logado', 'warning');
+                sistemaAmigos = new SistemaAmigos();
+            }
+            
+            // Mostrar ajuda de debug se habilitado
+            if (CONFIG.DEBUG_MODE) {
+                setTimeout(() => {
+                    logDebug('💡 Dica: Clique no botão 🐛 para abrir o console de debug', 'info');
+                }, 1000);
+            }
+        });
 
-    // Funções globais para acesso via onclick
-    window.abrirModalAdicionar = function() {
-        if (sistemaAmigos) sistemaAmigos.abrirModalAdicionar();
-    };
-    
-    window.abrirModalBuscar = function() {
-        if (sistemaAmigos) sistemaAmigos.abrirModalBuscar();
-    };
-    
-    window.fecharModal = function() {
-        if (sistemaAmigos) sistemaAmigos.fecharModal();
-    };
-    
-    window.adicionarAmigo = function() {
-        if (sistemaAmigos) sistemaAmigos.adicionarAmigoModal();
-    };
-    
-    window.realizarBusca = function() {
-        if (sistemaAmigos) sistemaAmigos.realizarBusca();
-    };
-</script>
+        // ============================================
+        // FUNÇÕES DE CONTROLE DOS MODAIS
+        // ============================================
+        
+        window.abrirModalAdicionar = function() {
+            if (sistemaAmigos) sistemaAmigos.abrirModalAdicionar();
+        };
+        
+        window.abrirModalBuscar = function() {
+            if (sistemaAmigos) sistemaAmigos.abrirModalBuscar();
+        };
+        
+        window.fecharModal = function() {
+            if (sistemaAmigos) sistemaAmigos.fecharModal();
+        };
+        
+        window.adicionarAmigo = function() {
+            if (sistemaAmigos) sistemaAmigos.adicionarAmigo();
+        };
+        
+        window.realizarBusca = function() {
+            if (sistemaAmigos) sistemaAmigos.realizarBusca();
+        };
+        
+        window.filtrarAmigos = function(termo) {
+            if (sistemaAmigos) sistemaAmigos.filtrarAmigos(termo);
+        };
+        
+        window.adicionarAmigoBusca = adicionarAmigoBusca;
+        window.toggleDebugPanel = toggleDebugPanel;
+        window.toggleDebugMode = toggleDebugMode;
+        window.executeDebugCommand = executeDebugCommand;
+        window.clearDebugLog = clearDebugLog;
+    </script>
 </body>
 </html>
-
