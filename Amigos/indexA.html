@@ -823,12 +823,19 @@ async function carregarNotificacoes() {
         
         const response = await fetch(`${API_URL}/api/amigos/usuarios/${currentUserId}/solicitacoes`);
         
-        if (!response.ok) return;
+        if (!response.ok) {
+            console.error('❌ Erro ao carregar notificações:', response.status);
+            return;
+        }
         
         const data = await response.json();
         
         if (data.success && data.solicitacoes && data.solicitacoes.length > 0) {
+            console.log(`📩 ${data.solicitacoes.length} notificações carregadas`);
             mostrarNotificacoes(data.solicitacoes);
+        } else {
+            // Limpar notificações se não houver
+            document.getElementById('notificacoesContainer').innerHTML = '';
         }
         
     } catch (error) {
@@ -844,7 +851,7 @@ function mostrarNotificacoes(solicitacoes) {
     solicitacoes.forEach(solicitacao => {
         if (solicitacao.usuario && solicitacao.usuario.nome) {
             html += `
-                <div class="notificacao-item">
+                <div class="notificacao-item" id="notificacao-${solicitacao.id}">
                     <div class="notificacao-info">
                         <strong>${solicitacao.usuario.nome}</strong> quer ser seu amigo!
                         <div style="font-size: 12px; color: #333;">RA: ${solicitacao.usuario.ra || 'N/A'}</div>
@@ -867,21 +874,55 @@ function mostrarNotificacoes(solicitacoes) {
 
 async function aceitarSolicitacao(amizadeId) {
     try {
-        if (!currentUserId) return;
+        if (!currentUserId) {
+            mostrarMensagem('❌ Faça login primeiro', 'erro');
+            return;
+        }
+        
+        console.log(`✅ Aceitando solicitação ${amizadeId}...`);
         
         const response = await fetch(
             `${API_URL}/api/amigos/usuarios/${currentUserId}/aceitar/${amizadeId}`,
-            { method: 'PUT' }
+            { 
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
         );
         
         const data = await response.json();
+        console.log('📦 Resposta da API:', data);
         
         if (data.success) {
+            // ✅ REMOVER A NOTIFICAÇÃO VISUALMENTE
+            const notificacaoElement = document.getElementById(`notificacao-${amizadeId}`);
+            if (notificacaoElement) {
+                notificacaoElement.style.opacity = '0';
+                notificacaoElement.style.transform = 'translateY(-10px)';
+                notificacaoElement.style.transition = 'all 0.3s ease';
+                
+                setTimeout(() => {
+                    notificacaoElement.remove();
+                    
+                    // Se não houver mais notificações, esconder o container
+                    const container = document.getElementById('notificacoesContainer');
+                    if (container.children.length === 0) {
+                        container.innerHTML = '';
+                    }
+                }, 300);
+            }
+            
             mostrarMensagem('✅ Solicitação aceita! Agora são amigos.', 'sucesso');
-            carregarAmigos();
-            carregarNotificacoes();
+            
+            // Atualizar lista de amigos
+            setTimeout(() => {
+                carregarAmigos();
+                carregarNotificacoes(); // Recarregar para garantir que foi removida
+            }, 500);
+            
         } else {
-            mostrarMensagem(`❌ Erro: ${data.error || 'Não foi possível aceitar'}`, 'erro');
+            mostrarMensagem(`❌ Erro: ${data.error || data.details || 'Não foi possível aceitar'}`, 'erro');
         }
         
     } catch (error) {
@@ -894,20 +935,54 @@ async function rejeitarSolicitacao(amizadeId) {
     if (!confirm('Tem certeza que deseja rejeitar esta solicitação?')) return;
     
     try {
-        if (!currentUserId) return;
+        if (!currentUserId) {
+            mostrarMensagem('❌ Faça login primeiro', 'erro');
+            return;
+        }
+        
+        console.log(`❌ Rejeitando solicitação ${amizadeId}...`);
         
         const response = await fetch(
             `${API_URL}/api/amigos/usuarios/${currentUserId}/rejeitar/${amizadeId}`,
-            { method: 'PUT' }
+            { 
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
         );
         
         const data = await response.json();
+        console.log('📦 Resposta da API:', data);
         
         if (data.success) {
+            // ✅ REMOVER A NOTIFICAÇÃO VISUALMENTE
+            const notificacaoElement = document.getElementById(`notificacao-${amizadeId}`);
+            if (notificacaoElement) {
+                notificacaoElement.style.opacity = '0';
+                notificacaoElement.style.transform = 'translateY(-10px)';
+                notificacaoElement.style.transition = 'all 0.3s ease';
+                
+                setTimeout(() => {
+                    notificacaoElement.remove();
+                    
+                    // Se não houver mais notificações, esconder o container
+                    const container = document.getElementById('notificacoesContainer');
+                    if (container.children.length === 0) {
+                        container.innerHTML = '';
+                    }
+                }, 300);
+            }
+            
             mostrarMensagem('✅ Solicitação rejeitada.', 'sucesso');
-            carregarNotificacoes();
+            
+            // Atualizar notificações
+            setTimeout(() => {
+                carregarNotificacoes(); // Recarregar para garantir que foi removida
+            }, 500);
+            
         } else {
-            mostrarMensagem(`❌ Erro: ${data.error || 'Não foi possível rejeitar'}`, 'erro');
+            mostrarMensagem(`❌ Erro: ${data.error || data.details || 'Não foi possível rejeitar'}`, 'erro');
         }
         
     } catch (error) {
@@ -1357,3 +1432,4 @@ setTimeout(() => {
 </script>
 </body>
 </html>
+
