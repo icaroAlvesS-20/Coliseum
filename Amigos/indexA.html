@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -244,6 +243,7 @@
             font-weight: bold;
             font-size: 18px;
             flex-shrink: 0;
+            position: relative;
         }
 
         .friend-info {
@@ -270,24 +270,39 @@
         }
 
         .btn-action {
-            background: #323232;
+            padding: 8px 16px;
+            border-radius: 6px;
             border: none;
-            border-radius: 8px;
-            padding: 8px 12px;
-            color: #ffffff;
             cursor: pointer;
-            font-size: 12px;
+            font-weight: 600;
+            font-size: 14px;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 100px;
+        }
+
+        .btn-chat {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
         }
 
         .btn-chat:hover {
-            background: #2196F3;
-            color: #fff;
+            background: linear-gradient(135deg, #1976D2, #1565C0);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn-remove {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
         }
 
         .btn-remove:hover {
-            background: #ff4444;
-            color: #fff;
+            background: linear-gradient(135deg, #c0392b, #a93226);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
         }
 
         /* MODAL */
@@ -298,11 +313,10 @@
             width: 100%;
             height: 100%;
             background: rgba(0,0,0,0.9);
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             z-index: 2000;
-            display: none;
         }
 
         .modal-content {
@@ -462,6 +476,33 @@
             background: linear-gradient(135deg, #f44336, #da190b);
         }
 
+        .mensagem.aviso {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+        }
+
+        /* BADGE PARA NOVAS MENSAGENS */
+        .badge-novas-mensagens {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #e74c3c;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            border: 2px solid #242424;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
         /* RESPONSIVO */
         @media (max-width: 768px) {
             .container {
@@ -474,12 +515,26 @@
             
             .friend-item {
                 padding: 12px;
+                flex-direction: column;
+                text-align: center;
             }
             
             .friend-avatar {
                 width: 45px;
                 height: 45px;
                 font-size: 16px;
+            }
+
+            .friend-actions {
+                width: 100%;
+                justify-content: center;
+                margin-top: 10px;
+            }
+
+            .btn-action {
+                min-width: 80px;
+                padding: 6px 12px;
+                font-size: 12px;
             }
 
             .btn-voltar {
@@ -586,21 +641,154 @@ let currentUserId = null;
 let currentUserName = null;
 
 // ============================================
+// FUNÇÕES UTILITÁRIAS
+// ============================================
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML.replace(/'/g, "\\'");
+}
+
+function mostrarMensagem(mensagem, tipo = 'info') {
+    // Remover mensagem anterior se existir
+    const mensagemAnterior = document.querySelector('.mensagem');
+    if (mensagemAnterior) {
+        mensagemAnterior.remove();
+    }
+
+    // Criar nova mensagem
+    const msg = document.createElement('div');
+    msg.className = `mensagem ${tipo}`;
+    msg.textContent = mensagem;
+    
+    document.body.appendChild(msg);
+
+    // Mostrar mensagem
+    setTimeout(() => {
+        msg.style.display = 'block';
+    }, 10);
+
+    // Remover após 4 segundos
+    setTimeout(() => {
+        if (msg.parentNode) {
+            msg.style.opacity = '0';
+            msg.style.transition = 'opacity 0.3s';
+            setTimeout(() => {
+                if (msg.parentNode) msg.remove();
+            }, 300);
+        }
+    }, 4000);
+}
+
+// ============================================
+// FUNÇÃO PRINCIPAL PARA ABRIR CHAT
+// ============================================
+async function abrirChatAmigo(amigoId, amigoNome) {
+    console.log(`💬 Abrindo chat com: ${amigoNome} (ID: ${amigoId})`);
+    
+    try {
+        // 1. Obter ID do usuário atual
+        const usuarioJSON = localStorage.getItem('usuario');
+        let userId;
+        
+        if (usuarioJSON) {
+            try {
+                const usuario = JSON.parse(usuarioJSON);
+                userId = usuario.id;
+                console.log('✅ ID do usuário (objeto):', userId);
+            } catch (parseError) {
+                console.error('❌ Erro ao parsear usuário:', parseError);
+                userId = localStorage.getItem('userId') || localStorage.getItem('usuarioId');
+            }
+        } else {
+            userId = localStorage.getItem('userId') || localStorage.getItem('usuarioId');
+        }
+        
+        // Validar usuário logado
+        if (!userId || userId === 'null' || userId === 'undefined') {
+            mostrarMensagem('⚠️ Faça login para usar o chat!', 'erro');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 2000);
+            return;
+        }
+        
+        userId = parseInt(userId);
+        console.log('👤 Usuário ID final:', userId);
+        
+        // 2. Feedback visual no botão
+        const eventButton = event?.target || document.querySelector(`[onclick*="abrirChatAmigo(${amigoId},"]`);
+        if (eventButton) {
+            const originalHTML = eventButton.innerHTML;
+            eventButton.innerHTML = '<span style="margin-right: 5px;">⏳</span> Abrindo...';
+            eventButton.disabled = true;
+            eventButton.style.opacity = '0.7';
+            
+            setTimeout(() => {
+                if (eventButton && eventButton.disabled) {
+                    eventButton.innerHTML = originalHTML;
+                    eventButton.disabled = false;
+                    eventButton.style.opacity = '1';
+                }
+            }, 3000);
+        }
+        
+        // 3. Preparar dados para o chat
+        const chatData = {
+            amigoId: amigoId,
+            amigoNome: amigoNome,
+            meuId: userId,
+            timestamp: Date.now()
+        };
+        
+        console.log('📋 Dados para chat:', chatData);
+        
+        // 4. Salvar no localStorage
+        localStorage.setItem('chat_abrir_conversa', JSON.stringify(chatData));
+        localStorage.setItem('chat_redirect_timestamp', Date.now().toString());
+        
+        // 5. Redirecionar para página de chat
+        mostrarMensagem('💬 Indo para o chat...', 'sucesso');
+        
+        setTimeout(() => {
+            console.log('🚀 Redirecionando para /chat');
+            window.location.href = '/chat';
+        }, 800);
+        
+    } catch (error) {
+        console.error('❌ Erro ao abrir chat:', error);
+        
+        // Restaurar botão
+        const eventButton = event?.target || document.querySelector(`[onclick*="abrirChatAmigo(${amigoId},"]`);
+        if (eventButton) {
+            eventButton.innerHTML = '<span style="margin-right: 5px;">💬</span> Chat';
+            eventButton.disabled = false;
+            eventButton.style.opacity = '1';
+        }
+        
+        mostrarMensagem('❌ Erro ao abrir chat. Tente novamente.', 'erro');
+        
+        // Opção alternativa
+        setTimeout(() => {
+            if (confirm('Não foi possível abrir automaticamente. Deseja abrir o chat em uma nova aba?')) {
+                window.open('/chat', '_blank');
+            }
+        }, 1500);
+    }
+}
+
+// ============================================
 // INICIALIZAÇÃO
 // ============================================
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Sistema de amigos inicializado');
-    
-    // Verificar se o usuário está logado
     verificarLogin();
-    
-    // Configurar eventos
     configurarEventListeners();
 });
 
 function verificarLogin() {
     try {
-        // Tentar obter dados do localStorage (compatível com seu sistema)
         const usuarioJSON = localStorage.getItem('usuario');
         const usuarioNome = localStorage.getItem('usuarioNome');
         const usuarioRA = localStorage.getItem('usuarioRA');
@@ -617,10 +805,16 @@ function verificarLogin() {
         
         // Prioridade 1: Dados do objeto usuario
         if (usuarioJSON) {
-            const usuario = JSON.parse(usuarioJSON);
-            currentUserId = usuario.id;
-            currentUserName = usuario.nome;
-            console.log('✅ Usuário logado via objeto:', currentUserName);
+            try {
+                const usuario = JSON.parse(usuarioJSON);
+                currentUserId = usuario.id;
+                currentUserName = usuario.nome;
+                console.log('✅ Usuário logado via objeto:', currentUserName);
+            } catch (e) {
+                console.error('❌ Erro ao parsear JSON:', e);
+                currentUserId = userId;
+                currentUserName = usuarioNome || 'Usuário';
+            }
         }
         // Prioridade 2: Dados individuais
         else if (userId && userId !== 'null' && userId !== 'undefined') {
@@ -684,7 +878,6 @@ function mostrarTelaLogin() {
 }
 
 function irParaLogin() {
-    // Salvar a página atual para voltar depois do login
     sessionStorage.setItem('redirectAfterLogin', window.location.href);
     window.location.href = '/login';
 }
@@ -746,6 +939,7 @@ async function carregarAmigos() {
             data.amigos.forEach(amigoData => {
                 const amigo = amigoData.amigo || amigoData;
                 const primeiraLetra = amigo.nome ? amigo.nome.charAt(0).toUpperCase() : '?';
+                const nomeSeguro = escapeHtml(amigo.nome || 'Nome não disponível');
                 
                 html += `
                     <div class="friend-item">
@@ -753,7 +947,7 @@ async function carregarAmigos() {
                             ${primeiraLetra}
                         </div>
                         <div class="friend-info">
-                            <div class="friend-name">${amigo.nome || 'Nome não disponível'}</div>
+                            <div class="friend-name">${nomeSeguro}</div>
                             <div class="friend-details">
                                 <span>RA: ${amigo.ra || 'N/A'}</span>
                                 <span>Série: ${amigo.serie || 'N/A'}</span>
@@ -761,7 +955,7 @@ async function carregarAmigos() {
                             </div>
                         </div>
                         <div class="friend-actions">
-                            <button class="btn-action btn-chat" onclick="abrirChatAmigo(${amigo.id}, '${amigo.nome}')" title="Conversar">
+                            <button class="btn-action btn-chat" onclick="abrirChatAmigo(${amigo.id}, '${nomeSeguro}')" title="Conversar">
                                 💬 Chat
                             </button>
                             <button class="btn-action btn-remove" onclick="removerAmigo(${amigo.id})" title="Remover amigo">
@@ -818,572 +1012,6 @@ async function carregarAmigos() {
     }
 }
 
-async function abrirChatAmigo(amigoId, amigoNome) {
-    console.log(`💬 Abrindo chat com amigo: ${amigoNome} (ID: ${amigoId})`);
-    
-    try {
-        // 1. Obter o ID do usuário atual de forma confiável
-        const usuarioJSON = localStorage.getItem('usuario');
-        let currentUserId;
-        
-        if (usuarioJSON) {
-            try {
-                const usuario = JSON.parse(usuarioJSON);
-                currentUserId = usuario.id;
-                console.log('✅ ID do usuário do localStorage:', currentUserId);
-            } catch (parseError) {
-                console.error('❌ Erro ao parsear usuário:', parseError);
-                currentUserId = localStorage.getItem('userId') || localStorage.getItem('usuarioId');
-            }
-        } else {
-            currentUserId = localStorage.getItem('userId') || localStorage.getItem('usuarioId');
-        }
-        
-        if (!currentUserId || currentUserId === 'null' || currentUserId === 'undefined') {
-            mostrarMensagem('⚠️ Você precisa estar logado para usar o chat!', 'erro');
-            setTimeout(() => {
-                window.location.href = '/login';
-            }, 2000);
-            return;
-        }
-        
-        currentUserId = parseInt(currentUserId);
-        console.log('👤 Usuário atual ID:', currentUserId);
-        
-        // 2. Mostrar feedback visual no botão
-        const eventButton = event?.target || document.querySelector(`[onclick*="abrirChatAmigo(${amigoId}, '${amigoNome}')"]`);
-        if (eventButton) {
-            const originalHTML = eventButton.innerHTML;
-            eventButton.innerHTML = '<span style="margin-right: 5px;">⏳</span> Abrindo...';
-            eventButton.disabled = true;
-            eventButton.style.opacity = '0.7';
-            
-            // Restaurar botão após 3 segundos (fallback)
-            setTimeout(() => {
-                if (eventButton) {
-                    eventButton.innerHTML = originalHTML;
-                    eventButton.disabled = false;
-                    eventButton.style.opacity = '1';
-                }
-            }, 3000);
-        }
-        
-        // 3. Verificar se já existe uma conversa
-        console.log('🔍 Verificando conversa existente...');
-        let conversaId = null;
-        let conversaExistente = false;
-        
-        try {
-            const checkUrl = `${API_URL}/api/chat/conversas/usuario/${currentUserId}/amigo/${amigoId}`;
-            console.log('🔗 URL da verificação:', checkUrl);
-            
-            const responseCheck = await fetch(checkUrl, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                }
-            });
-            
-            console.log('📊 Status da verificação:', responseCheck.status);
-            
-            if (responseCheck.ok) {
-                const dataCheck = await responseCheck.json();
-                console.log('📦 Dados da verificação:', dataCheck);
-                
-                if (dataCheck.success && dataCheck.conversa) {
-                    conversaId = dataCheck.conversa.id;
-                    conversaExistente = true;
-                    console.log(`✅ Conversa existente encontrada: ${conversaId}`);
-                }
-            } else {
-                console.log('ℹ️ Nenhuma conversa existente encontrada');
-            }
-        } catch (checkError) {
-            console.log('⚠️ Erro na verificação de conversa (não crítico):', checkError.message);
-        }
-        
-        // 4. Se não existe conversa, criar uma nova
-        if (!conversaId) {
-            console.log('📝 Criando nova conversa...');
-            
-            try {
-                const createUrl = `${API_URL}/api/chat/conversas`;
-                console.log('🔗 URL de criação:', createUrl);
-                
-                const responseCreate = await fetch(createUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        usuario1Id: currentUserId,
-                        usuario2Id: amigoId
-                    })
-                });
-                
-                console.log('📊 Status da criação:', responseCreate.status);
-                
-                if (!responseCreate.ok) {
-                    const errorText = await responseCreate.text();
-                    console.error('❌ Erro na criação:', errorText);
-                    throw new Error(`Erro HTTP ${responseCreate.status}: ${errorText}`);
-                }
-                
-                const dataCreate = await responseCreate.json();
-                console.log('📦 Dados da criação:', dataCreate);
-                
-                if (dataCreate.success) {
-                    conversaId = dataCreate.conversa.id;
-                    console.log(`✅ Nova conversa criada: ${conversaId}`);
-                } else {
-                    throw new Error(dataCreate.error || 'Erro ao criar conversa');
-                }
-            } catch (createError) {
-                console.error('❌ Erro ao criar conversa:', createError);
-                
-                // Tentar método alternativo
-                mostrarMensagem('⚠️ Tentando método alternativo...', 'aviso');
-                
-                // Tentar endpoint alternativo
-                try {
-                    const altUrl = `${API_URL}/api/chat/conversas/usuario/${currentUserId}/novo/${amigoId}`;
-                    console.log('🔄 Tentando endpoint alternativo:', altUrl);
-                    
-                    const altResponse = await fetch(altUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    if (altResponse.ok) {
-                        const altData = await altResponse.json();
-                        if (altData.success) {
-                            conversaId = altData.conversa.id;
-                            console.log(`✅ Conversa criada via método alternativo: ${conversaId}`);
-                        }
-                    }
-                } catch (altError) {
-                    console.error('❌ Método alternativo também falhou:', altError);
-                }
-            }
-        }
-        
-        // 5. Preparar dados para o chat
-        if (conversaId) {
-            console.log(`🔗 Preparando redirecionamento para conversa ${conversaId}`);
-            
-            // Criar objeto com dados da conversa
-            const chatData = {
-                conversaId: conversaId,
-                amigoId: amigoId,
-                amigoNome: amigoNome,
-                meuId: currentUserId,
-                meuNome: currentUserName || localStorage.getItem('userName') || 'Usuário',
-                timestamp: Date.now(),
-                conversaExistente: conversaExistente
-            };
-            
-            console.log('📋 Dados do chat:', chatData);
-            
-            // Salvar no localStorage
-            localStorage.setItem('chat_abrir_conversa', JSON.stringify(chatData));
-            
-            // Adicionar timestamp para controle de expiração
-            localStorage.setItem('chat_redirect_timestamp', Date.now().toString());
-            
-            // Mostrar mensagem de sucesso
-            mostrarMensagem(`✅ ${conversaExistente ? 'Conversa aberta!' : 'Conversa iniciada!'} Redirecionando...`, 'sucesso');
-            
-            // Redirecionar após breve delay
-            setTimeout(() => {
-                console.log('🚀 Redirecionando para /chat');
-                window.location.href = '/chat';
-            }, 1000);
-            
-        } else {
-            // Fallback: Abrir página de chat sem conversa específica
-            console.log('⚠️ Não foi possível obter ID da conversa. Redirecionando para chat geral.');
-            
-            // Salvar informações básicas
-            const fallbackData = {
-                amigoId: amigoId,
-                amigoNome: amigoNome,
-                meuId: currentUserId,
-                timestamp: Date.now()
-            };
-            
-            localStorage.setItem('chat_fallback_data', JSON.stringify(fallbackData));
-            
-            mostrarMensagem('💬 Indo para o chat...', 'sucesso');
-            
-            setTimeout(() => {
-                window.location.href = '/chat';
-            }, 800);
-        }
-        
-    } catch (error) {
-        console.error('❌ Erro ao abrir chat com amigo:', error);
-        
-        // Restaurar botão
-        const eventButton = event?.target || document.querySelector(`[onclick*="abrirChatAmigo(${amigoId}, '${amigoNome}')"]`);
-        if (eventButton) {
-            eventButton.innerHTML = '<span style="margin-right: 5px;">💬</span> Chat';
-            eventButton.disabled = false;
-            eventButton.style.opacity = '1';
-        }
-        
-        // Mostrar mensagem de erro
-        const errorMsg = error.message || 'Não foi possível abrir o chat';
-        mostrarMensagem(`❌ Erro: ${errorMsg}`, 'erro');
-        
-        // Oferecer alternativas após 2 segundos
-        setTimeout(() => {
-            if (confirm('Não foi possível abrir o chat automaticamente. Deseja:\n\n1) Abrir a página de chat em uma nova aba\n2) Tentar novamente')) {
-                const escolha = prompt('Digite 1 para nova aba ou 2 para tentar novamente:');
-                
-                if (escolha === '1') {
-                    window.open('/chat', '_blank');
-                } else if (escolha === '2') {
-                    abrirChatAmigo(amigoId, amigoNome);
-                }
-            }
-        }, 2000);
-    }
-}
-// ============================================
-// FUNÇÕES AUXILIARES
-// ============================================
-function mostrarLoadingChat() {
-    // Criar overlay de loading
-    const overlay = document.createElement('div');
-    overlay.id = 'chatLoadingOverlay';
-    overlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        color: white;
-    `;
-    
-    overlay.innerHTML = `
-        <div class="spinner" style="width: 60px; height: 60px; border-width: 5px; margin-bottom: 20px;"></div>
-        <h3 style="margin-bottom: 10px;">Abrindo chat...</h3>
-        <p style="color: #888; text-align: center;">Preparando conversa com seu amigo</p>
-    `;
-    
-    document.body.appendChild(overlay);
-}
-
-function esconderLoadingChat() {
-    const overlay = document.getElementById('chatLoadingOverlay');
-    if (overlay) {
-        overlay.remove();
-    }
-}
-
-
-const estilosChat = `
-/* Estilos para os botões de ação */
-.friend-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.btn-action {
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 100px;
-}
-
-.btn-chat {
-    background: linear-gradient(135deg, #2196F3, #1976D2);
-    color: white;
-}
-
-.btn-chat:hover {
-    background: linear-gradient(135deg, #1976D2, #1565C0);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
-}
-
-.btn-remove {
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
-    color: white;
-}
-
-.btn-remove:hover {
-    background: linear-gradient(135deg, #c0392b, #a93226);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
-}
-
-/* Loading spinner */
-.spinner {
-    border: 4px solid rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    border-top: 4px solid #ffcf00;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Responsividade para os botões */
-@media (max-width: 768px) {
-    .friend-actions {
-        flex-direction: column;
-        width: 100%;
-    }
-    
-    .btn-action {
-        width: 100%;
-        margin-bottom: 5px;
-    }
-}
-
-/* Badge para novas mensagens */
-.badge-novas-mensagens {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: #e74c3c;
-    color: white;
-    font-size: 10px;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 10px;
-    min-width: 18px;
-    text-align: center;
-    border: 2px solid #242424;
-    animation: pulse 2s infinite;
-}
-
-.friend-avatar {
-    position: relative;
-}
-`;
-
-// Adicionar os estilos ao documento
-const styleElement = document.createElement('style');
-styleElement.textContent = estilosChat;
-document.head.appendChild(styleElement);
-
-// ============================================
-// FUNÇÃO PARA VERIFICAR NOVAS MENSAGENS
-// ============================================
-async function verificarNovasMensagensAmigos() {
-    try {
-        const currentUserId = localStorage.getItem('userId');
-        if (!currentUserId) return;
-        
-        const response = await fetch(
-            `${API_URL}/api/chat/usuarios/${currentUserId}/conversas/resumo`
-        );
-        
-        if (response.ok) {
-            const data = await response.json();
-            
-            if (data.success && data.resumo) {
-                // Adicionar badges aos amigos
-                data.resumo.forEach(resumo => {
-                    if (resumo.naoLidas > 0) {
-                        const friendItem = document.querySelector(
-                            `.friend-item .friend-actions button[onclick*="${resumo.amigoId}"]`
-                        );
-                        
-                        if (friendItem) {
-                            const friendAvatar = friendItem.closest('.friend-item').querySelector('.friend-avatar');
-                            
-                            // Remover badge existente
-                            const existingBadge = friendAvatar.querySelector('.badge-novas-mensagens');
-                            if (existingBadge) existingBadge.remove();
-                            
-                            // Adicionar novo badge
-                            const badge = document.createElement('div');
-                            badge.className = 'badge-novas-mensagens';
-                            badge.textContent = resumo.naoLidas > 9 ? '9+' : resumo.naoLidas;
-                            badge.title = `${resumo.naoLidas} nova(s) mensagem(ns)`;
-                            
-                            friendAvatar.style.position = 'relative';
-                            friendAvatar.appendChild(badge);
-                        }
-                    }
-                });
-            }
-        }
-    } catch (error) {
-        console.error('Erro ao verificar novas mensagens:', error);
-    }
-}
-
-// Verificar novas mensagens periodicamente (a cada 10 segundos)
-setInterval(verificarNovasMensagensAmigos, 10000);
-
-// Verificar quando a página foca
-document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'visible') {
-        verificarNovasMensagensAmigos();
-    }
-});
-
-// Verificar ao carregar a página
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(verificarNovasMensagensAmigos, 2000);
-});
-
-async function testarConexaoAntesDeAbrirChat() {
-    try {
-        const response = await fetch(`${API_URL}/api/health`, {
-            method: 'GET',
-            timeout: 5000 // 5 segundos timeout
-        });
-        
-        return response.ok;
-    } catch (error) {
-        console.error('API offline:', error);
-        return false;
-    }
-}
-
-// Modificar a função abrirChatAmigo para testar conexão:
-async function abrirChatAmigo(amigoId, amigoNome) {
-    // Testar conexão primeiro
-    const conectado = await testarConexaoAntesDeAbrirChat();
-    
-    if (!conectado) {
-        const usarOffline = confirm('A API parece estar offline. Deseja abrir o chat em modo offline?');
-        
-        if (usarOffline) {
-            // Modo offline - redirecionar para chat com dados locais
-            localStorage.setItem('modo_offline', 'true');
-            localStorage.setItem('chat_amigo_offline', JSON.stringify({
-                id: amigoId,
-                nome: amigoNome
-            }));
-            window.location.href = '/chat';
-        }
-        return;
-    }
-    
-}
-
-function mostrarModalChat(amigoId, amigoNome) {
-    const modalHTML = `
-        <div class="modal-overlay" id="chatModal">
-            <div class="modal-content" style="max-width: 500px; max-height: 80vh; display: flex; flex-direction: column;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 style="color: #ffcf00; margin: 0;">💬 Chat com ${amigoNome}</h2>
-                    <button onclick="fecharChat()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">×</button>
-                </div>
-                
-                <div id="chatMessages" style="flex: 1; overflow-y: auto; max-height: 300px; margin-bottom: 15px; padding: 10px; background: #242424; border-radius: 8px;">
-                    <div style="text-align: center; color: #888; padding: 20px;">
-                        Inicie uma conversa com ${amigoNome}!
-                    </div>
-                </div>
-                
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" 
-                           id="chatInput" 
-                           placeholder="Digite sua mensagem..." 
-                           style="flex: 1; padding: 12px; background: #242424; border: 1px solid #555; color: white; border-radius: 8px;"
-                           onkeypress="if(event.key === 'Enter') enviarMensagemChat()">
-                    <button onclick="enviarMensagemChat()" style="background: #ffcf00; color: black; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                        Enviar
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Remover chat anterior se existir
-    const chatAnterior = document.getElementById('chatModal');
-    if (chatAnterior) chatAnterior.remove();
-    
-    // Adicionar novo chat
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-    // Focar no input
-    setTimeout(() => {
-        document.getElementById('chatInput').focus();
-    }, 100);
-}
-
-function fecharChat() {
-    const chatModal = document.getElementById('chatModal');
-    if (chatModal) chatModal.remove();
-}
-
-function enviarMensagemChat() {
-    const input = document.getElementById('chatInput');
-    const mensagem = input.value.trim();
-    
-    if (!mensagem) return;
-    
-    const chatMessages = document.getElementById('chatMessages');
-    const amigoNome = localStorage.getItem('chatAmigoNome') || 'Amigo';
-    
-    // Adicionar mensagem ao chat
-    const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    chatMessages.innerHTML += `
-        <div style="margin-bottom: 10px; text-align: right;">
-            <div style="background: #2196F3; color: white; padding: 8px 12px; border-radius: 12px 12px 0 12px; display: inline-block; max-width: 80%;">
-                ${mensagem}
-                <div style="font-size: 10px; opacity: 0.8; margin-top: 3px;">${hora}</div>
-            </div>
-        </div>
-    `;
-    
-    // Limpar input e rolar para baixo
-    input.value = '';
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    
-    // Simular resposta (em um sistema real, isso viria do WebSocket/API)
-    setTimeout(() => {
-        const respostas = [
-            "Oi! Como você está?",
-            "Vamos estudar juntos depois?",
-            "Você viu o novo desafio de matemática?",
-            "Preciso de ajuda com a lição de física!",
-            "Que bom conversar com você! 😊"
-        ];
-        const resposta = respostas[Math.floor(Math.random() * respostas.length)];
-        
-        chatMessages.innerHTML += `
-            <div style="margin-bottom: 10px; text-align: left;">
-                <div style="background: #555; color: white; padding: 8px 12px; border-radius: 12px 12px 12px 0; display: inline-block; max-width: 80%;">
-                    ${resposta}
-                    <div style="font-size: 10px; opacity: 0.8; margin-top: 3px;">${hora}</div>
-                </div>
-            </div>
-        `;
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }, 1000);
-}
-
 // ============================================
 // FUNÇÕES DE NOTIFICAÇÕES
 // ============================================
@@ -1404,7 +1032,6 @@ async function carregarNotificacoes() {
             console.log(`📩 ${data.solicitacoes.length} notificações carregadas`);
             mostrarNotificacoes(data.solicitacoes);
         } else {
-            // Limpar notificações se não houver
             document.getElementById('notificacoesContainer').innerHTML = '';
         }
         
@@ -1465,7 +1092,6 @@ async function aceitarSolicitacao(amizadeId) {
         console.log('📦 Resposta da API:', data);
         
         if (data.success) {
-            // ✅ REMOVER A NOTIFICAÇÃO VISUALMENTE
             const notificacaoElement = document.getElementById(`notificacao-${amizadeId}`);
             if (notificacaoElement) {
                 notificacaoElement.style.opacity = '0';
@@ -1475,7 +1101,6 @@ async function aceitarSolicitacao(amizadeId) {
                 setTimeout(() => {
                     notificacaoElement.remove();
                     
-                    // Se não houver mais notificações, esconder o container
                     const container = document.getElementById('notificacoesContainer');
                     if (container.children.length === 0) {
                         container.innerHTML = '';
@@ -1485,10 +1110,9 @@ async function aceitarSolicitacao(amizadeId) {
             
             mostrarMensagem('✅ Solicitação aceita! Agora são amigos.', 'sucesso');
             
-            // Atualizar lista de amigos
             setTimeout(() => {
                 carregarAmigos();
-                carregarNotificacoes(); // Recarregar para garantir que foi removida
+                carregarNotificacoes();
             }, 500);
             
         } else {
@@ -1526,7 +1150,6 @@ async function rejeitarSolicitacao(amizadeId) {
         console.log('📦 Resposta da API:', data);
         
         if (data.success) {
-            // ✅ REMOVER A NOTIFICAÇÃO VISUALMENTE
             const notificacaoElement = document.getElementById(`notificacao-${amizadeId}`);
             if (notificacaoElement) {
                 notificacaoElement.style.opacity = '0';
@@ -1536,7 +1159,6 @@ async function rejeitarSolicitacao(amizadeId) {
                 setTimeout(() => {
                     notificacaoElement.remove();
                     
-                    // Se não houver mais notificações, esconder o container
                     const container = document.getElementById('notificacoesContainer');
                     if (container.children.length === 0) {
                         container.innerHTML = '';
@@ -1546,9 +1168,8 @@ async function rejeitarSolicitacao(amizadeId) {
             
             mostrarMensagem('✅ Solicitação rejeitada.', 'sucesso');
             
-            // Atualizar notificações
             setTimeout(() => {
-                carregarNotificacoes(); // Recarregar para garantir que foi removida
+                carregarNotificacoes();
             }, 500);
             
         } else {
@@ -1601,7 +1222,6 @@ async function adicionarPorRA() {
     `;
     
     try {
-        // 1. Buscar usuário pelo RA
         const searchResponse = await fetch(
             `${API_URL}/api/amigos/usuarios/buscar?query=${ra}&usuarioId=${currentUserId}`
         );
@@ -1628,7 +1248,6 @@ async function adicionarPorRA() {
             return;
         }
         
-        // Verificar status
         if (usuario.statusAmizade === 'aceito') {
             resultDiv.innerHTML = `
                 <div style="color: #2ecc71; background: #1a3a1a; padding: 10px; border-radius: 8px; text-align: center;">
@@ -1647,7 +1266,6 @@ async function adicionarPorRA() {
             return;
         }
         
-        // 2. Enviar solicitação
         resultDiv.innerHTML = `
             <div style="text-align: center; padding: 10px;">
                 <div class="spinner" style="margin: 0 auto;"></div>
@@ -1868,9 +1486,9 @@ async function adicionarUsuario(amigoId) {
         
         if (data.success) {
             mostrarMensagem('✅ Solicitação de amizade enviada!', 'sucesso');
-            realizarBusca(); // Atualizar resultados
-            carregarAmigos(); // Atualizar lista
-            carregarNotificacoes(); // Atualizar notificações
+            realizarBusca();
+            carregarAmigos();
+            carregarNotificacoes();
         } else {
             mostrarMensagem(`❌ Erro: ${data.error || 'Não foi possível enviar'}`, 'erro');
         }
@@ -1931,39 +1549,64 @@ function voltarParaMenu() {
     window.location.href = '/menu';
 }
 
-function mostrarMensagem(mensagem, tipo) {
-    // Remover mensagem anterior se existir
-    const mensagemAnterior = document.querySelector('.mensagem');
-    if (mensagemAnterior) {
-        mensagemAnterior.remove();
-    }
-
-    // Criar nova mensagem
-    const msg = document.createElement('div');
-    msg.className = `mensagem ${tipo}`;
-    msg.textContent = mensagem;
-    
-    document.body.appendChild(msg);
-
-    // Mostrar mensagem
-    setTimeout(() => {
-        msg.style.display = 'block';
-    }, 10);
-
-    // Remover após 4 segundos
-    setTimeout(() => {
-        if (msg.parentNode) {
-            msg.style.opacity = '0';
-            msg.style.transition = 'opacity 0.3s';
-            setTimeout(() => {
-                if (msg.parentNode) msg.remove();
-            }, 300);
+// ============================================
+// VERIFICAR NOVAS MENSAGENS
+// ============================================
+async function verificarNovasMensagensAmigos() {
+    try {
+        if (!currentUserId) return;
+        
+        const response = await fetch(
+            `${API_URL}/api/chat/usuarios/${currentUserId}/conversas/resumo`
+        );
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success && data.resumo) {
+                data.resumo.forEach(resumo => {
+                    if (resumo.naoLidas > 0) {
+                        const friendItem = document.querySelector(
+                            `.friend-item .friend-actions button[onclick*="abrirChatAmigo(${resumo.amigoId},"]`
+                        );
+                        
+                        if (friendItem) {
+                            const friendAvatar = friendItem.closest('.friend-item').querySelector('.friend-avatar');
+                            
+                            const existingBadge = friendAvatar.querySelector('.badge-novas-mensagens');
+                            if (existingBadge) existingBadge.remove();
+                            
+                            const badge = document.createElement('div');
+                            badge.className = 'badge-novas-mensagens';
+                            badge.textContent = resumo.naoLidas > 9 ? '9+' : resumo.naoLidas;
+                            badge.title = `${resumo.naoLidas} nova(s) mensagem(ns)`;
+                            
+                            friendAvatar.appendChild(badge);
+                        }
+                    }
+                });
+            }
         }
-    }, 4000);
+    } catch (error) {
+        console.error('Erro ao verificar novas mensagens:', error);
+    }
 }
 
+// Verificar novas mensagens periodicamente
+setInterval(verificarNovasMensagensAmigos, 10000);
+
+// Verificar quando a página foca
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        verificarNovasMensagensAmigos();
+    }
+});
+
+// Verificar ao carregar a página
+setTimeout(verificarNovasMensagensAmigos, 2000);
+
 // ============================================
-// FUNÇÃO DE TESTE
+// TESTE DO SISTEMA
 // ============================================
 async function testarSistema() {
     console.log('🧪 Testando sistema de amigos...');
@@ -2002,5 +1645,3 @@ setTimeout(() => {
     </script>
 </body>
 </html>
-
-
