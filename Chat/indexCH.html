@@ -811,9 +811,41 @@ function verificarLogin() {
     }
 }
 
-// ============================================
-// FUNÇÕES DE NAVEGAÇÃO
-// ============================================
+function verificarConversaParaAbrir() {
+    try {
+        const chatData = localStorage.getItem('chat_abrir_conversa');
+        
+        if (chatData) {
+            const data = JSON.parse(chatData);
+            
+            // Verificar se os dados não são muito antigos (menos de 30 segundos)
+            const agora = new Date().getTime();
+            if (agora - data.timestamp < 30000) {
+                console.log('🔍 Encontrada conversa para abrir automaticamente:', data);
+                
+                // Abrir a conversa
+                abrirConversa(data.conversaId, data.amigoId, data.amigoNome);
+                
+                // Limpar os dados para não abrir novamente
+                localStorage.removeItem('chat_abrir_conversa');
+                
+                return true;
+            } else {
+                // Dados muito antigos, limpar
+                localStorage.removeItem('chat_abrir_conversa');
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao verificar conversa para abrir:', error);
+        localStorage.removeItem('chat_abrir_conversa');
+    }
+    
+    return false;
+}
+
+// Chamar esta função após carregar conversas:
+verificarConversaParaAbrir();
+
 function voltarParaAmigos() {
     if (conversaAtualId) {
         // Confirmar se quer sair da conversa
@@ -1720,3 +1752,4 @@ window.addEventListener('beforeunload', function(event) {
     </script>
 </body>
 </html>
+
