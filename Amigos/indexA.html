@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Privado - Coliseum</title>
+    <title>Amigos - Coliseum</title>
     <style>
         * {
             margin: 0;
@@ -16,376 +17,565 @@
             background: linear-gradient(135deg, #000000 0%, #2d2d2d 100%);
             min-height: 100vh;
             padding: 15px;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
-        }
-
-        .container {
-            display: flex;
-            flex: 1;
-            gap: 15px;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        /* LISTA DE CONVERSAS */
-        .conversas-sidebar {
-            width: 300px;
-            background: #323232;
-            border-radius: 15px;
-            padding: 20px;
-            border: 1px solid #444;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .conversas-header {
-            display: flex;
-            justify-content: space-between;
             align-items: center;
+        }
+
+        .btn-voltar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #ffcf00;
+            color: #000;
+            font-size: 24px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-voltar:hover {
+            background: #e6b800;
+            transform: scale(1.1);
+        }
+
+        /* CONTAINER PRINCIPAL */
+        .container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* CABEÇALHO */
+        .header {
+            text-align: center;
             margin-bottom: 20px;
         }
 
-        .conversas-header h2 {
-            color: #ffcf00;
-            font-size: 20px;
+        .Topimg {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .btn-nova-conversa {
+        h1 {
+            color: #ffffff;
+            font-size: 2.2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        /* NOTIFICAÇÕES */
+        .notificacoes-container {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .notificacao-item {
             background: #ffcf00;
             color: black;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .conversas-list {
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .conversa-item {
-            background: #242424;
+            padding: 12px 15px;
             border-radius: 10px;
-            padding: 15px;
             margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .notificacao-info {
+            flex: 1;
+        }
+
+        .notificacao-acoes {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-aceitar {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+
+        .btn-rejeitar {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* BLOCO PRINCIPAL */
+        .bloco-cinza {
+            width: 100%;
+            background-color: #323232;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+        }
+
+        /* BARRA DE BUSCA */
+        .search-container {
+            background-color: #242424;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
             border: 1px solid #555;
         }
 
-        .conversa-item:hover, .conversa-item.active {
+        .buscfriends {
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 16px;
+            padding: 10px 0;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: #888;
+        }
+
+        /* BOTÃO ADICIONAR AMIGO */
+        .add-friend-btn {
+            background: #242424;
+            border: 2px dashed #555;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .add-friend-btn:hover {
             border-color: #ffcf00;
             background: #2a2a2a;
         }
 
-        .conversa-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .conversa-avatar {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #2196F3, #1976D2);
-            border-radius: 50%;
+        .addfriends {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        .add-friend-text {
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        /* LISTA DE AMIGOS */
+        .friends-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .friend-item {
+            background: #242424;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #555;
+            transition: all 0.3s ease;
+        }
+
+        .friend-item:hover {
+            border-color: #ffcf00;
+            transform: translateY(-2px);
+        }
+
+        .friend-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffcf00, #ffaa00);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
             font-weight: bold;
-            color: white;
+            font-size: 18px;
             flex-shrink: 0;
         }
 
-        .conversa-details {
+        .friend-info {
             flex: 1;
-            min-width: 0;
         }
 
-        .conversa-nome {
-            color: white;
+        .friend-name {
+            color: #ffffff;
+            font-size: 16px;
             font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 3px;
+            margin-bottom: 5px;
         }
 
-        .conversa-ultima {
+        .friend-details {
             color: #888;
-            font-size: 12px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .conversa-hora {
-            color: #666;
-            font-size: 11px;
-            margin-top: 3px;
-        }
-
-        .badge-nao-lidas {
-            background: #e74c3c;
-            color: white;
-            font-size: 11px;
-            font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 10px;
-            min-width: 18px;
-            text-align: center;
-        }
-
-        /* ÁREA DO CHAT */
-        .chat-area {
-            flex: 1;
-            background: #323232;
-            border-radius: 15px;
-            border: 1px solid #444;
+            font-size: 14px;
             display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .chat-header {
-            background: #242424;
-            padding: 20px;
-            border-bottom: 1px solid #555;
-            display: flex;
-            align-items: center;
             gap: 15px;
         }
 
-        .chat-amigo-avatar {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #ffcf00, #ffaa00);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: black;
-            font-size: 20px;
-        }
-
-        .chat-amigo-info h3 {
-            color: white;
-            font-size: 18px;
-            margin-bottom: 3px;
-        }
-
-        .chat-amigo-info p {
-            color: #888;
-            font-size: 14px;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .mensagem-container {
-            display: flex;
-            flex-direction: column;
-            max-width: 70%;
-        }
-
-        .mensagem-container.eu {
-            align-self: flex-end;
-        }
-
-        .mensagem-container.amigo {
-            align-self: flex-start;
-        }
-
-        .mensagem-balao {
-            padding: 12px 16px;
-            border-radius: 18px;
-            position: relative;
-            word-wrap: break-word;
-        }
-
-        .mensagem-container.eu .mensagem-balao {
-            background: #2196F3;
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-
-        .mensagem-container.amigo .mensagem-balao {
-            background: #424242;
-            color: white;
-            border-bottom-left-radius: 4px;
-        }
-
-        .mensagem-hora {
-            font-size: 11px;
-            color: #888;
-            margin-top: 4px;
-            text-align: right;
-        }
-
-        .mensagem-container.amigo .mensagem-hora {
-            text-align: left;
-        }
-
-        .chat-input-area {
-            padding: 20px;
-            border-top: 1px solid #555;
-            background: #242424;
+        .friend-actions {
             display: flex;
             gap: 10px;
         }
 
-        .chat-input {
-            flex: 1;
-            padding: 12px 16px;
+        .btn-action {
             background: #323232;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-chat:hover {
+            background: #2196F3;
+            color: #fff;
+        }
+
+        .btn-remove:hover {
+            background: #ff4444;
+            color: #fff;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            display: none;
+        }
+
+        .modal-content {
+            background: #323232;
+            padding: 25px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
             border: 1px solid #555;
-            border-radius: 25px;
-            color: white;
-            font-size: 15px;
+        }
+
+        .modal h2 {
+            color: #ffffff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal-input {
+            width: 100%;
+            background: #242424;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: #ffffff;
+            font-size: 16px;
+            margin-bottom: 15px;
             outline: none;
         }
 
-        .chat-input:focus {
+        .modal-input:focus {
             border-color: #ffcf00;
         }
 
-        .btn-enviar {
-            background: #ffcf00;
-            color: black;
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            background: #555;
+            color: #ffffff;
             border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            padding: 10px 20px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
-        /* SEM CHAT SELECIONADO */
-        .sem-chat {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+        .btn-confirm {
+            background: #ffcf00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
             color: #888;
-            padding: 40px;
         }
 
-        .sem-chat-icon {
-            font-size: 80px;
-            margin-bottom: 20px;
+        /* RESULTADOS DE BUSCA */
+        .search-results {
+            margin-top: 20px;
+        }
+
+        .search-result-item {
+            background: #242424;
+            border: 1px solid #555;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .result-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .result-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .result-details {
+            flex: 1;
+        }
+
+        .result-name {
+            color: white;
+            font-weight: bold;
+        }
+
+        .result-ra {
+            color: #ffcf00;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .result-status {
+            color: #888;
+            font-size: 11px;
+            margin-top: 3px;
+        }
+
+        /* SPINNER */
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255, 207, 0, 0.3);
+            border-radius: 50%;
+            border-top-color: #ffcf00;
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* MENSAGENS */
+        .mensagem {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-weight: 600;
+            z-index: 1000;
+            max-width: 90%;
+            text-align: center;
+            color: white;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .mensagem.sucesso {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+        }
+        
+        .mensagem.erro {
+            background: linear-gradient(135deg, #f44336, #da190b);
         }
 
         /* RESPONSIVO */
         @media (max-width: 768px) {
             .container {
-                flex-direction: column;
+                max-width: 100%;
             }
             
-            .conversas-sidebar {
-                width: 100%;
-                max-height: 300px;
+            h1 {
+                font-size: 1.8rem;
             }
             
-            .chat-area {
-                min-height: 500px;
+            .friend-item {
+                padding: 12px;
             }
             
-            .mensagem-container {
-                max-width: 85%;
+            .friend-avatar {
+                width: 45px;
+                height: 45px;
+                font-size: 16px;
             }
-        }
 
-        /* ANIMAÇÕES */
-        .mensagem-nova {
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            .btn-voltar {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                bottom: 15px;
+                right: 15px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- LISTA DE CONVERSAS -->
-        <div class="conversas-sidebar">
-            <div class="conversas-header">
-                <h2>Conversas</h2>
-                <button class="btn-nova-conversa" onclick="abrirModalNovaConversa()">+ Nova</button>
-            </div>
-            <div class="conversas-list" id="conversasList">
-                <div style="text-align: center; padding: 40px 20px; color: #888;">
-                    <div class="spinner" style="margin: 0 auto;"></div>
-                    <p style="margin-top: 15px;">Carregando conversas...</p>
+        <!-- CABEÇALHO -->
+        <div class="header">
+            <div class="Topimg">
+                <div class="friend-avatar" style="width: 100px; height: 100px; font-size: 40px;">
+                    👥
                 </div>
             </div>
+            <h1 id="pageTitle">Amigos</h1>
+            
+            <!-- NOTIFICAÇÕES -->
+            <div class="notificacoes-container" id="notificacoesContainer"></div>
         </div>
 
-        <!-- ÁREA DO CHAT -->
-        <div class="chat-area" id="chatArea">
-            <div class="sem-chat" id="semChatSelecionado">
-                <div class="sem-chat-icon">💬</div>
-                <h3 style="color: white; margin-bottom: 10px;">Selecione uma conversa</h3>
-                <p style="text-align: center; color: #888;">
-                    Escolha um amigo para iniciar uma conversa<br>
-                    ou crie uma nova conversa
-                </p>
-            </div>
-
-            <!-- CHAT ATIVO (inicialmente oculto) -->
-            <div id="chatAtivo" style="display: none; flex-direction: column; height: 100%;">
-                <div class="chat-header">
-                    <div class="chat-amigo-avatar" id="chatAmigoAvatar">?</div>
-                    <div class="chat-amigo-info">
-                        <h3 id="chatAmigoNome">Amigo</h3>
-                        <p id="chatAmigoRA">RA: ---</p>
+        <!-- BLOCO PRINCIPAL -->
+        <div class="bloco-cinza">
+            <!-- BARRA DE BUSCA -->
+            <div class="search-container">
+                <div class="buscfriends" onclick="abrirModalBuscar()">
+                    <div style="width: 40px; height: 40px; background: #ffcf00; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #000;">
+                        🔍
                     </div>
                 </div>
+                <input type="text" class="search-input" placeholder="Buscar amigos..." id="searchInput" oninput="filtrarAmigos(this.value)">
+            </div>
 
-                <div class="chat-messages" id="chatMessages">
-                    <!-- Mensagens serão carregadas aqui -->
+            <!-- BOTÃO ADICIONAR AMIGO -->
+            <div class="add-friend-btn" onclick="abrirModalAdicionar()">
+                <div class="addfriends">
+                    <div style="width: 60px; height: 60px; background: #ffcf00; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #000;">
+                        ➕
+                    </div>
                 </div>
+                <div class="add-friend-text">Adicionar Amigo</div>
+            </div>
 
-                <div class="chat-input-area">
-                    <input type="text" 
-                           class="chat-input" 
-                           id="chatInput" 
-                           placeholder="Digite sua mensagem..."
-                           onkeypress="if(event.key === 'Enter') enviarMensagem()">
-                    <button class="btn-enviar" onclick="enviarMensagem()">➤</button>
+            <!-- LISTA DE AMIGOS -->
+            <div class="friends-list" id="friendsList">
+                <div class="empty-state">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 15px;">Carregando amigos...</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL NOVA CONVERSA -->
-    <div class="modal-overlay" id="modalNovaConversa" style="display: none;">
+    <!-- MODAL ADICIONAR AMIGO -->
+    <div class="modal-overlay" id="addFriendModal">
         <div class="modal-content">
-            <h2>Nova Conversa</h2>
-            <div id="amigosParaConversar"></div>
+            <h2>Adicionar Amigo</h2>
+            <input type="text" 
+                   class="modal-input" 
+                   id="modalRA" 
+                   placeholder="Digite o RA (4 dígitos)" 
+                   maxlength="4" 
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
             <div class="modal-buttons">
                 <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-confirm" onclick="adicionarPorRA()">Adicionar</button>
             </div>
+            <div id="modalResult" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+
+    <!-- MODAL BUSCAR AMIGO -->
+    <div class="modal-overlay" id="searchFriendModal">
+        <div class="modal-content">
+            <h2>Buscar Amigo</h2>
+            <input type="text" 
+                   class="modal-input" 
+                   id="searchFriendInput" 
+                   placeholder="Digite nome ou RA" 
+                   onkeypress="if(event.key === 'Enter') realizarBusca()">
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-confirm" onclick="realizarBusca()">Buscar</button>
+            </div>
+            <div id="searchResults" class="search-results"></div>
         </div>
     </div>
 
     <!-- BOTÃO VOLTAR -->
-    <button class="btn-voltar" onclick="voltarParaAmigos()" style="position: fixed; bottom: 20px; right: 20px;">←</button>
+    <button class="btn-voltar" onclick="voltarParaMenu()">←</button>
 
     <script>
 // ============================================
@@ -394,883 +584,967 @@
 const API_URL = 'https://coliseum-api.onrender.com';
 let currentUserId = null;
 let currentUserName = null;
-let conversaAtualId = null;
-let amigoAtualId = null;
-let intervaloAtualizacao = null;
 
 // ============================================
 // INICIALIZAÇÃO
 // ============================================
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('💬 Sistema de chat inicializado');
+    console.log('🚀 Sistema de amigos inicializado');
     
+    // Verificar se o usuário está logado
     verificarLogin();
+    
+    // Configurar eventos
+    configurarEventListeners();
 });
 
 function verificarLogin() {
     try {
+        // Tentar obter dados do localStorage (compatível com seu sistema)
         const usuarioJSON = localStorage.getItem('usuario');
+        const usuarioNome = localStorage.getItem('usuarioNome');
+        const usuarioRA = localStorage.getItem('usuarioRA');
+        const usuarioId = localStorage.getItem('usuarioId');
         const userId = localStorage.getItem('userId');
         
+        console.log('📱 Dados do localStorage:', {
+            usuarioJSON,
+            usuarioNome,
+            usuarioRA,
+            usuarioId,
+            userId
+        });
+        
+        // Prioridade 1: Dados do objeto usuario
         if (usuarioJSON) {
             const usuario = JSON.parse(usuarioJSON);
             currentUserId = usuario.id;
             currentUserName = usuario.nome;
-        } else if (userId && userId !== 'null') {
+            console.log('✅ Usuário logado via objeto:', currentUserName);
+        }
+        // Prioridade 2: Dados individuais
+        else if (userId && userId !== 'null' && userId !== 'undefined') {
             currentUserId = parseInt(userId);
-            currentUserName = localStorage.getItem('userName') || 'Usuário';
-        } else {
-            alert('Faça login para usar o chat!');
-            window.location.href = '/login';
+            currentUserName = localStorage.getItem('userName') || localStorage.getItem('usuarioNome') || 'Usuário';
+            console.log('✅ Usuário logado via dados individuais:', currentUserName);
+        }
+        // Prioridade 3: Sistema antigo
+        else if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
+            currentUserId = parseInt(usuarioId);
+            currentUserName = usuarioNome || 'Usuário';
+            console.log('✅ Usuário logado via sistema antigo:', currentUserName);
+        }
+        else {
+            console.log('❌ Usuário não logado');
+            mostrarTelaLogin();
             return;
         }
         
-        console.log('✅ Usuário logado:', currentUserName);
-        carregarConversas();
+        // Atualizar título da página
+        if (currentUserName) {
+            document.getElementById('pageTitle').textContent = `Amigos de ${currentUserName}`;
+        }
+        
+        // Carregar dados
+        carregarAmigos();
+        carregarNotificacoes();
         
     } catch (error) {
         console.error('❌ Erro ao verificar login:', error);
-        window.location.href = '/login';
+        mostrarTelaLogin();
     }
 }
 
+function mostrarTelaLogin() {
+    const friendsList = document.getElementById('friendsList');
+    
+    friendsList.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px;">
+            <div style="font-size: 60px; color: #ffcf00; margin-bottom: 20px;">
+                🔐
+            </div>
+            <h3 style="color: white; margin-bottom: 15px;">Faça login</h3>
+            <p style="color: #888; margin-bottom: 25px;">
+                Para usar o sistema de amigos, você precisa estar logado.
+            </p>
+            <button onclick="irParaLogin()" style="
+                background: #ffcf00;
+                color: black;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 16px;
+            ">
+                Ir para Login
+            </button>
+        </div>
+    `;
+}
+
+function irParaLogin() {
+    // Salvar a página atual para voltar depois do login
+    sessionStorage.setItem('redirectAfterLogin', window.location.href);
+    window.location.href = '/login';
+}
+
+function configurarEventListeners() {
+    // Fechar modal ao clicar fora
+    document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            fecharModal();
+        }
+    });
+    
+    // Fechar modal com ESC
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            fecharModal();
+        }
+    });
+}
+
 // ============================================
-// FUNÇÕES DE CONVERSAS
+// FUNÇÕES DE AMIGOS
 // ============================================
-async function carregarConversas() {
+async function carregarAmigos() {
     try {
-        const conversasList = document.getElementById('conversasList');
+        if (!currentUserId) {
+            console.error('❌ currentUserId não definido');
+            return;
+        }
         
-        const response = await fetch(`${API_URL}/api/chat/usuarios/${currentUserId}/conversas`);
+        const friendsList = document.getElementById('friendsList');
+        
+        friendsList.innerHTML = `
+            <div style="text-align: center; padding: 30px 20px;">
+                <div class="spinner"></div>
+                <p style="color: #888; margin-top: 15px;">Carregando seus amigos...</p>
+            </div>
+        `;
+        
+        console.log('🔍 Buscando amigos para usuário:', currentUserId);
+        
+        const response = await fetch(`${API_URL}/api/amigos/usuarios/${currentUserId}/amigos`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
         const data = await response.json();
+        console.log('📦 Dados de amigos recebidos:', data);
         
-        if (data.success && data.conversas && data.conversas.length > 0) {
-            let html = '';
+        if (data.success && data.amigos && data.amigos.length > 0) {
+            let html = `
+                <div style="margin-bottom: 20px;">
+                    <p style="color: #2ecc71; margin-bottom: 15px;">
+                        ✅ ${data.amigos.length} amigo(s)
+                    </p>
+            `;
             
-            data.conversas.forEach(conversa => {
-                const amigo = conversa.amigo;
+            data.amigos.forEach(amigoData => {
+                const amigo = amigoData.amigo || amigoData;
                 const primeiraLetra = amigo.nome ? amigo.nome.charAt(0).toUpperCase() : '?';
-                const ultimaMsg = conversa.ultimaMensagem;
-                const horaFormatada = ultimaMsg 
-                    ? formatarHora(new Date(ultimaMsg.criadoEm)) 
-                    : '';
-                
-                const mensagemPreview = ultimaMsg 
-                    ? (ultimaMsg.remetenteId === currentUserId ? 'Você: ' : '') + 
-                      (ultimaMsg.conteudo.length > 30 
-                        ? ultimaMsg.conteudo.substring(0, 30) + '...' 
-                        : ultimaMsg.conteudo)
-                    : 'Inicie uma conversa';
                 
                 html += `
-                    <div class="conversa-item" onclick="abrirConversa(${conversa.id}, ${amigo.id}, '${amigo.nome}')">
-                        <div class="conversa-info">
-                            <div class="conversa-avatar">${primeiraLetra}</div>
-                            <div class="conversa-details">
-                                <div class="conversa-nome">${amigo.nome}</div>
-                                <div class="conversa-ultima">${mensagemPreview}</div>
-                                <div class="conversa-hora">${horaFormatada}</div>
+                    <div class="friend-item">
+                        <div class="friend-avatar">
+                            ${primeiraLetra}
+                        </div>
+                        <div class="friend-info">
+                            <div class="friend-name">${amigo.nome || 'Nome não disponível'}</div>
+                            <div class="friend-details">
+                                <span>RA: ${amigo.ra || 'N/A'}</span>
+                                <span>Série: ${amigo.serie || 'N/A'}</span>
+                                <span>Pontos: ${amigo.pontuacao || 0}</span>
                             </div>
-                            ${conversa.naoLidas > 0 ? `
-                                <div class="badge-nao-lidas">${conversa.naoLidas}</div>
-                            ` : ''}
+                        </div>
+                        <div class="friend-actions">
+                            <button class="btn-action btn-chat" onclick="abrirChatAmigo(${amigo.id}, '${amigo.nome}')" title="Conversar">
+                                💬 Chat
+                            </button>
+                            <button class="btn-action btn-remove" onclick="removerAmigo(${amigo.id})" title="Remover amigo">
+                                Remover
+                            </button>
                         </div>
                     </div>
                 `;
             });
             
-            conversasList.innerHTML = html;
+            html += `</div>`;
+            friendsList.innerHTML = html;
             
         } else {
-            conversasList.innerHTML = `
-                <div style="text-align: center; padding: 40px 20px; color: #888;">
-                    <div style="font-size: 60px; margin-bottom: 15px;">💬</div>
-                    <h4 style="color: white; margin-bottom: 10px;">Nenhuma conversa</h4>
-                    <p>Inicie uma conversa com um amigo!</p>
-                    <button onclick="abrirModalNovaConversa()" style="
-                        background: #ffcf00;
-                        color: black;
-                        border: none;
-                        padding: 10px 20px;
-                        border-radius: 8px;
-                        cursor: pointer;
-                        margin-top: 15px;
-                        font-weight: bold;
-                    ">
-                        + Nova Conversa
-                    </button>
+            friendsList.innerHTML = `
+                <div class="empty-state">
+                    <div style="font-size: 60px; color: #888; margin-bottom: 15px;">
+                        👥
+                    </div>
+                    <h4 style="color: white; margin-bottom: 10px;">Nenhum amigo ainda</h4>
+                    <p style="color: #888; margin-bottom: 20px;">
+                        Você ainda não tem amigos adicionados.<br>
+                        Clique em "Adicionar Amigo" para começar!
+                    </p>
                 </div>
             `;
         }
         
     } catch (error) {
-        console.error('❌ Erro ao carregar conversas:', error);
-        document.getElementById('conversasList').innerHTML = `
-            <div style="text-align: center; padding: 40px 20px; color: #e74c3c;">
-                ❌ Erro ao carregar conversas
+        console.error('❌ Erro ao carregar amigos:', error);
+        
+        const friendsList = document.getElementById('friendsList');
+        friendsList.innerHTML = `
+            <div style="text-align: center; padding: 30px 20px; background: #3a1a1a; border-radius: 10px; border: 1px solid #e74c3c;">
+                <div style="font-size: 40px; color: #e74c3c; margin-bottom: 15px;">
+                    ❌
+                </div>
+                <h4 style="color: #e74c3c; margin-bottom: 10px;">Erro ao carregar amigos</h4>
+                <p style="color: #ccc; margin-bottom: 15px;">
+                    Não foi possível carregar sua lista de amigos.
+                </p>
+                <button onclick="carregarAmigos()" style="
+                    background: #e74c3c;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                ">
+                    Tentar novamente
+                </button>
             </div>
         `;
     }
 }
 
-async function abrirConversa(conversaId, amigoId, amigoNome) {
+// ============================================
+// FUNÇÃO PARA ABRIR CHAT COM AMIGO
+// ============================================
+function abrirChatAmigo(amigoId, amigoNome) {
+    console.log(`💬 Abrindo chat com ${amigoNome} (ID: ${amigoId})`);
+    
+    // Salvar dados do amigo para o chat
+    localStorage.setItem('chatAmigoId', amigoId);
+    localStorage.setItem('chatAmigoNome', amigoNome);
+    
+    // Redirecionar para página de chat privado
+    // Se você tiver uma página específica para chat privado
+    // window.location.href = `/chat-privado?amigoId=${amigoId}`;
+    
+    // Alternativa: Mostrar um modal de chat
+    mostrarModalChat(amigoId, amigoNome);
+}
+
+function mostrarModalChat(amigoId, amigoNome) {
+    const modalHTML = `
+        <div class="modal-overlay" id="chatModal">
+            <div class="modal-content" style="max-width: 500px; max-height: 80vh; display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: #ffcf00; margin: 0;">💬 Chat com ${amigoNome}</h2>
+                    <button onclick="fecharChat()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">×</button>
+                </div>
+                
+                <div id="chatMessages" style="flex: 1; overflow-y: auto; max-height: 300px; margin-bottom: 15px; padding: 10px; background: #242424; border-radius: 8px;">
+                    <div style="text-align: center; color: #888; padding: 20px;">
+                        Inicie uma conversa com ${amigoNome}!
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" 
+                           id="chatInput" 
+                           placeholder="Digite sua mensagem..." 
+                           style="flex: 1; padding: 12px; background: #242424; border: 1px solid #555; color: white; border-radius: 8px;"
+                           onkeypress="if(event.key === 'Enter') enviarMensagemChat()">
+                    <button onclick="enviarMensagemChat()" style="background: #ffcf00; color: black; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                        Enviar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remover chat anterior se existir
+    const chatAnterior = document.getElementById('chatModal');
+    if (chatAnterior) chatAnterior.remove();
+    
+    // Adicionar novo chat
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Focar no input
+    setTimeout(() => {
+        document.getElementById('chatInput').focus();
+    }, 100);
+}
+
+function fecharChat() {
+    const chatModal = document.getElementById('chatModal');
+    if (chatModal) chatModal.remove();
+}
+
+function enviarMensagemChat() {
+    const input = document.getElementById('chatInput');
+    const mensagem = input.value.trim();
+    
+    if (!mensagem) return;
+    
+    const chatMessages = document.getElementById('chatMessages');
+    const amigoNome = localStorage.getItem('chatAmigoNome') || 'Amigo';
+    
+    // Adicionar mensagem ao chat
+    const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    chatMessages.innerHTML += `
+        <div style="margin-bottom: 10px; text-align: right;">
+            <div style="background: #2196F3; color: white; padding: 8px 12px; border-radius: 12px 12px 0 12px; display: inline-block; max-width: 80%;">
+                ${mensagem}
+                <div style="font-size: 10px; opacity: 0.8; margin-top: 3px;">${hora}</div>
+            </div>
+        </div>
+    `;
+    
+    // Limpar input e rolar para baixo
+    input.value = '';
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // Simular resposta (em um sistema real, isso viria do WebSocket/API)
+    setTimeout(() => {
+        const respostas = [
+            "Oi! Como você está?",
+            "Vamos estudar juntos depois?",
+            "Você viu o novo desafio de matemática?",
+            "Preciso de ajuda com a lição de física!",
+            "Que bom conversar com você! 😊"
+        ];
+        const resposta = respostas[Math.floor(Math.random() * respostas.length)];
+        
+        chatMessages.innerHTML += `
+            <div style="margin-bottom: 10px; text-align: left;">
+                <div style="background: #555; color: white; padding: 8px 12px; border-radius: 12px 12px 12px 0; display: inline-block; max-width: 80%;">
+                    ${resposta}
+                    <div style="font-size: 10px; opacity: 0.8; margin-top: 3px;">${hora}</div>
+                </div>
+            </div>
+        `;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 1000);
+}
+
+// ============================================
+// FUNÇÕES DE NOTIFICAÇÕES
+// ============================================
+async function carregarNotificacoes() {
     try {
-        conversaAtualId = conversaId;
-        amigoAtualId = amigoId;
+        if (!currentUserId) return;
         
-        // Atualizar UI
-        document.getElementById('semChatSelecionado').style.display = 'none';
-        document.getElementById('chatAtivo').style.display = 'flex';
+        const response = await fetch(`${API_URL}/api/amigos/usuarios/${currentUserId}/solicitacoes`);
         
-        // Atualizar header
-        document.getElementById('chatAmigoAvatar').textContent = amigoNome.charAt(0).toUpperCase();
-        document.getElementById('chatAmigoNome').textContent = amigoNome;
-        
-        // Buscar RA do amigo
-        const response = await fetch(`${API_URL}/api/usuarios/${amigoId}`);
-        const data = await response.json();
-        if (data.ra) {
-            document.getElementById('chatAmigoRA').textContent = `RA: ${data.ra}`;
+        if (!response.ok) {
+            console.error('❌ Erro ao carregar notificações:', response.status);
+            return;
         }
         
-        // Carregar mensagens
-        carregarMensagens();
+        const data = await response.json();
         
-        // Iniciar atualização automática
-        if (intervaloAtualizacao) clearInterval(intervaloAtualizacao);
-        intervaloAtualizacao = setInterval(carregarMensagens, 3000);
-        
-        // Focar no input
-        setTimeout(() => {
-            document.getElementById('chatInput').focus();
-        }, 100);
+        if (data.success && data.solicitacoes && data.solicitacoes.length > 0) {
+            console.log(`📩 ${data.solicitacoes.length} notificações carregadas`);
+            mostrarNotificacoes(data.solicitacoes);
+        } else {
+            // Limpar notificações se não houver
+            document.getElementById('notificacoesContainer').innerHTML = '';
+        }
         
     } catch (error) {
-        console.error('Erro ao abrir conversa:', error);
-        mostrarMensagem('❌ Erro ao abrir conversa', 'erro');
+        console.error('Erro ao carregar notificações:', error);
     }
 }
 
-async function carregarMensagens() {
-    if (!conversaAtualId) return;
+function mostrarNotificacoes(solicitacoes) {
+    const container = document.getElementById('notificacoesContainer');
+    
+    let html = '';
+    
+    solicitacoes.forEach(solicitacao => {
+        if (solicitacao.usuario && solicitacao.usuario.nome) {
+            html += `
+                <div class="notificacao-item" id="notificacao-${solicitacao.id}">
+                    <div class="notificacao-info">
+                        <strong>${solicitacao.usuario.nome}</strong> quer ser seu amigo!
+                        <div style="font-size: 12px; color: #333;">RA: ${solicitacao.usuario.ra || 'N/A'}</div>
+                    </div>
+                    <div class="notificacao-acoes">
+                        <button class="btn-aceitar" onclick="aceitarSolicitacao(${solicitacao.id})">
+                            Aceitar
+                        </button>
+                        <button class="btn-rejeitar" onclick="rejeitarSolicitacao(${solicitacao.id})">
+                            Rejeitar
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+    });
+    
+    container.innerHTML = html;
+}
+
+async function aceitarSolicitacao(amizadeId) {
+    try {
+        if (!currentUserId) {
+            mostrarMensagem('❌ Faça login primeiro', 'erro');
+            return;
+        }
+        
+        console.log(`✅ Aceitando solicitação ${amizadeId}...`);
+        
+        const response = await fetch(
+            `${API_URL}/api/amigos/usuarios/${currentUserId}/aceitar/${amizadeId}`,
+            { 
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        
+        const data = await response.json();
+        console.log('📦 Resposta da API:', data);
+        
+        if (data.success) {
+            // ✅ REMOVER A NOTIFICAÇÃO VISUALMENTE
+            const notificacaoElement = document.getElementById(`notificacao-${amizadeId}`);
+            if (notificacaoElement) {
+                notificacaoElement.style.opacity = '0';
+                notificacaoElement.style.transform = 'translateY(-10px)';
+                notificacaoElement.style.transition = 'all 0.3s ease';
+                
+                setTimeout(() => {
+                    notificacaoElement.remove();
+                    
+                    // Se não houver mais notificações, esconder o container
+                    const container = document.getElementById('notificacoesContainer');
+                    if (container.children.length === 0) {
+                        container.innerHTML = '';
+                    }
+                }, 300);
+            }
+            
+            mostrarMensagem('✅ Solicitação aceita! Agora são amigos.', 'sucesso');
+            
+            // Atualizar lista de amigos
+            setTimeout(() => {
+                carregarAmigos();
+                carregarNotificacoes(); // Recarregar para garantir que foi removida
+            }, 500);
+            
+        } else {
+            mostrarMensagem(`❌ Erro: ${data.error || data.details || 'Não foi possível aceitar'}`, 'erro');
+        }
+        
+    } catch (error) {
+        console.error('Erro ao aceitar solicitação:', error);
+        mostrarMensagem('❌ Erro ao aceitar solicitação', 'erro');
+    }
+}
+
+async function rejeitarSolicitacao(amizadeId) {
+    if (!confirm('Tem certeza que deseja rejeitar esta solicitação?')) return;
+    
+    try {
+        if (!currentUserId) {
+            mostrarMensagem('❌ Faça login primeiro', 'erro');
+            return;
+        }
+        
+        console.log(`❌ Rejeitando solicitação ${amizadeId}...`);
+        
+        const response = await fetch(
+            `${API_URL}/api/amigos/usuarios/${currentUserId}/rejeitar/${amizadeId}`,
+            { 
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        
+        const data = await response.json();
+        console.log('📦 Resposta da API:', data);
+        
+        if (data.success) {
+            // ✅ REMOVER A NOTIFICAÇÃO VISUALMENTE
+            const notificacaoElement = document.getElementById(`notificacao-${amizadeId}`);
+            if (notificacaoElement) {
+                notificacaoElement.style.opacity = '0';
+                notificacaoElement.style.transform = 'translateY(-10px)';
+                notificacaoElement.style.transition = 'all 0.3s ease';
+                
+                setTimeout(() => {
+                    notificacaoElement.remove();
+                    
+                    // Se não houver mais notificações, esconder o container
+                    const container = document.getElementById('notificacoesContainer');
+                    if (container.children.length === 0) {
+                        container.innerHTML = '';
+                    }
+                }, 300);
+            }
+            
+            mostrarMensagem('✅ Solicitação rejeitada.', 'sucesso');
+            
+            // Atualizar notificações
+            setTimeout(() => {
+                carregarNotificacoes(); // Recarregar para garantir que foi removida
+            }, 500);
+            
+        } else {
+            mostrarMensagem(`❌ Erro: ${data.error || data.details || 'Não foi possível rejeitar'}`, 'erro');
+        }
+        
+    } catch (error) {
+        console.error('Erro ao rejeitar solicitação:', error);
+        mostrarMensagem('❌ Erro ao rejeitar solicitação', 'erro');
+    }
+}
+
+// ============================================
+// FUNÇÕES DE ADICIONAR AMIGOS
+// ============================================
+function abrirModalAdicionar() {
+    const modal = document.getElementById('addFriendModal');
+    modal.style.display = 'flex';
+    
+    setTimeout(() => {
+        document.getElementById('modalRA').focus();
+    }, 100);
+}
+
+async function adicionarPorRA() {
+    const raInput = document.getElementById('modalRA');
+    const resultDiv = document.getElementById('modalResult');
+    
+    if (!raInput || !currentUserId) {
+        mostrarMensagem('❌ Faça login primeiro', 'erro');
+        return;
+    }
+    
+    const ra = raInput.value.trim();
+    
+    if (!ra || ra.length !== 4) {
+        resultDiv.innerHTML = `
+            <div style="color: #e74c3c; background: #3a1a1a; padding: 10px; border-radius: 8px; text-align: center;">
+                ❌ Digite um RA válido de 4 dígitos
+            </div>
+        `;
+        return;
+    }
+    
+    resultDiv.innerHTML = `
+        <div style="text-align: center; padding: 10px;">
+            <div class="spinner" style="margin: 0 auto;"></div>
+            <p style="color: #888; margin-top: 10px;">Buscando usuário...</p>
+        </div>
+    `;
+    
+    try {
+        // 1. Buscar usuário pelo RA
+        const searchResponse = await fetch(
+            `${API_URL}/api/amigos/usuarios/buscar?query=${ra}&usuarioId=${currentUserId}`
+        );
+        
+        const searchData = await searchResponse.json();
+        
+        if (!searchData.success || !searchData.resultados || searchData.resultados.length === 0) {
+            resultDiv.innerHTML = `
+                <div style="color: #e74c3c; background: #3a1a1a; padding: 10px; border-radius: 8px; text-align: center;">
+                    ❌ Nenhum usuário encontrado com RA: ${ra}
+                </div>
+            `;
+            return;
+        }
+        
+        const usuario = searchData.resultados.find(u => u.ra === ra);
+        
+        if (!usuario) {
+            resultDiv.innerHTML = `
+                <div style="color: #e74c3c; background: #3a1a1a; padding: 10px; border-radius: 8px; text-align: center;">
+                    ❌ Usuário não encontrado
+                </div>
+            `;
+            return;
+        }
+        
+        // Verificar status
+        if (usuario.statusAmizade === 'aceito') {
+            resultDiv.innerHTML = `
+                <div style="color: #2ecc71; background: #1a3a1a; padding: 10px; border-radius: 8px; text-align: center;">
+                    ✅ Você e ${usuario.nome} já são amigos!
+                </div>
+            `;
+            return;
+        }
+        
+        if (usuario.statusAmizade === 'pendente') {
+            resultDiv.innerHTML = `
+                <div style="color: #ffcf00; background: #3a2a1a; padding: 10px; border-radius: 8px; text-align: center;">
+                    📩 Solicitação já enviada para ${usuario.nome}
+                </div>
+            `;
+            return;
+        }
+        
+        // 2. Enviar solicitação
+        resultDiv.innerHTML = `
+            <div style="text-align: center; padding: 10px;">
+                <div class="spinner" style="margin: 0 auto;"></div>
+                <p style="color: #888; margin-top: 10px;">Enviando solicitação...</p>
+            </div>
+        `;
+        
+        const addResponse = await fetch(
+            `${API_URL}/api/amigos/usuarios/${currentUserId}/solicitar/${usuario.id}`,
+            { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        
+        const addData = await addResponse.json();
+        
+        if (addData.success) {
+            resultDiv.innerHTML = `
+                <div style="color: #2ecc71; background: #1a3a1a; padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 30px; margin-bottom: 10px;">✅</div>
+                    <strong>Solicitação enviada!</strong>
+                    <p style="margin-top: 5px; font-size: 14px;">
+                        Aguarde a aceitação de ${usuario.nome}
+                    </p>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                fecharModal();
+                carregarAmigos();
+                carregarNotificacoes();
+            }, 2000);
+            
+        } else {
+            let erroMsg = addData.error || 'Erro ao enviar solicitação';
+            if (addData.details) erroMsg += ': ' + addData.details;
+            
+            resultDiv.innerHTML = `
+                <div style="color: #e74c3c; background: #3a1a1a; padding: 10px; border-radius: 8px; text-align: center;">
+                    ❌ ${erroMsg}
+                </div>
+            `;
+        }
+        
+    } catch (error) {
+        console.error('Erro ao adicionar por RA:', error);
+        resultDiv.innerHTML = `
+            <div style="color: #e74c3c; background: #3a1a1a; padding: 10px; border-radius: 8px; text-align: center;">
+                ❌ Erro de conexão. Tente novamente.
+            </div>
+        `;
+    }
+}
+
+// ============================================
+// FUNÇÕES DE BUSCA
+// ============================================
+function abrirModalBuscar() {
+    const modal = document.getElementById('searchFriendModal');
+    modal.style.display = 'flex';
+    
+    setTimeout(() => {
+        document.getElementById('searchFriendInput').focus();
+    }, 100);
+}
+
+async function realizarBusca() {
+    const input = document.getElementById('searchFriendInput');
+    const resultsDiv = document.getElementById('searchResults');
+    
+    if (!input || !currentUserId) return;
+    
+    const query = input.value.trim();
+    
+    if (!query || query.length < 2) {
+        resultsDiv.innerHTML = `
+            <div style="color: #ffcf00; background: #3a2a1a; padding: 10px; border-radius: 8px; text-align: center; margin-top: 15px;">
+                Digite pelo menos 2 caracteres para buscar
+            </div>
+        `;
+        return;
+    }
+    
+    resultsDiv.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+            <div class="spinner"></div>
+            <p style="color: #888; margin-top: 10px;">Buscando...</p>
+        </div>
+    `;
     
     try {
         const response = await fetch(
-            `${API_URL}/api/chat/conversas/${conversaAtualId}/mensagens?usuarioId=${currentUserId}`
+            `${API_URL}/api/amigos/usuarios/buscar?query=${encodeURIComponent(query)}&usuarioId=${currentUserId}`
         );
         
         const data = await response.json();
         
-        if (data.success && data.mensagens) {
-            const chatMessages = document.getElementById('chatMessages');
-            let html = '';
+        if (data.success && data.resultados && data.resultados.length > 0) {
+            let html = `
+                <div style="color: white; margin-bottom: 15px; font-size: 14px;">
+                    🔍 ${data.resultados.length} resultado(s) encontrado(s)
+                </div>
+            `;
             
-            data.mensagens.forEach(mensagem => {
-                const isEu = mensagem.remetenteId === currentUserId;
-                const hora = formatarHora(new Date(mensagem.criadoEm));
+            data.resultados.forEach(usuario => {
+                const primeiraLetra = usuario.nome ? usuario.nome.charAt(0).toUpperCase() : '?';
+                const status = usuario.statusAmizade;
+                
+                let statusText = '';
+                let buttonText = 'Adicionar';
+                let buttonColor = '#ffcf00';
+                let buttonAction = `adicionarUsuario(${usuario.id})`;
+                let disabled = false;
+                
+                if (status === 'aceito') {
+                    statusText = '✅ Já é seu amigo';
+                    buttonText = 'Amigos';
+                    buttonColor = '#2ecc71';
+                    disabled = true;
+                    buttonAction = '';
+                } else if (status === 'pendente') {
+                    statusText = '📩 Solicitação enviada';
+                    buttonText = 'Pendente';
+                    buttonColor = '#ffcf00';
+                    disabled = true;
+                    buttonAction = '';
+                }
                 
                 html += `
-                    <div class="mensagem-container ${isEu ? 'eu' : 'amigo'}">
-                        <div class="mensagem-balao">
-                            ${mensagem.conteudo}
+                    <div class="search-result-item">
+                        <div class="result-info">
+                            <div class="result-avatar">${primeiraLetra}</div>
+                            <div class="result-details">
+                                <div class="result-name">${usuario.nome || 'Nome não disponível'}</div>
+                                <div class="result-ra">RA: ${usuario.ra || 'N/A'}</div>
+                                <div class="result-details" style="display: flex; gap: 10px; margin-top: 5px;">
+                                    <span style="color: #888; font-size: 11px;">
+                                        📚 ${usuario.serie || 'N/A'}
+                                    </span>
+                                    <span style="color: #888; font-size: 11px;">
+                                        🏆 ${usuario.pontuacao || 0} pts
+                                    </span>
+                                </div>
+                                ${statusText ? `<div class="result-status">${statusText}</div>` : ''}
+                            </div>
                         </div>
-                        <div class="mensagem-hora">${hora}</div>
+                        <button onclick="${buttonAction}" 
+                                style="
+                                    background: ${buttonColor};
+                                    color: ${buttonColor === '#ffcf00' ? 'black' : 'white'};
+                                    border: none;
+                                    padding: 8px 15px;
+                                    border-radius: 8px;
+                                    cursor: ${disabled ? 'not-allowed' : 'pointer'};
+                                    opacity: ${disabled ? '0.7' : '1'};
+                                    font-weight: bold;
+                                    font-size: 12px;
+                                "
+                                ${disabled ? 'disabled' : ''}>
+                            ${buttonText}
+                        </button>
                     </div>
                 `;
             });
             
-            chatMessages.innerHTML = html;
+            resultsDiv.innerHTML = html;
             
-            // Rolagem automática para a última mensagem
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+        } else {
+            resultsDiv.innerHTML = `
+                <div style="text-align: center; padding: 30px 20px; background: #242424; border-radius: 10px; margin-top: 15px;">
+                    <div style="font-size: 40px; color: #888; margin-bottom: 15px;">
+                        🔍
+                    </div>
+                    <p style="color: white;">Nenhum usuário encontrado</p>
+                    <p style="color: #888; font-size: 14px; margin-top: 5px;">
+                        Tente buscar por nome ou RA diferente
+                    </p>
+                </div>
+            `;
         }
         
     } catch (error) {
-        console.error('Erro ao carregar mensagens:', error);
+        console.error('Erro na busca:', error);
+        resultsDiv.innerHTML = `
+            <div style="color: #e74c3c; background: #3a1a1a; padding: 10px; border-radius: 8px; text-align: center; margin-top: 15px;">
+                ❌ Erro na busca. Tente novamente.
+            </div>
+        `;
     }
 }
 
-async function enviarMensagem() {
-    const input = document.getElementById('chatInput');
-    const conteudo = input.value.trim();
+async function adicionarUsuario(amigoId) {
+    if (!currentUserId) {
+        mostrarMensagem('❌ Faça login primeiro', 'erro');
+        return;
+    }
     
-    if (!conteudo || !conversaAtualId || !currentUserId) return;
+    if (currentUserId == amigoId) {
+        mostrarMensagem('❌ Você não pode se adicionar como amigo!', 'erro');
+        return;
+    }
     
     try {
         const response = await fetch(
-            `${API_URL}/api/chat/conversas/${conversaAtualId}/mensagens`,
-            {
+            `${API_URL}/api/amigos/usuarios/${currentUserId}/solicitar/${amigoId}`,
+            { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    remetenteId: currentUserId,
-                    conteudo: conteudo
-                })
+                }
             }
         );
         
         const data = await response.json();
         
         if (data.success) {
-            input.value = '';
-            carregarMensagens(); // Recarrega mensagens incluindo a nova
-            
-            // Atualizar lista de conversas
-            carregarConversas();
-            
+            mostrarMensagem('✅ Solicitação de amizade enviada!', 'sucesso');
+            realizarBusca(); // Atualizar resultados
+            carregarAmigos(); // Atualizar lista
+            carregarNotificacoes(); // Atualizar notificações
         } else {
             mostrarMensagem(`❌ Erro: ${data.error || 'Não foi possível enviar'}`, 'erro');
         }
         
     } catch (error) {
-        console.error('Erro ao enviar mensagem:', error);
-        mostrarMensagem('❌ Erro ao enviar mensagem', 'erro');
+        console.error('Erro ao adicionar amigo:', error);
+        mostrarMensagem('❌ Erro ao enviar solicitação', 'erro');
     }
 }
 
 // ============================================
-// MODAL NOVA CONVERSA
+// FUNÇÕES DE REMOVER AMIGOS
 // ============================================
-async function abrirModalNovaConversa() {
+async function removerAmigo(amigoId) {
+    if (!confirm('Tem certeza que deseja remover este amigo?')) return;
+    
     try {
-        // Buscar lista de amigos
-        const response = await fetch(`${API_URL}/api/amigos/usuarios/${currentUserId}/amigos`);
-        const data = await response.json();
-        
-        if (data.success && data.amigos && data.amigos.length > 0) {
-            let html = '<div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">';
-            
-            data.amigos.forEach(amigoData => {
-                const amigo = amigoData.amigo || amigoData;
-                html += `
-                    <div class="friend-item" style="cursor: pointer;" onclick="iniciarConversa(${amigo.id})">
-                        <div class="conversa-info">
-                            <div class="conversa-avatar">${amigo.nome.charAt(0).toUpperCase()}</div>
-                            <div class="conversa-details">
-                                <div class="conversa-nome">${amigo.nome}</div>
-                                <div style="color: #888; font-size: 12px;">RA: ${amigo.ra}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += '</div>';
-            document.getElementById('amigosParaConversar').innerHTML = html;
-            
-        } else {
-            document.getElementById('amigosParaConversar').innerHTML = `
-                <div style="text-align: center; padding: 20px; color: #888;">
-                    Você não tem amigos para conversar ainda.
-                </div>
-            `;
-        }
-        
-        document.getElementById('modalNovaConversa').style.display = 'flex';
-        
-    } catch (error) {
-        console.error('Erro ao abrir modal:', error);
-        mostrarMensagem('❌ Erro ao carregar amigos', 'erro');
-    }
-}
-
-async function iniciarConversa(amigoId) {
-    try {
-        const response = await fetch(`${API_URL}/api/chat/conversas`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                usuario1Id: currentUserId,
-                usuario2Id: amigoId
-            })
-        });
+        const response = await fetch(
+            `${API_URL}/api/amigos/usuarios/${currentUserId}/amigos/${amigoId}`,
+            { method: 'DELETE' }
+        );
         
         const data = await response.json();
         
         if (data.success) {
-            fecharModal();
-            
-            // Buscar nome do amigo para abrir a conversa
-            const amigoResponse = await fetch(`${API_URL}/api/usuarios/${amigoId}`);
-            const amigoData = await amigoResponse.json();
-            
-            abrirConversa(data.conversa.id, amigoId, amigoData.nome);
-            mostrarMensagem('✅ Conversa iniciada!', 'sucesso');
-            
+            mostrarMensagem('✅ Amigo removido com sucesso!', 'sucesso');
+            carregarAmigos();
         } else {
-            mostrarMensagem(`❌ Erro: ${data.error || 'Não foi possível iniciar conversa'}`, 'erro');
+            mostrarMensagem(`❌ Erro: ${data.error || 'Não foi possível remover'}`, 'erro');
         }
         
     } catch (error) {
-        console.error('Erro ao iniciar conversa:', error);
-        mostrarMensagem('❌ Erro ao iniciar conversa', 'erro');
+        console.error('Erro ao remover amigo:', error);
+        mostrarMensagem('❌ Erro ao remover amigo', 'erro');
     }
 }
+
 // ============================================
-// FUNÇÕES AUXILIARES
+// FUNÇÕES UTILITÁRIAS
 // ============================================
 function fecharModal() {
-    document.getElementById('modalNovaConversa').style.display = 'none';
-    document.getElementById('amigosParaConversar').innerHTML = '';
-}
-
-function formatarHora(data) {
-    if (!data) return '';
-    
-    const agora = new Date();
-    const diffMs = agora - data;
-    const diffMin = Math.floor(diffMs / 60000);
-    const diffHoras = Math.floor(diffMin / 60);
-    const diffDias = Math.floor(diffHoras / 24);
-    
-    // Se for hoje, mostra apenas hora
-    if (data.getDate() === agora.getDate() && 
-        data.getMonth() === agora.getMonth() && 
-        data.getFullYear() === agora.getFullYear()) {
-        return data.toLocaleTimeString('pt-BR', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
-    }
-    
-    // Se for ontem
-    if (diffDias === 1) {
-        return 'Ontem ' + data.toLocaleTimeString('pt-BR', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
-    }
-    
-    // Se for esta semana
-    if (diffDias < 7) {
-        const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
-        return diasSemana[data.getDay()] + ' ' + data.toLocaleTimeString('pt-BR', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
-    }
-    
-    // Mais antigo
-    return data.toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: '2-digit'
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.style.display = 'none';
     });
+    
+    document.getElementById('modalResult').innerHTML = '';
+    document.getElementById('searchResults').innerHTML = '';
+    document.getElementById('modalRA').value = '';
+    document.getElementById('searchFriendInput').value = '';
 }
 
-function mostrarMensagem(texto, tipo = 'info') {
-    // Criar elemento de mensagem
-    const mensagemDiv = document.createElement('div');
-    mensagemDiv.textContent = texto;
-    mensagemDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        border-radius: 8px;
-        color: white;
-        font-weight: bold;
-        z-index: 1000;
-        animation: slideInRight 0.3s ease;
-        min-width: 300px;
-        text-align: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    `;
-    
-    if (tipo === 'sucesso') {
-        mensagemDiv.style.background = '#2ecc71';
-    } else if (tipo === 'erro') {
-        mensagemDiv.style.background = '#e74c3c';
-    } else {
-        mensagemDiv.style.background = '#3498db';
+function filtrarAmigos(texto) {
+    console.log('Filtrando amigos por:', texto);
+    // Implementação futura de filtro local
+}
+
+function voltarParaMenu() {
+    window.location.href = '/menu';
+}
+
+function mostrarMensagem(mensagem, tipo) {
+    // Remover mensagem anterior se existir
+    const mensagemAnterior = document.querySelector('.mensagem');
+    if (mensagemAnterior) {
+        mensagemAnterior.remove();
     }
+
+    // Criar nova mensagem
+    const msg = document.createElement('div');
+    msg.className = `mensagem ${tipo}`;
+    msg.textContent = mensagem;
     
-    document.body.appendChild(mensagemDiv);
-    
-    // Remover após 3 segundos
+    document.body.appendChild(msg);
+
+    // Mostrar mensagem
     setTimeout(() => {
-        mensagemDiv.style.animation = 'slideOutRight 0.3s ease';
-        setTimeout(() => {
-            document.body.removeChild(mensagemDiv);
-        }, 300);
-    }, 3000);
+        msg.style.display = 'block';
+    }, 10);
+
+    // Remover após 4 segundos
+    setTimeout(() => {
+        if (msg.parentNode) {
+            msg.style.opacity = '0';
+            msg.style.transition = 'opacity 0.3s';
+            setTimeout(() => {
+                if (msg.parentNode) msg.remove();
+            }, 300);
+        }
+    }, 4000);
 }
 
 // ============================================
-// FUNÇÕES DE NAVEGAÇÃO
+// FUNÇÃO DE TESTE
 // ============================================
-function voltarParaAmigos() {
-    // Limpar conversa atual
-    conversaAtualId = null;
-    amigoAtualId = null;
+async function testarSistema() {
+    console.log('🧪 Testando sistema de amigos...');
     
-    // Parar atualização automática
-    if (intervaloAtualizacao) {
-        clearInterval(intervaloAtualizacao);
-        intervaloAtualizacao = null;
+    if (!currentUserId) {
+        alert('Faça login primeiro!');
+        return;
     }
-    
-    // Resetar UI
-    document.getElementById('semChatSelecionado').style.display = 'flex';
-    document.getElementById('chatAtivo').style.display = 'none';
-    document.getElementById('chatMessages').innerHTML = '';
-    document.getElementById('chatInput').value = '';
-    
-    // Atualizar lista de conversas
-    carregarConversas();
-}
-
-// ============================================
-// EVENT LISTENERS
-// ============================================
-// Fechar modal ao clicar fora
-document.addEventListener('click', function(event) {
-    const modal = document.getElementById('modalNovaConversa');
-    if (modal.style.display === 'flex' && 
-        event.target === modal) {
-        fecharModal();
-    }
-});
-
-// Fechar modal com ESC
-document.addEventListener('keydown', function(event) {
-    const modal = document.getElementById('modalNovaConversa');
-    if (event.key === 'Escape' && modal.style.display === 'flex') {
-        fecharModal();
-    }
-});
-
-// Atualizar conversas periodicamente
-setInterval(carregarConversas, 10000); // Atualiza a cada 10 segundos
-
-// ============================================
-// ESTILOS ADICIONAIS PARA MODAL
-// ============================================
-const modalStyles = document.createElement('style');
-modalStyles.textContent = `
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        animation: fadeIn 0.3s ease;
-    }
-
-    .modal-content {
-        background: #323232;
-        border-radius: 15px;
-        border: 1px solid #444;
-        width: 90%;
-        max-width: 500px;
-        max-height: 80vh;
-        overflow-y: auto;
-        padding: 25px;
-        animation: slideUp 0.3s ease;
-    }
-
-    .modal-content h2 {
-        color: #ffcf00;
-        margin-bottom: 20px;
-        font-size: 24px;
-        text-align: center;
-    }
-
-    .friend-item {
-        background: #242424;
-        border-radius: 10px;
-        padding: 15px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border: 1px solid #555;
-    }
-
-    .friend-item:hover {
-        border-color: #ffcf00;
-        background: #2a2a2a;
-        transform: translateY(-2px);
-    }
-
-    .modal-buttons {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 20px;
-        gap: 10px;
-    }
-
-    .btn-cancel {
-        background: #555;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: background 0.3s ease;
-    }
-
-    .btn-cancel:hover {
-        background: #666;
-    }
-
-    .btn-voltar {
-        background: #ffcf00;
-        color: black;
-        border: none;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        cursor: pointer;
-        font-size: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        transition: all 0.3s ease;
-        z-index: 100;
-    }
-
-    .btn-voltar:hover {
-        transform: scale(1.1);
-        background: #ffaa00;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    @keyframes slideUp {
-        from { 
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to { 
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @keyframes slideInRight {
-        from {
-            opacity: 0;
-            transform: translateX(100%);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-
-    @keyframes slideOutRight {
-        from {
-            opacity: 1;
-            transform: translateX(0);
-        }
-        to {
-            opacity: 0;
-            transform: translateX(100%);
-        }
-    }
-
-    .spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid #333;
-        border-top: 4px solid #ffcf00;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-
-    /* Scrollbar personalizada */
-    .conversas-list::-webkit-scrollbar,
-    .chat-messages::-webkit-scrollbar,
-    .modal-content::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    .conversas-list::-webkit-scrollbar-track,
-    .chat-messages::-webkit-scrollbar-track,
-    .modal-content::-webkit-scrollbar-track {
-        background: #242424;
-        border-radius: 4px;
-    }
-
-    .conversas-list::-webkit-scrollbar-thumb,
-    .chat-messages::-webkit-scrollbar-thumb,
-    .modal-content::-webkit-scrollbar-thumb {
-        background: #555;
-        border-radius: 4px;
-    }
-
-    .conversas-list::-webkit-scrollbar-thumb:hover,
-    .chat-messages::-webkit-scrollbar-thumb:hover,
-    .modal-content::-webkit-scrollbar-thumb:hover {
-        background: #666;
-    }
-
-    /* Status online/offline */
-    .status-indicator {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        border: 2px solid #323232;
-    }
-
-    .status-online {
-        background: #2ecc71;
-    }
-
-    .status-offline {
-        background: #95a5a6;
-    }
-
-    .status-away {
-        background: #f39c12;
-    }
-
-    /* Badge para novas mensagens */
-    .badge-nao-lidas {
-        animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
-`;
-document.head.appendChild(modalStyles);
-
-// ============================================
-// FUNÇÕES ADICIONAIS
-// ============================================
-async function marcarComoLida(conversaId) {
-    try {
-        await fetch(`${API_URL}/api/chat/conversas/${conversaId}/ler`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                usuarioId: currentUserId
-            })
-        });
-        
-        // Atualizar badge
-        carregarConversas();
-        
-    } catch (error) {
-        console.error('Erro ao marcar como lida:', error);
-    }
-}
-
-// Quando abrir uma conversa, marcar como lida
-async function abrirConversa(conversaId, amigoId, amigoNome) {
-    try {
-        // ... código existente ...
-        
-        // Marcar mensagens como lidas
-        await marcarComoLida(conversaId);
-        
-        // ... resto do código existente ...
-        
-    } catch (error) {
-        console.error('Erro ao abrir conversa:', error);
-        mostrarMensagem('❌ Erro ao abrir conversa', 'erro');
-    }
-}
-
-// ============================================
-// WEBSOCKET PARA MENSAGENS EM TEMPO REAL
-// ============================================
-let socket = null;
-
-function conectarWebSocket() {
-    if (!currentUserId) return;
     
     try {
-        // Implementação do WebSocket
-        socket = new WebSocket(`wss://coliseum-api.onrender.com/ws/chat/${currentUserId}`);
+        const response = await fetch(`${API_URL}/api/amigos/usuarios/${currentUserId}/amigos`);
+        const data = await response.json();
         
-        socket.onopen = function() {
-            console.log('🔌 WebSocket conectado');
-        };
+        console.log('✅ Teste amigos:', data);
         
-        socket.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            
-            if (data.tipo === 'nova_mensagem') {
-                // Se a mensagem é para a conversa atual
-                if (conversaAtualId && data.conversaId === conversaAtualId) {
-                    // Adicionar mensagem diretamente no chat
-                    const chatMessages = document.getElementById('chatMessages');
-                    
-                    const mensagemDiv = document.createElement('div');
-                    mensagemDiv.className = `mensagem-container ${data.remetenteId === currentUserId ? 'eu' : 'amigo'} mensagem-nova`;
-                    mensagemDiv.innerHTML = `
-                        <div class="mensagem-balao">
-                            ${data.conteudo}
-                        </div>
-                        <div class="mensagem-hora">${formatarHora(new Date(data.criadoEm))}</div>
-                    `;
-                    
-                    chatMessages.appendChild(mensagemDiv);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }
-                
-                // Atualizar lista de conversas
-                carregarConversas();
-            }
-        };
+        let mensagem = `Sistema funcionando!\n\n`;
+        mensagem += `Amigos encontrados: ${data.amigos?.length || 0}\n`;
+        mensagem += `Status: ${data.success ? 'OK' : 'ERRO'}\n`;
         
-        socket.onclose = function() {
-            console.log('🔌 WebSocket desconectado, reconectando em 3 segundos...');
-            setTimeout(conectarWebSocket, 3000);
-        };
+        if (data.error) {
+            mensagem += `Erro: ${data.error}\n`;
+        }
         
-        socket.onerror = function(error) {
-            console.error('❌ Erro no WebSocket:', error);
-        };
+        alert(mensagem);
         
     } catch (error) {
-        console.error('❌ Erro ao conectar WebSocket:', error);
+        console.error('❌ Teste falhou:', error);
+        alert('Erro ao testar: ' + error.message);
     }
 }
 
-// Iniciar WebSocket após login
-setTimeout(conectarWebSocket, 1000);
-
-// ============================================
-// FUNÇÃO DE SAIR
-// ============================================
-function sair() {
-    // Fechar WebSocket
-    if (socket) {
-        socket.close();
-    }
-    
-    // Parar intervalos
-    if (intervaloAtualizacao) {
-        clearInterval(intervaloAtualizacao);
-    }
-    
-    // Limpar dados
-    localStorage.removeItem('usuario');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userName');
-    
-    // Redirecionar para login
-    window.location.href = '/login';
-}
-
-// ============================================
-// PESQUISA DE CONVERSAS
-// ============================================
-function adicionarBusca() {
-    const conversasHeader = document.querySelector('.conversas-header');
-    
-    const searchDiv = document.createElement('div');
-    searchDiv.style.cssText = `
-        margin-bottom: 15px;
-        position: relative;
-    `;
-    
-    searchDiv.innerHTML = `
-        <input type="text" 
-               id="buscaConversas" 
-               placeholder="Buscar conversas..."
-               style="
-                    width: 100%;
-                    padding: 10px 15px;
-                    background: #242424;
-                    border: 1px solid #555;
-                    border-radius: 8px;
-                    color: white;
-                    font-size: 14px;
-                    outline: none;
-                    transition: border 0.3s ease;
-               "
-               onkeyup="filtrarConversas(this.value)"
-        >
-        <div style="
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #888;
-            font-size: 18px;
-        ">🔍</div>
-    `;
-    
-    conversasHeader.parentNode.insertBefore(searchDiv, conversasHeader.nextSibling);
-}
-
-function filtrarConversas(termo) {
-    const conversas = document.querySelectorAll('.conversa-item');
-    termo = termo.toLowerCase();
-    
-    conversas.forEach(conversa => {
-        const nome = conversa.querySelector('.conversa-nome').textContent.toLowerCase();
-        const ultimaMsg = conversa.querySelector('.conversa-ultima').textContent.toLowerCase();
-        
-        if (nome.includes(termo) || ultimaMsg.includes(termo)) {
-            conversa.style.display = 'flex';
-        } else {
-            conversa.style.display = 'none';
-        }
-    });
-}
-
-// Adicionar barra de busca após carregar conversas
-setTimeout(adicionarBusca, 500);
-
-// ============================================
-// NOTIFICAÇÕES DO NAVEGADOR
-// ============================================
-function verificarPermissaoNotificacoes() {
-    if ("Notification" in window) {
-        if (Notification.permission === "granted") {
-            return true;
-        } else if (Notification.permission !== "denied") {
-            Notification.requestPermission().then(permission => {
-                return permission === "granted";
-            });
-        }
-    }
-    return false;
-}
-
-function mostrarNotificacao(titulo, mensagem) {
-    if (verificarPermissaoNotificacoes()) {
-        new Notification(titulo, {
-            body: mensagem,
-            icon: 'https://coliseum-api.onrender.com/logo.png'
-        });
-    }
-}
-
-// ============================================
-// INICIALIZAÇÃO FINAL
-// ============================================
-console.log('🚀 Chat Privado - Coliseum carregado com sucesso!');
-</script>
+// Teste automático
+setTimeout(() => {
+    console.log('✅ Sistema de amigos carregado');
+}, 1000);
+    </script>
 </body>
 </html>
