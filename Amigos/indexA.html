@@ -818,22 +818,340 @@ async function carregarAmigos() {
     }
 }
 
+async function abrirChatAmigo(amigoId, amigoNome) {
+    try {
+        console.log(`💬 Tentando abrir chat com amigo: ${amigoNome} (ID: ${amigoId})`);
+        
+        // Verificar se o usuário está logado
+        const currentUserId = localStorage.getItem('userId');
+        if (!currentUserId) {
+            mostrarMensagem('Você precisa estar logado para usar o chat', 'erro');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 2000);
+            return;
+        }
+        
+        // Mostrar loading
+        mostrarLoadingChat();
+        
+        // Primeiro, verificar se já existe uma conversa
+        const responseCheck = await fetch(
+            `${API_URL}/api/chat/conversas/usuario/${currentUserId}/amigo/${amigoId}`
+        );
+        
+        let conversaId = null;
+        
+        if (responseCheck.ok) {
+            const dataCheck = await responseCheck.json();
+            
+            if (dataCheck.success && dataCheck.conversa) {
+                // Conversa já existe
+                conversaId = dataCheck.conversa.id;
+                console.log(`✅ Conversa existente encontrada: ${conversaId}`);
+            }
+        }
+        
+        // Se não existe conversa, criar uma nova
+        if (!conversaId) {
+            console.log('📝 Criando nova conversa...');
+            
+            const responseCreate = await fetch(`${API_URL}/api/chat/conversas`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    usuario1Id: parseInt(currentUserId),
+                    usuario2Id: amigoId
+                })
+            });
+            
+            if (!responseCreate.ok) {
+                throw new Error('Erro ao criar conversa');
+            }
+            
+            const dataCreate = await responseCreate.json();
+            
+            if (dataCreate.success) {
+                conversaId = dataCreate.conversa.id;
+                console.log(`✅ Nova conversa criada: ${conversaId}`);
+            } else {
+                throw new Error(dataCreate.error || 'Erro ao criar conversa');
+            }
+        }
+        
+        // Agora redirecionar para a página de chat com a conversa aberta
+        console.log(`🔗 Redirecionando para chat com conversa ${conversaId}`);
+        
+        // Salvar dados para a página de chat
+        const chatData = {
+            conversaId: conversaId,
+            amigoId: amigoId,
+            amigoNome: amigoNome,
+            timestamp: new Date().getTime()
+        };
+        
+        // Salvar no localStorage para a página de chat ler
+        localStorage.setItem('chat_abrir_conversa', JSON.stringify(chatData));
+        
+        // Redirecionar para a página de chat
+        window.location.href = '/chat';
+        
+    } catch (error) {
+        console.error('❌ Erro ao abrir chat com amigo:', error);
+        
+        // Esconder loading
+        esconderLoadingChat();
+        
+        // Mostrar mensagem de erro
+        mostrarMensagem(`❌ Erro: ${error.message || 'Não foi possível abrir o chat'}`, 'erro');
+        
+        // Tentar abrir em uma nova aba como fallback
+        setTimeout(() => {
+            const confirmar = confirm('Não foi possível abrir o chat automaticamente. Deseja abrir em uma nova aba?');
+            if (confirmar) {
+                window.open('/chat', '_blank');
+            }
+        }, 1500);
+    }
+}
+
 // ============================================
-// FUNÇÃO PARA ABRIR CHAT COM AMIGO
+// FUNÇÕES AUXILIARES
 // ============================================
-function abrirChatAmigo(amigoId, amigoNome) {
-    console.log(`💬 Abrindo chat com ${amigoNome} (ID: ${amigoId})`);
+function mostrarLoadingChat() {
+    // Criar overlay de loading
+    const overlay = document.createElement('div');
+    overlay.id = 'chatLoadingOverlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        color: white;
+    `;
     
-    // Salvar dados do amigo para o chat
-    localStorage.setItem('chatAmigoId', amigoId);
-    localStorage.setItem('chatAmigoNome', amigoNome);
+    overlay.innerHTML = `
+        <div class="spinner" style="width: 60px; height: 60px; border-width: 5px; margin-bottom: 20px;"></div>
+        <h3 style="margin-bottom: 10px;">Abrindo chat...</h3>
+        <p style="color: #888; text-align: center;">Preparando conversa com seu amigo</p>
+    `;
     
-    // Redirecionar para página de chat privado
-    // Se você tiver uma página específica para chat privado
-    // window.location.href = `/chat-privado?amigoId=${amigoId}`;
+    document.body.appendChild(overlay);
+}
+
+function esconderLoadingChat() {
+    const overlay = document.getElementById('chatLoadingOverlay');
+    if (overlay) {
+        overlay.remove();
+    }
+}
+
+
+const estilosChat = `
+/* Estilos para os botões de ação */
+.friend-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+}
+
+.btn-chat {
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    color: white;
+}
+
+.btn-chat:hover {
+    background: linear-gradient(135deg, #1976D2, #1565C0);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.btn-remove {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.btn-remove:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+/* Loading spinner */
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top: 4px solid #ffcf00;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsividade para os botões */
+@media (max-width: 768px) {
+    .friend-actions {
+        flex-direction: column;
+        width: 100%;
+    }
     
-    // Alternativa: Mostrar um modal de chat
-    mostrarModalChat(amigoId, amigoNome);
+    .btn-action {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}
+
+/* Badge para novas mensagens */
+.badge-novas-mensagens {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #e74c3c;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    border: 2px solid #242424;
+    animation: pulse 2s infinite;
+}
+
+.friend-avatar {
+    position: relative;
+}
+`;
+
+// Adicionar os estilos ao documento
+const styleElement = document.createElement('style');
+styleElement.textContent = estilosChat;
+document.head.appendChild(styleElement);
+
+// ============================================
+// FUNÇÃO PARA VERIFICAR NOVAS MENSAGENS
+// ============================================
+async function verificarNovasMensagensAmigos() {
+    try {
+        const currentUserId = localStorage.getItem('userId');
+        if (!currentUserId) return;
+        
+        const response = await fetch(
+            `${API_URL}/api/chat/usuarios/${currentUserId}/conversas/resumo`
+        );
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success && data.resumo) {
+                // Adicionar badges aos amigos
+                data.resumo.forEach(resumo => {
+                    if (resumo.naoLidas > 0) {
+                        const friendItem = document.querySelector(
+                            `.friend-item .friend-actions button[onclick*="${resumo.amigoId}"]`
+                        );
+                        
+                        if (friendItem) {
+                            const friendAvatar = friendItem.closest('.friend-item').querySelector('.friend-avatar');
+                            
+                            // Remover badge existente
+                            const existingBadge = friendAvatar.querySelector('.badge-novas-mensagens');
+                            if (existingBadge) existingBadge.remove();
+                            
+                            // Adicionar novo badge
+                            const badge = document.createElement('div');
+                            badge.className = 'badge-novas-mensagens';
+                            badge.textContent = resumo.naoLidas > 9 ? '9+' : resumo.naoLidas;
+                            badge.title = `${resumo.naoLidas} nova(s) mensagem(ns)`;
+                            
+                            friendAvatar.style.position = 'relative';
+                            friendAvatar.appendChild(badge);
+                        }
+                    }
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao verificar novas mensagens:', error);
+    }
+}
+
+// Verificar novas mensagens periodicamente (a cada 10 segundos)
+setInterval(verificarNovasMensagensAmigos, 10000);
+
+// Verificar quando a página foca
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        verificarNovasMensagensAmigos();
+    }
+});
+
+// Verificar ao carregar a página
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(verificarNovasMensagensAmigos, 2000);
+});
+
+async function testarConexaoAntesDeAbrirChat() {
+    try {
+        const response = await fetch(`${API_URL}/api/health`, {
+            method: 'GET',
+            timeout: 5000 // 5 segundos timeout
+        });
+        
+        return response.ok;
+    } catch (error) {
+        console.error('API offline:', error);
+        return false;
+    }
+}
+
+// Modificar a função abrirChatAmigo para testar conexão:
+async function abrirChatAmigo(amigoId, amigoNome) {
+    // Testar conexão primeiro
+    const conectado = await testarConexaoAntesDeAbrirChat();
+    
+    if (!conectado) {
+        const usarOffline = confirm('A API parece estar offline. Deseja abrir o chat em modo offline?');
+        
+        if (usarOffline) {
+            // Modo offline - redirecionar para chat com dados locais
+            localStorage.setItem('modo_offline', 'true');
+            localStorage.setItem('chat_amigo_offline', JSON.stringify({
+                id: amigoId,
+                nome: amigoNome
+            }));
+            window.location.href = '/chat';
+        }
+        return;
+    }
+    
 }
 
 function mostrarModalChat(amigoId, amigoNome) {
@@ -1548,3 +1866,4 @@ setTimeout(() => {
     </script>
 </body>
 </html>
+
