@@ -280,8 +280,8 @@
         }
 
         .btn-chat:hover {
-            background: #ffcf00;
-            color: #000;
+            background: #2196F3;
+            color: #fff;
         }
 
         .btn-remove:hover {
@@ -760,12 +760,12 @@ async function carregarAmigos() {
                             </div>
                         </div>
                         <div class="friend-actions">
+                            <button class="btn-action btn-chat" onclick="abrirChatAmigo(${amigo.id}, '${amigo.nome}')" title="Conversar">
+                                💬 Chat
+                            </button>
                             <button class="btn-action btn-remove" onclick="removerAmigo(${amigo.id})" title="Remover amigo">
                                 Remover
                             </button>
-                             <button class="btn-action btn-chat onclick="chatAmigo(${amigo.id})" title=" Chat ">
-                             Chat
-                             </button>
                         </div>
                     </div>
                 `;
@@ -815,6 +815,118 @@ async function carregarAmigos() {
             </div>
         `;
     }
+}
+
+// ============================================
+// FUNÇÃO PARA ABRIR CHAT COM AMIGO
+// ============================================
+function abrirChatAmigo(amigoId, amigoNome) {
+    console.log(`💬 Abrindo chat com ${amigoNome} (ID: ${amigoId})`);
+    
+    // Salvar dados do amigo para o chat
+    localStorage.setItem('chatAmigoId', amigoId);
+    localStorage.setItem('chatAmigoNome', amigoNome);
+    
+    // Redirecionar para página de chat privado
+    // Se você tiver uma página específica para chat privado
+    // window.location.href = `/chat-privado?amigoId=${amigoId}`;
+    
+    // Alternativa: Mostrar um modal de chat
+    mostrarModalChat(amigoId, amigoNome);
+}
+
+function mostrarModalChat(amigoId, amigoNome) {
+    const modalHTML = `
+        <div class="modal-overlay" id="chatModal">
+            <div class="modal-content" style="max-width: 500px; max-height: 80vh; display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: #ffcf00; margin: 0;">💬 Chat com ${amigoNome}</h2>
+                    <button onclick="fecharChat()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">×</button>
+                </div>
+                
+                <div id="chatMessages" style="flex: 1; overflow-y: auto; max-height: 300px; margin-bottom: 15px; padding: 10px; background: #242424; border-radius: 8px;">
+                    <div style="text-align: center; color: #888; padding: 20px;">
+                        Inicie uma conversa com ${amigoNome}!
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" 
+                           id="chatInput" 
+                           placeholder="Digite sua mensagem..." 
+                           style="flex: 1; padding: 12px; background: #242424; border: 1px solid #555; color: white; border-radius: 8px;"
+                           onkeypress="if(event.key === 'Enter') enviarMensagemChat()">
+                    <button onclick="enviarMensagemChat()" style="background: #ffcf00; color: black; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                        Enviar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remover chat anterior se existir
+    const chatAnterior = document.getElementById('chatModal');
+    if (chatAnterior) chatAnterior.remove();
+    
+    // Adicionar novo chat
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Focar no input
+    setTimeout(() => {
+        document.getElementById('chatInput').focus();
+    }, 100);
+}
+
+function fecharChat() {
+    const chatModal = document.getElementById('chatModal');
+    if (chatModal) chatModal.remove();
+}
+
+function enviarMensagemChat() {
+    const input = document.getElementById('chatInput');
+    const mensagem = input.value.trim();
+    
+    if (!mensagem) return;
+    
+    const chatMessages = document.getElementById('chatMessages');
+    const amigoNome = localStorage.getItem('chatAmigoNome') || 'Amigo';
+    
+    // Adicionar mensagem ao chat
+    const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    chatMessages.innerHTML += `
+        <div style="margin-bottom: 10px; text-align: right;">
+            <div style="background: #2196F3; color: white; padding: 8px 12px; border-radius: 12px 12px 0 12px; display: inline-block; max-width: 80%;">
+                ${mensagem}
+                <div style="font-size: 10px; opacity: 0.8; margin-top: 3px;">${hora}</div>
+            </div>
+        </div>
+    `;
+    
+    // Limpar input e rolar para baixo
+    input.value = '';
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // Simular resposta (em um sistema real, isso viria do WebSocket/API)
+    setTimeout(() => {
+        const respostas = [
+            "Oi! Como você está?",
+            "Vamos estudar juntos depois?",
+            "Você viu o novo desafio de matemática?",
+            "Preciso de ajuda com a lição de física!",
+            "Que bom conversar com você! 😊"
+        ];
+        const resposta = respostas[Math.floor(Math.random() * respostas.length)];
+        
+        chatMessages.innerHTML += `
+            <div style="margin-bottom: 10px; text-align: left;">
+                <div style="background: #555; color: white; padding: 8px 12px; border-radius: 12px 12px 12px 0; display: inline-block; max-width: 80%;">
+                    ${resposta}
+                    <div style="font-size: 10px; opacity: 0.8; margin-top: 3px;">${hora}</div>
+                </div>
+            </div>
+        `;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 1000);
 }
 
 // ============================================
@@ -1432,7 +1544,6 @@ async function testarSistema() {
 setTimeout(() => {
     console.log('✅ Sistema de amigos carregado');
 }, 1000);
-</script>
+    </script>
 </body>
 </html>
-
