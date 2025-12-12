@@ -745,113 +745,107 @@ let currentUserName = null;
 let conversaAtualId = null;
 let amigoAtualId = null;
 let intervaloAtualizacao = null;
-let socket = null;
-let estaDigitando = false;
-let timeoutDigitando = null;
+
+// ============================================
+// FUNÇÕES UTILITÁRIAS
+// ============================================
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function mostrarMensagem(texto, tipo = 'info') {
+    const mensagemDiv = document.createElement('div');
+    mensagemDiv.textContent = texto;
+    mensagemDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: bold;
+        z-index: 1000;
+        animation: slideInRight 0.3s ease;
+        min-width: 300px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        backdrop-filter: blur(10px);
+    `;
+    
+    if (tipo === 'sucesso') {
+        mensagemDiv.style.background = 'rgba(46, 204, 113, 0.9)';
+    } else if (tipo === 'erro') {
+        mensagemDiv.style.background = 'rgba(231, 76, 60, 0.9)';
+    } else if (tipo === 'aviso') {
+        mensagemDiv.style.background = 'rgba(243, 156, 18, 0.9)';
+    } else {
+        mensagemDiv.style.background = 'rgba(52, 152, 219, 0.9)';
+    }
+    
+    document.body.appendChild(mensagemDiv);
+    
+    setTimeout(() => {
+        mensagemDiv.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => {
+            if (document.body.contains(mensagemDiv)) {
+                document.body.removeChild(mensagemDiv);
+            }
+        }, 300);
+    }, 3000);
+}
+
+function formatarHora(data) {
+    if (!data || isNaN(new Date(data).getTime())) return '';
+    
+    const agora = new Date();
+    const dataObj = new Date(data);
+    
+    if (dataObj.getDate() === agora.getDate() && 
+        dataObj.getMonth() === agora.getMonth() && 
+        dataObj.getFullYear() === agora.getFullYear()) {
+        return dataObj.toLocaleTimeString('pt-BR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    }
+    
+    const ontem = new Date(agora);
+    ontem.setDate(agora.getDate() - 1);
+    if (dataObj.getDate() === ontem.getDate() && 
+        dataObj.getMonth() === ontem.getMonth() && 
+        dataObj.getFullYear() === ontem.getFullYear()) {
+        return 'Ontem ' + dataObj.toLocaleTimeString('pt-BR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    }
+    
+    const diffDias = Math.floor((agora - dataObj) / (1000 * 60 * 60 * 24));
+    if (diffDias < 7) {
+        const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+        return diasSemana[dataObj.getDay()] + ' ' + dataObj.toLocaleTimeString('pt-BR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    }
+    
+    return dataObj.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: '2-digit'
+    });
+}
 
 // ============================================
 // INICIALIZAÇÃO
 // ============================================
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('💬 Sistema de chat inicializado');
-    
-    verificarLogin();
-    iniciarModoOffline();
-    adicionarBusca();
-});
-
-document.addEventListener('DOMContentLoaded', function() {
     console.log('💬 Chat inicializado');
-    
-    // Verificar se há conversa para abrir automaticamente
-    setTimeout(() => {
-        verificarConversaParaAbrir();
-    }, 500);
+    verificarLogin();
 });
-
-function verificarConversaParaAbrir() {
-    try {
-        console.log('🔍 Verificando se há conversa para abrir...');
-        
-        // Verificar timestamp (expira após 30 segundos)
-        const redirectTimestamp = localStorage.getItem('chat_redirect_timestamp');
-        const agora = Date.now();
-        
-        if (redirectTimestamp && (agora - parseInt(redirectTimestamp) < 30000)) {
-            const chatData = localStorage.getItem('chat_abrir_conversa');
-            
-            if (chatData) {
-                const data = JSON.parse(chatData);
-                console.log('📋 Dados da conversa encontrados:', data);
-                
-                // Verificar se os dados são válidos
-                if (data.conversaId && data.amigoId && data.amigoNome) {
-                    console.log(`🎯 Abrindo conversa automaticamente: ${data.conversaId}`);
-                    
-                    // Chamar função para abrir a conversa
-                    if (typeof abrirConversa === 'function') {
-                        abrirConversa(data.conversaId, data.amigoId, data.amigoNome);
-                    } else {
-                        console.log('⚠️ Função abrirConversa não encontrada');
-                        // Fallback: atualizar UI manualmente
-                        atualizarUIChat(data.conversaId, data.amigoId, data.amigoNome);
-                    }
-                    
-                    // Limpar dados após uso
-                    localStorage.removeItem('chat_abrir_conversa');
-                    localStorage.removeItem('chat_redirect_timestamp');
-                    
-                    return true;
-                }
-            }
-        }
-        
-        // Verificar fallback data
-        const fallbackData = localStorage.getItem('chat_fallback_data');
-        if (fallbackData) {
-            const data = JSON.parse(fallbackData);
-            console.log('📋 Dados fallback encontrados:', data);
-            
-            // Tentar criar conversa a partir dos dados fallback
-            if (data.amigoId && data.amigoNome) {
-                console.log('🔄 Tentando criar conversa a partir de fallback...');
-                
-                // Aqui você pode tentar criar a conversa novamente ou apenas mostrar o amigo
-                mostrarMensagem(`💬 Tentando conectar com ${data.amigoNome}...`, 'info');
-                
-                localStorage.removeItem('chat_fallback_data');
-            }
-        }
-        
-        console.log('ℹ️ Nenhuma conversa para abrir automaticamente');
-        return false;
-        
-    } catch (error) {
-        console.error('❌ Erro ao verificar conversa para abrir:', error);
-        localStorage.removeItem('chat_abrir_conversa');
-        localStorage.removeItem('chat_redirect_timestamp');
-        localStorage.removeItem('chat_fallback_data');
-        return false;
-    }
-}
-
-function iniciarModoOffline() {
-    // Verificar se está offline
-    if (!navigator.onLine) {
-        mostrarMensagem('Você está offline. Algumas funcionalidades podem estar limitadas.', 'aviso');
-        carregarDadosOffline();
-    }
-    
-    // Monitorar status de conexão
-    window.addEventListener('online', function() {
-        mostrarMensagem('Conexão restaurada!', 'sucesso');
-        carregarConversas();
-    });
-    
-    window.addEventListener('offline', function() {
-        mostrarMensagem('Você está offline', 'aviso');
-    });
-}
 
 function verificarLogin() {
     try {
@@ -875,7 +869,11 @@ function verificarLogin() {
         
         console.log('✅ Usuário logado:', currentUserName);
         carregarConversas();
-        conectarWebSocket();
+        
+        // Verificar se há conversa para abrir automaticamente
+        setTimeout(() => {
+            verificarConversaParaAbrir();
+        }, 500);
         
     } catch (error) {
         console.error('❌ Erro ao verificar login:', error);
@@ -886,44 +884,119 @@ function verificarLogin() {
     }
 }
 
-function verificarConversaParaAbrir() {
+// ============================================
+// VERIFICAR CONVERSA AUTOMÁTICA
+// ============================================
+async function verificarConversaParaAbrir() {
     try {
-        const chatData = localStorage.getItem('chat_abrir_conversa');
+        console.log('🔍 Verificando se há conversa para abrir...');
         
-        if (chatData) {
-            const data = JSON.parse(chatData);
+        const redirectTimestamp = localStorage.getItem('chat_redirect_timestamp');
+        const agora = Date.now();
+        
+        if (redirectTimestamp && (agora - parseInt(redirectTimestamp) < 30000)) {
+            const chatData = localStorage.getItem('chat_abrir_conversa');
             
-            // Verificar se os dados não são muito antigos (menos de 30 segundos)
-            const agora = new Date().getTime();
-            if (agora - data.timestamp < 30000) {
-                console.log('🔍 Encontrada conversa para abrir automaticamente:', data);
+            if (chatData) {
+                const data = JSON.parse(chatData);
+                console.log('📋 Dados da conversa encontrados:', data);
                 
-                // Abrir a conversa
-                abrirConversa(data.conversaId, data.amigoId, data.amigoNome);
-                
-                // Limpar os dados para não abrir novamente
-                localStorage.removeItem('chat_abrir_conversa');
-                
-                return true;
-            } else {
-                // Dados muito antigos, limpar
-                localStorage.removeItem('chat_abrir_conversa');
+                if (data.amigoId && data.amigoNome) {
+                    console.log(`🎯 Tentando abrir conversa com: ${data.amigoNome}`);
+                    
+                    // Limpar dados imediatamente
+                    localStorage.removeItem('chat_abrir_conversa');
+                    localStorage.removeItem('chat_redirect_timestamp');
+                    
+                    // Tentar abrir ou criar conversa
+                    await abrirOuCriarConversa(data.amigoId, data.amigoNome);
+                    return true;
+                }
             }
         }
-    } catch (error) {
-        console.error('Erro ao verificar conversa para abrir:', error);
+        
         localStorage.removeItem('chat_abrir_conversa');
+        localStorage.removeItem('chat_redirect_timestamp');
+        
+        console.log('ℹ️ Nenhuma conversa para abrir automaticamente');
+        return false;
+        
+    } catch (error) {
+        console.error('❌ Erro ao verificar conversa:', error);
+        localStorage.removeItem('chat_abrir_conversa');
+        localStorage.removeItem('chat_redirect_timestamp');
+        return false;
     }
-    
-    return false;
 }
 
-// Chamar esta função após carregar conversas:
-verificarConversaParaAbrir();
+async function abrirOuCriarConversa(amigoId, amigoNome) {
+    try {
+        console.log(`🔍 Buscando conversa existente com: ${amigoNome}`);
+        
+        // 1. Verificar se já existe conversa
+        const checkUrl = `${API_URL}/api/chat/conversas/usuario/${currentUserId}/amigo/${amigoId}`;
+        let conversaId = null;
+        
+        try {
+            const responseCheck = await fetch(checkUrl);
+            if (responseCheck.ok) {
+                const dataCheck = await responseCheck.json();
+                if (dataCheck.success && dataCheck.conversa) {
+                    conversaId = dataCheck.conversa.id;
+                    console.log(`✅ Conversa existente: ${conversaId}`);
+                }
+            }
+        } catch (checkError) {
+            console.log('⚠️ Erro na verificação:', checkError.message);
+        }
+        
+        // 2. Se não existe, criar nova
+        if (!conversaId) {
+            console.log('📝 Criando nova conversa...');
+            
+            try {
+                const responseCreate = await fetch(`${API_URL}/api/chat/conversas`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        usuario1Id: currentUserId,
+                        usuario2Id: amigoId
+                    })
+                });
+                
+                if (responseCreate.ok) {
+                    const dataCreate = await responseCreate.json();
+                    if (dataCreate.success) {
+                        conversaId = dataCreate.conversa.id;
+                        console.log(`✅ Nova conversa criada: ${conversaId}`);
+                    }
+                }
+            } catch (createError) {
+                console.error('❌ Erro ao criar conversa:', createError);
+            }
+        }
+        
+        // 3. Abrir a conversa
+        if (conversaId) {
+            abrirConversa(conversaId, amigoId, amigoNome);
+            mostrarMensagem(`💬 Conversa com ${amigoNome}`, 'sucesso');
+        } else {
+            mostrarMensagem('⚠️ Não foi possível criar a conversa', 'aviso');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao abrir/criar conversa:', error);
+        mostrarMensagem('❌ Erro ao iniciar conversa', 'erro');
+    }
+}
 
+// ============================================
+// FUNÇÕES DE NAVEGAÇÃO
+// ============================================
 function voltarParaAmigos() {
     if (conversaAtualId) {
-        // Confirmar se quer sair da conversa
         if (confirm('Deseja sair da conversa atual?')) {
             limparChatAtual();
             window.location.href = '/amigos';
@@ -1020,7 +1093,6 @@ async function carregarConversas() {
             
             conversasList.innerHTML = html;
             
-            // Mostrar barra de busca se houver conversas
             if (data.conversas.length > 3) {
                 document.getElementById('searchContainer').style.display = 'block';
             }
@@ -1042,34 +1114,19 @@ async function carregarConversas() {
     } catch (error) {
         console.error('❌ Erro ao carregar conversas:', error);
         
-        // Tentar carregar do cache
-        const conversasCache = localStorage.getItem('conversas_cache');
-        if (conversasCache) {
-            try {
-                const data = JSON.parse(conversasCache);
-                // Usar dados do cache...
-            } catch (e) {
-                mostrarErroCarregamento();
-            }
-        } else {
-            mostrarErroCarregamento();
-        }
+        document.getElementById('conversasList').innerHTML = `
+            <div class="error-message">
+                ❌ Erro ao carregar conversas
+                <br>
+                <small>Tente novamente mais tarde</small>
+                <br><br>
+                <button onclick="carregarConversas()" 
+                        style="background: #555; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+                    Tentar novamente
+                </button>
+            </div>
+        `;
     }
-}
-
-function mostrarErroCarregamento() {
-    document.getElementById('conversasList').innerHTML = `
-        <div class="error-message">
-            ❌ Erro ao carregar conversas
-            <br>
-            <small>Tente novamente mais tarde</small>
-            <br><br>
-            <button onclick="carregarConversas()" 
-                    style="background: #555; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
-                Tentar novamente
-            </button>
-        </div>
-    `;
 }
 
 async function abrirConversa(conversaId, amigoId, amigoNome) {
@@ -1137,11 +1194,6 @@ async function carregarMensagens() {
         if (data.success && data.mensagens) {
             const chatMessages = document.getElementById('chatMessages');
             
-            // Verificar se há novas mensagens
-            const currentMessages = Array.from(chatMessages.children).map(el => 
-                el.querySelector('.mensagem-balao')?.textContent
-            ).filter(Boolean);
-            
             let html = '';
             
             data.mensagens.forEach(mensagem => {
@@ -1169,7 +1221,6 @@ async function carregarMensagens() {
         
     } catch (error) {
         console.error('Erro ao carregar mensagens:', error);
-        // Tentar carregar do cache
         carregarMensagensDoCache();
     }
 }
@@ -1282,6 +1333,26 @@ function salvarMensagemPendente(conteudo) {
     localStorage.setItem('mensagens_pendentes', JSON.stringify(pendentes));
 }
 
+async function marcarComoLida(conversaId) {
+    try {
+        await fetch(`${API_URL}/api/chat/conversas/${conversaId}/ler`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                usuarioId: currentUserId
+            })
+        });
+        
+        // Atualizar badge
+        carregarConversas();
+        
+    } catch (error) {
+        console.error('Erro ao marcar como lida:', error);
+    }
+}
+
 // ============================================
 // MODAL NOVA CONVERSA
 // ============================================
@@ -1390,104 +1461,6 @@ function fecharModal() {
 }
 
 // ============================================
-// FUNÇÕES AUXILIARES
-// ============================================
-function formatarHora(data) {
-    if (!data || isNaN(new Date(data).getTime())) return '';
-    
-    const agora = new Date();
-    const dataObj = new Date(data);
-    
-    // Se for hoje, mostra apenas hora
-    if (dataObj.getDate() === agora.getDate() && 
-        dataObj.getMonth() === agora.getMonth() && 
-        dataObj.getFullYear() === agora.getFullYear()) {
-        return dataObj.toLocaleTimeString('pt-BR', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
-    }
-    
-    // Se for ontem
-    const ontem = new Date(agora);
-    ontem.setDate(agora.getDate() - 1);
-    if (dataObj.getDate() === ontem.getDate() && 
-        dataObj.getMonth() === ontem.getMonth() && 
-        dataObj.getFullYear() === ontem.getFullYear()) {
-        return 'Ontem ' + dataObj.toLocaleTimeString('pt-BR', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
-    }
-    
-    // Se for esta semana
-    const diffDias = Math.floor((agora - dataObj) / (1000 * 60 * 60 * 24));
-    if (diffDias < 7) {
-        const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
-        return diasSemana[dataObj.getDay()] + ' ' + dataObj.toLocaleTimeString('pt-BR', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
-    }
-    
-    // Mais antigo
-    return dataObj.toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: '2-digit'
-    });
-}
-
-function mostrarMensagem(texto, tipo = 'info') {
-    // Criar elemento de mensagem
-    const mensagemDiv = document.createElement('div');
-    mensagemDiv.textContent = texto;
-    mensagemDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        border-radius: 8px;
-        color: white;
-        font-weight: bold;
-        z-index: 1000;
-        animation: slideInRight 0.3s ease;
-        min-width: 300px;
-        text-align: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        backdrop-filter: blur(10px);
-    `;
-    
-    if (tipo === 'sucesso') {
-        mensagemDiv.style.background = 'rgba(46, 204, 113, 0.9)';
-    } else if (tipo === 'erro') {
-        mensagemDiv.style.background = 'rgba(231, 76, 60, 0.9)';
-    } else if (tipo === 'aviso') {
-        mensagemDiv.style.background = 'rgba(243, 156, 18, 0.9)';
-    } else {
-        mensagemDiv.style.background = 'rgba(52, 152, 219, 0.9)';
-    }
-    
-    document.body.appendChild(mensagemDiv);
-    
-    // Remover após 3 segundos
-    setTimeout(() => {
-        mensagemDiv.style.animation = 'slideOutRight 0.3s ease';
-        setTimeout(() => {
-            if (document.body.contains(mensagemDiv)) {
-                document.body.removeChild(mensagemDiv);
-            }
-        }, 300);
-    }, 3000);
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// ============================================
 // PESQUISA DE CONVERSAS
 // ============================================
 function adicionarBusca() {
@@ -1531,7 +1504,6 @@ function filtrarConversas(termo) {
         }
     });
     
-    // Mostrar mensagem se não encontrou
     const searchContainer = document.getElementById('searchContainer');
     const existingMessage = searchContainer.querySelector('.no-results');
     
@@ -1549,125 +1521,8 @@ function filtrarConversas(termo) {
 }
 
 // ============================================
-// WEBSOCKET PARA MENSAGENS EM TEMPO REAL
-// ============================================
-function conectarWebSocket() {
-    if (!currentUserId || socket) return;
-    
-    try {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/${currentUserId}`;
-        
-        socket = new WebSocket(wsUrl);
-        
-        socket.onopen = function() {
-            console.log('🔌 WebSocket conectado');
-        };
-        
-        socket.onmessage = function(event) {
-            try {
-                const data = JSON.parse(event.data);
-                
-                if (data.tipo === 'nova_mensagem') {
-                    // Se a mensagem é para a conversa atual
-                    if (conversaAtualId && data.conversaId === conversaAtualId) {
-                        adicionarMensagemTempoReal(data);
-                    }
-                    
-                    // Atualizar lista de conversas
-                    carregarConversas();
-                    
-                    // Mostrar notificação se não estiver na conversa
-                    if (document.visibilityState === 'hidden') {
-                        mostrarNotificacao('Nova mensagem', data.conteudo.substring(0, 50));
-                    }
-                }
-                
-            } catch (e) {
-                console.error('Erro ao processar mensagem WebSocket:', e);
-            }
-        };
-        
-        socket.onclose = function() {
-            console.log('🔌 WebSocket desconectado');
-            socket = null;
-            
-            // Tentar reconectar após 5 segundos
-            setTimeout(() => {
-                if (currentUserId) {
-                    conectarWebSocket();
-                }
-            }, 5000);
-        };
-        
-        socket.onerror = function(error) {
-            console.error('❌ Erro no WebSocket:', error);
-        };
-        
-    } catch (error) {
-        console.error('❌ Erro ao conectar WebSocket:', error);
-    }
-}
-
-function adicionarMensagemTempoReal(data) {
-    const chatMessages = document.getElementById('chatMessages');
-    const isEu = data.remetenteId === currentUserId;
-    const hora = formatarHora(new Date(data.criadoEm));
-    
-    const mensagemDiv = document.createElement('div');
-    mensagemDiv.className = `mensagem-container ${isEu ? 'eu' : 'amigo'} mensagem-nova`;
-    mensagemDiv.innerHTML = `
-        <div class="mensagem-balao">
-            ${escapeHtml(data.conteudo)}
-        </div>
-        <div class="mensagem-hora">${hora}</div>
-    `;
-    
-    chatMessages.appendChild(mensagemDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-// ============================================
-// NOTIFICAÇÕES
-// ============================================
-function verificarPermissaoNotificacoes() {
-    if (!("Notification" in window)) {
-        return false;
-    }
-    
-    if (Notification.permission === "granted") {
-        return true;
-    } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(permission => {
-            return permission === "granted";
-        });
-    }
-    
-    return false;
-}
-
-function mostrarNotificacao(titulo, mensagem) {
-    if (verificarPermissaoNotificacoes()) {
-        new Notification(titulo, {
-            body: mensagem,
-            icon: '/favicon.ico',
-            tag: 'chat-notification'
-        });
-    }
-}
-
-// Notificar quando a página fica visível
-document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'visible' && conversaAtualId) {
-        // Atualizar mensagens quando voltar à aba
-        carregarMensagens();
-    }
-});
-
-// ============================================
 // EVENT LISTENERS
 // ============================================
-// Fechar modal ao clicar fora
 document.addEventListener('click', function(event) {
     const modal = document.getElementById('modalNovaConversa');
     if (modal.style.display === 'flex' && event.target === modal) {
@@ -1675,7 +1530,6 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Fechar modal com ESC
 document.addEventListener('keydown', function(event) {
     const modal = document.getElementById('modalNovaConversa');
     if (event.key === 'Escape' && modal.style.display === 'flex') {
@@ -1686,119 +1540,20 @@ document.addEventListener('keydown', function(event) {
 // Detectar digitando
 document.getElementById('chatInput')?.addEventListener('input', function() {
     if (this.value.trim() && conversaAtualId) {
-        enviarDigitando();
+        // Implementar envio de "digitando..." se necessário
     }
 });
-
-function enviarDigitando() {
-    if (estaDigitando || !socket || socket.readyState !== WebSocket.OPEN) return;
-    
-    estaDigitando = true;
-    
-    // Enviar evento de digitando via WebSocket
-    if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({
-            tipo: 'digitando',
-            conversaId: conversaAtualId,
-            usuarioId: currentUserId
-        }));
-    }
-    
-    // Resetar após 2 segundos
-    clearTimeout(timeoutDigitando);
-    timeoutDigitando = setTimeout(() => {
-        estaDigitando = false;
-    }, 2000);
-}
-
-// ============================================
-// FUNÇÕES ADICIONAIS
-// ============================================
-async function marcarComoLida(conversaId) {
-    try {
-        await fetch(`${API_URL}/api/chat/conversas/${conversaId}/ler`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                usuarioId: currentUserId
-            })
-        });
-        
-        // Atualizar badge
-        carregarConversas();
-        
-    } catch (error) {
-        console.error('Erro ao marcar como lida:', error);
-    }
-}
-
-function carregarDadosOffline() {
-    // Carregar conversas do cache
-    const cache = localStorage.getItem('conversas_cache');
-    if (cache) {
-        try {
-            const conversas = JSON.parse(cache);
-            // Renderizar conversas do cache...
-        } catch (e) {
-            console.error('Erro ao carregar cache offline:', e);
-        }
-    }
-}
-
-// Limpar cache ao fazer logout
-function limparCache() {
-    localStorage.removeItem('conversas_cache');
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith('chat_')) {
-            keysToRemove.push(key);
-        }
-    }
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-}
-
-// ============================================
-// EXPORTAR DADOS DO CHAT
-// ============================================
-function exportarConversa() {
-    if (!conversaAtualId) return;
-    
-    const cache = localStorage.getItem(`chat_${conversaAtualId}`);
-    if (cache) {
-        try {
-            const mensagens = JSON.parse(cache);
-            const texto = mensagens.map(m => 
-                `${new Date(m.criadoEm).toLocaleString()} - ${m.remetenteId === currentUserId ? 'Você' : 'Amigo'}: ${m.conteudo}`
-            ).join('\n');
-            
-            const blob = new Blob([texto], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `conversa_${conversaAtualId}_${new Date().toISOString().split('T')[0]}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            mostrarMensagem('✅ Conversa exportada com sucesso!', 'sucesso');
-            
-        } catch (e) {
-            mostrarMensagem('❌ Erro ao exportar conversa', 'erro');
-        }
-    }
-}
 
 // ============================================
 // INICIALIZAÇÃO FINAL
 // ============================================
 console.log('🚀 Chat Privado - Coliseum carregado com sucesso!');
 
+// Adicionar barra de busca
+setTimeout(adicionarBusca, 1000);
+
 // Atualizar conversas periodicamente
-setInterval(carregarConversas, 30000); // Atualiza a cada 30 segundos
+setInterval(carregarConversas, 30000);
 
 // Tentar enviar mensagens pendentes quando online
 window.addEventListener('online', async () => {
@@ -1808,11 +1563,29 @@ window.addEventListener('online', async () => {
         
         for (const mensagem of pendentes) {
             // Tentar enviar cada mensagem pendente
-            // Implementar lógica de envio...
+            try {
+                if (mensagem.conversaId && mensagem.conteudo) {
+                    await fetch(
+                        `${API_URL}/api/chat/conversas/${mensagem.conversaId}/mensagens`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                remetenteId: currentUserId,
+                                conteudo: mensagem.conteudo
+                            })
+                        }
+                    );
+                }
+            } catch (error) {
+                console.error('Erro ao enviar mensagem pendente:', error);
+            }
         }
         
-        // Limpar pendentes após envio
         localStorage.removeItem('mensagens_pendentes');
+        mostrarMensagem('✅ Mensagens pendentes enviadas!', 'sucesso');
     }
 });
 
@@ -1827,5 +1600,3 @@ window.addEventListener('beforeunload', function(event) {
     </script>
 </body>
 </html>
-
-
