@@ -819,104 +819,240 @@ async function carregarAmigos() {
 }
 
 async function abrirChatAmigo(amigoId, amigoNome) {
+    console.log(`💬 Abrindo chat com amigo: ${amigoNome} (ID: ${amigoId})`);
+    
     try {
-        console.log(`💬 Tentando abrir chat com amigo: ${amigoNome} (ID: ${amigoId})`);
+        // 1. Obter o ID do usuário atual de forma confiável
+        const usuarioJSON = localStorage.getItem('usuario');
+        let currentUserId;
         
-        // Verificar se o usuário está logado
-        const currentUserId = localStorage.getItem('userId');
-        if (!currentUserId) {
-            mostrarMensagem('Você precisa estar logado para usar o chat', 'erro');
+        if (usuarioJSON) {
+            try {
+                const usuario = JSON.parse(usuarioJSON);
+                currentUserId = usuario.id;
+                console.log('✅ ID do usuário do localStorage:', currentUserId);
+            } catch (parseError) {
+                console.error('❌ Erro ao parsear usuário:', parseError);
+                currentUserId = localStorage.getItem('userId') || localStorage.getItem('usuarioId');
+            }
+        } else {
+            currentUserId = localStorage.getItem('userId') || localStorage.getItem('usuarioId');
+        }
+        
+        if (!currentUserId || currentUserId === 'null' || currentUserId === 'undefined') {
+            mostrarMensagem('⚠️ Você precisa estar logado para usar o chat!', 'erro');
             setTimeout(() => {
                 window.location.href = '/login';
             }, 2000);
             return;
         }
         
-        // Mostrar loading
-        mostrarLoadingChat();
+        currentUserId = parseInt(currentUserId);
+        console.log('👤 Usuário atual ID:', currentUserId);
         
-        // Primeiro, verificar se já existe uma conversa
-        const responseCheck = await fetch(
-            `${API_URL}/api/chat/conversas/usuario/${currentUserId}/amigo/${amigoId}`
-        );
-        
-        let conversaId = null;
-        
-        if (responseCheck.ok) {
-            const dataCheck = await responseCheck.json();
+        // 2. Mostrar feedback visual no botão
+        const eventButton = event?.target || document.querySelector(`[onclick*="abrirChatAmigo(${amigoId}, '${amigoNome}')"]`);
+        if (eventButton) {
+            const originalHTML = eventButton.innerHTML;
+            eventButton.innerHTML = '<span style="margin-right: 5px;">⏳</span> Abrindo...';
+            eventButton.disabled = true;
+            eventButton.style.opacity = '0.7';
             
-            if (dataCheck.success && dataCheck.conversa) {
-                // Conversa já existe
-                conversaId = dataCheck.conversa.id;
-                console.log(`✅ Conversa existente encontrada: ${conversaId}`);
-            }
+            // Restaurar botão após 3 segundos (fallback)
+            setTimeout(() => {
+                if (eventButton) {
+                    eventButton.innerHTML = originalHTML;
+                    eventButton.disabled = false;
+                    eventButton.style.opacity = '1';
+                }
+            }, 3000);
         }
         
-        // Se não existe conversa, criar uma nova
+        // 3. Verificar se já existe uma conversa
+        console.log('🔍 Verificando conversa existente...');
+        let conversaId = null;
+        let conversaExistente = false;
+        
+        try {
+            const checkUrl = `${API_URL}/api/chat/conversas/usuario/${currentUserId}/amigo/${amigoId}`;
+            console.log('🔗 URL da verificação:', checkUrl);
+            
+            const responseCheck = await fetch(checkUrl, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            console.log('📊 Status da verificação:', responseCheck.status);
+            
+            if (responseCheck.ok) {
+                const dataCheck = await responseCheck.json();
+                console.log('📦 Dados da verificação:', dataCheck);
+                
+                if (dataCheck.success && dataCheck.conversa) {
+                    conversaId = dataCheck.conversa.id;
+                    conversaExistente = true;
+                    console.log(`✅ Conversa existente encontrada: ${conversaId}`);
+                }
+            } else {
+                console.log('ℹ️ Nenhuma conversa existente encontrada');
+            }
+        } catch (checkError) {
+            console.log('⚠️ Erro na verificação de conversa (não crítico):', checkError.message);
+        }
+        
+        // 4. Se não existe conversa, criar uma nova
         if (!conversaId) {
             console.log('📝 Criando nova conversa...');
             
-            const responseCreate = await fetch(`${API_URL}/api/chat/conversas`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    usuario1Id: parseInt(currentUserId),
-                    usuario2Id: amigoId
-                })
-            });
-            
-            if (!responseCreate.ok) {
-                throw new Error('Erro ao criar conversa');
-            }
-            
-            const dataCreate = await responseCreate.json();
-            
-            if (dataCreate.success) {
-                conversaId = dataCreate.conversa.id;
-                console.log(`✅ Nova conversa criada: ${conversaId}`);
-            } else {
-                throw new Error(dataCreate.error || 'Erro ao criar conversa');
+            try {
+                const createUrl = `${API_URL}/api/chat/conversas`;
+                console.log('🔗 URL de criação:', createUrl);
+                
+                const responseCreate = await fetch(createUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        usuario1Id: currentUserId,
+                        usuario2Id: amigoId
+                    })
+                });
+                
+                console.log('📊 Status da criação:', responseCreate.status);
+                
+                if (!responseCreate.ok) {
+                    const errorText = await responseCreate.text();
+                    console.error('❌ Erro na criação:', errorText);
+                    throw new Error(`Erro HTTP ${responseCreate.status}: ${errorText}`);
+                }
+                
+                const dataCreate = await responseCreate.json();
+                console.log('📦 Dados da criação:', dataCreate);
+                
+                if (dataCreate.success) {
+                    conversaId = dataCreate.conversa.id;
+                    console.log(`✅ Nova conversa criada: ${conversaId}`);
+                } else {
+                    throw new Error(dataCreate.error || 'Erro ao criar conversa');
+                }
+            } catch (createError) {
+                console.error('❌ Erro ao criar conversa:', createError);
+                
+                // Tentar método alternativo
+                mostrarMensagem('⚠️ Tentando método alternativo...', 'aviso');
+                
+                // Tentar endpoint alternativo
+                try {
+                    const altUrl = `${API_URL}/api/chat/conversas/usuario/${currentUserId}/novo/${amigoId}`;
+                    console.log('🔄 Tentando endpoint alternativo:', altUrl);
+                    
+                    const altResponse = await fetch(altUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (altResponse.ok) {
+                        const altData = await altResponse.json();
+                        if (altData.success) {
+                            conversaId = altData.conversa.id;
+                            console.log(`✅ Conversa criada via método alternativo: ${conversaId}`);
+                        }
+                    }
+                } catch (altError) {
+                    console.error('❌ Método alternativo também falhou:', altError);
+                }
             }
         }
         
-        // Agora redirecionar para a página de chat com a conversa aberta
-        console.log(`🔗 Redirecionando para chat com conversa ${conversaId}`);
-        
-        // Salvar dados para a página de chat
-        const chatData = {
-            conversaId: conversaId,
-            amigoId: amigoId,
-            amigoNome: amigoNome,
-            timestamp: new Date().getTime()
-        };
-        
-        // Salvar no localStorage para a página de chat ler
-        localStorage.setItem('chat_abrir_conversa', JSON.stringify(chatData));
-        
-        // Redirecionar para a página de chat
-        window.location.href = '/chat';
+        // 5. Preparar dados para o chat
+        if (conversaId) {
+            console.log(`🔗 Preparando redirecionamento para conversa ${conversaId}`);
+            
+            // Criar objeto com dados da conversa
+            const chatData = {
+                conversaId: conversaId,
+                amigoId: amigoId,
+                amigoNome: amigoNome,
+                meuId: currentUserId,
+                meuNome: currentUserName || localStorage.getItem('userName') || 'Usuário',
+                timestamp: Date.now(),
+                conversaExistente: conversaExistente
+            };
+            
+            console.log('📋 Dados do chat:', chatData);
+            
+            // Salvar no localStorage
+            localStorage.setItem('chat_abrir_conversa', JSON.stringify(chatData));
+            
+            // Adicionar timestamp para controle de expiração
+            localStorage.setItem('chat_redirect_timestamp', Date.now().toString());
+            
+            // Mostrar mensagem de sucesso
+            mostrarMensagem(`✅ ${conversaExistente ? 'Conversa aberta!' : 'Conversa iniciada!'} Redirecionando...`, 'sucesso');
+            
+            // Redirecionar após breve delay
+            setTimeout(() => {
+                console.log('🚀 Redirecionando para /chat');
+                window.location.href = '/chat';
+            }, 1000);
+            
+        } else {
+            // Fallback: Abrir página de chat sem conversa específica
+            console.log('⚠️ Não foi possível obter ID da conversa. Redirecionando para chat geral.');
+            
+            // Salvar informações básicas
+            const fallbackData = {
+                amigoId: amigoId,
+                amigoNome: amigoNome,
+                meuId: currentUserId,
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('chat_fallback_data', JSON.stringify(fallbackData));
+            
+            mostrarMensagem('💬 Indo para o chat...', 'sucesso');
+            
+            setTimeout(() => {
+                window.location.href = '/chat';
+            }, 800);
+        }
         
     } catch (error) {
         console.error('❌ Erro ao abrir chat com amigo:', error);
         
-        // Esconder loading
-        esconderLoadingChat();
+        // Restaurar botão
+        const eventButton = event?.target || document.querySelector(`[onclick*="abrirChatAmigo(${amigoId}, '${amigoNome}')"]`);
+        if (eventButton) {
+            eventButton.innerHTML = '<span style="margin-right: 5px;">💬</span> Chat';
+            eventButton.disabled = false;
+            eventButton.style.opacity = '1';
+        }
         
         // Mostrar mensagem de erro
-        mostrarMensagem(`❌ Erro: ${error.message || 'Não foi possível abrir o chat'}`, 'erro');
+        const errorMsg = error.message || 'Não foi possível abrir o chat';
+        mostrarMensagem(`❌ Erro: ${errorMsg}`, 'erro');
         
-        // Tentar abrir em uma nova aba como fallback
+        // Oferecer alternativas após 2 segundos
         setTimeout(() => {
-            const confirmar = confirm('Não foi possível abrir o chat automaticamente. Deseja abrir em uma nova aba?');
-            if (confirmar) {
-                window.open('/chat', '_blank');
+            if (confirm('Não foi possível abrir o chat automaticamente. Deseja:\n\n1) Abrir a página de chat em uma nova aba\n2) Tentar novamente')) {
+                const escolha = prompt('Digite 1 para nova aba ou 2 para tentar novamente:');
+                
+                if (escolha === '1') {
+                    window.open('/chat', '_blank');
+                } else if (escolha === '2') {
+                    abrirChatAmigo(amigoId, amigoNome);
+                }
             }
-        }, 1500);
+        }, 2000);
     }
 }
-
 // ============================================
 // FUNÇÕES AUXILIARES
 // ============================================
@@ -1866,4 +2002,5 @@ setTimeout(() => {
     </script>
 </body>
 </html>
+
 
