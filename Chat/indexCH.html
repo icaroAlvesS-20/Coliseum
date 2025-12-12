@@ -760,6 +760,81 @@ document.addEventListener('DOMContentLoaded', function() {
     adicionarBusca();
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('💬 Chat inicializado');
+    
+    // Verificar se há conversa para abrir automaticamente
+    setTimeout(() => {
+        verificarConversaParaAbrir();
+    }, 500);
+});
+
+function verificarConversaParaAbrir() {
+    try {
+        console.log('🔍 Verificando se há conversa para abrir...');
+        
+        // Verificar timestamp (expira após 30 segundos)
+        const redirectTimestamp = localStorage.getItem('chat_redirect_timestamp');
+        const agora = Date.now();
+        
+        if (redirectTimestamp && (agora - parseInt(redirectTimestamp) < 30000)) {
+            const chatData = localStorage.getItem('chat_abrir_conversa');
+            
+            if (chatData) {
+                const data = JSON.parse(chatData);
+                console.log('📋 Dados da conversa encontrados:', data);
+                
+                // Verificar se os dados são válidos
+                if (data.conversaId && data.amigoId && data.amigoNome) {
+                    console.log(`🎯 Abrindo conversa automaticamente: ${data.conversaId}`);
+                    
+                    // Chamar função para abrir a conversa
+                    if (typeof abrirConversa === 'function') {
+                        abrirConversa(data.conversaId, data.amigoId, data.amigoNome);
+                    } else {
+                        console.log('⚠️ Função abrirConversa não encontrada');
+                        // Fallback: atualizar UI manualmente
+                        atualizarUIChat(data.conversaId, data.amigoId, data.amigoNome);
+                    }
+                    
+                    // Limpar dados após uso
+                    localStorage.removeItem('chat_abrir_conversa');
+                    localStorage.removeItem('chat_redirect_timestamp');
+                    
+                    return true;
+                }
+            }
+        }
+        
+        // Verificar fallback data
+        const fallbackData = localStorage.getItem('chat_fallback_data');
+        if (fallbackData) {
+            const data = JSON.parse(fallbackData);
+            console.log('📋 Dados fallback encontrados:', data);
+            
+            // Tentar criar conversa a partir dos dados fallback
+            if (data.amigoId && data.amigoNome) {
+                console.log('🔄 Tentando criar conversa a partir de fallback...');
+                
+                // Aqui você pode tentar criar a conversa novamente ou apenas mostrar o amigo
+                mostrarMensagem(`💬 Tentando conectar com ${data.amigoNome}...`, 'info');
+                
+                localStorage.removeItem('chat_fallback_data');
+            }
+        }
+        
+        console.log('ℹ️ Nenhuma conversa para abrir automaticamente');
+        return false;
+        
+    } catch (error) {
+        console.error('❌ Erro ao verificar conversa para abrir:', error);
+        localStorage.removeItem('chat_abrir_conversa');
+        localStorage.removeItem('chat_redirect_timestamp');
+        localStorage.removeItem('chat_fallback_data');
+        return false;
+    }
+}
+
 function iniciarModoOffline() {
     // Verificar se está offline
     if (!navigator.onLine) {
@@ -1752,4 +1827,5 @@ window.addEventListener('beforeunload', function(event) {
     </script>
 </body>
 </html>
+
 
