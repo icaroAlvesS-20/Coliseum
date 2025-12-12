@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Privado - Coliseum</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <style>
         * {
             margin: 0;
@@ -38,6 +39,7 @@
             border: 1px solid #444;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .conversas-header {
@@ -61,6 +63,12 @@
             cursor: pointer;
             font-weight: bold;
             font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-nova-conversa:hover {
+            background: #ffaa00;
+            transform: translateY(-2px);
         }
 
         .conversas-list {
@@ -81,6 +89,7 @@
         .conversa-item:hover, .conversa-item.active {
             border-color: #ffcf00;
             background: #2a2a2a;
+            transform: translateY(-2px);
         }
 
         .conversa-info {
@@ -100,6 +109,7 @@
             font-weight: bold;
             color: white;
             flex-shrink: 0;
+            position: relative;
         }
 
         .conversa-details {
@@ -137,6 +147,7 @@
             border-radius: 10px;
             min-width: 18px;
             text-align: center;
+            animation: pulse 2s infinite;
         }
 
         /* ÁREA DO CHAT */
@@ -157,6 +168,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            flex-shrink: 0;
         }
 
         .chat-amigo-avatar {
@@ -170,6 +182,7 @@
             font-weight: bold;
             color: black;
             font-size: 20px;
+            position: relative;
         }
 
         .chat-amigo-info h3 {
@@ -196,6 +209,7 @@
             display: flex;
             flex-direction: column;
             max-width: 70%;
+            animation: slideIn 0.3s ease;
         }
 
         .mensagem-container.eu {
@@ -211,6 +225,7 @@
             border-radius: 18px;
             position: relative;
             word-wrap: break-word;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .mensagem-container.eu .mensagem-balao {
@@ -242,6 +257,7 @@
             background: #242424;
             display: flex;
             gap: 10px;
+            flex-shrink: 0;
         }
 
         .chat-input {
@@ -253,6 +269,7 @@
             color: white;
             font-size: 15px;
             outline: none;
+            transition: border 0.3s ease;
         }
 
         .chat-input:focus {
@@ -271,6 +288,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-enviar:hover {
+            background: #ffaa00;
+            transform: scale(1.05);
         }
 
         /* SEM CHAT SELECIONADO */
@@ -287,6 +310,39 @@
         .sem-chat-icon {
             font-size: 80px;
             margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        /* BOTÕES DE NAVEGAÇÃO */
+        .navigation-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .btn-voltar, .btn-menu {
+            background: #ffcf00;
+            color: black;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-voltar:hover, .btn-menu:hover {
+            transform: scale(1.1);
+            background: #ffaa00;
         }
 
         /* RESPONSIVO */
@@ -307,16 +363,286 @@
             .mensagem-container {
                 max-width: 85%;
             }
+            
+            .navigation-buttons {
+                bottom: 10px;
+                right: 10px;
+            }
+            
+            .btn-voltar, .btn-menu {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
         }
 
         /* ANIMAÇÕES */
-        .mensagem-nova {
-            animation: slideIn 0.3s ease;
-        }
-
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* LOADING SPINNER */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #333;
+            border-top: 4px solid #ffcf00;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* STATUS INDICATOR */
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            border: 2px solid #323232;
+        }
+
+        .status-online {
+            background: #2ecc71;
+        }
+
+        .status-offline {
+            background: #95a5a6;
+        }
+
+        .status-away {
+            background: #f39c12;
+        }
+
+        /* SCROLLBAR PERSONALIZADA */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #242424;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+
+        /* MODAL STYLES */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: #323232;
+            border-radius: 15px;
+            border: 1px solid #444;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 25px;
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-content h2 {
+            color: #ffcf00;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .friend-item {
+            background: #242424;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #555;
+            margin-bottom: 10px;
+        }
+
+        .friend-item:hover {
+            border-color: #ffcf00;
+            background: #2a2a2a;
+            transform: translateY(-2px);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .btn-cancel {
+            background: #555;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            background: #666;
+        }
+
+        /* SEARCH BAR */
+        .search-container {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            background: #242424;
+            border: 1px solid #555;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #ffcf00;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            font-size: 18px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        /* ERROR STATES */
+        .error-message {
+            color: #e74c3c;
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+        }
+
+        .warning-message {
+            color: #f39c12;
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+        }
+
+        /* TYPING INDICATOR */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 15px;
+            background: #424242;
+            border-radius: 18px;
+            width: fit-content;
+            border-bottom-left-radius: 4px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #888;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-5px);
+            }
         }
     </style>
 </head>
@@ -328,9 +654,19 @@
                 <h2>Conversas</h2>
                 <button class="btn-nova-conversa" onclick="abrirModalNovaConversa()">+ Nova</button>
             </div>
+            
+            <div class="search-container" style="display: none;" id="searchContainer">
+                <div class="search-icon">🔍</div>
+                <input type="text" 
+                       class="search-input" 
+                       id="buscaConversas" 
+                       placeholder="Buscar conversas..."
+                       onkeyup="filtrarConversas(this.value)">
+            </div>
+            
             <div class="conversas-list" id="conversasList">
                 <div style="text-align: center; padding: 40px 20px; color: #888;">
-                    <div class="spinner" style="margin: 0 auto;"></div>
+                    <div class="spinner"></div>
                     <p style="margin-top: 15px;">Carregando conversas...</p>
                 </div>
             </div>
@@ -341,10 +677,14 @@
             <div class="sem-chat" id="semChatSelecionado">
                 <div class="sem-chat-icon">💬</div>
                 <h3 style="color: white; margin-bottom: 10px;">Selecione uma conversa</h3>
-                <p style="text-align: center; color: #888;">
+                <p style="text-align: center; color: #888; margin-bottom: 20px;">
                     Escolha um amigo para iniciar uma conversa<br>
                     ou crie uma nova conversa
                 </p>
+                <button class="btn-nova-conversa" onclick="abrirModalNovaConversa()" 
+                        style="padding: 10px 20px; font-size: 16px;">
+                    + Nova Conversa
+                </button>
             </div>
 
             <!-- CHAT ATIVO (inicialmente oculto) -->
@@ -374,18 +714,26 @@
     </div>
 
     <!-- MODAL NOVA CONVERSA -->
-    <div class="modal-overlay" id="modalNovaConversa" style="display: none;">
+    <div class="modal-overlay" id="modalNovaConversa">
         <div class="modal-content">
             <h2>Nova Conversa</h2>
-            <div id="amigosParaConversar"></div>
+            <div id="amigosParaConversar">
+                <div style="text-align: center; padding: 40px 20px; color: #888;">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 15px;">Carregando amigos...</p>
+                </div>
+            </div>
             <div class="modal-buttons">
                 <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
             </div>
         </div>
     </div>
 
-    <!-- BOTÃO VOLTAR -->
-    <button class="btn-voltar" onclick="voltarParaAmigos()" style="position: fixed; bottom: 20px; right: 20px;">←</button>
+    <!-- BOTÕES DE NAVEGAÇÃO -->
+    <div class="navigation-buttons">
+        <button class="btn-menu" onclick="voltarParaMenu()" title="Ir para o Menu">🏠</button>
+        <button class="btn-voltar" onclick="voltarParaAmigos()" title="Voltar para Amigos">←</button>
+    </div>
 
     <script>
 // ============================================
@@ -397,6 +745,9 @@ let currentUserName = null;
 let conversaAtualId = null;
 let amigoAtualId = null;
 let intervaloAtualizacao = null;
+let socket = null;
+let estaDigitando = false;
+let timeoutDigitando = null;
 
 // ============================================
 // INICIALIZAÇÃO
@@ -405,7 +756,27 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('💬 Sistema de chat inicializado');
     
     verificarLogin();
+    iniciarModoOffline();
+    adicionarBusca();
 });
+
+function iniciarModoOffline() {
+    // Verificar se está offline
+    if (!navigator.onLine) {
+        mostrarMensagem('Você está offline. Algumas funcionalidades podem estar limitadas.', 'aviso');
+        carregarDadosOffline();
+    }
+    
+    // Monitorar status de conexão
+    window.addEventListener('online', function() {
+        mostrarMensagem('Conexão restaurada!', 'sucesso');
+        carregarConversas();
+    });
+    
+    window.addEventListener('offline', function() {
+        mostrarMensagem('Você está offline', 'aviso');
+    });
+}
 
 function verificarLogin() {
     try {
@@ -420,18 +791,65 @@ function verificarLogin() {
             currentUserId = parseInt(userId);
             currentUserName = localStorage.getItem('userName') || 'Usuário';
         } else {
-            alert('Faça login para usar o chat!');
-            window.location.href = '/login';
+            mostrarMensagem('Faça login para usar o chat!', 'erro');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
             return;
         }
         
         console.log('✅ Usuário logado:', currentUserName);
         carregarConversas();
+        conectarWebSocket();
         
     } catch (error) {
         console.error('❌ Erro ao verificar login:', error);
-        window.location.href = '/login';
+        mostrarMensagem('Sessão expirada. Faça login novamente.', 'erro');
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 1500);
     }
+}
+
+// ============================================
+// FUNÇÕES DE NAVEGAÇÃO
+// ============================================
+function voltarParaAmigos() {
+    if (conversaAtualId) {
+        // Confirmar se quer sair da conversa
+        if (confirm('Deseja sair da conversa atual?')) {
+            limparChatAtual();
+            window.location.href = '/amigos';
+        }
+    } else {
+        window.location.href = '/amigos';
+    }
+}
+
+function voltarParaMenu() {
+    if (conversaAtualId) {
+        if (confirm('Deseja sair da conversa atual?')) {
+            limparChatAtual();
+            window.location.href = '/menu';
+        }
+    } else {
+        window.location.href = '/menu';
+    }
+}
+
+function limparChatAtual() {
+    conversaAtualId = null;
+    amigoAtualId = null;
+    
+    if (intervaloAtualizacao) {
+        clearInterval(intervaloAtualizacao);
+        intervaloAtualizacao = null;
+    }
+    
+    document.getElementById('semChatSelecionado').style.display = 'flex';
+    document.getElementById('chatAtivo').style.display = 'none';
+    document.getElementById('chatMessages').innerHTML = '';
+    document.getElementById('chatInput').value = '';
 }
 
 // ============================================
@@ -440,8 +858,19 @@ function verificarLogin() {
 async function carregarConversas() {
     try {
         const conversasList = document.getElementById('conversasList');
+        conversasList.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #888;">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px;">Carregando...</p>
+            </div>
+        `;
         
         const response = await fetch(`${API_URL}/api/chat/usuarios/${currentUserId}/conversas`);
+        
+        if (!response.ok) {
+            throw new Error(`Erro HTTP: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         if (data.success && data.conversas && data.conversas.length > 0) {
@@ -462,13 +891,16 @@ async function carregarConversas() {
                         : ultimaMsg.conteudo)
                     : 'Inicie uma conversa';
                 
+                const isActive = conversa.id === conversaAtualId;
+                
                 html += `
-                    <div class="conversa-item" onclick="abrirConversa(${conversa.id}, ${amigo.id}, '${amigo.nome}')">
+                    <div class="conversa-item ${isActive ? 'active' : ''}" 
+                         onclick="abrirConversa(${conversa.id}, ${amigo.id}, '${escapeHtml(amigo.nome)}')">
                         <div class="conversa-info">
                             <div class="conversa-avatar">${primeiraLetra}</div>
                             <div class="conversa-details">
-                                <div class="conversa-nome">${amigo.nome}</div>
-                                <div class="conversa-ultima">${mensagemPreview}</div>
+                                <div class="conversa-nome">${escapeHtml(amigo.nome)}</div>
+                                <div class="conversa-ultima">${escapeHtml(mensagemPreview)}</div>
                                 <div class="conversa-hora">${horaFormatada}</div>
                             </div>
                             ${conversa.naoLidas > 0 ? `
@@ -481,22 +913,19 @@ async function carregarConversas() {
             
             conversasList.innerHTML = html;
             
+            // Mostrar barra de busca se houver conversas
+            if (data.conversas.length > 3) {
+                document.getElementById('searchContainer').style.display = 'block';
+            }
+            
         } else {
             conversasList.innerHTML = `
                 <div style="text-align: center; padding: 40px 20px; color: #888;">
                     <div style="font-size: 60px; margin-bottom: 15px;">💬</div>
                     <h4 style="color: white; margin-bottom: 10px;">Nenhuma conversa</h4>
                     <p>Inicie uma conversa com um amigo!</p>
-                    <button onclick="abrirModalNovaConversa()" style="
-                        background: #ffcf00;
-                        color: black;
-                        border: none;
-                        padding: 10px 20px;
-                        border-radius: 8px;
-                        cursor: pointer;
-                        margin-top: 15px;
-                        font-weight: bold;
-                    ">
+                    <button onclick="abrirModalNovaConversa()" 
+                            style="background: #ffcf00; color: black; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 15px; font-weight: bold;">
                         + Nova Conversa
                     </button>
                 </div>
@@ -505,12 +934,35 @@ async function carregarConversas() {
         
     } catch (error) {
         console.error('❌ Erro ao carregar conversas:', error);
-        document.getElementById('conversasList').innerHTML = `
-            <div style="text-align: center; padding: 40px 20px; color: #e74c3c;">
-                ❌ Erro ao carregar conversas
-            </div>
-        `;
+        
+        // Tentar carregar do cache
+        const conversasCache = localStorage.getItem('conversas_cache');
+        if (conversasCache) {
+            try {
+                const data = JSON.parse(conversasCache);
+                // Usar dados do cache...
+            } catch (e) {
+                mostrarErroCarregamento();
+            }
+        } else {
+            mostrarErroCarregamento();
+        }
     }
+}
+
+function mostrarErroCarregamento() {
+    document.getElementById('conversasList').innerHTML = `
+        <div class="error-message">
+            ❌ Erro ao carregar conversas
+            <br>
+            <small>Tente novamente mais tarde</small>
+            <br><br>
+            <button onclick="carregarConversas()" 
+                    style="background: #555; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+                Tentar novamente
+            </button>
+        </div>
+    `;
 }
 
 async function abrirConversa(conversaId, amigoId, amigoNome) {
@@ -527,14 +979,23 @@ async function abrirConversa(conversaId, amigoId, amigoNome) {
         document.getElementById('chatAmigoNome').textContent = amigoNome;
         
         // Buscar RA do amigo
-        const response = await fetch(`${API_URL}/api/usuarios/${amigoId}`);
-        const data = await response.json();
-        if (data.ra) {
-            document.getElementById('chatAmigoRA').textContent = `RA: ${data.ra}`;
+        try {
+            const response = await fetch(`${API_URL}/api/usuarios/${amigoId}`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.ra) {
+                    document.getElementById('chatAmigoRA').textContent = `RA: ${data.ra}`;
+                }
+            }
+        } catch (e) {
+            // Ignorar erro do RA
         }
         
         // Carregar mensagens
-        carregarMensagens();
+        await carregarMensagens();
+        
+        // Marcar como lida
+        await marcarComoLida(conversaId);
         
         // Iniciar atualização automática
         if (intervaloAtualizacao) clearInterval(intervaloAtualizacao);
@@ -544,6 +1005,9 @@ async function abrirConversa(conversaId, amigoId, amigoNome) {
         setTimeout(() => {
             document.getElementById('chatInput').focus();
         }, 100);
+        
+        // Atualizar lista de conversas para destacar a ativa
+        carregarConversas();
         
     } catch (error) {
         console.error('Erro ao abrir conversa:', error);
@@ -559,10 +1023,18 @@ async function carregarMensagens() {
             `${API_URL}/api/chat/conversas/${conversaAtualId}/mensagens?usuarioId=${currentUserId}`
         );
         
+        if (!response.ok) return;
+        
         const data = await response.json();
         
         if (data.success && data.mensagens) {
             const chatMessages = document.getElementById('chatMessages');
+            
+            // Verificar se há novas mensagens
+            const currentMessages = Array.from(chatMessages.children).map(el => 
+                el.querySelector('.mensagem-balao')?.textContent
+            ).filter(Boolean);
+            
             let html = '';
             
             data.mensagens.forEach(mensagem => {
@@ -572,7 +1044,7 @@ async function carregarMensagens() {
                 html += `
                     <div class="mensagem-container ${isEu ? 'eu' : 'amigo'}">
                         <div class="mensagem-balao">
-                            ${mensagem.conteudo}
+                            ${escapeHtml(mensagem.conteudo)}
                         </div>
                         <div class="mensagem-hora">${hora}</div>
                     </div>
@@ -583,10 +1055,48 @@ async function carregarMensagens() {
             
             // Rolagem automática para a última mensagem
             chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Salvar no cache
+            localStorage.setItem(`chat_${conversaAtualId}`, JSON.stringify(data.mensagens));
         }
         
     } catch (error) {
         console.error('Erro ao carregar mensagens:', error);
+        // Tentar carregar do cache
+        carregarMensagensDoCache();
+    }
+}
+
+function carregarMensagensDoCache() {
+    if (!conversaAtualId) return;
+    
+    const cache = localStorage.getItem(`chat_${conversaAtualId}`);
+    if (cache) {
+        try {
+            const mensagens = JSON.parse(cache);
+            const chatMessages = document.getElementById('chatMessages');
+            let html = '';
+            
+            mensagens.forEach(mensagem => {
+                const isEu = mensagem.remetenteId === currentUserId;
+                const hora = formatarHora(new Date(mensagem.criadoEm));
+                
+                html += `
+                    <div class="mensagem-container ${isEu ? 'eu' : 'amigo'}">
+                        <div class="mensagem-balao">
+                            ${escapeHtml(mensagem.conteudo)}
+                        </div>
+                        <div class="mensagem-hora">${hora} (offline)</div>
+                    </div>
+                `;
+            });
+            
+            chatMessages.innerHTML = html;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+        } catch (e) {
+            console.error('Erro ao carregar cache:', e);
+        }
     }
 }
 
@@ -595,6 +1105,25 @@ async function enviarMensagem() {
     const conteudo = input.value.trim();
     
     if (!conteudo || !conversaAtualId || !currentUserId) return;
+    
+    // Mostrar mensagem localmente primeiro
+    const chatMessages = document.getElementById('chatMessages');
+    const hora = formatarHora(new Date());
+    
+    const mensagemDiv = document.createElement('div');
+    mensagemDiv.className = 'mensagem-container eu mensagem-nova';
+    mensagemDiv.innerHTML = `
+        <div class="mensagem-balao">
+            ${escapeHtml(conteudo)}
+        </div>
+        <div class="mensagem-hora">${hora} (enviando...)</div>
+    `;
+    
+    chatMessages.appendChild(mensagemDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    const conteudoOriginal = conteudo;
+    input.value = '';
     
     try {
         const response = await fetch(
@@ -606,7 +1135,7 @@ async function enviarMensagem() {
                 },
                 body: JSON.stringify({
                     remetenteId: currentUserId,
-                    conteudo: conteudo
+                    conteudo: conteudoOriginal
                 })
             }
         );
@@ -614,20 +1143,36 @@ async function enviarMensagem() {
         const data = await response.json();
         
         if (data.success) {
-            input.value = '';
-            carregarMensagens(); // Recarrega mensagens incluindo a nova
+            // Atualizar timestamp da mensagem
+            mensagemDiv.querySelector('.mensagem-hora').textContent = 
+                formatarHora(new Date(data.mensagem.criadoEm));
             
             // Atualizar lista de conversas
             carregarConversas();
             
         } else {
+            mensagemDiv.querySelector('.mensagem-hora').textContent = `${hora} (falhou)`;
             mostrarMensagem(`❌ Erro: ${data.error || 'Não foi possível enviar'}`, 'erro');
         }
         
     } catch (error) {
         console.error('Erro ao enviar mensagem:', error);
-        mostrarMensagem('❌ Erro ao enviar mensagem', 'erro');
+        mensagemDiv.querySelector('.mensagem-hora').textContent = `${hora} (offline)`;
+        
+        // Salvar para envio posterior
+        salvarMensagemPendente(conteudoOriginal);
+        mostrarMensagem('📤 Mensagem salva para envio quando online', 'aviso');
     }
+}
+
+function salvarMensagemPendente(conteudo) {
+    const pendentes = JSON.parse(localStorage.getItem('mensagens_pendentes') || '[]');
+    pendentes.push({
+        conversaId: conversaAtualId,
+        conteudo: conteudo,
+        data: new Date().toISOString()
+    });
+    localStorage.setItem('mensagens_pendentes', JSON.stringify(pendentes));
 }
 
 // ============================================
@@ -635,44 +1180,60 @@ async function enviarMensagem() {
 // ============================================
 async function abrirModalNovaConversa() {
     try {
+        document.getElementById('modalNovaConversa').style.display = 'flex';
+        
         // Buscar lista de amigos
         const response = await fetch(`${API_URL}/api/amigos/usuarios/${currentUserId}/amigos`);
+        
+        if (!response.ok) {
+            throw new Error('Erro ao buscar amigos');
+        }
+        
         const data = await response.json();
         
         if (data.success && data.amigos && data.amigos.length > 0) {
-            let html = '<div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">';
+            let html = '';
             
             data.amigos.forEach(amigoData => {
                 const amigo = amigoData.amigo || amigoData;
                 html += `
-                    <div class="friend-item" style="cursor: pointer;" onclick="iniciarConversa(${amigo.id})">
+                    <div class="friend-item" onclick="iniciarConversa(${amigo.id})">
                         <div class="conversa-info">
                             <div class="conversa-avatar">${amigo.nome.charAt(0).toUpperCase()}</div>
                             <div class="conversa-details">
-                                <div class="conversa-nome">${amigo.nome}</div>
-                                <div style="color: #888; font-size: 12px;">RA: ${amigo.ra}</div>
+                                <div class="conversa-nome">${escapeHtml(amigo.nome)}</div>
+                                <div style="color: #888; font-size: 12px;">RA: ${amigo.ra || '---'}</div>
                             </div>
                         </div>
                     </div>
                 `;
             });
             
-            html += '</div>';
             document.getElementById('amigosParaConversar').innerHTML = html;
             
         } else {
             document.getElementById('amigosParaConversar').innerHTML = `
-                <div style="text-align: center; padding: 20px; color: #888;">
-                    Você não tem amigos para conversar ainda.
+                <div style="text-align: center; padding: 40px 20px; color: #888;">
+                    <div style="font-size: 60px; margin-bottom: 15px;">👥</div>
+                    <h4 style="color: white; margin-bottom: 10px;">Nenhum amigo encontrado</h4>
+                    <p>Adicione amigos para começar a conversar</p>
+                    <button onclick="window.location.href='/amigos'" 
+                            style="background: #ffcf00; color: black; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 15px; font-weight: bold;">
+                        Ver amigos
+                    </button>
                 </div>
             `;
         }
         
-        document.getElementById('modalNovaConversa').style.display = 'flex';
-        
     } catch (error) {
         console.error('Erro ao abrir modal:', error);
-        mostrarMensagem('❌ Erro ao carregar amigos', 'erro');
+        document.getElementById('amigosParaConversar').innerHTML = `
+            <div class="error-message">
+                ❌ Erro ao carregar amigos
+                <br>
+                <small>Tente novamente mais tarde</small>
+            </div>
+        `;
     }
 }
 
@@ -694,7 +1255,7 @@ async function iniciarConversa(amigoId) {
         if (data.success) {
             fecharModal();
             
-            // Buscar nome do amigo para abrir a conversa
+            // Buscar nome do amigo
             const amigoResponse = await fetch(`${API_URL}/api/usuarios/${amigoId}`);
             const amigoData = await amigoResponse.json();
             
@@ -711,52 +1272,59 @@ async function iniciarConversa(amigoId) {
     }
 }
 
+function fecharModal() {
+    document.getElementById('modalNovaConversa').style.display = 'none';
+    document.getElementById('amigosParaConversar').innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; color: #888;">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px;">Carregando amigos...</p>
+        </div>
+    `;
+}
+
 // ============================================
 // FUNÇÕES AUXILIARES
 // ============================================
-function fecharModal() {
-    document.getElementById('modalNovaConversa').style.display = 'none';
-    document.getElementById('amigosParaConversar').innerHTML = '';
-}
-
 function formatarHora(data) {
-    if (!data) return '';
+    if (!data || isNaN(new Date(data).getTime())) return '';
     
     const agora = new Date();
-    const diffMs = agora - data;
-    const diffMin = Math.floor(diffMs / 60000);
-    const diffHoras = Math.floor(diffMin / 60);
-    const diffDias = Math.floor(diffHoras / 24);
+    const dataObj = new Date(data);
     
     // Se for hoje, mostra apenas hora
-    if (data.getDate() === agora.getDate() && 
-        data.getMonth() === agora.getMonth() && 
-        data.getFullYear() === agora.getFullYear()) {
-        return data.toLocaleTimeString('pt-BR', { 
+    if (dataObj.getDate() === agora.getDate() && 
+        dataObj.getMonth() === agora.getMonth() && 
+        dataObj.getFullYear() === agora.getFullYear()) {
+        return dataObj.toLocaleTimeString('pt-BR', { 
             hour: '2-digit', 
             minute: '2-digit' 
         });
     }
     
     // Se for ontem
-    if (diffDias === 1) {
-        return 'Ontem ' + data.toLocaleTimeString('pt-BR', { 
+    const ontem = new Date(agora);
+    ontem.setDate(agora.getDate() - 1);
+    if (dataObj.getDate() === ontem.getDate() && 
+        dataObj.getMonth() === ontem.getMonth() && 
+        dataObj.getFullYear() === ontem.getFullYear()) {
+        return 'Ontem ' + dataObj.toLocaleTimeString('pt-BR', { 
             hour: '2-digit', 
             minute: '2-digit' 
         });
     }
     
     // Se for esta semana
+    const diffDias = Math.floor((agora - dataObj) / (1000 * 60 * 60 * 24));
     if (diffDias < 7) {
         const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
-        return diasSemana[data.getDay()] + ' ' + data.toLocaleTimeString('pt-BR', { 
+        return diasSemana[dataObj.getDay()] + ' ' + dataObj.toLocaleTimeString('pt-BR', { 
             hour: '2-digit', 
             minute: '2-digit' 
         });
     }
     
     // Mais antigo
-    return data.toLocaleDateString('pt-BR', {
+    return dataObj.toLocaleDateString('pt-BR', {
         day: '2-digit',
         month: '2-digit',
         year: '2-digit'
@@ -780,14 +1348,17 @@ function mostrarMensagem(texto, tipo = 'info') {
         min-width: 300px;
         text-align: center;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        backdrop-filter: blur(10px);
     `;
     
     if (tipo === 'sucesso') {
-        mensagemDiv.style.background = '#2ecc71';
+        mensagemDiv.style.background = 'rgba(46, 204, 113, 0.9)';
     } else if (tipo === 'erro') {
-        mensagemDiv.style.background = '#e74c3c';
+        mensagemDiv.style.background = 'rgba(231, 76, 60, 0.9)';
+    } else if (tipo === 'aviso') {
+        mensagemDiv.style.background = 'rgba(243, 156, 18, 0.9)';
     } else {
-        mensagemDiv.style.background = '#3498db';
+        mensagemDiv.style.background = 'rgba(52, 152, 219, 0.9)';
     }
     
     document.body.appendChild(mensagemDiv);
@@ -796,34 +1367,195 @@ function mostrarMensagem(texto, tipo = 'info') {
     setTimeout(() => {
         mensagemDiv.style.animation = 'slideOutRight 0.3s ease';
         setTimeout(() => {
-            document.body.removeChild(mensagemDiv);
+            if (document.body.contains(mensagemDiv)) {
+                document.body.removeChild(mensagemDiv);
+            }
         }, 300);
     }, 3000);
 }
 
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // ============================================
-// FUNÇÕES DE NAVEGAÇÃO
+// PESQUISA DE CONVERSAS
 // ============================================
-function voltarParaAmigos() {
-    // Limpar conversa atual
-    conversaAtualId = null;
-    amigoAtualId = null;
+function adicionarBusca() {
+    const searchHTML = `
+        <div class="search-container" id="searchContainer" style="display: none;">
+            <div class="search-icon">🔍</div>
+            <input type="text" 
+                   class="search-input" 
+                   id="buscaConversas" 
+                   placeholder="Buscar conversas..."
+                   onkeyup="filtrarConversas(this.value)">
+        </div>
+    `;
     
-    // Parar atualização automática
-    if (intervaloAtualizacao) {
-        clearInterval(intervaloAtualizacao);
-        intervaloAtualizacao = null;
+    const conversasHeader = document.querySelector('.conversas-header');
+    conversasHeader.insertAdjacentHTML('afterend', searchHTML);
+}
+
+function filtrarConversas(termo) {
+    const conversas = document.querySelectorAll('.conversa-item');
+    termo = termo.toLowerCase().trim();
+    
+    if (!termo) {
+        conversas.forEach(conversa => {
+            conversa.style.display = 'flex';
+        });
+        return;
     }
     
-    // Resetar UI
-    document.getElementById('semChatSelecionado').style.display = 'flex';
-    document.getElementById('chatAtivo').style.display = 'none';
-    document.getElementById('chatMessages').innerHTML = '';
-    document.getElementById('chatInput').value = '';
+    let encontrou = false;
     
-    // Atualizar lista de conversas
-    carregarConversas();
+    conversas.forEach(conversa => {
+        const nome = conversa.querySelector('.conversa-nome').textContent.toLowerCase();
+        const ultimaMsg = conversa.querySelector('.conversa-ultima').textContent.toLowerCase();
+        
+        if (nome.includes(termo) || ultimaMsg.includes(termo)) {
+            conversa.style.display = 'flex';
+            encontrou = true;
+        } else {
+            conversa.style.display = 'none';
+        }
+    });
+    
+    // Mostrar mensagem se não encontrou
+    const searchContainer = document.getElementById('searchContainer');
+    const existingMessage = searchContainer.querySelector('.no-results');
+    
+    if (!encontrou && conversas.length > 0) {
+        if (!existingMessage) {
+            const message = document.createElement('div');
+            message.className = 'no-results warning-message';
+            message.style.cssText = 'text-align: center; padding: 10px; font-size: 12px;';
+            message.textContent = 'Nenhuma conversa encontrada';
+            searchContainer.appendChild(message);
+        }
+    } else if (existingMessage) {
+        existingMessage.remove();
+    }
 }
+
+// ============================================
+// WEBSOCKET PARA MENSAGENS EM TEMPO REAL
+// ============================================
+function conectarWebSocket() {
+    if (!currentUserId || socket) return;
+    
+    try {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws/chat/${currentUserId}`;
+        
+        socket = new WebSocket(wsUrl);
+        
+        socket.onopen = function() {
+            console.log('🔌 WebSocket conectado');
+        };
+        
+        socket.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                
+                if (data.tipo === 'nova_mensagem') {
+                    // Se a mensagem é para a conversa atual
+                    if (conversaAtualId && data.conversaId === conversaAtualId) {
+                        adicionarMensagemTempoReal(data);
+                    }
+                    
+                    // Atualizar lista de conversas
+                    carregarConversas();
+                    
+                    // Mostrar notificação se não estiver na conversa
+                    if (document.visibilityState === 'hidden') {
+                        mostrarNotificacao('Nova mensagem', data.conteudo.substring(0, 50));
+                    }
+                }
+                
+            } catch (e) {
+                console.error('Erro ao processar mensagem WebSocket:', e);
+            }
+        };
+        
+        socket.onclose = function() {
+            console.log('🔌 WebSocket desconectado');
+            socket = null;
+            
+            // Tentar reconectar após 5 segundos
+            setTimeout(() => {
+                if (currentUserId) {
+                    conectarWebSocket();
+                }
+            }, 5000);
+        };
+        
+        socket.onerror = function(error) {
+            console.error('❌ Erro no WebSocket:', error);
+        };
+        
+    } catch (error) {
+        console.error('❌ Erro ao conectar WebSocket:', error);
+    }
+}
+
+function adicionarMensagemTempoReal(data) {
+    const chatMessages = document.getElementById('chatMessages');
+    const isEu = data.remetenteId === currentUserId;
+    const hora = formatarHora(new Date(data.criadoEm));
+    
+    const mensagemDiv = document.createElement('div');
+    mensagemDiv.className = `mensagem-container ${isEu ? 'eu' : 'amigo'} mensagem-nova`;
+    mensagemDiv.innerHTML = `
+        <div class="mensagem-balao">
+            ${escapeHtml(data.conteudo)}
+        </div>
+        <div class="mensagem-hora">${hora}</div>
+    `;
+    
+    chatMessages.appendChild(mensagemDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// ============================================
+// NOTIFICAÇÕES
+// ============================================
+function verificarPermissaoNotificacoes() {
+    if (!("Notification" in window)) {
+        return false;
+    }
+    
+    if (Notification.permission === "granted") {
+        return true;
+    } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(permission => {
+            return permission === "granted";
+        });
+    }
+    
+    return false;
+}
+
+function mostrarNotificacao(titulo, mensagem) {
+    if (verificarPermissaoNotificacoes()) {
+        new Notification(titulo, {
+            body: mensagem,
+            icon: '/favicon.ico',
+            tag: 'chat-notification'
+        });
+    }
+}
+
+// Notificar quando a página fica visível
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible' && conversaAtualId) {
+        // Atualizar mensagens quando voltar à aba
+        carregarMensagens();
+    }
+});
 
 // ============================================
 // EVENT LISTENERS
@@ -831,8 +1563,7 @@ function voltarParaAmigos() {
 // Fechar modal ao clicar fora
 document.addEventListener('click', function(event) {
     const modal = document.getElementById('modalNovaConversa');
-    if (modal.style.display === 'flex' && 
-        event.target === modal) {
+    if (modal.style.display === 'flex' && event.target === modal) {
         fecharModal();
     }
 });
@@ -845,220 +1576,33 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-// Atualizar conversas periodicamente
-setInterval(carregarConversas, 10000); // Atualiza a cada 10 segundos
-
-// ============================================
-// ESTILOS ADICIONAIS PARA MODAL
-// ============================================
-const modalStyles = document.createElement('style');
-modalStyles.textContent = `
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        animation: fadeIn 0.3s ease;
+// Detectar digitando
+document.getElementById('chatInput')?.addEventListener('input', function() {
+    if (this.value.trim() && conversaAtualId) {
+        enviarDigitando();
     }
+});
 
-    .modal-content {
-        background: #323232;
-        border-radius: 15px;
-        border: 1px solid #444;
-        width: 90%;
-        max-width: 500px;
-        max-height: 80vh;
-        overflow-y: auto;
-        padding: 25px;
-        animation: slideUp 0.3s ease;
+function enviarDigitando() {
+    if (estaDigitando || !socket || socket.readyState !== WebSocket.OPEN) return;
+    
+    estaDigitando = true;
+    
+    // Enviar evento de digitando via WebSocket
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+            tipo: 'digitando',
+            conversaId: conversaAtualId,
+            usuarioId: currentUserId
+        }));
     }
-
-    .modal-content h2 {
-        color: #ffcf00;
-        margin-bottom: 20px;
-        font-size: 24px;
-        text-align: center;
-    }
-
-    .friend-item {
-        background: #242424;
-        border-radius: 10px;
-        padding: 15px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border: 1px solid #555;
-    }
-
-    .friend-item:hover {
-        border-color: #ffcf00;
-        background: #2a2a2a;
-        transform: translateY(-2px);
-    }
-
-    .modal-buttons {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 20px;
-        gap: 10px;
-    }
-
-    .btn-cancel {
-        background: #555;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: background 0.3s ease;
-    }
-
-    .btn-cancel:hover {
-        background: #666;
-    }
-
-    .btn-voltar {
-        background: #ffcf00;
-        color: black;
-        border: none;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        cursor: pointer;
-        font-size: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        transition: all 0.3s ease;
-        z-index: 100;
-    }
-
-    .btn-voltar:hover {
-        transform: scale(1.1);
-        background: #ffaa00;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    @keyframes slideUp {
-        from { 
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to { 
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @keyframes slideInRight {
-        from {
-            opacity: 0;
-            transform: translateX(100%);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-
-    @keyframes slideOutRight {
-        from {
-            opacity: 1;
-            transform: translateX(0);
-        }
-        to {
-            opacity: 0;
-            transform: translateX(100%);
-        }
-    }
-
-    .spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid #333;
-        border-top: 4px solid #ffcf00;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-
-    /* Scrollbar personalizada */
-    .conversas-list::-webkit-scrollbar,
-    .chat-messages::-webkit-scrollbar,
-    .modal-content::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    .conversas-list::-webkit-scrollbar-track,
-    .chat-messages::-webkit-scrollbar-track,
-    .modal-content::-webkit-scrollbar-track {
-        background: #242424;
-        border-radius: 4px;
-    }
-
-    .conversas-list::-webkit-scrollbar-thumb,
-    .chat-messages::-webkit-scrollbar-thumb,
-    .modal-content::-webkit-scrollbar-thumb {
-        background: #555;
-        border-radius: 4px;
-    }
-
-    .conversas-list::-webkit-scrollbar-thumb:hover,
-    .chat-messages::-webkit-scrollbar-thumb:hover,
-    .modal-content::-webkit-scrollbar-thumb:hover {
-        background: #666;
-    }
-
-    /* Status online/offline */
-    .status-indicator {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        border: 2px solid #323232;
-    }
-
-    .status-online {
-        background: #2ecc71;
-    }
-
-    .status-offline {
-        background: #95a5a6;
-    }
-
-    .status-away {
-        background: #f39c12;
-    }
-
-    /* Badge para novas mensagens */
-    .badge-nao-lidas {
-        animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
-`;
-document.head.appendChild(modalStyles);
+    
+    // Resetar após 2 segundos
+    clearTimeout(timeoutDigitando);
+    timeoutDigitando = setTimeout(() => {
+        estaDigitando = false;
+    }, 2000);
+}
 
 // ============================================
 // FUNÇÕES ADICIONAIS
@@ -1083,188 +1627,61 @@ async function marcarComoLida(conversaId) {
     }
 }
 
-// Quando abrir uma conversa, marcar como lida
-async function abrirConversa(conversaId, amigoId, amigoNome) {
-    try {
-        // ... código existente ...
-        
-        // Marcar mensagens como lidas
-        await marcarComoLida(conversaId);
-        
-        // ... resto do código existente ...
-        
-    } catch (error) {
-        console.error('Erro ao abrir conversa:', error);
-        mostrarMensagem('❌ Erro ao abrir conversa', 'erro');
+function carregarDadosOffline() {
+    // Carregar conversas do cache
+    const cache = localStorage.getItem('conversas_cache');
+    if (cache) {
+        try {
+            const conversas = JSON.parse(cache);
+            // Renderizar conversas do cache...
+        } catch (e) {
+            console.error('Erro ao carregar cache offline:', e);
+        }
     }
 }
 
-// ============================================
-// WEBSOCKET PARA MENSAGENS EM TEMPO REAL
-// ============================================
-let socket = null;
+// Limpar cache ao fazer logout
+function limparCache() {
+    localStorage.removeItem('conversas_cache');
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('chat_')) {
+            keysToRemove.push(key);
+        }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+}
 
-function conectarWebSocket() {
-    if (!currentUserId) return;
+// ============================================
+// EXPORTAR DADOS DO CHAT
+// ============================================
+function exportarConversa() {
+    if (!conversaAtualId) return;
     
-    try {
-        // Implementação do WebSocket
-        socket = new WebSocket(`wss://coliseum-api.onrender.com/ws/chat/${currentUserId}`);
-        
-        socket.onopen = function() {
-            console.log('🔌 WebSocket conectado');
-        };
-        
-        socket.onmessage = function(event) {
-            const data = JSON.parse(event.data);
+    const cache = localStorage.getItem(`chat_${conversaAtualId}`);
+    if (cache) {
+        try {
+            const mensagens = JSON.parse(cache);
+            const texto = mensagens.map(m => 
+                `${new Date(m.criadoEm).toLocaleString()} - ${m.remetenteId === currentUserId ? 'Você' : 'Amigo'}: ${m.conteudo}`
+            ).join('\n');
             
-            if (data.tipo === 'nova_mensagem') {
-                // Se a mensagem é para a conversa atual
-                if (conversaAtualId && data.conversaId === conversaAtualId) {
-                    // Adicionar mensagem diretamente no chat
-                    const chatMessages = document.getElementById('chatMessages');
-                    
-                    const mensagemDiv = document.createElement('div');
-                    mensagemDiv.className = `mensagem-container ${data.remetenteId === currentUserId ? 'eu' : 'amigo'} mensagem-nova`;
-                    mensagemDiv.innerHTML = `
-                        <div class="mensagem-balao">
-                            ${data.conteudo}
-                        </div>
-                        <div class="mensagem-hora">${formatarHora(new Date(data.criadoEm))}</div>
-                    `;
-                    
-                    chatMessages.appendChild(mensagemDiv);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }
-                
-                // Atualizar lista de conversas
-                carregarConversas();
-            }
-        };
-        
-        socket.onclose = function() {
-            console.log('🔌 WebSocket desconectado, reconectando em 3 segundos...');
-            setTimeout(conectarWebSocket, 3000);
-        };
-        
-        socket.onerror = function(error) {
-            console.error('❌ Erro no WebSocket:', error);
-        };
-        
-    } catch (error) {
-        console.error('❌ Erro ao conectar WebSocket:', error);
-    }
-}
-
-// Iniciar WebSocket após login
-setTimeout(conectarWebSocket, 1000);
-
-// ============================================
-// FUNÇÃO DE SAIR
-// ============================================
-function sair() {
-    // Fechar WebSocket
-    if (socket) {
-        socket.close();
-    }
-    
-    // Parar intervalos
-    if (intervaloAtualizacao) {
-        clearInterval(intervaloAtualizacao);
-    }
-    
-    // Limpar dados
-    localStorage.removeItem('usuario');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userName');
-    
-    // Redirecionar para login
-    window.location.href = '/login';
-}
-
-// ============================================
-// PESQUISA DE CONVERSAS
-// ============================================
-function adicionarBusca() {
-    const conversasHeader = document.querySelector('.conversas-header');
-    
-    const searchDiv = document.createElement('div');
-    searchDiv.style.cssText = `
-        margin-bottom: 15px;
-        position: relative;
-    `;
-    
-    searchDiv.innerHTML = `
-        <input type="text" 
-               id="buscaConversas" 
-               placeholder="Buscar conversas..."
-               style="
-                    width: 100%;
-                    padding: 10px 15px;
-                    background: #242424;
-                    border: 1px solid #555;
-                    border-radius: 8px;
-                    color: white;
-                    font-size: 14px;
-                    outline: none;
-                    transition: border 0.3s ease;
-               "
-               onkeyup="filtrarConversas(this.value)"
-        >
-        <div style="
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #888;
-            font-size: 18px;
-        ">🔍</div>
-    `;
-    
-    conversasHeader.parentNode.insertBefore(searchDiv, conversasHeader.nextSibling);
-}
-
-function filtrarConversas(termo) {
-    const conversas = document.querySelectorAll('.conversa-item');
-    termo = termo.toLowerCase();
-    
-    conversas.forEach(conversa => {
-        const nome = conversa.querySelector('.conversa-nome').textContent.toLowerCase();
-        const ultimaMsg = conversa.querySelector('.conversa-ultima').textContent.toLowerCase();
-        
-        if (nome.includes(termo) || ultimaMsg.includes(termo)) {
-            conversa.style.display = 'flex';
-        } else {
-            conversa.style.display = 'none';
+            const blob = new Blob([texto], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `conversa_${conversaAtualId}_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            mostrarMensagem('✅ Conversa exportada com sucesso!', 'sucesso');
+            
+        } catch (e) {
+            mostrarMensagem('❌ Erro ao exportar conversa', 'erro');
         }
-    });
-}
-
-// Adicionar barra de busca após carregar conversas
-setTimeout(adicionarBusca, 500);
-
-// ============================================
-// NOTIFICAÇÕES DO NAVEGADOR
-// ============================================
-function verificarPermissaoNotificacoes() {
-    if ("Notification" in window) {
-        if (Notification.permission === "granted") {
-            return true;
-        } else if (Notification.permission !== "denied") {
-            Notification.requestPermission().then(permission => {
-                return permission === "granted";
-            });
-        }
-    }
-    return false;
-}
-
-function mostrarNotificacao(titulo, mensagem) {
-    if (verificarPermissaoNotificacoes()) {
-        new Notification(titulo, {
-            body: mensagem,
-            icon: 'https://coliseum-api.onrender.com/logo.png'
-        });
     }
 }
 
@@ -1272,6 +1689,34 @@ function mostrarNotificacao(titulo, mensagem) {
 // INICIALIZAÇÃO FINAL
 // ============================================
 console.log('🚀 Chat Privado - Coliseum carregado com sucesso!');
-</script>
+
+// Atualizar conversas periodicamente
+setInterval(carregarConversas, 30000); // Atualiza a cada 30 segundos
+
+// Tentar enviar mensagens pendentes quando online
+window.addEventListener('online', async () => {
+    const pendentes = JSON.parse(localStorage.getItem('mensagens_pendentes') || '[]');
+    if (pendentes.length > 0) {
+        mostrarMensagem('📤 Enviando mensagens pendentes...', 'info');
+        
+        for (const mensagem of pendentes) {
+            // Tentar enviar cada mensagem pendente
+            // Implementar lógica de envio...
+        }
+        
+        // Limpar pendentes após envio
+        localStorage.removeItem('mensagens_pendentes');
+    }
+});
+
+// Prevenir saída da página com mensagens não salvas
+window.addEventListener('beforeunload', function(event) {
+    if (document.getElementById('chatInput')?.value.trim()) {
+        event.preventDefault();
+        event.returnValue = 'Você tem uma mensagem não enviada. Tem certeza que deseja sair?';
+        return event.returnValue;
+    }
+});
+    </script>
 </body>
 </html>
