@@ -659,171 +659,161 @@
     <button class="btn-voltar" onclick="voltarParaMenu()">←</button>
 
     <script>
-const API_BASE_URL = 'https://coliseum-api.onrender.com';
-
-// State
+// ✅ CONSTANTES E CONFIGURAÇÕES
+const API_BASE_URL = 'https://coliseum-api.onrender.com/api';
 let cursos = [];
-let userData = {};
 let filteredCursos = [];
-let userProgress = [];
 
-// DOM Elements
-const coursesContainer = document.getElementById('courses-container');
-const filterButtons = document.querySelectorAll('.filter-btn');
-const searchInput = document.getElementById('course-search');
-const alertContainer = document.getElementById('alert-container');
-
-// ✅ INICIALIZAÇÃO AUTOMÁTICA - CARREGA CURSOS DIRETO
-document.addEventListener('DOMContentLoaded', async function() {
+// ✅ INICIALIZAÇÃO SIMPLIFICADA
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Inicializando página de Cursos Extras...');
-    
-    await loadUserData();
-    await loadCursos(); // ✅ CARREGA AUTOMATICAMENTE
-    setupEventListeners();
-    
-    console.log('🎯 Página de cursos inicializada com sucesso!');
+    await carregarCursos();
+    configurarFiltros();
+    configurarBusca();
 });
 
-// ✅ FUNÇÃO fetchAPI MELHORADA
-async function fetchAPI(endpoint, options = {}) {
-    const targetURL = `${API_BASE_URL}${endpoint}`;
-    
+// ✅ FUNÇÃO PRINCIPAL PARA CARREGAR CURSOS
+async function carregarCursos() {
     try {
-        console.log(`🌐 Fazendo requisição para: ${targetURL}`);
-        
-        const config = {
-            method: options.method || 'GET',
+        mostrarLoading();
+        console.log('🔄 Carregando cursos da API...');
+
+        // Tentativa de carregamento da API
+        const response = await fetch(`${API_BASE_URL}/cursos`, {
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                ...options.headers
+                'Accept': 'application/json'
             },
             mode: 'cors'
-        };
-        
-        if (options.body) {
-            config.body = JSON.stringify(options.body);
-        }
-        
-        const response = await fetch(targetURL, config);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erro ${response.status}: ${errorText}`);
-        }
-        
-        const text = await response.text();
-        return text ? JSON.parse(text) : { success: true };
-        
-    } catch (error) {
-        console.error('❌ Erro na requisição:', error);
-        
-        // Tentar com proxy se for erro de CORS
-        if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
-            console.log('🔄 Tentando com proxy CORS...');
-            try {
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetURL)}`;
-                const proxyResponse = await fetch(proxyUrl, {
-                    method: options.method || 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: options.body ? JSON.stringify(options.body) : undefined
-                });
-                
-                if (!proxyResponse.ok) {
-                    throw new Error(`Proxy error: ${proxyResponse.status}`);
-                }
-                
-                const text = await proxyResponse.text();
-                return text ? JSON.parse(text) : { success: true };
-                
-            } catch (proxyError) {
-                console.error('❌ Erro também com proxy:', proxyError);
-                throw new Error('Falha na conexão com o servidor');
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Verificar estrutura da resposta
+            if (Array.isArray(data)) {
+                cursos = data.filter(curso => curso.ativo !== false);
+                console.log(`✅ ${cursos.length} cursos carregados da API`);
+            } else if (data.success && Array.isArray(data.cursos)) {
+                cursos = data.cursos.filter(curso => curso.ativo !== false);
+                console.log(`✅ ${cursos.length} cursos carregados da API (formato objeto)`);
+            } else {
+                console.warn('⚠️ Formato de resposta inesperado:', data);
+                cursos = [];
             }
-        }
-        
-        throw error;
-    }
-}
-
-// ✅ FUNÇÃO LOADCURSOS - CARREGA AUTOMATICAMENTE DA API
-async function loadCursos() {
-    try {
-        showLoading();
-        console.log('🔄 Buscando cursos da API...');
-
-        // Tenta endpoint principal
-        const cursosData = await fetchAPI('/api/cursos');
-        
-        cursos = Array.isArray(cursosData) ? cursosData : [];
-        
-        if (cursos.length === 0) {
-            showAlert('ℹ️ Nenhum curso disponível no momento.', 'info');
         } else {
-            console.log(`✅ ${cursos.length} cursos carregados com sucesso!`);
+            console.warn(`⚠️ API retornou status ${response.status}`);
+            // Usar dados de exemplo como fallback
+            cursos = gerarCursosExemplo();
+            mostrarAlerta('⚠️ Usando dados de demonstração. API pode estar offline.', 'warning');
         }
-        
-        // ✅ DEFINIR FILTRO "TODAS AS MATÉRIAS" COMO PADRÃO
-        setDefaultFilter();
-        displayCursos();
-        
+
     } catch (error) {
         console.error('❌ Erro ao carregar cursos:', error);
-        
-        if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
-            showAlert('❌ Erro de conexão. Verifique sua internet.', 'error');
-        } else if (error.message.includes('500')) {
-            showAlert('❌ Erro no servidor. Tente novamente mais tarde.', 'error');
-        } else {
-            showAlert('❌ ' + error.message, 'error');
+        // Fallback para dados de exemplo
+        cursos = gerarCursosExemplo();
+        mostrarAlerta('⚠️ Não foi possível conectar à API. Usando dados de demonstração.', 'warning');
+    }
+
+    // Atualizar interface
+    atualizarEstatisticas();
+    filtrarCursos('all');
+}
+
+// ✅ DADOS DE EXEMPLO PARA FALLBACK
+function gerarCursosExemplo() {
+    return [
+        {
+            id: 1,
+            titulo: "Matemática Básica",
+            descricao: "Aprenda os fundamentos da matemática com exemplos práticos.",
+            materia: "matematica",
+            categoria: "algebra",
+            nivel: "fundamental",
+            duracao: 20,
+            imagem: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+            modulos: [{ aulas: [{}] }],
+            ativo: true
+        },
+        {
+            id: 2,
+            titulo: "Química Orgânica",
+            descricao: "Conceitos fundamentais de química orgânica para ensino médio.",
+            materia: "csn",
+            categoria: "quimica",
+            nivel: "medio",
+            duracao: 30,
+            imagem: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+            modulos: [{ aulas: [{}] }],
+            ativo: true
+        },
+        {
+            id: 3,
+            titulo: "História do Brasil",
+            descricao: "Panorama completo da história brasileira.",
+            materia: "csh",
+            categoria: "historia",
+            nivel: "medio",
+            duracao: 25,
+            imagem: "https://images.unsplash.com/photo-1576086213369-97a306d36557?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+            modulos: [{ aulas: [{}] }],
+            ativo: true
+        },
+        {
+            id: 4,
+            titulo: "Gramática Avançada",
+            descricao: "Aprofunde seus conhecimentos em gramática portuguesa.",
+            materia: "portugues",
+            categoria: "gramatica",
+            nivel: "avancado",
+            duracao: 35,
+            imagem: "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+            modulos: [{ aulas: [{}] }],
+            ativo: true
+        },
+        {
+            id: 5,
+            titulo: "JavaScript Básico",
+            descricao: "Introdução à programação com JavaScript.",
+            materia: "programacao",
+            categoria: "js",
+            nivel: "iniciante",
+            duracao: 40,
+            imagem: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+            modulos: [{ aulas: [{}] }],
+            ativo: true
+        },
+        {
+            id: 6,
+            titulo: "Física Mecânica",
+            descricao: "Conceitos fundamentais da mecânica clássica.",
+            materia: "csn",
+            categoria: "fisica",
+            nivel: "medio",
+            duracao: 30,
+            imagem: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+            modulos: [{ aulas: [{}] }],
+            ativo: true
         }
-        
-        cursos = [];
-        displayCursos();
-    } finally {
-        updateStats();
-        console.log(`🎯 ${cursos.length} cursos processados`);
+    ];
+}
+
+// ✅ MOSTRAR LOADING
+function mostrarLoading() {
+    const container = document.getElementById('courses-container');
+    if (container) {
+        container.innerHTML = `
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Carregando cursos...</p>
+            </div>
+        `;
     }
 }
 
-// ✅ DEFINIR FILTRO "TODAS AS MATÉRIAS" COMO PADRÃO
-function setDefaultFilter() {
-    // Atualizar estado
-    filteredCursos = [...cursos];
-    
-    // Atualizar UI - marcar botão "Todas" como ativo
-    filterButtons.forEach(btn => {
-        if (btn.dataset.filter === 'all') {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-    
-    // Limpar campo de busca
-    if (searchInput) {
-        searchInput.value = '';
-    }
-    
-    console.log('🎯 Filtro padrão aplicado: Todas as matérias');
-}
-
-// ✅ FUNÇÃO showLoading
-function showLoading() {
-    if (!coursesContainer) return;
-    
-    coursesContainer.innerHTML = `
-        <div class="loading">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Carregando cursos...</p>
-        </div>
-    `;
-}
-
-// ✅ FUNÇÃO updateStats
-function updateStats() {
+// ✅ ATUALIZAR ESTATÍSTICAS
+function atualizarEstatisticas() {
     const totalCursos = cursos.length;
     const cursosMatematica = cursos.filter(c => c.materia === 'matematica').length;
     const cursosCsn = cursos.filter(c => c.materia === 'csn').length;
@@ -831,94 +821,74 @@ function updateStats() {
     const cursosPortugues = cursos.filter(c => c.materia === 'portugues').length;
     const cursosProgramacao = cursos.filter(c => c.materia === 'programacao').length;
 
-    const totalElement = document.getElementById('total-cursos');
-    const matematicaElement = document.getElementById('cursos-matematica');
-    const csnElement = document.getElementById('cursos-csn');
-    const cshElement = document.getElementById('cursos-csh');
-    const portuguesElement = document.getElementById('cursos-portugues');
-    const programacaoElement = document.getElementById('cursos-programacao');
-
-    if (totalElement) totalElement.textContent = totalCursos;
-    if (matematicaElement) matematicaElement.textContent = cursosMatematica;
-    if (csnElement) csnElement.textContent = cursosCsn;
-    if (cshElement) cshElement.textContent = cursosCsh;
-    if (portuguesElement) portuguesElement.textContent = cursosPortugues;
-    if (programacaoElement) programacaoElement.textContent = cursosProgramacao;
-
-    console.log('📊 Estatísticas atualizadas:', { total: totalCursos });
+    document.getElementById('total-cursos').textContent = totalCursos;
+    document.getElementById('cursos-matematica').textContent = cursosMatematica;
+    document.getElementById('cursos-csn').textContent = cursosCsn;
+    document.getElementById('cursos-csh').textContent = cursosCsh;
+    document.getElementById('cursos-portugues').textContent = cursosPortugues;
+    document.getElementById('cursos-programacao').textContent = cursosProgramacao;
 }
 
-// ✅ CORREÇÃO: Navegação para Vercel - Volta para Menu
-function voltarParaMenu() {
-    window.location.href = '/menu';
-}
-
-// ✅ CORREÇÃO: Navegação para página do curso
-function iniciarCurso(cursoId) {
-    console.log('Iniciando curso:', cursoId);
-    window.location.href = `/cursos?id=${cursoId}`;
-}
-
-function continuarCurso(cursoId) {
-    console.log('Continuando curso:', cursoId);
-    window.location.href = `/cursos?id=${cursoId}`;
-}
-
-// Event Listeners
-function setupEventListeners() {
-    filterButtons.forEach(btn => {
+// ✅ CONFIGURAR FILTROS
+function configurarFiltros() {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            filterButtons.forEach(b => b.classList.remove('active'));
+            // Remover active de todos
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            // Adicionar active ao clicado
             this.classList.add('active');
-            filterCursos(this.dataset.filter);
+            // Aplicar filtro
+            const filtro = this.dataset.filter;
+            filtrarCursos(filtro);
         });
     });
-
-    searchInput.addEventListener('input', function() {
-        filterCursos();
-    });
 }
 
-// Load user data from localStorage
-async function loadUserData() {
-    try {
-        const userDataStr = localStorage.getItem('userData');
-        if (userDataStr) {
-            userData = JSON.parse(userDataStr);
-            console.log('👤 Dados do usuário carregados:', userData);
-        } else {
-            userData = { nome: 'Aluno', serie: '1º Ano', pontuacao: 0 };
-        }
-    } catch (error) {
-        console.error('❌ Erro ao carregar dados do usuário:', error);
-        userData = { nome: 'Aluno', serie: '--', pontuacao: 0 };
+// ✅ CONFIGURAR BUSCA
+function configurarBusca() {
+    const searchInput = document.getElementById('course-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            aplicarFiltros();
+        });
     }
 }
 
-// ✅ FILTRO SIMPLIFICADO
-function filterCursos(filter = 'all') {
-    const searchTerm = searchInput.value.toLowerCase();
-    
-    filteredCursos = cursos.filter(curso => {
-        const matchesFilter = filter === 'all' || curso.materia === filter;
-        const matchesSearch = curso.titulo.toLowerCase().includes(searchTerm) ||
-                            (curso.descricao && curso.descricao.toLowerCase().includes(searchTerm)) ||
-                            (curso.categoria && curso.categoria.toLowerCase().includes(searchTerm));
-        
-        return matchesFilter && matchesSearch;
-    });
-    
-    displayCursos();
+// ✅ APLICAR FILTROS (filtro + busca)
+function aplicarFiltros() {
+    const filtroAtivo = document.querySelector('.filter-btn.active').dataset.filter;
+    filtrarCursos(filtroAtivo);
 }
 
-// Display cursos
-function displayCursos() {
-    if (!coursesContainer) return;
+// ✅ FILTRAR CURSOS
+function filtrarCursos(filtro) {
+    const searchTerm = document.getElementById('course-search').value.toLowerCase();
     
-    coursesContainer.innerHTML = '';
+    filteredCursos = cursos.filter(curso => {
+        // Aplicar filtro de matéria
+        const passaFiltro = filtro === 'all' || curso.materia === filtro;
+        
+        // Aplicar filtro de busca
+        const passaBusca = !searchTerm || 
+            curso.titulo.toLowerCase().includes(searchTerm) ||
+            (curso.descricao && curso.descricao.toLowerCase().includes(searchTerm)) ||
+            (curso.categoria && curso.categoria.toLowerCase().includes(searchTerm));
+        
+        return passaFiltro && passaBusca;
+    });
+    
+    exibirCursos();
+}
 
+// ✅ EXIBIR CURSOS
+function exibirCursos() {
+    const container = document.getElementById('courses-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
     if (filteredCursos.length === 0) {
-        coursesContainer.innerHTML = `
+        container.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-graduation-cap"></i>
                 <h3>Nenhum curso encontrado</h3>
@@ -927,29 +897,32 @@ function displayCursos() {
         `;
         return;
     }
-
+    
     filteredCursos.forEach(curso => {
-        const courseCard = createCourseCard(curso);
-        coursesContainer.appendChild(courseCard);
+        container.appendChild(criarCardCurso(curso));
     });
 }
 
-// Create course card
-function createCourseCard(curso) {
+// ✅ CRIAR CARD DO CURSO
+function criarCardCurso(curso) {
     const card = document.createElement('div');
     card.className = 'course-card';
     
-    const materiaNome = getMateriaNome(curso.materia);
-    const nivelNome = getNivelNome(curso.nivel);
-    const progresso = getProgressoCurso(curso.id);
-
-    const imagemUrl = curso.imagem || `https://via.placeholder.com/400x200/323232/ffffff?text=${encodeURIComponent(curso.titulo)}`;
-
+    const materiaNome = obterNomeMateria(curso.materia);
+    const nivelNome = obterNomeNivel(curso.nivel);
+    const progresso = obterProgressoCurso(curso.id);
+    const totalAulas = calcularTotalAulas(curso);
+    
+    // Gerar imagem padrão se não houver
+    const corBase = getCorMateria(curso.materia);
+    const imagemUrl = curso.imagem || `https://placehold.co/600x400/${corBase.replace('#', '')}/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}`;
+    
     card.innerHTML = `
         <div class="course-image">
-            <img src="${imagemUrl}" alt="${curso.titulo}" onerror="this.src='https://via.placeholder.com/400x200/323232/ffffff?text=${encodeURIComponent(curso.titulo)}'">
+            <img src="${imagemUrl}" alt="${curso.titulo}" 
+                 onerror="this.src='https://placehold.co/600x400/323232/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}'">
             <div class="course-badge badge-${curso.materia}">${materiaNome}</div>
-            <div class="course-level level-${curso.nivel}">${nivelNome}</div>
+            <div class="course-level level-${curso.nivel || 'medio'}">${nivelNome}</div>
         </div>
         
         <div class="course-content">
@@ -958,15 +931,15 @@ function createCourseCard(curso) {
             
             <div class="course-meta">
                 <div class="meta-item">
-                    <div class="meta-value">${curso.duracao || 0}h</div>
-                    <div class="meta-label">Duração</div>
+                    <div class="meta-value">${curso.duracao || '--'}</div>
+                    <div class="meta-label">Horas</div>
                 </div>
                 <div class="meta-item">
                     <div class="meta-value">${curso.modulos ? curso.modulos.length : 0}</div>
                     <div class="meta-label">Módulos</div>
                 </div>
                 <div class="meta-item">
-                    <div class="meta-value">${getTotalAulas(curso)}</div>
+                    <div class="meta-value">${totalAulas}</div>
                     <div class="meta-label">Aulas</div>
                 </div>
                 <div class="meta-item">
@@ -976,7 +949,7 @@ function createCourseCard(curso) {
             </div>
             
             <div class="course-category">
-                <small>Categoria: ${getCategoriaNome(curso.categoria)}</small>
+                <small>Categoria: ${obterNomeCategoria(curso.categoria)}</small>
             </div>
             
             ${progresso > 0 ? `
@@ -992,15 +965,9 @@ function createCourseCard(curso) {
             ` : ''}
             
             <div class="course-actions">
-                ${progresso > 0 ? `
-                    <button class="btn btn-primary" onclick="continuarCurso(${curso.id})">
-                        <i class="fas fa-play"></i> Continuar
-                    </button>
-                ` : `
-                    <button class="btn btn-primary" onclick="iniciarCurso(${curso.id})">
-                        <i class="fas fa-play"></i> Começar
-                    </button>
-                `}
+                <button class="btn btn-primary" onclick="iniciarCurso(${curso.id})">
+                    <i class="fas fa-play"></i> ${progresso > 0 ? 'Continuar' : 'Começar'}
+                </button>
                 
                 <button class="btn btn-secondary" onclick="verDetalhes(${curso.id})">
                     <i class="fas fa-info-circle"></i> Detalhes
@@ -1012,8 +979,8 @@ function createCourseCard(curso) {
     return card;
 }
 
-// ✅ HELPER FUNCTIONS
-function getMateriaNome(materia) {
+// ✅ FUNÇÕES AUXILIARES
+function obterNomeMateria(materia) {
     const nomes = {
         'matematica': 'Matemática',
         'csn': 'CSN',
@@ -1024,7 +991,7 @@ function getMateriaNome(materia) {
     return nomes[materia] || materia;
 }
 
-function getCategoriaNome(categoria) {
+function obterNomeCategoria(categoria) {
     const nomes = {
         'algebra': 'Álgebra',
         'geometria': 'Geometria',
@@ -1042,7 +1009,7 @@ function getCategoriaNome(categoria) {
     return nomes[categoria] || categoria;
 }
 
-function getNivelNome(nivel) {
+function obterNomeNivel(nivel) {
     const nomes = {
         'iniciante': 'Iniciante',
         'intermediario': 'Intermediário',
@@ -1051,41 +1018,96 @@ function getNivelNome(nivel) {
         'medio': 'Ensino Médio',
         'vestibular': 'Vestibular'
     };
-    return nomes[nivel] || nivel;
+    return nomes[nivel] || nivel || 'Ensino Médio';
 }
 
-function getTotalAulas(curso) {
+function getCorMateria(materia) {
+    const cores = {
+        'matematica': '#4361ee',
+        'csn': '#4cc9f0',
+        'csh': '#f72585',
+        'portugues': '#ffcf00',
+        'programacao': '#ff6b00'
+    };
+    return cores[materia] || '#323232';
+}
+
+function calcularTotalAulas(curso) {
     if (!curso.modulos) return 0;
-    let totalAulas = 0;
+    let total = 0;
     curso.modulos.forEach(modulo => {
-        totalAulas += modulo.aulas ? modulo.aulas.length : 0;
+        total += modulo.aulas ? modulo.aulas.length : 0;
     });
-    return totalAulas;
+    return total;
 }
 
-function getProgressoCurso(cursoId) {
-    // Para demonstração - em produção viria da API
-    return 0;
+function obterProgressoCurso(cursoId) {
+    // Em produção, isso viria da API de progresso
+    // Para demonstração, retorna progresso aleatório ou 0
+    return Math.random() > 0.7 ? Math.floor(Math.random() * 100) : 0;
+}
+
+// ✅ FUNÇÕES DE AÇÃO
+function iniciarCurso(cursoId) {
+    console.log('Iniciando curso:', cursoId);
+    // Redireciona para a página do curso
+    window.location.href = `/cursos?id=${cursoId}`;
 }
 
 function verDetalhes(cursoId) {
     const curso = cursos.find(c => c.id === cursoId);
     if (curso) {
-        alert(`Detalhes do curso: ${curso.titulo}\n\nMatéria: ${getMateriaNome(curso.materia)}\nCategoria: ${getCategoriaNome(curso.categoria)}\nNível: ${getNivelNome(curso.nivel)}\n\n${curso.descricao}`);
+        const detalhes = `
+🏫 ${curso.titulo}
+
+📚 Matéria: ${obterNomeMateria(curso.materia)}
+🏷️ Categoria: ${obterNomeCategoria(curso.categoria)}
+📊 Nível: ${obterNomeNivel(curso.nivel)}
+⏱️ Duração: ${curso.duracao || '--'} horas
+📂 Módulos: ${curso.modulos ? curso.modulos.length : 0}
+📝 Aulas: ${calcularTotalAulas(curso)}
+
+📋 Descrição:
+${curso.descricao || 'Sem descrição disponível.'}
+
+        `;
+        alert(detalhes);
+    } else {
+        mostrarAlerta('Curso não encontrado!', 'error');
     }
 }
 
-function showAlert(message, type = 'error') {
-    if (!alertContainer) return;
-    const alert = document.createElement('div');
-    alert.className = `alert alert-${type}`;
-    alert.innerHTML = `<span>${message}</span><button class="alert-close">&times;</button>`;
-    alertContainer.appendChild(alert);
-    setTimeout(() => alert.remove(), 5000);
-    alert.querySelector('.alert-close').addEventListener('click', function() {
-        alert.remove();
-    });
+function voltarParaMenu() {
+    // Verificar se está no Vercel ou localhost
+    const basePath = window.location.hostname.includes('vercel.app') ? '/' : '/menu';
+    window.location.href = basePath;
 }
+
+function mostrarAlerta(mensagem, tipo = 'error') {
+    const alertContainer = document.getElementById('alert-container');
+    if (!alertContainer) return;
+    
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${tipo === 'success' ? 'success' : tipo === 'warning' ? 'warning' : 'error'}`;
+    alert.innerHTML = `
+        <span>${mensagem}</span>
+        <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+    `;
+    
+    alertContainer.appendChild(alert);
+    
+    // Remover automaticamente após 5 segundos
+    setTimeout(() => {
+        if (alert.parentElement) {
+            alert.remove();
+        }
+    }, 5000);
+}
+
+// ✅ EXPORTA FUNÇÕES PARA USO NO HTML
+window.iniciarCurso = iniciarCurso;
+window.verDetalhes = verDetalhes;
+window.voltarParaMenu = voltarParaMenu;
     </script>
 </body>
 </html>
