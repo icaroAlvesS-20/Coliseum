@@ -554,32 +554,34 @@ body {
     background: rgba(255, 215, 0, 0.1);
     border-color: var(--primary-light);
 }
-        .btn-voltar {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #ffcf00;
-            color: #000;
-            font-size: 24px;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            z-index: 1000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.4);
-            transition: all 0.3s ease;
-        }
 
-        .btn-voltar:hover {
-            background: #e6b800;
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(255, 207, 0, 0.6);
-        }
+.btn-voltar {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #ffcf00;
+    color: #000;
+    font-size: 24px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(255, 207, 0, 0.4);
+    transition: all 0.3s ease;
+}
+
+.btn-voltar:hover {
+    background: #e6b800;
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255, 207, 0, 0.6);
+}
+
 /* ===== ESTADOS DE CARREGAMENTO E ERRO ===== */
 .carregando,
 .empty-state {
@@ -611,106 +613,108 @@ body {
     color: var(--primary);
     opacity: 0.7;
 }
- .video-provider-badge {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: rgba(0, 0, 0, 0.8);
-        color: var(--primary);
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        z-index: 10;
-        font-weight: 600;
-        border: 1px solid rgba(255, 215, 0, 0.3);
-        backdrop-filter: blur(10px);
-    }
 
-    /* Cores específicas para cada provedor */
-    .video-provider-badge.panda-video {
-        background: rgba(255, 87, 34, 0.9);
-        color: white;
-        border-color: rgba(255, 87, 34, 0.5);
-    }
+.video-provider-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.8);
+    color: var(--primary);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    z-index: 10;
+    font-weight: 600;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    backdrop-filter: blur(10px);
+}
 
-    .video-provider-badge.youtube {
-        background: rgba(255, 0, 0, 0.9);
-        color: white;
-        border-color: rgba(255, 0, 0, 0.5);
-    }
+/* Cores específicas para cada provedor */
+.video-provider-badge.panda-video {
+    background: rgba(255, 87, 34, 0.9);
+    color: white;
+    border-color: rgba(255, 87, 34, 0.5);
+}
 
-    .video-provider-badge.vimeo {
-        background: rgba(26, 183, 234, 0.9);
-        color: white;
-        border-color: rgba(26, 183, 234, 0.5);
-    }
+.video-provider-badge.youtube {
+    background: rgba(255, 0, 0, 0.9);
+    color: white;
+    border-color: rgba(255, 0, 0, 0.5);
+}
 
-    .video-provider-badge.external {
-        background: rgba(76, 175, 80, 0.9);
-        color: white;
-        border-color: rgba(76, 175, 80, 0.5);
-    }
+.video-provider-badge.vimeo {
+    background: rgba(26, 183, 234, 0.9);
+    color: white;
+    border-color: rgba(26, 183, 234, 0.5);
+}
 
-    .video-placeholder {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        color: var(--text-secondary);
-        background: var(--secondary);
-        text-align: center;
-        padding: 40px;
-    }
+.video-provider-badge.external {
+    background: rgba(76, 175, 80, 0.9);
+    color: white;
+    border-color: rgba(76, 175, 80, 0.5);
+}
 
-    .video-placeholder .placeholder-icon {
-        font-size: 4rem;
-        margin-bottom: 20px;
-        opacity: 0.7;
-    }
+.video-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    background: var(--secondary);
+    text-align: center;
+    padding: 40px;
+}
 
-    .video-placeholder h4 {
-        color: var(--primary);
-        margin-bottom: 10px;
-        font-size: 1.3rem;
-    }
+.video-placeholder .placeholder-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.7;
+}
 
-    .video-placeholder p {
-        margin-bottom: 20px;
-        line-height: 1.5;
-    }
+.video-placeholder h4 {
+    color: var(--primary);
+    margin-bottom: 10px;
+    font-size: 1.3rem;
+}
 
-    .video-placeholder small {
-        margin-top: 15px;
-        color: var(--text-muted);
-        font-size: 0.85rem;
-    }
+.video-placeholder p {
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
 
-    .video-placeholder .btn {
-        margin-top: 10px;
-    }
+.video-placeholder small {
+    margin-top: 15px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
 
-    .video-container {
-        position: relative;
-        background: #000;
-        border-radius: var(--border-radius);
-        overflow: hidden;
-        aspect-ratio: 16/9;
-        border: 2px solid rgba(255, 215, 0, 0.1);
-    }
+.video-placeholder .btn {
+    margin-top: 10px;
+}
 
-    .video-container iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
-    }
+.video-container {
+    position: relative;
+    background: #000;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    aspect-ratio: 16/9;
+    border: 2px solid rgba(255, 215, 0, 0.1);
+}
 
-    .no-video-warning {
-        color: var(--warning);
-        font-style: italic;
-        margin: 15px 0;
-    }
+.video-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.no-video-warning {
+    color: var(--warning);
+    font-style: italic;
+    margin: 15px 0;
+}
+
 /* ===== ANIMAÇÕES ===== */
 @keyframes fadeIn {
     from { opacity: 0; }
@@ -916,10 +920,10 @@ body {
 
     <div class="api-status" id="api-status"></div>
     
-<button class="btn-voltar" onclick="window.history.back()">←</button>
+    <button class="btn-voltar" onclick="window.history.back()">←</button>
 
 <script>
-// ✅ SISTEMA CORRIGIDO - COM VERIFICAÇÕES
+// ✅ SISTEMA CORRIGIDO - COM VERIFICAÇÕES DE ESTRUTURA
 class GerenciadorCursos {
     constructor() {
         this.API_BASE = 'https://coliseum-api.onrender.com/api';
@@ -927,7 +931,6 @@ class GerenciadorCursos {
         this.cursoAtual = null;
         this.modulosAtuais = [];
         
-        // Verificar se estamos na página correta
         this.paginaValida = this.verificarPaginaValida();
     }
 
@@ -968,7 +971,7 @@ class GerenciadorCursos {
         console.log(`📚 Buscando curso ${cursoId} na API...`);
         
         try {
-            const cursoResponse = await fetch(`${this.API_BASE}/cursos/${cursoId}`);
+            const cursoResponse = await fetch(`${this.API_BASE}/cursos/${cursoId}?usuarioId=${this.usuarioId}`);
             
             if (!cursoResponse.ok) {
                 if (cursoResponse.status === 404) {
@@ -978,7 +981,23 @@ class GerenciadorCursos {
                 }
             }
 
-            const curso = await cursoResponse.json();
+            const data = await cursoResponse.json();
+            console.log('📊 Resposta da API:', data);
+            
+            // VERIFICAÇÃO DE ESTRUTURA
+            let curso;
+            if (data.success !== undefined) {
+                // Nova estrutura: { success: true, curso: {...} }
+                if (data.success && data.curso) {
+                    curso = data.curso;
+                } else {
+                    throw new Error('Curso não encontrado na resposta');
+                }
+            } else {
+                // Estrutura antiga: curso diretamente
+                curso = data;
+            }
+            
             console.log('✅ Curso carregado:', curso.titulo);
             this.cursoAtual = curso;
             this.exibirCurso(curso);
@@ -987,7 +1006,7 @@ class GerenciadorCursos {
             await this.carregarModulosDaAPI(cursoId);
         } catch (error) {
             console.error('❌ Erro ao carregar curso da API:', error);
-            throw error; // Propaga o erro para ser tratado no método chamador
+            throw error;
         }
     }
 
@@ -1000,8 +1019,25 @@ class GerenciadorCursos {
             );
 
             if (modulosResponse.ok) {
-                const modulos = await modulosResponse.json();
-                console.log(`✅ ${modulos.length} módulos carregados`);
+                const data = await modulosResponse.json();
+                console.log('📊 Resposta de módulos:', data);
+                
+                // VERIFICAÇÃO DE ESTRUTURA
+                let modulos;
+                if (data.success !== undefined) {
+                    // Nova estrutura: { success: true, modulos: [...] }
+                    if (data.success && data.modulos) {
+                        modulos = data.modulos;
+                        console.log(`✅ ${modulos.length} módulos carregados`);
+                    } else {
+                        throw new Error('Módulos não encontrados na resposta');
+                    }
+                } else {
+                    // Estrutura antiga: array diretamente
+                    modulos = Array.isArray(data) ? data : [];
+                    console.log(`✅ ${modulos.length} módulos carregados`);
+                }
+                
                 this.modulosAtuais = modulos;
                 this.exibirModulos(modulos);
             } else {
@@ -1028,7 +1064,7 @@ class GerenciadorCursos {
         }
         
         if (descElement) {
-            descElement.textContent = curso.descricao;
+            descElement.textContent = curso.descricao || 'Sem descrição disponível.';
         } else {
             console.warn('❌ Elemento curso-descricao não encontrado');
         }
@@ -1134,14 +1170,6 @@ class GerenciadorCursos {
         }).join('');
     }
 
-    formatarDuracao(minutos) {
-        if (!minutos) return '10:00';
-        if (minutos < 60) return `${minutos}:00`;
-        const horas = Math.floor(minutos / 60);
-        const mins = minutos % 60;
-        return `${horas}:${mins.toString().padStart(2, '0')}:00`;
-    }
-
     toggleModulo(index) {
         const modulos = document.querySelectorAll('.modulo');
         if (modulos.length === 0) return;
@@ -1186,21 +1214,35 @@ class GerenciadorCursos {
                 `${this.API_BASE}/aulas/${aulaId}?usuarioId=${this.usuarioId}`
             );
             
-            let aula;
+            let aulaData;
             if (aulaResponse.ok) {
-                aula = await aulaResponse.json();
+                aulaData = await aulaResponse.json();
+                console.log('📊 Resposta da aula:', aulaData);
+                
+                // VERIFICAÇÃO DE ESTRUTURA
+                let aula;
+                if (aulaData.success !== undefined) {
+                    // Nova estrutura: { success: true, aula: {...} }
+                    if (aulaData.success && aulaData.aula) {
+                        aula = aulaData.aula;
+                    } else {
+                        throw new Error('Aula não encontrada na resposta');
+                    }
+                } else {
+                    // Estrutura antiga: aula diretamente
+                    aula = aulaData;
+                }
+                
+                this.exibirPlayerAula(aula);
             } else {
                 // Encontrar aula nos dados locais
-                aula = this.encontrarAula(aulaId);
+                const aula = this.encontrarAula(aulaId);
+                if (aula) {
+                    this.exibirPlayerAula(aula);
+                } else {
+                    alert('Aula não encontrada!');
+                }
             }
-
-            if (!aula) {
-                alert('Aula não encontrada!');
-                return;
-            }
-
-            this.exibirPlayerAula(aula);
-
         } catch (error) {
             console.error('Erro ao carregar aula:', error);
             const aula = this.encontrarAula(aulaId);
@@ -1417,9 +1459,9 @@ class GerenciadorCursos {
                     'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    usuarioId: this.usuarioId,
+                    usuarioId: parseInt(this.usuarioId),
                     aulaId: parseInt(aulaId),
-                    cursoId: parseInt(cursoId)
+                    concluida: true
                 })
             });
 
