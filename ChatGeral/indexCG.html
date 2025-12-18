@@ -494,23 +494,26 @@
         <i class="fas fa-arrow-left"></i>
     </button>
     
-    <script>
-        // Configurações
-        const API_URL = 'https://coliseum-api.onrender.com';
-        let currentUser = null;
-        let lastUpdate = new Date();
-        let isTyping = false;
-        let typingTimeout = null;
-        let messageCheckInterval = null;
-        let lastMessageId = 0;
+    <script><script>
+    // Configurações
+    const API_URL = 'https://coliseum-api.onrender.com';
+    let currentUser = null;
+    let lastUpdate = new Date();
+    let isTyping = false;
+    let typingTimeout = null;
+    let messageCheckInterval = null;
+    let lastMessageId = 0;
+    let totalMessages = 0;
 
-        // Inicialização
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('💬 Chat inicializando...');
-            
-            // Verificar se usuário está logado
-            await checkUserLogin();
-            
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', async () => {
+        console.log('💬 Chat inicializando...');
+        console.log('📡 API URL:', API_URL);
+        
+        // Verificar se usuário está logado
+        const userLogged = await checkUserLogin();
+        
+        if (userLogged) {
             // Carregar mensagens iniciais
             await loadMessages();
             
@@ -525,502 +528,802 @@
             updateOnlineUsers();
             
             console.log('✅ Chat inicializado com sucesso!');
-        });
+            console.log('👤 Usuário:', currentUser.nome);
+        } else {
+            console.log('⚠️ Chat não inicializado - usuário não logado');
+        }
+    });
 
-        // Verificar login do usuário
-        async function checkUserLogin() {
-            try {
-                // Tentar obter usuário do localStorage
-                const userData = localStorage.getItem('coliseum_user');
-                
-                if (userData) {
+    // Verificar login do usuário
+    async function checkUserLogin() {
+        try {
+            console.log('🔍 Verificando login do usuário...');
+            
+            // Tentar obter usuário do localStorage
+            const userData = localStorage.getItem('coliseum_user');
+            
+            if (userData) {
+                try {
                     currentUser = JSON.parse(userData);
-                    console.log('👤 Usuário logado:', currentUser.nome);
+                    
+                    // VALIDAÇÃO CRÍTICA: Verificar se o usuário tem estrutura correta
+                    if (!currentUser || !currentUser.id || !currentUser.nome) {
+                        console.error('❌ Dados do usuário incompletos no localStorage:', currentUser);
+                        showLoginAlert();
+                        return false;
+                    }
+                    
+                    console.log('✅ Usuário logado encontrado:', currentUser.nome);
+                    console.log('📋 Dados do usuário:', {
+                        id: currentUser.id,
+                        nome: currentUser.nome,
+                        ra: currentUser.ra,
+                        curso: currentUser.curso
+                    });
+                    
                     updateUserInfo();
                     
                     // Habilitar botão de enviar
                     const sendButton = document.getElementById('sendButton');
+                    const messageInput = document.getElementById('messageInput');
+                    
                     if (sendButton) {
                         sendButton.disabled = false;
+                        sendButton.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar';
                     }
-                } else {
-                    console.log('⚠️ Nenhum usuário logado');
-                    showLoginAlert();
-                }
-            } catch (error) {
-                console.error('❌ Erro ao verificar login:', error);
-                showLoginAlert();
-            }
-        }
-
-        function updateUserInfo() {
-            if (currentUser) {
-                const userNameElement = document.getElementById('userName');
-                if (userNameElement) {
-                    userNameElement.textContent = currentUser.nome;
-                }
-            }
-        }
-
-        async function updateOnlineUsers() {
-            try {
-                // Buscar usuários ativos da API
-                const response = await fetch(`${API_URL}/api/usuarios`);
-                if (response.ok) {
-                    const usuarios = await response.json();
-                    const usuariosAtivos = usuarios.filter(u => u.status === 'ativo').length;
                     
-                    const onlineCountElement = document.getElementById('onlineCount');
-                    if (onlineCountElement) {
-                        onlineCountElement.textContent = usuariosAtivos;
+                    if (messageInput) {
+                        messageInput.disabled = false;
+                        messageInput.placeholder = "Digite sua mensagem aqui...";
+                        messageInput.focus();
                     }
+                    
+                    return true;
+                    
+                } catch (parseError) {
+                    console.error('❌ Erro ao parsear dados do usuário:', parseError);
+                    showLoginAlert();
+                    return false;
                 }
-            } catch (error) {
-                console.log('⚠️ Não foi possível atualizar usuários online');
+            } else {
+                console.log('⚠️ Nenhum usuário encontrado no localStorage');
+                showLoginAlert();
+                return false;
             }
+        } catch (error) {
+            console.error('❌ Erro ao verificar login:', error);
+            showLoginAlert();
+            return false;
         }
+    }
 
-        function showLoginAlert() {
-            const messagesContainer = document.getElementById('messagesContainer');
-            if (messagesContainer) {
-                messagesContainer.innerHTML = `
+    function updateUserInfo() {
+        if (currentUser) {
+            const userNameElement = document.getElementById('userName');
+            if (userNameElement) {
+                userNameElement.textContent = currentUser.nome || 'Anônimo';
+            }
+            
+            // Atualizar título da página com nome do usuário
+            document.title = `Chat Geral - ${currentUser.nome} | Coliseum`;
+        }
+    }
+
+    async function updateOnlineUsers() {
+        try {
+            console.log('🔄 Atualizando contagem de usuários online...');
+            
+            // Buscar usuários ativos da API
+            const response = await fetch(`${API_URL}/api/usuarios`);
+            if (response.ok) {
+                const usuarios = await response.json();
+                const usuariosAtivos = usuarios.filter(u => u.status === 'ativo').length;
+                
+                const onlineCountElement = document.getElementById('onlineCount');
+                if (onlineCountElement) {
+                    onlineCountElement.textContent = usuariosAtivos;
+                    console.log(`👥 Usuários online: ${usuariosAtivos}`);
+                }
+            }
+        } catch (error) {
+            console.log('⚠️ Não foi possível atualizar usuários online:', error.message);
+        }
+    }
+
+    function showLoginAlert() {
+        console.log('⚠️ Exibindo alerta de login...');
+        
+        const messagesContainer = document.getElementById('messagesContainer');
+        if (messagesContainer) {
+            messagesContainer.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #ff6b6b;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem;"></i>
+                    <h3 style="margin: 20px 0 10px 0;">Login Necessário</h3>
+                    <p style="margin-bottom: 20px;">Você precisa fazer login para participar do chat.</p>
+                    <button onclick="window.location.href='index.html'" 
+                            style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(45deg, #ff9800, #ffeb3b); 
+                                   color: black; border: none; border-radius: 8px; cursor: pointer; 
+                                   font-weight: bold; font-size: 1rem; transition: all 0.3s;">
+                        <i class="fas fa-sign-in-alt"></i> Ir para Login
+                    </button>
+                </div>
+            `;
+        }
+        
+        const messageInput = document.getElementById('messageInput');
+        if (messageInput) {
+            messageInput.placeholder = "Faça login para enviar mensagens...";
+            messageInput.disabled = true;
+        }
+        
+        const sendButton = document.getElementById('sendButton');
+        if (sendButton) {
+            sendButton.disabled = true;
+            sendButton.innerHTML = '<i class="fas fa-lock"></i> Login Necessário';
+            sendButton.style.background = '#666';
+        }
+        
+        const statsBar = document.querySelector('.stats-bar');
+        if (statsBar) {
+            statsBar.style.opacity = '0.5';
+        }
+    }
+
+    // Carregar mensagens
+    async function loadMessages() {
+        try {
+            console.log('📥 Carregando mensagens...');
+            
+            // Mostrar indicador de carregamento
+            const container = document.getElementById('messagesContainer');
+            if (container) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #ccc;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
+                        <p style="margin-top: 10px;">Carregando mensagens...</p>
+                    </div>
+                `;
+            }
+            
+            const response = await fetch(`${API_URL}/api/chat/mensagens/recentes`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success && data.mensagens) {
+                console.log(`✅ ${data.mensagens.length} mensagens carregadas`);
+                displayMessages(data.mensagens);
+                updateStats(data.mensagens.length);
+                updateLastUpdateTime();
+                
+                // Atualizar último ID de mensagem
+                if (data.mensagens.length > 0) {
+                    lastMessageId = data.mensagens[data.mensagens.length - 1].id;
+                    console.log(`📌 Último ID de mensagem: ${lastMessageId}`);
+                }
+                
+                return true;
+            } else {
+                throw new Error(data.error || 'Erro na resposta da API');
+            }
+        } catch (error) {
+            console.error('❌ Erro ao carregar mensagens:', error);
+            
+            // Mostrar mensagem de erro
+            const container = document.getElementById('messagesContainer');
+            if (container) {
+                container.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: #ff6b6b;">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem;"></i>
-                        <h3>Login Necessário</h3>
-                        <p>Você precisa fazer login para participar do chat.</p>
-                        <button onclick="window.location.href='index.html'" 
-                                style="margin-top: 20px; padding: 10px 20px; background: yellow; color: black; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                            <i class="fas fa-sign-in-alt"></i> Ir para Login
+                        <i class="fas fa-exclamation-circle" style="font-size: 3rem;"></i>
+                        <h3>Erro ao carregar mensagens</h3>
+                        <p>${error.message}</p>
+                        <button onclick="loadMessages()" 
+                                style="margin-top: 20px; padding: 10px 20px; background: yellow; 
+                                       color: black; border: none; border-radius: 5px; cursor: pointer;">
+                            <i class="fas fa-redo"></i> Tentar Novamente
                         </button>
                     </div>
                 `;
             }
             
-            const messageInput = document.getElementById('messageInput');
-            if (messageInput) {
-                messageInput.placeholder = "Faça login para enviar mensagens...";
-                messageInput.disabled = true;
-            }
-            
-            const sendButton = document.getElementById('sendButton');
-            if (sendButton) {
-                sendButton.disabled = true;
-                sendButton.innerHTML = '<i class="fas fa-lock"></i> Login Necessário';
-            }
+            showNotification('Erro ao carregar mensagens. Tente recarregar a página.', 'error');
+            return false;
         }
+    }
 
-        // Carregar mensagens
-        async function loadMessages() {
-            try {
-                console.log('📥 Carregando mensagens...');
-                const response = await fetch(`${API_URL}/api/chat/mensagens/recentes`);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
+    // Verificar novas mensagens
+    async function checkNewMessages() {
+        if (!currentUser) {
+            console.log('⚠️ Verificação de novas mensagens ignorada - usuário não logado');
+            return;
+        }
+        
+        try {
+            console.log('🔄 Verificando novas mensagens...');
+            const response = await fetch(`${API_URL}/api/chat/mensagens/recentes`);
+            
+            if (response.ok) {
                 const data = await response.json();
                 
                 if (data.success && data.mensagens) {
-                    displayMessages(data.mensagens);
-                    updateStats(data.mensagens.length);
-                    updateLastUpdateTime();
+                    // Verificar se há mensagens novas
+                    const newMessages = data.mensagens.filter(msg => msg.id > lastMessageId);
                     
-                    // Atualizar último ID de mensagem
-                    if (data.mensagens.length > 0) {
-                        lastMessageId = data.mensagens[data.mensagens.length - 1].id;
-                    }
-                } else {
-                    throw new Error(data.error || 'Erro na resposta da API');
-                }
-            } catch (error) {
-                console.error('❌ Erro ao carregar mensagens:', error);
-                showNotification('Erro ao carregar mensagens. Tente recarregar a página.', 'error');
-            }
-        }
-
-        // Verificar novas mensagens
-        async function checkNewMessages() {
-            if (!currentUser) return;
-            
-            try {
-                const response = await fetch(`${API_URL}/api/chat/mensagens/recentes`);
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    if (data.success && data.mensagens) {
-                        // Verificar se há mensagens novas
-                        const newMessages = data.mensagens.filter(msg => msg.id > lastMessageId);
+                    if (newMessages.length > 0) {
+                        console.log(`📨 ${newMessages.length} nova(s) mensagem(ns) encontrada(s)`);
                         
-                        if (newMessages.length > 0) {
-                            console.log(`📨 ${newMessages.length} nova(s) mensagem(ns) encontrada(s)`);
-                            
-                            // Atualizar último ID
-                            lastMessageId = data.mensagens[data.mensagens.length - 1].id;
-                            
-                            // Adicionar novas mensagens
-                            newMessages.forEach(msg => {
-                                addMessageToChat(msg);
-                            });
-                            
-                            updateStats(data.mensagens.length);
-                            updateLastUpdateTime();
+                        // Atualizar último ID
+                        lastMessageId = data.mensagens[data.mensagens.length - 1].id;
+                        
+                        // Adicionar novas mensagens
+                        newMessages.forEach(msg => {
+                            addMessageToChat(msg);
+                        });
+                        
+                        updateStats(data.mensagens.length);
+                        updateLastUpdateTime();
+                        
+                        // Notificação de nova mensagem (se não for do próprio usuário)
+                        const hasOthersMessages = newMessages.some(msg => msg.usuarioId !== currentUser.id);
+                        if (hasOthersMessages) {
+                            showNotification(`${newMessages.length} nova(s) mensagem(ns)`, 'success');
                         }
                     }
                 }
-            } catch (error) {
-                console.log('⚠️ Erro ao verificar novas mensagens:', error.message);
+            } else {
+                console.log('⚠️ Erro ao verificar novas mensagens:', response.status);
             }
+        } catch (error) {
+            console.log('⚠️ Erro ao verificar novas mensagens:', error.message);
         }
+    }
 
-        function startMessageChecker() {
-            // Verificar novas mensagens a cada 3 segundos
-            messageCheckInterval = setInterval(checkNewMessages, 3000);
+    function startMessageChecker() {
+        // Verificar novas mensagens a cada 5 segundos
+        if (messageCheckInterval) {
+            clearInterval(messageCheckInterval);
         }
+        
+        messageCheckInterval = setInterval(checkNewMessages, 5000);
+        console.log('🔄 Verificador de mensagens iniciado (5s)');
+    }
 
-        // Exibir mensagens
-        function displayMessages(messages) {
-            const container = document.getElementById('messagesContainer');
-            const emptyChat = document.getElementById('emptyChat');
-            
-            if (!container) {
-                console.error('Container de mensagens não encontrado');
-                return;
-            }
-            
-            // Limpar container
-            container.innerHTML = '';
-            
-            if (!messages || messages.length === 0) {
-                if (emptyChat) {
-                    const emptyChatClone = emptyChat.cloneNode(true);
-                    container.appendChild(emptyChatClone);
-                }
-                return;
-            }
-            
-            // Se houver mensagens, ocultar emptyChat
+    // Exibir mensagens
+    function displayMessages(messages) {
+        const container = document.getElementById('messagesContainer');
+        const emptyChat = document.getElementById('emptyChat');
+        
+        if (!container) {
+            console.error('Container de mensagens não encontrado');
+            return;
+        }
+        
+        // Limpar container
+        container.innerHTML = '';
+        
+        if (!messages || messages.length === 0) {
             if (emptyChat) {
-                emptyChat.style.display = 'none';
-            }
-            
-            // Adicionar cada mensagem
-            messages.forEach(msg => {
-                addMessageToChat(msg);
-            });
-            
-            // Scroll para a última mensagem
-            setTimeout(() => {
-                container.scrollTop = container.scrollHeight;
-            }, 100);
-        }
-
-        function addMessageToChat(msg) {
-            const container = document.getElementById('messagesContainer');
-            const emptyChat = document.getElementById('emptyChat');
-            
-            if (!container) return;
-            
-            // Ocultar emptyChat se houver mensagens
-            if (emptyChat && emptyChat.style.display !== 'none') {
-                emptyChat.style.display = 'none';
-            }
-            
-            const isOwn = currentUser && msg.usuarioId === currentUser.id;
-            const messageTime = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('pt-BR', {
-                hour: '2-digit',
-                minute: '2-digit'
-            }) : 'Agora';
-            
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isOwn ? 'own-message' : ''}`;
-            
-            const userName = msg.usuario ? msg.usuario.nome : 'Usuário';
-            const userCurso = msg.usuario ? msg.usuario.curso : 'Curso';
-            const userSerie = msg.usuario ? msg.usuario.serie : 'Série';
-            
-            messageDiv.innerHTML = `
-                <div class="message-header">
-                    <div class="user-info">
-                        <div class="user-avatar">
-                            ${userName.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                            <div class="user-name">${escapeHtml(userName)}</div>
-                            <div class="user-details">
-                                ${escapeHtml(userCurso)} • ${escapeHtml(userSerie)}ª série
-                            </div>
-                        </div>
+                const emptyChatClone = emptyChat.cloneNode(true);
+                container.appendChild(emptyChatClone);
+            } else {
+                container.innerHTML = `
+                    <div class="empty-chat">
+                        <i class="fas fa-comment-slash"></i>
+                        <h3>Nenhuma mensagem ainda</h3>
+                        <p>Seja o primeiro a enviar uma mensagem!</p>
                     </div>
-                    <div class="message-time">
-                        ${messageTime}
-                    </div>
-                </div>
-                <div class="message-content">
-                    ${escapeHtml(msg.conteudo)}
-                </div>
-            `;
-            
-            container.appendChild(messageDiv);
-            
-            // Scroll automático se estiver perto do final
-            const isNearBottom = container.scrollHeight - container.clientHeight - container.scrollTop < 100;
-            if (isNearBottom) {
-                setTimeout(() => {
-                    container.scrollTop = container.scrollHeight;
-                }, 50);
+                `;
             }
+            console.log('💬 Nenhuma mensagem para exibir');
+            return;
         }
+        
+        console.log(`💬 Exibindo ${messages.length} mensagens`);
+        
+        // Se houver mensagens, ocultar emptyChat
+        if (emptyChat) {
+            emptyChat.style.display = 'none';
+        }
+        
+        // Adicionar cada mensagem
+        messages.forEach(msg => {
+            addMessageToChat(msg);
+        });
+        
+        // Scroll para a última mensagem
+        setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+        }, 100);
+    }
 
-        // Enviar mensagem - FUNÇÃO GLOBAL
-        window.sendMessage = async function() {
-            const input = document.getElementById('messageInput');
-            const button = document.getElementById('sendButton');
-            
-            if (!input || !button) {
-                console.error('Elementos não encontrados');
-                return;
-            }
-            
-            const message = input.value.trim();
-            
-            if (!message) {
-                showNotification('Digite uma mensagem primeiro!', 'error');
-                input.focus();
-                return;
-            }
-            
-            if (!currentUser) {
-                showNotification('Você precisa estar logado para enviar mensagens!', 'error');
-                return;
-            }
-            
-            console.log('📤 Enviando mensagem:', message);
-            
-            // Desabilitar botão durante envio
-            button.disabled = true;
-            const originalText = button.innerHTML;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            
+    function addMessageToChat(msg) {
+        const container = document.getElementById('messagesContainer');
+        const emptyChat = document.getElementById('emptyChat');
+        
+        if (!container) return;
+        
+        // Ocultar emptyChat se houver mensagens
+        if (emptyChat && emptyChat.style.display !== 'none') {
+            emptyChat.style.display = 'none';
+        }
+        
+        // Verificar se é própria mensagem
+        const isOwn = currentUser && msg.usuarioId === currentUser.id;
+        
+        // Formatar hora
+        let messageTime = 'Agora';
+        if (msg.timestamp) {
             try {
-                const response = await fetch(`${API_URL}/api/chat/mensagens`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        usuarioId: currentUser.id,
-                        conteudo: message,
-                        tipo: 'texto'
-                    })
-                });
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Erro na resposta:', errorText);
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Limpar input
-                    input.value = '';
-                    input.focus();
+                const msgDate = new Date(msg.timestamp);
+                if (!isNaN(msgDate.getTime())) {
+                    const now = new Date();
+                    const diffMs = now - msgDate;
+                    const diffMins = Math.floor(diffMs / 60000);
                     
-                    // Adicionar mensagem localmente
-                    if (data.mensagem) {
-                        addMessageToChat(data.mensagem);
-                        updateStats(parseInt(document.getElementById('totalMessages').textContent) + 1);
+                    if (diffMins < 1) {
+                        messageTime = 'Agora';
+                    } else if (diffMins < 60) {
+                        messageTime = `há ${diffMins} min`;
+                    } else {
+                        messageTime = msgDate.toLocaleTimeString('pt-BR', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
                     }
-                    
-                    // Feedback visual
-                    showNotification('Mensagem enviada com sucesso!', 'success');
-                } else {
-                    throw new Error(data.error || 'Erro ao enviar mensagem');
                 }
-            } catch (error) {
-                console.error('❌ Erro ao enviar mensagem:', error);
-                showNotification('Erro ao enviar mensagem. Tente novamente.', 'error');
-            } finally {
-                // Reabilitar botão
-                button.disabled = false;
-                button.innerHTML = originalText;
-            }
-        }
-
-        // Atualizar estatísticas
-        function updateStats(totalMessages) {
-            const totalMessagesElement = document.getElementById('totalMessages');
-            if (totalMessagesElement) {
-                totalMessagesElement.textContent = totalMessages;
-            }
-        }
-
-        function updateLastUpdateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('pt-BR', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            const lastUpdateElement = document.getElementById('lastUpdate');
-            if (lastUpdateElement) {
-                lastUpdateElement.textContent = timeString;
-            }
-        }
-
-        // Configurar event listeners
-        function setupEventListeners() {
-            const input = document.getElementById('messageInput');
-            const button = document.getElementById('sendButton');
-            const container = document.getElementById('messagesContainer');
-            
-            if (!input || !button || !container) {
-                console.error('Elementos não encontrados para configurar eventos');
-                return;
-            }
-            
-            console.log('🎮 Configurando event listeners...');
-            
-            // Enviar ao pressionar Enter
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    window.sendMessage();
-                }
-            });
-            
-            // Habilitar/desabilitar botão quando houver texto
-            input.addEventListener('input', () => {
-                if (currentUser) {
-                    button.disabled = !input.value.trim();
-                } else {
-                    button.disabled = true;
-                }
-                
-                // Mostrar indicador de digitação (simulado)
-                if (input.value.trim() && !isTyping) {
-                    showTypingIndicator();
-                }
-            });
-            
-            // Esconder indicador de digitação quando o input perder foco
-            input.addEventListener('blur', () => {
-                hideTypingIndicator();
-            });
-            
-            // Auto-focar no input
-            input.focus();
-            
-            // Auto-expandir container de mensagens
-            function adjustContainerHeight() {
-                const viewportHeight = window.innerHeight;
-                const headerHeight = document.querySelector('.header').offsetHeight;
-                const chatHeaderHeight = document.querySelector('.chat-header').offsetHeight;
-                const inputHeight = document.querySelector('.input-container').offsetHeight;
-                const statsHeight = document.querySelector('.stats-bar').offsetHeight;
-                const padding = 40; // padding extra
-                
-                const messagesHeight = viewportHeight - headerHeight - chatHeaderHeight - inputHeight - statsHeight - padding;
-                
-                container.style.maxHeight = `${messagesHeight}px`;
-            }
-            
-            // Ajustar altura inicial e em redimensionamento
-            adjustContainerHeight();
-            window.addEventListener('resize', adjustContainerHeight);
-            
-            console.log('✅ Event listeners configurados com sucesso!');
-        }
-
-        function showTypingIndicator() {
-            const indicator = document.getElementById('typingIndicator');
-            if (indicator) {
-                indicator.style.display = 'flex';
-            }
-        }
-
-        function hideTypingIndicator() {
-            const indicator = document.getElementById('typingIndicator');
-            if (indicator) {
-                indicator.style.display = 'none';
-            }
-        }
-
-        // Utilitários
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function showNotification(message, type = 'success') {
-            // Remover notificações anteriores
-            const existingNotifications = document.querySelectorAll('.notification');
-            existingNotifications.forEach(notification => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            });
-            
-            // Criar notificação
-            const notification = document.createElement('div');
-            notification.className = `notification ${type === 'error' ? 'error' : ''}`;
-            
-            notification.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-                    <span>${escapeHtml(message)}</span>
-                </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Remover após 3 segundos
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 300);
-            }, 3000);
-        }
-
-        // Testar a API
-        async function testAPI() {
-            try {
-                const response = await fetch(`${API_URL}/`);
-                if (response.ok) {
-                    console.log('✅ API está funcionando!');
-                    return true;
-                } else {
-                    console.error('❌ API retornou erro:', response.status);
-                    return false;
-                }
-            } catch (error) {
-                console.error('❌ Erro ao testar API:', error);
-                return false;
+            } catch (e) {
+                console.log('⚠️ Erro ao formatar hora:', e);
             }
         }
         
-        // Limpeza ao sair da página
-        window.addEventListener('beforeunload', () => {
-            if (messageCheckInterval) {
-                clearInterval(messageCheckInterval);
+        // Obter informações do usuário
+        const userName = msg.usuario ? (msg.usuario.nome || 'Usuário') : 'Usuário';
+        const userCurso = msg.usuario ? (msg.usuario.curso || 'Curso') : 'Curso';
+        const userSerie = msg.usuario ? (msg.usuario.serie || 'Série') : 'Série';
+        const userAvatar = userName.charAt(0).toUpperCase();
+        
+        // Gerar cor única baseada no ID do usuário
+        const userId = msg.usuario ? msg.usuario.id : 0;
+        const hue = (userId * 137) % 360; // Usar número primo para dispersão
+        
+        // Criar elemento da mensagem
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isOwn ? 'own-message' : ''}`;
+        messageDiv.innerHTML = `
+            <div class="message-header">
+                <div class="user-info">
+                    <div class="user-avatar" style="background: hsl(${hue}, 70%, 50%);">
+                        ${userAvatar}
+                    </div>
+                    <div>
+                        <div class="user-name">${escapeHtml(userName)}</div>
+                        <div class="user-details">
+                            ${escapeHtml(userCurso)} • ${escapeHtml(userSerie)}ª série
+                            ${msg.usuario && msg.usuario.pontuacao ? `• ⭐${msg.usuario.pontuacao}` : ''}
+                        </div>
+                    </div>
+                </div>
+                <div class="message-time" title="${new Date(msg.timestamp).toLocaleString('pt-BR')}">
+                    ${messageTime}
+                </div>
+            </div>
+            <div class="message-content">
+                ${escapeHtml(msg.conteudo)}
+            </div>
+        `;
+        
+        container.appendChild(messageDiv);
+        
+        // Scroll automático se estiver perto do final
+        const isNearBottom = container.scrollHeight - container.clientHeight - container.scrollTop < 150;
+        if (isNearBottom) {
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 50);
+        }
+    }
+
+    // Enviar mensagem - FUNÇÃO GLOBAL
+    window.sendMessage = async function() {
+        const input = document.getElementById('messageInput');
+        const button = document.getElementById('sendButton');
+        
+        if (!input || !button) {
+            console.error('Elementos não encontrados');
+            return;
+        }
+        
+        const message = input.value.trim();
+        
+        if (!message) {
+            showNotification('Digite uma mensagem primeiro!', 'error');
+            input.focus();
+            return;
+        }
+        
+        if (!currentUser || !currentUser.id) {
+            showNotification('Você precisa estar logado para enviar mensagens!', 'error');
+            console.error('❌ currentUser inválido:', currentUser);
+            return;
+        }
+        
+        console.log('📤 Enviando mensagem:', message.substring(0, 50) + (message.length > 50 ? '...' : ''));
+        
+        // Desabilitar botão durante envio
+        button.disabled = true;
+        const originalText = button.innerHTML;
+        const originalBackground = button.style.background;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        button.style.background = '#666';
+        
+        try {
+            const response = await fetch(`${API_URL}/api/chat/mensagens`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    usuarioId: currentUser.id,
+                    conteudo: message,
+                    tipo: 'texto'
+                })
+            });
+            
+            const responseText = await response.text();
+            let data;
+            
+            try {
+                data = JSON.parse(responseText);
+            } catch (e) {
+                console.error('❌ Erro ao parsear resposta:', responseText);
+                throw new Error('Resposta inválida do servidor');
+            }
+            
+            if (!response.ok) {
+                console.error('❌ Erro na resposta:', response.status, data);
+                throw new Error(data.error || `HTTP error! status: ${response.status}`);
+            }
+            
+            if (data.success) {
+                // Limpar input
+                input.value = '';
+                input.focus();
+                
+                // Atualizar contador local
+                totalMessages++;
+                updateStats(totalMessages);
+                
+                // Adicionar mensagem localmente se a API não retornou
+                if (data.mensagem) {
+                    addMessageToChat(data.mensagem);
+                } else {
+                    // Criar mensagem local para feedback imediato
+                    const localMessage = {
+                        id: Date.now(),
+                        usuarioId: currentUser.id,
+                        conteudo: message,
+                        tipo: 'texto',
+                        timestamp: new Date().toISOString(),
+                        usuario: {
+                            id: currentUser.id,
+                            nome: currentUser.nome,
+                            curso: currentUser.curso,
+                            serie: currentUser.serie,
+                            pontuacao: currentUser.pontuacao
+                        }
+                    };
+                    addMessageToChat(localMessage);
+                }
+                
+                updateLastUpdateTime();
+                
+                // Feedback visual
+                showNotification('Mensagem enviada com sucesso!', 'success');
+                
+            } else {
+                throw new Error(data.error || 'Erro ao enviar mensagem');
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao enviar mensagem:', error);
+            showNotification(`Erro ao enviar mensagem: ${error.message}`, 'error');
+            
+            // Criar mensagem local como fallback
+            const localMessage = {
+                id: Date.now(),
+                usuarioId: currentUser.id,
+                conteudo: message + ' (enviando...)',
+                tipo: 'texto',
+                timestamp: new Date().toISOString(),
+                usuario: {
+                    id: currentUser.id,
+                    nome: currentUser.nome,
+                    curso: currentUser.curso,
+                    serie: currentUser.serie
+                }
+            };
+            addMessageToChat(localMessage);
+            input.value = '';
+        } finally {
+            // Reabilitar botão
+            button.disabled = false;
+            button.innerHTML = originalText;
+            button.style.background = originalBackground;
+        }
+    }
+
+    // Atualizar estatísticas
+    function updateStats(messageCount) {
+        totalMessages = messageCount;
+        const totalMessagesElement = document.getElementById('totalMessages');
+        if (totalMessagesElement) {
+            totalMessagesElement.textContent = messageCount;
+        }
+    }
+
+    function updateLastUpdateTime() {
+        const now = new Date();
+        lastUpdate = now;
+        const timeString = now.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        const lastUpdateElement = document.getElementById('lastUpdate');
+        if (lastUpdateElement) {
+            lastUpdateElement.textContent = timeString;
+        }
+    }
+
+    // Configurar event listeners
+    function setupEventListeners() {
+        const input = document.getElementById('messageInput');
+        const button = document.getElementById('sendButton');
+        const container = document.getElementById('messagesContainer');
+        
+        if (!input || !button || !container) {
+            console.error('Elementos não encontrados para configurar eventos');
+            return;
+        }
+        
+        console.log('🎮 Configurando event listeners...');
+        
+        // Enviar ao pressionar Enter
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                window.sendMessage();
             }
         });
-
-        // Inicialização completa
-        window.onload = async function() {
-            console.log('🚀 Página carregada completamente');
+        
+        // Enviar com Ctrl+Enter para nova linha
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                // Permite nova linha
+                return;
+            }
+        });
+        
+        // Habilitar/desabilitar botão quando houver texto
+        input.addEventListener('input', () => {
+            if (currentUser) {
+                button.disabled = !input.value.trim();
+            } else {
+                button.disabled = true;
+            }
+        });
+        
+        // Auto-focar no input
+        input.focus();
+        
+        // Ajustar altura do container de mensagens
+        function adjustContainerHeight() {
+            const viewportHeight = window.innerHeight;
+            const header = document.querySelector('.header');
+            const chatHeader = document.querySelector('.chat-header');
+            const inputContainer = document.querySelector('.input-container');
+            const statsBar = document.querySelector('.stats-bar');
             
-            const apiWorking = await testAPI();
-            if (!apiWorking) {
-                showNotification('⚠️ Não foi possível conectar ao servidor. Verifique sua conexão.', 'error');
+            if (header && chatHeader && inputContainer && statsBar) {
+                const headerHeight = header.offsetHeight;
+                const chatHeaderHeight = chatHeader.offsetHeight;
+                const inputHeight = inputContainer.offsetHeight;
+                const statsHeight = statsBar.offsetHeight;
+                const padding = 60;
+                
+                const messagesHeight = viewportHeight - headerHeight - chatHeaderHeight - inputHeight - statsHeight - padding;
+                
+                if (messagesHeight > 300) {
+                    container.style.maxHeight = `${messagesHeight}px`;
+                }
+            }
+        }
+        
+        // Ajustar altura inicial e em redimensionamento
+        adjustContainerHeight();
+        window.addEventListener('resize', adjustContainerHeight);
+        
+        // Botão de limpar chat (para debug)
+        const clearButton = document.createElement('button');
+        clearButton.innerHTML = '<i class="fas fa-trash"></i>';
+        clearButton.style.cssText = `
+            position: fixed;
+            bottom: 100px;
+            right: 25px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+            font-size: 1.2rem;
+            display: none;
+        `;
+        clearButton.onclick = () => {
+            if (confirm('Limpar todas as mensagens locais?')) {
+                container.innerHTML = '';
+                const emptyChat = document.getElementById('emptyChat');
+                if (emptyChat) {
+                    emptyChat.style.display = 'block';
+                }
             }
         };
+        document.body.appendChild(clearButton);
+        
+        // Mostrar botão de limpar em desenvolvimento
+        if (window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1')) {
+            clearButton.style.display = 'flex';
+            clearButton.style.alignItems = 'center';
+            clearButton.style.justifyContent = 'center';
+        }
+        
+        console.log('✅ Event listeners configurados com sucesso!');
+    }
+
+    // Utilitários
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function showNotification(message, type = 'success') {
+        // Remover notificações anteriores
+        const existingNotifications = document.querySelectorAll('.notification');
+        existingNotifications.forEach(notification => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        });
+        
+        // Criar notificação
+        const notification = document.createElement('div');
+        notification.className = `notification ${type === 'error' ? 'error' : ''}`;
+        
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                <span>${escapeHtml(message)}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Remover após 3 segundos
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
+
+    // Testar a API
+    async function testAPI() {
+        try {
+            console.log('🔄 Testando conexão com API...');
+            const response = await fetch(`${API_URL}/api/health`);
+            if (response.ok) {
+                const data = await response.json();
+                console.log('✅ API está funcionando!', data);
+                return true;
+            } else {
+                console.error('❌ API retornou erro:', response.status);
+                return false;
+            }
+        } catch (error) {
+            console.error('❌ Erro ao testar API:', error);
+            return false;
+        }
+    }
+    
+    // Limpeza ao sair da página
+    window.addEventListener('beforeunload', () => {
+        if (messageCheckInterval) {
+            clearInterval(messageCheckInterval);
+            console.log('🧹 Intervalo de verificação limpo');
+        }
+    });
+
+    // Inicialização completa
+    window.onload = async function() {
+        console.log('🚀 Página carregada completamente');
+        
+        // Testar API
+        const apiWorking = await testAPI();
+        if (!apiWorking) {
+            showNotification('⚠️ Não foi possível conectar ao servidor. Verifique sua conexão.', 'error');
+        }
+        
+        // Adicionar link para recarregar
+        const reloadLink = document.createElement('a');
+        reloadLink.href = '#';
+        reloadLink.innerHTML = '<i class="fas fa-sync-alt"></i> Recarregar';
+        reloadLink.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 15px;
+            background: rgba(255, 255, 0, 0.2);
+            color: yellow;
+            text-decoration: none;
+            border-radius: 5px;
+            z-index: 1000;
+            font-size: 0.9rem;
+        `;
+        reloadLink.onclick = (e) => {
+            e.preventDefault();
+            location.reload();
+        };
+        document.body.appendChild(reloadLink);
+        
+        // Mostrar informações de debug
+        console.log('📊 Informações do sistema:');
+        console.log('  URL:', window.location.href);
+        console.log('  User Agent:', navigator.userAgent);
+        console.log('  Online:', navigator.onLine);
+    };
+
+    // Funções de debug para console
+    window.debugChat = function() {
+        console.log('=== DEBUG DO CHAT ===');
+        console.log('Current User:', currentUser);
+        console.log('Last Message ID:', lastMessageId);
+        console.log('Total Messages:', totalMessages);
+        console.log('API URL:', API_URL);
+        console.log('LocalStorage User:', localStorage.getItem('coliseum_user'));
+        console.log('Message Check Interval:', messageCheckInterval ? 'Ativo' : 'Inativo');
+        console.log('====================');
+    };
+
+    // Função para forçar recarregamento de mensagens
+    window.reloadMessages = function() {
+        console.log('🔄 Forçando recarregamento de mensagens...');
+        loadMessages();
+    };
+
+    // Verificar conexão periodicamente
+    setInterval(async () => {
+        if (navigator.onLine) {
+            try {
+                await fetch(`${API_URL}/`, { mode: 'no-cors' });
+                // Conexão ok
+            } catch (error) {
+                console.log('⚠️ Conexão com API interrompida');
+            }
+        }
+    }, 30000);
+</script>
     </script>
 </body>
 </html>
+
