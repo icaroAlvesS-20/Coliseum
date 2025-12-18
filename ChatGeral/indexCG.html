@@ -84,6 +84,7 @@
             flex-direction: column;
             gap: 15px;
             min-height: 300px;
+            max-height: 60vh;
         }
 
         .message {
@@ -92,13 +93,13 @@
             padding: 15px;
             border-left: 4px solid yellow;
             animation: fadeIn 0.3s ease;
+            max-width: 85%;
         }
 
         .message.own-message {
             background: rgba(255, 255, 0, 0.1);
             border-left-color: #ff9800;
             align-self: flex-end;
-            max-width: 80%;
         }
 
         @keyframes fadeIn {
@@ -211,6 +212,7 @@
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
+            opacity: 0.6;
         }
 
         .stats-bar {
@@ -265,6 +267,31 @@
             color: #aaa;
             font-style: italic;
             font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            display: none;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            background: yellow;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
         }
 
         .empty-chat {
@@ -278,6 +305,36 @@
             color: yellow;
             margin-bottom: 15px;
             opacity: 0.5;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            min-width: 250px;
+            max-width: 400px;
+        }
+
+        .notification.error {
+            background: #f44336;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
         }
 
         /* Scrollbar personalizada */
@@ -328,6 +385,10 @@
                 bottom: 20px;
                 right: 20px;
             }
+            
+            .message {
+                max-width: 90%;
+            }
         }
 
         @media (max-width: 480px) {
@@ -341,6 +402,7 @@
             
             .message {
                 padding: 12px;
+                max-width: 95%;
             }
             
             .input-container {
@@ -357,9 +419,14 @@
                 height: 55px;
                 font-size: 1.5rem;
             }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
         }
     </style>
-    <!-- Adicionando Font Awesome diretamente no head -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -384,8 +451,13 @@
             </div>
         </div>
 
-        <div class="typing-indicator" id="typingIndicator" style="display: none;">
-            <i class="fas fa-pencil-alt"></i> Alguém está digitando...
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <span id="typingText">Alguém está digitando...</span>
         </div>
 
         <div class="input-container">
@@ -395,6 +467,7 @@
                 id="messageInput" 
                 placeholder="Digite sua mensagem aqui..."
                 maxlength="1000"
+                autocomplete="off"
             >
             <button class="send-button" id="sendButton" onclick="sendMessage()">
                 <i class="fas fa-paper-plane"></i> Enviar
@@ -413,7 +486,7 @@
         </div>
         <div class="stats-item">
             <i class="fas fa-user-graduate"></i>
-            Você: <span id="userName">Visitante</span>
+            Você: <span id="userName">Carregando...</span>
         </div>
     </div>
 
@@ -428,38 +501,30 @@
         let lastUpdate = new Date();
         let isTyping = false;
         let typingTimeout = null;
+        let messageCheckInterval = null;
+        let lastMessageId = 0;
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('Chat inicializando...');
-            
-            // Adicionar animação CSS
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes slideIn {
-                    from { transform: translateX(100%); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                }
-                @keyframes slideOut {
-                    from { transform: translateX(0); opacity: 1; }
-                    to { transform: translateX(100%); opacity: 0; }
-                }
-            `;
-            document.head.appendChild(style);
+            console.log('💬 Chat inicializando...');
             
             // Verificar se usuário está logado
             await checkUserLogin();
             
-            // Carregar mensagens
+            // Carregar mensagens iniciais
             await loadMessages();
             
-            // Iniciar atualização automática
-            startAutoRefresh();
+            // Iniciar verificação de novas mensagens
+            startMessageChecker();
             
             // Configurar eventos
             setupEventListeners();
             
-            console.log('Chat inicializado com sucesso!');
+            // Atualizar usuários online periodicamente
+            setInterval(updateOnlineUsers, 15000);
+            updateOnlineUsers();
+            
+            console.log('✅ Chat inicializado com sucesso!');
         });
 
         // Verificar login do usuário
@@ -470,7 +535,7 @@
                 
                 if (userData) {
                     currentUser = JSON.parse(userData);
-                    console.log('Usuário logado:', currentUser.nome);
+                    console.log('👤 Usuário logado:', currentUser.nome);
                     updateUserInfo();
                     
                     // Habilitar botão de enviar
@@ -479,12 +544,11 @@
                         sendButton.disabled = false;
                     }
                 } else {
-                    console.log('Nenhum usuário logado');
-                    // Redirecionar para login se não estiver logado
+                    console.log('⚠️ Nenhum usuário logado');
                     showLoginAlert();
                 }
             } catch (error) {
-                console.error('Erro ao verificar login:', error);
+                console.error('❌ Erro ao verificar login:', error);
                 showLoginAlert();
             }
         }
@@ -495,13 +559,24 @@
                 if (userNameElement) {
                     userNameElement.textContent = currentUser.nome;
                 }
-                
-                // Estimar usuários online (simulação)
-                const online = Math.floor(Math.random() * 20) + 5;
-                const onlineCountElement = document.getElementById('onlineCount');
-                if (onlineCountElement) {
-                    onlineCountElement.textContent = online;
+            }
+        }
+
+        async function updateOnlineUsers() {
+            try {
+                // Buscar usuários ativos da API
+                const response = await fetch(`${API_URL}/api/usuarios`);
+                if (response.ok) {
+                    const usuarios = await response.json();
+                    const usuariosAtivos = usuarios.filter(u => u.status === 'ativo').length;
+                    
+                    const onlineCountElement = document.getElementById('onlineCount');
+                    if (onlineCountElement) {
+                        onlineCountElement.textContent = usuariosAtivos;
+                    }
                 }
+            } catch (error) {
+                console.log('⚠️ Não foi possível atualizar usuários online');
             }
         }
 
@@ -514,8 +589,8 @@
                         <h3>Login Necessário</h3>
                         <p>Você precisa fazer login para participar do chat.</p>
                         <button onclick="window.location.href='index.html'" 
-                                style="margin-top: 20px; padding: 10px 20px; background: yellow; color: black; border: none; border-radius: 5px; cursor: pointer;">
-                            Ir para Login
+                                style="margin-top: 20px; padding: 10px 20px; background: yellow; color: black; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                            <i class="fas fa-sign-in-alt"></i> Ir para Login
                         </button>
                     </div>
                 `;
@@ -537,7 +612,7 @@
         // Carregar mensagens
         async function loadMessages() {
             try {
-                console.log('Carregando mensagens...');
+                console.log('📥 Carregando mensagens...');
                 const response = await fetch(`${API_URL}/api/chat/mensagens/recentes`);
                 
                 if (!response.ok) {
@@ -545,19 +620,62 @@
                 }
                 
                 const data = await response.json();
-                console.log('Dados recebidos:', data);
                 
                 if (data.success && data.mensagens) {
                     displayMessages(data.mensagens);
                     updateStats(data.mensagens.length);
                     updateLastUpdateTime();
+                    
+                    // Atualizar último ID de mensagem
+                    if (data.mensagens.length > 0) {
+                        lastMessageId = data.mensagens[data.mensagens.length - 1].id;
+                    }
                 } else {
                     throw new Error(data.error || 'Erro na resposta da API');
                 }
             } catch (error) {
-                console.error('Erro ao carregar mensagens:', error);
-                showError('Erro ao carregar mensagens: ' + error.message);
+                console.error('❌ Erro ao carregar mensagens:', error);
+                showNotification('Erro ao carregar mensagens. Tente recarregar a página.', 'error');
             }
+        }
+
+        // Verificar novas mensagens
+        async function checkNewMessages() {
+            if (!currentUser) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/chat/mensagens/recentes`);
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.success && data.mensagens) {
+                        // Verificar se há mensagens novas
+                        const newMessages = data.mensagens.filter(msg => msg.id > lastMessageId);
+                        
+                        if (newMessages.length > 0) {
+                            console.log(`📨 ${newMessages.length} nova(s) mensagem(ns) encontrada(s)`);
+                            
+                            // Atualizar último ID
+                            lastMessageId = data.mensagens[data.mensagens.length - 1].id;
+                            
+                            // Adicionar novas mensagens
+                            newMessages.forEach(msg => {
+                                addMessageToChat(msg);
+                            });
+                            
+                            updateStats(data.mensagens.length);
+                            updateLastUpdateTime();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('⚠️ Erro ao verificar novas mensagens:', error.message);
+            }
+        }
+
+        function startMessageChecker() {
+            // Verificar novas mensagens a cada 3 segundos
+            messageCheckInterval = setInterval(checkNewMessages, 3000);
         }
 
         // Exibir mensagens
@@ -574,20 +692,9 @@
             container.innerHTML = '';
             
             if (!messages || messages.length === 0) {
-                // Se não houver mensagens, mostrar o emptyChat
                 if (emptyChat) {
                     const emptyChatClone = emptyChat.cloneNode(true);
                     container.appendChild(emptyChatClone);
-                } else {
-                    // Criar emptyChat dinamicamente se não existir
-                    const emptyDiv = document.createElement('div');
-                    emptyDiv.className = 'empty-chat';
-                    emptyDiv.innerHTML = `
-                        <i class="fas fa-comment-slash"></i>
-                        <h3>Nenhuma mensagem ainda</h3>
-                        <p>Seja o primeiro a enviar uma mensagem!</p>
-                    `;
-                    container.appendChild(emptyDiv);
                 }
                 return;
             }
@@ -599,49 +706,70 @@
             
             // Adicionar cada mensagem
             messages.forEach(msg => {
-                const isOwn = currentUser && msg.usuarioId === currentUser.id;
-                const messageTime = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('pt-BR', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                }) : 'Agora';
-                
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${isOwn ? 'own-message' : ''}`;
-                
-                // Verificar se temos dados do usuário
-                const userName = msg.usuario ? msg.usuario.nome : 'Usuário Desconhecido';
-                const userCurso = msg.usuario ? msg.usuario.curso : 'Curso';
-                const userSerie = msg.usuario ? msg.usuario.serie : 'Série';
-                
-                messageDiv.innerHTML = `
-                    <div class="message-header">
-                        <div class="user-info">
-                            <div class="user-avatar">
-                                ${userName.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                                <div class="user-name">${userName}</div>
-                                <div class="user-details">
-                                    ${userCurso} • ${userSerie}ª série
-                                </div>
-                            </div>
-                        </div>
-                        <div class="message-time">
-                            ${messageTime}
-                        </div>
-                    </div>
-                    <div class="message-content">
-                        ${escapeHtml(msg.conteudo)}
-                    </div>
-                `;
-                
-                container.appendChild(messageDiv);
+                addMessageToChat(msg);
             });
             
             // Scroll para a última mensagem
             setTimeout(() => {
                 container.scrollTop = container.scrollHeight;
             }, 100);
+        }
+
+        function addMessageToChat(msg) {
+            const container = document.getElementById('messagesContainer');
+            const emptyChat = document.getElementById('emptyChat');
+            
+            if (!container) return;
+            
+            // Ocultar emptyChat se houver mensagens
+            if (emptyChat && emptyChat.style.display !== 'none') {
+                emptyChat.style.display = 'none';
+            }
+            
+            const isOwn = currentUser && msg.usuarioId === currentUser.id;
+            const messageTime = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : 'Agora';
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isOwn ? 'own-message' : ''}`;
+            
+            const userName = msg.usuario ? msg.usuario.nome : 'Usuário';
+            const userCurso = msg.usuario ? msg.usuario.curso : 'Curso';
+            const userSerie = msg.usuario ? msg.usuario.serie : 'Série';
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            ${userName.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <div class="user-name">${escapeHtml(userName)}</div>
+                            <div class="user-details">
+                                ${escapeHtml(userCurso)} • ${escapeHtml(userSerie)}ª série
+                            </div>
+                        </div>
+                    </div>
+                    <div class="message-time">
+                        ${messageTime}
+                    </div>
+                </div>
+                <div class="message-content">
+                    ${escapeHtml(msg.conteudo)}
+                </div>
+            `;
+            
+            container.appendChild(messageDiv);
+            
+            // Scroll automático se estiver perto do final
+            const isNearBottom = container.scrollHeight - container.clientHeight - container.scrollTop < 100;
+            if (isNearBottom) {
+                setTimeout(() => {
+                    container.scrollTop = container.scrollHeight;
+                }, 50);
+            }
         }
 
         // Enviar mensagem - FUNÇÃO GLOBAL
@@ -658,6 +786,7 @@
             
             if (!message) {
                 showNotification('Digite uma mensagem primeiro!', 'error');
+                input.focus();
                 return;
             }
             
@@ -666,12 +795,12 @@
                 return;
             }
             
-            console.log('Enviando mensagem:', message);
+            console.log('📤 Enviando mensagem:', message);
             
             // Desabilitar botão durante envio
             button.disabled = true;
             const originalText = button.innerHTML;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             
             try {
                 const response = await fetch(`${API_URL}/api/chat/mensagens`, {
@@ -686,8 +815,6 @@
                     })
                 });
                 
-                console.log('Resposta do servidor:', response.status);
-                
                 if (!response.ok) {
                     const errorText = await response.text();
                     console.error('Erro na resposta:', errorText);
@@ -695,14 +822,17 @@
                 }
                 
                 const data = await response.json();
-                console.log('Dados da resposta:', data);
                 
                 if (data.success) {
                     // Limpar input
                     input.value = '';
+                    input.focus();
                     
-                    // Recarregar mensagens
-                    await loadMessages();
+                    // Adicionar mensagem localmente
+                    if (data.mensagem) {
+                        addMessageToChat(data.mensagem);
+                        updateStats(parseInt(document.getElementById('totalMessages').textContent) + 1);
+                    }
                     
                     // Feedback visual
                     showNotification('Mensagem enviada com sucesso!', 'success');
@@ -710,8 +840,8 @@
                     throw new Error(data.error || 'Erro ao enviar mensagem');
                 }
             } catch (error) {
-                console.error('Erro ao enviar mensagem:', error);
-                showNotification('Erro ao enviar mensagem: ' + error.message, 'error');
+                console.error('❌ Erro ao enviar mensagem:', error);
+                showNotification('Erro ao enviar mensagem. Tente novamente.', 'error');
             } finally {
                 // Reabilitar botão
                 button.disabled = false;
@@ -728,8 +858,8 @@
         }
 
         function updateLastUpdateTime() {
-            lastUpdate = new Date();
-            const timeString = lastUpdate.toLocaleTimeString('pt-BR', {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('pt-BR', {
                 hour: '2-digit',
                 minute: '2-digit'
             });
@@ -739,47 +869,25 @@
             }
         }
 
-        // Atualização automática
-        function startAutoRefresh() {
-            // Atualizar a cada 10 segundos
-            setInterval(async () => {
-                await loadMessages();
-            }, 10000);
-        }
-
         // Configurar event listeners
         function setupEventListeners() {
             const input = document.getElementById('messageInput');
             const button = document.getElementById('sendButton');
+            const container = document.getElementById('messagesContainer');
             
-            if (!input || !button) {
+            if (!input || !button || !container) {
                 console.error('Elementos não encontrados para configurar eventos');
                 return;
             }
             
-            console.log('Configurando event listeners...');
+            console.log('🎮 Configurando event listeners...');
             
             // Enviar ao pressionar Enter
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    console.log('Enter pressionado, enviando mensagem...');
                     window.sendMessage();
                 }
-            });
-            
-            // Mostrar indicador de digitação
-            input.addEventListener('input', () => {
-                if (!isTyping) {
-                    isTyping = true;
-                    // Aqui você pode implementar um broadcast de "digitando..."
-                }
-                
-                clearTimeout(typingTimeout);
-                typingTimeout = setTimeout(() => {
-                    isTyping = false;
-                    // Aqui você pode parar o broadcast
-                }, 1000);
             });
             
             // Habilitar/desabilitar botão quando houver texto
@@ -789,9 +897,54 @@
                 } else {
                     button.disabled = true;
                 }
+                
+                // Mostrar indicador de digitação (simulado)
+                if (input.value.trim() && !isTyping) {
+                    showTypingIndicator();
+                }
             });
             
-            console.log('Event listeners configurados com sucesso!');
+            // Esconder indicador de digitação quando o input perder foco
+            input.addEventListener('blur', () => {
+                hideTypingIndicator();
+            });
+            
+            // Auto-focar no input
+            input.focus();
+            
+            // Auto-expandir container de mensagens
+            function adjustContainerHeight() {
+                const viewportHeight = window.innerHeight;
+                const headerHeight = document.querySelector('.header').offsetHeight;
+                const chatHeaderHeight = document.querySelector('.chat-header').offsetHeight;
+                const inputHeight = document.querySelector('.input-container').offsetHeight;
+                const statsHeight = document.querySelector('.stats-bar').offsetHeight;
+                const padding = 40; // padding extra
+                
+                const messagesHeight = viewportHeight - headerHeight - chatHeaderHeight - inputHeight - statsHeight - padding;
+                
+                container.style.maxHeight = `${messagesHeight}px`;
+            }
+            
+            // Ajustar altura inicial e em redimensionamento
+            adjustContainerHeight();
+            window.addEventListener('resize', adjustContainerHeight);
+            
+            console.log('✅ Event listeners configurados com sucesso!');
+        }
+
+        function showTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.style.display = 'flex';
+            }
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.style.display = 'none';
+            }
         }
 
         // Utilitários
@@ -802,7 +955,7 @@
             return div.innerHTML;
         }
 
-        function showNotification(message, type = 'info') {
+        function showNotification(message, type = 'success') {
             // Remover notificações anteriores
             const existingNotifications = document.querySelectorAll('.notification');
             existingNotifications.forEach(notification => {
@@ -813,27 +966,12 @@
             
             // Criar notificação
             const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 20px;
-                background: ${type === 'success' ? '#4CAF50' : '#f44336'};
-                color: white;
-                border-radius: 5px;
-                z-index: 9999;
-                animation: slideIn 0.3s ease;
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                min-width: 250px;
-                max-width: 400px;
-            `;
+            notification.className = `notification ${type === 'error' ? 'error' : ''}`;
             
             notification.innerHTML = `
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-                    <span>${message}</span>
+                    <span>${escapeHtml(message)}</span>
                 </div>
             `;
             
@@ -850,27 +988,10 @@
             }, 3000);
         }
 
-        function showError(message) {
-            const container = document.getElementById('messagesContainer');
-            if (!container) return;
-            
-            container.innerHTML = `
-                <div style="text-align: center; padding: 40px; color: #ff6b6b;">
-                    <i class="fas fa-exclamation-circle" style="font-size: 3rem;"></i>
-                    <h3>Erro ao carregar mensagens</h3>
-                    <p>${escapeHtml(message)}</p>
-                    <button onclick="location.reload()" 
-                            style="margin-top: 20px; padding: 10px 20px; background: yellow; color: black; border: none; border-radius: 5px; cursor: pointer; font-family: inherit;">
-                        Recarregar Página
-                    </button>
-                </div>
-            `;
-        }
-        
         // Testar a API
         async function testAPI() {
             try {
-                const response = await fetch(`${API_URL}/api/chat/mensagens/recentes`);
+                const response = await fetch(`${API_URL}/`);
                 if (response.ok) {
                     console.log('✅ API está funcionando!');
                     return true;
@@ -884,8 +1005,17 @@
             }
         }
         
-        // Testar a conexão quando a página carregar
+        // Limpeza ao sair da página
+        window.addEventListener('beforeunload', () => {
+            if (messageCheckInterval) {
+                clearInterval(messageCheckInterval);
+            }
+        });
+
+        // Inicialização completa
         window.onload = async function() {
+            console.log('🚀 Página carregada completamente');
+            
             const apiWorking = await testAPI();
             if (!apiWorking) {
                 showNotification('⚠️ Não foi possível conectar ao servidor. Verifique sua conexão.', 'error');
