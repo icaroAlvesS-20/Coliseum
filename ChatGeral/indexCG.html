@@ -500,6 +500,7 @@
     let currentUser = null;
     let messageCheckInterval = null;
     let lastMessageId = 0;
+    let processingMessages = new Set(); // Para evitar mensagens duplicadas
 
     // Inicialização
     document.addEventListener('DOMContentLoaded', async () => {
@@ -844,7 +845,9 @@
             emptyChat.style.display = 'none';
         }
         
-        container.innerHTML = '';
+        // Limpar apenas mensagens, não o container inteiro
+        const existingMessages = container.querySelectorAll('.message');
+        existingMessages.forEach(msg => msg.remove());
         
         if (!messages || messages.length === 0) {
             container.innerHTML = `
@@ -857,6 +860,7 @@
             return;
         }
         
+        // Adicionar novas mensagens
         messages.forEach(msg => {
             addMessageToChat(msg);
         });
@@ -867,6 +871,14 @@
     }
 
     function addMessageToChat(msg) {
+        // Verificar se mensagem já foi processada (evitar duplicação)
+        if (processingMessages.has(msg.id)) {
+            console.log(`⚠️ Mensagem ${msg.id} já foi processada, ignorando...`);
+            return;
+        }
+        
+        processingMessages.add(msg.id);
+        
         const container = document.getElementById('messagesContainer');
         if (!container) return;
         
@@ -929,6 +941,13 @@
         
         container.appendChild(messageDiv);
         
+        // Limitar o tamanho do conjunto de mensagens processadas
+        if (processingMessages.size > 100) {
+            const first = Array.from(processingMessages)[0];
+            processingMessages.delete(first);
+        }
+        
+        // Scroll para baixo se necessário
         const isNearBottom = container.scrollHeight - container.clientHeight - container.scrollTop < 150;
         if (isNearBottom) {
             setTimeout(() => {
@@ -961,10 +980,15 @@
         
         console.log(`📤 ${currentUser.nome} enviando: "${message.substring(0, 50)}${message.length > 50 ? '...' : ''}"`);
         
-        // Desabilitar botão
+        // Desabilitar botão temporariamente
         button.disabled = true;
         const originalText = button.innerHTML;
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        
+        // Temporariamente pausar o verificador de mensagens
+        if (messageCheckInterval) {
+            clearInterval(messageCheckInterval);
+        }
         
         try {
             const response = await fetch(`${API_URL}/api/chat/mensagens`, {
@@ -997,9 +1021,14 @@
                 input.value = '';
                 input.focus();
                 
-                // Adicionar mensagem à lista
-                if (data.mensagem) {
-                    addMessageToChat(data.mensagem);
+                // Atualizar lastMessageId com o ID da mensagem enviada
+                if (data.mensagem && data.mensagem.id) {
+                    lastMessageId = data.mensagem.id;
+                    
+                    // Adicionar mensagem à lista apenas uma vez
+                    if (!processingMessages.has(data.mensagem.id)) {
+                        addMessageToChat(data.mensagem);
+                    }
                 }
                 
                 showNotification('Mensagem enviada! ✅', 'success');
@@ -1013,7 +1042,7 @@
             console.error('❌ Erro ao enviar mensagem:', error);
             showNotification(`Erro: ${error.message}`, 'error');
             
-            // Fallback: mostrar mensagem localmente
+            // Fallback: mostrar mensagem localmente apenas se não conseguir enviar
             const localMessage = {
                 id: Date.now(),
                 usuarioId: currentUser.id,
@@ -1027,13 +1056,19 @@
                     serie: currentUser.serie
                 }
             };
-            addMessageToChat(localMessage);
+            
+            if (!processingMessages.has(localMessage.id)) {
+                addMessageToChat(localMessage);
+            }
             input.value = '';
             
         } finally {
             // Reabilitar botão
             button.disabled = false;
             button.innerHTML = originalText;
+            
+            // Reativar o verificador de mensagens
+            startMessageChecker();
         }
     };
 
@@ -1042,6 +1077,7 @@
             clearInterval(messageCheckInterval);
         }
         
+        // Verificar mensagens a cada 5 segundos
         messageCheckInterval = setInterval(async () => {
             if (!currentUser) return;
             
@@ -1050,14 +1086,21 @@
                 if (response.ok) {
                     const data = await response.json();
                     
-                    if (data.success && data.mensagens) {
+                    if (data.success && data.mensagens && data.mensagens.length > 0) {
+                        // Encontrar novas mensagens
                         const newMessages = data.mensagens.filter(msg => msg.id > lastMessageId);
                         
                         if (newMessages.length > 0) {
+                            console.log(`📥 ${newMessages.length} nova(s) mensagem(ns)`);
+                            
+                            // Atualizar lastMessageId
                             lastMessageId = data.mensagens[data.mensagens.length - 1].id;
                             
+                            // Adicionar apenas mensagens novas
                             newMessages.forEach(msg => {
-                                addMessageToChat(msg);
+                                if (!processingMessages.has(msg.id)) {
+                                    addMessageToChat(msg);
+                                }
                             });
                             
                             updateStats(data.mensagens.length);
@@ -1066,9 +1109,9 @@
                     }
                 }
             } catch (error) {
-                // Silenciar erro
+                console.log('⚠️ Erro ao verificar mensagens:', error.message);
             }
-        }, 5000);
+        }, 5000); // 5 segundos
     }
 
     function setupEventListeners() {
@@ -1096,7 +1139,9 @@
         
         // Auto-focus
         if (currentUser) {
-            input.focus();
+            setTimeout(() => {
+                input.focus();
+            }, 500);
         }
     }
 
@@ -1179,8 +1224,8 @@
     window.debugUser = function() {
         console.log('=== DEBUG DE USUÁRIO ===');
         console.log('currentUser:', currentUser);
-        console.log('localStorage:', localStorage);
-        console.log('sessionStorage:', sessionStorage);
+        console.log('lastMessageId:', lastMessageId);
+        console.log('processingMessages size:', processingMessages.size);
         
         // Tentar recuperar usuário novamente
         getUserFromStorage().then(user => {
