@@ -501,140 +501,90 @@
     let messageCheckInterval = null;
     let lastMessageId = 0;
 
-    // DEBUG: Log inicial
-    console.log('🔍 Iniciando chat...');
-    console.log('🌐 API URL:', API_URL);
-
     // Inicialização
     document.addEventListener('DOMContentLoaded', async () => {
         console.log('💬 Chat inicializando...');
         
-        // DEBUG EXTENDIDO: Verificar TUDO
-        debugLoginStatus();
+        // 1. Primeiro, tentar recuperar usuário do localStorage/sessionStorage
+        currentUser = await getUserFromStorage();
         
-        // Forçar detecção de usuário
-        forceUserDetection();
+        // 2. Se não encontrou, tentar verificar com a API
+        if (!currentUser) {
+            currentUser = await checkUserSession();
+        }
         
-        // Carregar mensagens
-        await loadMessages();
+        // 3. Se ainda não tem usuário, mostrar tela de login
+        if (!currentUser) {
+            showLoginAlert();
+        } else {
+            // Sucesso! Configurar chat
+            console.log('✅ Usuário detectado:', currentUser.nome);
+            updateUserInfo();
+            enableChat();
+            await loadMessages();
+            startMessageChecker();
+        }
         
         // Configurar eventos
         setupEventListeners();
-        
-        console.log('✅ Chat pronto para uso!');
     });
 
-    // FUNÇÃO DE DEBUG DETALHADO
-    function debugLoginStatus() {
-        console.log('=== DEBUG DETALHADO DO LOGIN ===');
+    // Função principal para obter usuário do armazenamento
+    async function getUserFromStorage() {
+        console.log('🔍 Buscando usuário no armazenamento...');
         
-        // 1. Verificar localStorage
-        const userData = localStorage.getItem('coliseum_user');
-        console.log('1. localStorage coliseum_user:', userData);
+        // Lista de possíveis chaves onde o usuário pode estar salvo
+        const possibleKeys = [
+            'coliseum_user', 'usuario', 'user', 'currentUser', 
+            'loggedUser', 'coliseumUser', 'userData', 'user_info',
+            'login_data', 'usuario_logado'
+        ];
         
-        // 2. Verificar todas as chaves do localStorage
-        console.log('2. Todas as chaves do localStorage:');
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key.includes('user') || key.includes('User') || key.includes('usuario')) {
-                console.log(`   ${key}:`, localStorage.getItem(key));
-            }
-        }
-        
-        // 3. Verificar sessionStorage também
-        console.log('3. sessionStorage relacionado:');
-        for (let i = 0; i < sessionStorage.length; i++) {
-            const key = sessionStorage.key(i);
-            if (key.includes('user') || key.includes('User') || key.includes('usuario')) {
-                console.log(`   ${key}:`, sessionStorage.getItem(key));
-            }
-        }
-        
-        // 4. Verificar cookies
-        console.log('4. Cookies:', document.cookie);
-        
-        console.log('================================');
-    }
-
-    // DETECÇÃO FORÇADA DE USUÁRIO
-    function forceUserDetection() {
-        console.log('🔄 Forçando detecção de usuário...');
-        
-        // Tentar encontrar usuário em TODOS os lugares possíveis
-        let foundUser = null;
-        
-        // 1. localStorage padrão
-        const localStorageUser = localStorage.getItem('coliseum_user');
-        if (localStorageUser) {
+        // 1. Verificar localStorage primeiro
+        for (const key of possibleKeys) {
             try {
-                const parsed = JSON.parse(localStorageUser);
-                foundUser = extractUserFromData(parsed);
-                console.log('📍 Usuário encontrado no localStorage padrão');
-            } catch (e) {
-                console.error('❌ Erro ao parsear localStorage:', e);
-            }
-        }
-        
-        // 2. Outras possíveis chaves no localStorage
-        if (!foundUser) {
-            const possibleKeys = [
-                'usuario', 'user', 'currentUser', 'loggedUser', 
-                'coliseumUser', 'userData', 'user_info', 'login_data'
-            ];
-            
-            for (const key of possibleKeys) {
                 const data = localStorage.getItem(key);
                 if (data) {
-                    try {
-                        const parsed = JSON.parse(data);
-                        const user = extractUserFromData(parsed);
-                        if (user) {
-                            foundUser = user;
-                            console.log(`📍 Usuário encontrado na chave: ${key}`);
-                            break;
-                        }
-                    } catch (e) {
-                        // Ignorar erro
+                    console.log(`📦 Encontrado em localStorage[${key}]`);
+                    const user = parseUserData(data);
+                    if (user) {
+                        console.log('✅ Usuário encontrado no localStorage:', user.nome);
+                        return user;
                     }
                 }
+            } catch (e) {
+                console.warn(`Erro ao ler ${key} do localStorage:`, e);
             }
         }
         
-        // 3. sessionStorage
-        if (!foundUser) {
-            const sessionKeys = [
-                'coliseum_user', 'usuario', 'user', 'currentUser'
-            ];
-            
-            for (const key of sessionKeys) {
+        // 2. Verificar sessionStorage
+        for (const key of possibleKeys) {
+            try {
                 const data = sessionStorage.getItem(key);
                 if (data) {
-                    try {
-                        const parsed = JSON.parse(data);
-                        const user = extractUserFromData(parsed);
-                        if (user) {
-                            foundUser = user;
-                            console.log(`📍 Usuário encontrado no sessionStorage: ${key}`);
-                            break;
-                        }
-                    } catch (e) {
-                        // Ignorar erro
+                    console.log(`📦 Encontrado em sessionStorage[${key}]`);
+                    const user = parseUserData(data);
+                    if (user) {
+                        console.log('✅ Usuário encontrado no sessionStorage:', user.nome);
+                        return user;
                     }
                 }
+            } catch (e) {
+                console.warn(`Erro ao ler ${key} do sessionStorage:`, e);
             }
         }
         
-        // 4. URL parameters (se veio de redirecionamento)
-        if (!foundUser) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const userParam = urlParams.get('user') || urlParams.get('usuario');
-            if (userParam) {
+        // 3. Verificar cookies
+        const cookies = document.cookie.split(';');
+        for (const cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name.includes('user') || name.includes('usuario')) {
                 try {
-                    const parsed = JSON.parse(decodeURIComponent(userParam));
-                    const user = extractUserFromData(parsed);
+                    const decoded = decodeURIComponent(value);
+                    const user = parseUserData(decoded);
                     if (user) {
-                        foundUser = user;
-                        console.log('📍 Usuário encontrado nos parâmetros da URL');
+                        console.log('✅ Usuário encontrado nos cookies:', user.nome);
+                        return user;
                     }
                 } catch (e) {
                     // Ignorar erro
@@ -642,104 +592,118 @@
             }
         }
         
-        // ATRIBUIR USUÁRIO ENCONTRADO
-        if (foundUser) {
-            currentUser = foundUser;
-            console.log('✅ USUÁRIO DEFINIDO:', currentUser);
-            
-            // Salvar em localStorage para uso futuro
-            localStorage.setItem('coliseum_user_fixed', JSON.stringify(currentUser));
-            
-            // Atualizar interface
-            updateUserInfo();
-            enableChat();
-            
-            // Iniciar verificador de mensagens
-            startMessageChecker();
-            
-        } else {
-            console.log('❌ NENHUM USUÁRIO ENCONTRADO EM LUGAR ALGUM');
-            showLoginAlert();
-        }
+        console.log('❌ Usuário não encontrado no armazenamento local');
+        return null;
     }
 
-    // EXTRAIR USUÁRIO DE QUALQUER ESTRUTURA
-    function extractUserFromData(data) {
+    // Função para verificar sessão com a API
+    async function checkUserSession() {
+        console.log('🔐 Verificando sessão com a API...');
+        
+        try {
+            // Tentar obter o usuário atual da API
+            const response = await fetch(`${API_URL}/api/auth/me`, {
+                credentials: 'include' // Incluir cookies se houver
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.usuario) {
+                    console.log('✅ Sessão válida na API');
+                    // Salvar no localStorage para uso futuro
+                    localStorage.setItem('coliseum_user', JSON.stringify(data.usuario));
+                    return {
+                        id: data.usuario.id,
+                        nome: data.usuario.nome,
+                        ra: data.usuario.ra || '0000',
+                        serie: data.usuario.serie || '1ª',
+                        curso: data.usuario.curso || 'Curso',
+                        pontuacao: data.usuario.pontuacao || 0,
+                        status: data.usuario.status || 'ativo'
+                    };
+                }
+            }
+        } catch (error) {
+            console.log('❌ Não foi possível verificar sessão com API:', error.message);
+        }
+        
+        return null;
+    }
+
+    // Função para parsear dados do usuário de diferentes formatos
+    function parseUserData(data) {
         if (!data) return null;
         
-        console.log('🔍 Analisando estrutura de dados:', data);
-        
-        // Estrutura 1: Direta {id, nome, ...}
-        if (data.id && data.nome) {
-            console.log('✅ Estrutura direta encontrada');
-            return {
-                id: data.id,
-                nome: data.nome,
-                ra: data.ra || '0000',
-                serie: data.serie || '1ª',
-                curso: data.curso || 'Curso',
-                pontuacao: data.pontuacao || 0,
-                status: data.status || 'ativo'
-            };
+        try {
+            // Tentar parsear como JSON
+            const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+            
+            // Verificar diferentes estruturas possíveis
+            if (parsed.id && parsed.nome) {
+                // Estrutura direta
+                return {
+                    id: parsed.id,
+                    nome: parsed.nome,
+                    ra: parsed.ra || '0000',
+                    serie: parsed.serie || '1ª',
+                    curso: parsed.curso || 'Curso',
+                    pontuacao: parsed.pontuacao || 0,
+                    status: parsed.status || 'ativo'
+                };
+            } else if (parsed.usuario && parsed.usuario.id) {
+                // Dentro de propriedade 'usuario'
+                const user = parsed.usuario;
+                return {
+                    id: user.id,
+                    nome: user.nome,
+                    ra: user.ra || '0000',
+                    serie: user.serie || '1ª',
+                    curso: user.curso || 'Curso',
+                    pontuacao: user.pontuacao || 0,
+                    status: user.status || 'ativo'
+                };
+            } else if (parsed.success && parsed.usuario) {
+                // Resposta de login com sucesso
+                const user = parsed.usuario;
+                return {
+                    id: user.id,
+                    nome: user.nome,
+                    ra: user.ra || '0000',
+                    serie: user.serie || '1ª',
+                    curso: user.curso || 'Curso',
+                    pontuacao: user.pontuacao || 0,
+                    status: user.status || 'ativo'
+                };
+            } else if (parsed.user && parsed.user.id) {
+                // Dentro de propriedade 'user'
+                const user = parsed.user;
+                return {
+                    id: user.id,
+                    nome: user.nome,
+                    ra: user.ra || '0000',
+                    serie: user.serie || '1ª',
+                    curso: user.curso || 'Curso',
+                    pontuacao: user.pontuacao || 0,
+                    status: user.status || 'ativo'
+                };
+            }
+        } catch (e) {
+            console.log('❌ Erro ao parsear dados do usuário:', e);
+            
+            // Tentar como string simples (nome apenas)
+            if (typeof data === 'string' && data.length > 0 && !data.includes('{')) {
+                return {
+                    id: Date.now(),
+                    nome: data,
+                    ra: '0000',
+                    serie: '1ª',
+                    curso: 'Curso',
+                    pontuacao: 0,
+                    status: 'ativo'
+                };
+            }
         }
         
-        // Estrutura 2: Dentro de propriedade 'usuario'
-        if (data.usuario && data.usuario.id && data.usuario.nome) {
-            console.log('✅ Estrutura com propriedade "usuario" encontrada');
-            return {
-                id: data.usuario.id,
-                nome: data.usuario.nome,
-                ra: data.usuario.ra || '0000',
-                serie: data.usuario.serie || '1ª',
-                curso: data.usuario.curso || 'Curso',
-                pontuacao: data.usuario.pontuacao || 0,
-                status: data.usuario.status || 'ativo'
-            };
-        }
-        
-        // Estrutura 3: Dentro de propriedade 'user'
-        if (data.user && data.user.id && data.user.nome) {
-            console.log('✅ Estrutura com propriedade "user" encontrada');
-            return {
-                id: data.user.id,
-                nome: data.user.nome,
-                ra: data.user.ra || '0000',
-                serie: data.user.serie || '1ª',
-                curso: data.user.curso || 'Curso',
-                pontuacao: data.user.pontuacao || 0,
-                status: data.user.status || 'ativo'
-            };
-        }
-        
-        // Estrutura 4: Login response {success: true, usuario: {...}}
-        if (data.success && data.usuario) {
-            console.log('✅ Estrutura de resposta de login encontrada');
-            return {
-                id: data.usuario.id,
-                nome: data.usuario.nome,
-                ra: data.usuario.ra || '0000',
-                serie: data.usuario.serie || '1ª',
-                curso: data.usuario.curso || 'Curso',
-                pontuacao: data.usuario.pontuacao || 0,
-                status: data.usuario.status || 'ativo'
-            };
-        }
-        
-        // Estrutura 5: Apenas com nome
-        if (data.nome) {
-            console.log('⚠️ Estrutura parcial encontrada (apenas nome)');
-            return {
-                id: data.id || Date.now(),
-                nome: data.nome,
-                ra: data.ra || '0000',
-                serie: data.serie || '1ª',
-                curso: data.curso || 'Curso',
-                pontuacao: data.pontuacao || 0,
-                status: data.status || 'ativo'
-            };
-        }
-        
-        console.log('❌ Estrutura não reconhecida');
         return null;
     }
 
@@ -794,13 +758,13 @@
                     <div style="background: rgba(255, 0, 0, 0.1); padding: 20px; border-radius: 10px; border: 2px solid #f44336;">
                         <i class="fas fa-user-slash" style="font-size: 3rem; color: #f44336;"></i>
                         <h3 style="color: #f44336; margin: 20px 0 10px 0;">Usuário Não Detectado</h3>
-                        <p style="color: #ccc; margin-bottom: 15px;">O sistema não conseguiu identificar seu login.</p>
+                        <p style="color: #ccc; margin-bottom: 15px;">Você precisa estar logado para usar o chat.</p>
                         
                         <div style="background: #222; padding: 15px; border-radius: 8px; margin: 15px 0; text-align: left;">
-                            <h4 style="color: #ff9800; margin-bottom: 10px;">Soluções:</h4>
+                            <h4 style="color: #ff9800; margin-bottom: 10px;">Como resolver:</h4>
                             <ol style="color: #ccc; padding-left: 20px;">
-                                <li>Volte para a página de login</li>
-                                <li>Faça login novamente</li>
+                                <li>Volte para a página principal</li>
+                                <li>Faça login com seu usuário</li>
                                 <li>Volte para esta página</li>
                             </ol>
                         </div>
@@ -812,11 +776,11 @@
                                            cursor: pointer; font-weight: bold; flex: 1;">
                                 <i class="fas fa-sign-in-alt"></i> Ir para Login
                             </button>
-                            <button onclick="forceUserDetection()" 
+                            <button onclick="window.location.href='pagina-inicial.html'" 
                                     style="padding: 12px 24px; background: #2196F3; 
                                            color: white; border: none; border-radius: 8px; 
                                            cursor: pointer; font-weight: bold; flex: 1;">
-                                <i class="fas fa-redo"></i> Tentar Novamente
+                                <i class="fas fa-home"></i> Página Inicial
                             </button>
                         </div>
                         
@@ -826,12 +790,6 @@
                                            color: white; border: none; border-radius: 5px; 
                                            cursor: pointer; font-size: 0.9rem;">
                                 <i class="fas fa-user-plus"></i> Criar Usuário de Teste
-                            </button>
-                            <button onclick="debugLocalStorage()" 
-                                    style="padding: 8px 16px; background: #9C27B0; 
-                                           color: white; border: none; border-radius: 5px; 
-                                           cursor: pointer; font-size: 0.9rem; margin-left: 10px;">
-                                <i class="fas fa-bug"></i> Debug
                             </button>
                         </div>
                     </div>
@@ -984,7 +942,7 @@
         if (!currentUser || !currentUser.id) {
             console.error('❌ currentUser inválido ao tentar enviar:', currentUser);
             showNotification('Erro: Usuário não identificado', 'error');
-            forceUserDetection();
+            showLoginAlert();
             return;
         }
         
@@ -1127,13 +1085,6 @@
             }
         });
         
-        // Nova linha com Shift+Enter
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && e.shiftKey) {
-                // Permitir nova linha
-            }
-        });
-        
         // Habilitar botão quando houver texto
         input.addEventListener('input', () => {
             if (currentUser) {
@@ -1144,7 +1095,9 @@
         });
         
         // Auto-focus
-        input.focus();
+        if (currentUser) {
+            input.focus();
+        }
     }
 
     function updateStats(messageCount) {
@@ -1196,64 +1149,6 @@
     }
 
     // FUNÇÕES DE DEBUG E UTILIDADE
-    window.debugLocalStorage = function() {
-        console.clear();
-        console.log('=== DEBUG COMPLETO DO LOCALSTORAGE ===');
-        
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            console.log(`\n🔑 ${key}:`);
-            try {
-                const value = localStorage.getItem(key);
-                const parsed = JSON.parse(value);
-                console.log('📋 Parseado:', parsed);
-                console.log('📝 Original:', value);
-            } catch (e) {
-                console.log('📝 Valor (não JSON):', localStorage.getItem(key));
-            }
-        }
-        
-        console.log('\n=== USUÁRIO ATUAL ===');
-        console.log('currentUser:', currentUser);
-        
-        // Mostrar na tela também
-        const debugInfo = document.createElement('div');
-        debugInfo.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            z-index: 9999;
-            max-width: 90%;
-            max-height: 90%;
-            overflow: auto;
-            border: 2px solid yellow;
-        `;
-        
-        let debugHTML = '<h3 style="color: yellow;">Debug Info</h3>';
-        
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            const value = localStorage.getItem(key);
-            debugHTML += `<div style="margin-bottom: 10px;">
-                <strong style="color: #4CAF50">${key}:</strong><br>
-                <pre style="background: #222; padding: 5px; border-radius: 3px; overflow: auto;">${escapeHtml(value)}</pre>
-            </div>`;
-        }
-        
-        debugHTML += `<button onclick="this.parentElement.remove()" 
-            style="background: #f44336; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; margin-top: 10px;">
-            Fechar
-        </button>`;
-        
-        debugInfo.innerHTML = debugHTML;
-        document.body.appendChild(debugInfo);
-    };
-
     window.createTestUser = function() {
         const testUser = {
             id: 999,
@@ -1273,25 +1168,25 @@
         
         // Recarregar chat
         loadMessages();
-    };
-
-    window.forceLogin = function() {
-        localStorage.removeItem('coliseum_user');
-        sessionStorage.clear();
-        location.reload();
-    };
-
-    // Inicializar verificador de usuário
-    setInterval(() => {
-        if (!currentUser) {
-            console.log('🔄 Verificando usuário periodicamente...');
-            forceUserDetection();
+        
+        // Remover alerta de login
+        const emptyChat = document.getElementById('emptyChat');
+        if (emptyChat) {
+            emptyChat.style.display = 'block';
         }
-    }, 10000);
+    };
+
+    window.debugUser = function() {
+        console.log('=== DEBUG DE USUÁRIO ===');
+        console.log('currentUser:', currentUser);
+        console.log('localStorage:', localStorage);
+        console.log('sessionStorage:', sessionStorage);
+        
+        // Tentar recuperar usuário novamente
+        getUserFromStorage().then(user => {
+            console.log('Novo usuário encontrado:', user);
+        });
+    };
 </script>
 </body>
 </html>
-
-
-
-
