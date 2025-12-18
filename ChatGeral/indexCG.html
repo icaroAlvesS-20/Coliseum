@@ -501,123 +501,339 @@
     let messageCheckInterval = null;
     let lastMessageId = 0;
 
+    // DEBUG: Log inicial
+    console.log('🔍 Iniciando chat...');
+    console.log('🌐 API URL:', API_URL);
+
     // Inicialização
     document.addEventListener('DOMContentLoaded', async () => {
         console.log('💬 Chat inicializando...');
         
-        // Verificar se usuário está logado - VERSÃO SIMPLIFICADA
-        checkUserLogin();
+        // DEBUG EXTENDIDO: Verificar TUDO
+        debugLoginStatus();
         
-        // Carregar mensagens iniciais
+        // Forçar detecção de usuário
+        forceUserDetection();
+        
+        // Carregar mensagens
         await loadMessages();
-        
-        // Iniciar verificação de novas mensagens
-        startMessageChecker();
         
         // Configurar eventos
         setupEventListeners();
         
-        console.log('✅ Chat inicializado!');
+        console.log('✅ Chat pronto para uso!');
     });
 
-    // VERIFICAÇÃO SIMPLIFICADA DE LOGIN
-    function checkUserLogin() {
-        console.log('🔍 Verificando login...');
+    // FUNÇÃO DE DEBUG DETALHADO
+    function debugLoginStatus() {
+        console.log('=== DEBUG DETALHADO DO LOGIN ===');
         
-        // Tentar obter usuário do localStorage
+        // 1. Verificar localStorage
         const userData = localStorage.getItem('coliseum_user');
+        console.log('1. localStorage coliseum_user:', userData);
         
-        if (userData) {
-            try {
-                const parsedUser = JSON.parse(userData);
-                console.log('📋 Dados do usuário no localStorage:', parsedUser);
-                
-                // ACEITAR DIFERENTES FORMATOS DE USUÁRIO
-                if (parsedUser) {
-                    // Formato 1: Usuário direto
-                    if (parsedUser.id && parsedUser.nome) {
-                        currentUser = parsedUser;
-                    }
-                    // Formato 2: Usuário dentro de propriedade 'usuario'
-                    else if (parsedUser.usuario && parsedUser.usuario.id) {
-                        currentUser = parsedUser.usuario;
-                    }
-                    // Formato 3: Apenas nome e RA
-                    else if (parsedUser.nome) {
-                        currentUser = {
-                            id: parsedUser.id || Date.now(), // ID temporário
-                            nome: parsedUser.nome,
-                            ra: parsedUser.ra || '0000',
-                            serie: parsedUser.serie || '1ª',
-                            curso: parsedUser.curso || 'Curso',
-                            pontuacao: parsedUser.pontuacao || 0
-                        };
-                    }
-                    
-                    if (currentUser) {
-                        console.log('✅ Usuário identificado:', currentUser.nome);
-                        updateUserInfo();
-                        enableChat();
-                        return true;
-                    }
-                }
-            } catch (error) {
-                console.error('❌ Erro ao parsear usuário:', error);
+        // 2. Verificar todas as chaves do localStorage
+        console.log('2. Todas as chaves do localStorage:');
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.includes('user') || key.includes('User') || key.includes('usuario')) {
+                console.log(`   ${key}:`, localStorage.getItem(key));
             }
         }
         
-        // Se chegou aqui, mostrar alerta
-        console.log('⚠️ Nenhum usuário válido encontrado');
-        showLoginAlert();
-        return false;
+        // 3. Verificar sessionStorage também
+        console.log('3. sessionStorage relacionado:');
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            if (key.includes('user') || key.includes('User') || key.includes('usuario')) {
+                console.log(`   ${key}:`, sessionStorage.getItem(key));
+            }
+        }
+        
+        // 4. Verificar cookies
+        console.log('4. Cookies:', document.cookie);
+        
+        console.log('================================');
+    }
+
+    // DETECÇÃO FORÇADA DE USUÁRIO
+    function forceUserDetection() {
+        console.log('🔄 Forçando detecção de usuário...');
+        
+        // Tentar encontrar usuário em TODOS os lugares possíveis
+        let foundUser = null;
+        
+        // 1. localStorage padrão
+        const localStorageUser = localStorage.getItem('coliseum_user');
+        if (localStorageUser) {
+            try {
+                const parsed = JSON.parse(localStorageUser);
+                foundUser = extractUserFromData(parsed);
+                console.log('📍 Usuário encontrado no localStorage padrão');
+            } catch (e) {
+                console.error('❌ Erro ao parsear localStorage:', e);
+            }
+        }
+        
+        // 2. Outras possíveis chaves no localStorage
+        if (!foundUser) {
+            const possibleKeys = [
+                'usuario', 'user', 'currentUser', 'loggedUser', 
+                'coliseumUser', 'userData', 'user_info', 'login_data'
+            ];
+            
+            for (const key of possibleKeys) {
+                const data = localStorage.getItem(key);
+                if (data) {
+                    try {
+                        const parsed = JSON.parse(data);
+                        const user = extractUserFromData(parsed);
+                        if (user) {
+                            foundUser = user;
+                            console.log(`📍 Usuário encontrado na chave: ${key}`);
+                            break;
+                        }
+                    } catch (e) {
+                        // Ignorar erro
+                    }
+                }
+            }
+        }
+        
+        // 3. sessionStorage
+        if (!foundUser) {
+            const sessionKeys = [
+                'coliseum_user', 'usuario', 'user', 'currentUser'
+            ];
+            
+            for (const key of sessionKeys) {
+                const data = sessionStorage.getItem(key);
+                if (data) {
+                    try {
+                        const parsed = JSON.parse(data);
+                        const user = extractUserFromData(parsed);
+                        if (user) {
+                            foundUser = user;
+                            console.log(`📍 Usuário encontrado no sessionStorage: ${key}`);
+                            break;
+                        }
+                    } catch (e) {
+                        // Ignorar erro
+                    }
+                }
+            }
+        }
+        
+        // 4. URL parameters (se veio de redirecionamento)
+        if (!foundUser) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userParam = urlParams.get('user') || urlParams.get('usuario');
+            if (userParam) {
+                try {
+                    const parsed = JSON.parse(decodeURIComponent(userParam));
+                    const user = extractUserFromData(parsed);
+                    if (user) {
+                        foundUser = user;
+                        console.log('📍 Usuário encontrado nos parâmetros da URL');
+                    }
+                } catch (e) {
+                    // Ignorar erro
+                }
+            }
+        }
+        
+        // ATRIBUIR USUÁRIO ENCONTRADO
+        if (foundUser) {
+            currentUser = foundUser;
+            console.log('✅ USUÁRIO DEFINIDO:', currentUser);
+            
+            // Salvar em localStorage para uso futuro
+            localStorage.setItem('coliseum_user_fixed', JSON.stringify(currentUser));
+            
+            // Atualizar interface
+            updateUserInfo();
+            enableChat();
+            
+            // Iniciar verificador de mensagens
+            startMessageChecker();
+            
+        } else {
+            console.log('❌ NENHUM USUÁRIO ENCONTRADO EM LUGAR ALGUM');
+            showLoginAlert();
+        }
+    }
+
+    // EXTRAIR USUÁRIO DE QUALQUER ESTRUTURA
+    function extractUserFromData(data) {
+        if (!data) return null;
+        
+        console.log('🔍 Analisando estrutura de dados:', data);
+        
+        // Estrutura 1: Direta {id, nome, ...}
+        if (data.id && data.nome) {
+            console.log('✅ Estrutura direta encontrada');
+            return {
+                id: data.id,
+                nome: data.nome,
+                ra: data.ra || '0000',
+                serie: data.serie || '1ª',
+                curso: data.curso || 'Curso',
+                pontuacao: data.pontuacao || 0,
+                status: data.status || 'ativo'
+            };
+        }
+        
+        // Estrutura 2: Dentro de propriedade 'usuario'
+        if (data.usuario && data.usuario.id && data.usuario.nome) {
+            console.log('✅ Estrutura com propriedade "usuario" encontrada');
+            return {
+                id: data.usuario.id,
+                nome: data.usuario.nome,
+                ra: data.usuario.ra || '0000',
+                serie: data.usuario.serie || '1ª',
+                curso: data.usuario.curso || 'Curso',
+                pontuacao: data.usuario.pontuacao || 0,
+                status: data.usuario.status || 'ativo'
+            };
+        }
+        
+        // Estrutura 3: Dentro de propriedade 'user'
+        if (data.user && data.user.id && data.user.nome) {
+            console.log('✅ Estrutura com propriedade "user" encontrada');
+            return {
+                id: data.user.id,
+                nome: data.user.nome,
+                ra: data.user.ra || '0000',
+                serie: data.user.serie || '1ª',
+                curso: data.user.curso || 'Curso',
+                pontuacao: data.user.pontuacao || 0,
+                status: data.user.status || 'ativo'
+            };
+        }
+        
+        // Estrutura 4: Login response {success: true, usuario: {...}}
+        if (data.success && data.usuario) {
+            console.log('✅ Estrutura de resposta de login encontrada');
+            return {
+                id: data.usuario.id,
+                nome: data.usuario.nome,
+                ra: data.usuario.ra || '0000',
+                serie: data.usuario.serie || '1ª',
+                curso: data.usuario.curso || 'Curso',
+                pontuacao: data.usuario.pontuacao || 0,
+                status: data.usuario.status || 'ativo'
+            };
+        }
+        
+        // Estrutura 5: Apenas com nome
+        if (data.nome) {
+            console.log('⚠️ Estrutura parcial encontrada (apenas nome)');
+            return {
+                id: data.id || Date.now(),
+                nome: data.nome,
+                ra: data.ra || '0000',
+                serie: data.serie || '1ª',
+                curso: data.curso || 'Curso',
+                pontuacao: data.pontuacao || 0,
+                status: data.status || 'ativo'
+            };
+        }
+        
+        console.log('❌ Estrutura não reconhecida');
+        return null;
     }
 
     function updateUserInfo() {
-        if (currentUser && currentUser.nome) {
+        if (currentUser) {
             const userNameElement = document.getElementById('userName');
             if (userNameElement) {
                 userNameElement.textContent = currentUser.nome;
+                userNameElement.style.color = '#4CAF50';
+                userNameElement.innerHTML = `<i class="fas fa-user-check"></i> ${currentUser.nome}`;
             }
+            
+            // Atualizar título
+            document.title = `Chat Geral - ${currentUser.nome} | Coliseum`;
         }
     }
 
     function enableChat() {
+        console.log('🎮 Habilitando chat...');
+        
         const sendButton = document.getElementById('sendButton');
         const messageInput = document.getElementById('messageInput');
         
         if (sendButton) {
             sendButton.disabled = false;
             sendButton.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar';
+            sendButton.style.background = 'linear-gradient(45deg, #ff9800, #ffeb3b)';
+            console.log('✅ Botão de enviar habilitado');
         }
         
         if (messageInput) {
             messageInput.disabled = false;
-            messageInput.placeholder = "Digite sua mensagem aqui...";
+            messageInput.placeholder = `Digite sua mensagem, ${currentUser.nome}...`;
             messageInput.focus();
+            console.log('✅ Campo de mensagem habilitado');
+        }
+        
+        // Mostrar status online
+        const onlineCount = document.getElementById('onlineCount');
+        if (onlineCount) {
+            onlineCount.innerHTML = `<i class="fas fa-circle" style="color: #4CAF50"></i> Online`;
         }
     }
 
     function showLoginAlert() {
+        console.log('⚠️ Mostrando alerta de login...');
+        
         const messagesContainer = document.getElementById('messagesContainer');
         if (messagesContainer) {
             messagesContainer.innerHTML = `
-                <div style="text-align: center; padding: 40px; color: #ff6b6b;">
-                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem;"></i>
-                    <h3>Login Necessário</h3>
-                    <p>Você precisa fazer login para participar do chat.</p>
-                    <button onclick="window.location.href='index.html'" 
-                            style="margin-top: 20px; padding: 12px 24px; background: yellow; 
-                                   color: black; border: none; border-radius: 8px; 
-                                   cursor: pointer; font-weight: bold;">
-                        <i class="fas fa-sign-in-alt"></i> Ir para Login
-                    </button>
-                    <div style="margin-top: 20px; font-size: 0.9rem; color: #ccc;">
-                        <button onclick="debugLocalStorage()" 
-                                style="background: transparent; border: 1px solid #666; 
-                                       color: #ccc; padding: 5px 10px; border-radius: 4px;
-                                       cursor: pointer; margin-top: 10px;">
-                            Debug Login
-                        </button>
+                <div style="text-align: center; padding: 40px;">
+                    <div style="background: rgba(255, 0, 0, 0.1); padding: 20px; border-radius: 10px; border: 2px solid #f44336;">
+                        <i class="fas fa-user-slash" style="font-size: 3rem; color: #f44336;"></i>
+                        <h3 style="color: #f44336; margin: 20px 0 10px 0;">Usuário Não Detectado</h3>
+                        <p style="color: #ccc; margin-bottom: 15px;">O sistema não conseguiu identificar seu login.</p>
+                        
+                        <div style="background: #222; padding: 15px; border-radius: 8px; margin: 15px 0; text-align: left;">
+                            <h4 style="color: #ff9800; margin-bottom: 10px;">Soluções:</h4>
+                            <ol style="color: #ccc; padding-left: 20px;">
+                                <li>Volte para a página de login</li>
+                                <li>Faça login novamente</li>
+                                <li>Volte para esta página</li>
+                            </ol>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                            <button onclick="window.location.href='index.html'" 
+                                    style="padding: 12px 24px; background: linear-gradient(45deg, #ff9800, #ffeb3b); 
+                                           color: black; border: none; border-radius: 8px; 
+                                           cursor: pointer; font-weight: bold; flex: 1;">
+                                <i class="fas fa-sign-in-alt"></i> Ir para Login
+                            </button>
+                            <button onclick="forceUserDetection()" 
+                                    style="padding: 12px 24px; background: #2196F3; 
+                                           color: white; border: none; border-radius: 8px; 
+                                           cursor: pointer; font-weight: bold; flex: 1;">
+                                <i class="fas fa-redo"></i> Tentar Novamente
+                            </button>
+                        </div>
+                        
+                        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #444;">
+                            <button onclick="createTestUser()" 
+                                    style="padding: 8px 16px; background: #4CAF50; 
+                                           color: white; border: none; border-radius: 5px; 
+                                           cursor: pointer; font-size: 0.9rem;">
+                                <i class="fas fa-user-plus"></i> Criar Usuário de Teste
+                            </button>
+                            <button onclick="debugLocalStorage()" 
+                                    style="padding: 8px 16px; background: #9C27B0; 
+                                           color: white; border: none; border-radius: 5px; 
+                                           cursor: pointer; font-size: 0.9rem; margin-left: 10px;">
+                                <i class="fas fa-bug"></i> Debug
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -627,40 +843,11 @@
         if (sendButton) {
             sendButton.disabled = true;
             sendButton.innerHTML = '<i class="fas fa-lock"></i> Login Necessário';
+            sendButton.style.background = '#666';
         }
     }
 
-    // DEBUG: Mostrar conteúdo do localStorage
-    window.debugLocalStorage = function() {
-        console.log('=== DEBUG LOCALSTORAGE ===');
-        const userData = localStorage.getItem('coliseum_user');
-        console.log('coliseum_user:', userData);
-        
-        if (userData) {
-            try {
-                const parsed = JSON.parse(userData);
-                console.log('Parsed:', parsed);
-                console.log('Tipo:', typeof parsed);
-                
-                // Mostrar no chat também
-                const container = document.getElementById('messagesContainer');
-                if (container) {
-                    container.innerHTML += `
-                        <div style="background: #333; padding: 10px; margin: 10px; border-radius: 5px;">
-                            <h4>Debug Info:</h4>
-                            <pre style="color: white; overflow: auto;">${JSON.stringify(parsed, null, 2)}</pre>
-                        </div>
-                    `;
-                }
-            } catch (e) {
-                console.error('Erro ao parsear:', e);
-            }
-        }
-        
-        console.log('=========================');
-    };
-
-    // Carregar mensagens
+    // FUNÇÕES DE CARREGAMENTO DE MENSAGENS
     async function loadMessages() {
         try {
             console.log('📥 Carregando mensagens...');
@@ -676,10 +863,12 @@
             if (data.success && data.mensagens) {
                 displayMessages(data.mensagens);
                 
-                // Atualizar último ID
                 if (data.mensagens.length > 0) {
                     lastMessageId = data.mensagens[data.mensagens.length - 1].id;
                 }
+                
+                updateStats(data.mensagens.length);
+                updateLastUpdateTime();
             }
         } catch (error) {
             console.error('❌ Erro ao carregar mensagens:', error);
@@ -690,6 +879,12 @@
     function displayMessages(messages) {
         const container = document.getElementById('messagesContainer');
         if (!container) return;
+        
+        const emptyChat = document.getElementById('emptyChat');
+        
+        if (emptyChat) {
+            emptyChat.style.display = 'none';
+        }
         
         container.innerHTML = '';
         
@@ -708,7 +903,6 @@
             addMessageToChat(msg);
         });
         
-        // Scroll para baixo
         setTimeout(() => {
             container.scrollTop = container.scrollHeight;
         }, 100);
@@ -720,16 +914,25 @@
         
         const isOwn = currentUser && msg.usuarioId === currentUser.id;
         
-        // Formatar hora
         let messageTime = 'Agora';
         if (msg.timestamp) {
             try {
                 const msgDate = new Date(msg.timestamp);
                 if (!isNaN(msgDate.getTime())) {
-                    messageTime = msgDate.toLocaleTimeString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
+                    const now = new Date();
+                    const diffMs = now - msgDate;
+                    const diffMins = Math.floor(diffMs / 60000);
+                    
+                    if (diffMins < 1) {
+                        messageTime = 'Agora';
+                    } else if (diffMins < 60) {
+                        messageTime = `há ${diffMins} min`;
+                    } else {
+                        messageTime = msgDate.toLocaleTimeString('pt-BR', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    }
                 }
             } catch (e) {}
         }
@@ -737,17 +940,21 @@
         const userName = msg.usuario ? msg.usuario.nome : 'Usuário';
         const userCurso = msg.usuario ? msg.usuario.curso : 'Curso';
         const userSerie = msg.usuario ? msg.usuario.serie : 'Série';
+        const userAvatar = userName.charAt(0).toUpperCase();
         
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isOwn ? 'own-message' : ''}`;
         messageDiv.innerHTML = `
             <div class="message-header">
                 <div class="user-info">
-                    <div class="user-avatar">
-                        ${userName.charAt(0).toUpperCase()}
+                    <div class="user-avatar" style="background: ${isOwn ? 'linear-gradient(45deg, #ff9800, #ffeb3b)' : 'linear-gradient(45deg, #2196F3, #03A9F4)'};">
+                        ${userAvatar}
                     </div>
                     <div>
-                        <div class="user-name">${escapeHtml(userName)}</div>
+                        <div class="user-name">
+                            ${escapeHtml(userName)}
+                            ${isOwn ? ' <i class="fas fa-user" style="font-size: 0.8em;"></i>' : ''}
+                        </div>
                         <div class="user-details">
                             ${escapeHtml(userCurso)} • ${escapeHtml(userSerie)}ª série
                         </div>
@@ -763,10 +970,24 @@
         `;
         
         container.appendChild(messageDiv);
+        
+        const isNearBottom = container.scrollHeight - container.clientHeight - container.scrollTop < 150;
+        if (isNearBottom) {
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 50);
+        }
     }
 
-    // ENVIO DE MENSAGEM - VERSÃO SIMPLIFICADA
+    // ENVIO DE MENSAGEM
     window.sendMessage = async function() {
+        if (!currentUser || !currentUser.id) {
+            console.error('❌ currentUser inválido ao tentar enviar:', currentUser);
+            showNotification('Erro: Usuário não identificado', 'error');
+            forceUserDetection();
+            return;
+        }
+        
         const input = document.getElementById('messageInput');
         const button = document.getElementById('sendButton');
         
@@ -776,36 +997,23 @@
         
         if (!message) {
             showNotification('Digite uma mensagem!', 'error');
+            input.focus();
             return;
         }
         
-        // VERIFICAÇÃO SIMPLIFICADA DO USUÁRIO
-        if (!currentUser) {
-            // Tentar recarregar o usuário
-            checkUserLogin();
-            
-            if (!currentUser) {
-                showNotification('Faça login primeiro!', 'error');
-                return;
-            }
-        }
-        
-        // Se o usuário não tem ID, criar um temporário
-        if (!currentUser.id) {
-            currentUser.id = Date.now(); // ID temporário
-        }
-        
-        console.log('📤 Enviando mensagem como:', currentUser.nome, 'ID:', currentUser.id);
+        console.log(`📤 ${currentUser.nome} enviando: "${message.substring(0, 50)}${message.length > 50 ? '...' : ''}"`);
         
         // Desabilitar botão
         button.disabled = true;
-        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
         
         try {
             const response = await fetch(`${API_URL}/api/chat/mensagens`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({
                     usuarioId: currentUser.id,
@@ -814,55 +1022,68 @@
                 })
             });
             
-            if (response.ok) {
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Limpar input
-                    input.value = '';
-                    input.focus();
-                    
-                    // Adicionar mensagem localmente
-                    if (data.mensagem) {
-                        addMessageToChat(data.mensagem);
-                    }
-                    
-                    showNotification('Mensagem enviada!', 'success');
-                } else {
-                    throw new Error(data.error || 'Erro ao enviar');
-                }
-            } else {
-                throw new Error(`HTTP error: ${response.status}`);
+            let data;
+            try {
+                const text = await response.text();
+                data = text ? JSON.parse(text) : {};
+            } catch (e) {
+                throw new Error('Resposta inválida do servidor');
             }
-        } catch (error) {
-            console.error('❌ Erro ao enviar:', error);
-            showNotification('Erro ao enviar mensagem', 'error');
             
-            // FALLBACK: Mostrar mensagem localmente
+            if (!response.ok) {
+                throw new Error(data.error || `HTTP error: ${response.status}`);
+            }
+            
+            if (data.success) {
+                // Limpar input
+                input.value = '';
+                input.focus();
+                
+                // Adicionar mensagem à lista
+                if (data.mensagem) {
+                    addMessageToChat(data.mensagem);
+                }
+                
+                showNotification('Mensagem enviada! ✅', 'success');
+                console.log('✅ Mensagem enviada com sucesso');
+                
+            } else {
+                throw new Error(data.error || 'Erro desconhecido');
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao enviar mensagem:', error);
+            showNotification(`Erro: ${error.message}`, 'error');
+            
+            // Fallback: mostrar mensagem localmente
             const localMessage = {
                 id: Date.now(),
                 usuarioId: currentUser.id,
-                conteudo: message,
+                conteudo: message + ' (não enviado)',
                 tipo: 'texto',
-                timestamp: new Date(),
+                timestamp: new Date().toISOString(),
                 usuario: {
                     id: currentUser.id,
                     nome: currentUser.nome,
-                    curso: currentUser.curso || 'Curso',
-                    serie: currentUser.serie || 'Série'
+                    curso: currentUser.curso,
+                    serie: currentUser.serie
                 }
             };
             addMessageToChat(localMessage);
             input.value = '';
+            
         } finally {
             // Reabilitar botão
             button.disabled = false;
-            button.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar';
+            button.innerHTML = originalText;
         }
     };
 
     function startMessageChecker() {
-        // Verificar novas mensagens a cada 5 segundos
+        if (messageCheckInterval) {
+            clearInterval(messageCheckInterval);
+        }
+        
         messageCheckInterval = setInterval(async () => {
             if (!currentUser) return;
             
@@ -880,11 +1101,14 @@
                             newMessages.forEach(msg => {
                                 addMessageToChat(msg);
                             });
+                            
+                            updateStats(data.mensagens.length);
+                            updateLastUpdateTime();
                         }
                     }
                 }
             } catch (error) {
-                // Silenciar erro de polling
+                // Silenciar erro
             }
         }, 5000);
     }
@@ -903,42 +1127,43 @@
             }
         });
         
-        // Habilitar/desabilitar botão
+        // Nova linha com Shift+Enter
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.shiftKey) {
+                // Permitir nova linha
+            }
+        });
+        
+        // Habilitar botão quando houver texto
         input.addEventListener('input', () => {
             if (currentUser) {
                 button.disabled = !input.value.trim();
+            } else {
+                button.disabled = true;
             }
         });
         
         // Auto-focus
         input.focus();
-        
-        // Botão de forçar login
-        const forceLoginBtn = document.createElement('button');
-        forceLoginBtn.innerHTML = '<i class="fas fa-user-cog"></i>';
-        forceLoginBtn.style.cssText = `
-            position: fixed;
-            bottom: 100px;
-            right: 25px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: #2196F3;
-            color: white;
-            border: none;
-            cursor: pointer;
-            z-index: 1000;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        `;
-        forceLoginBtn.onclick = () => {
-            // Forçar redefinição do usuário
-            localStorage.removeItem('coliseum_user');
-            location.reload();
-        };
-        document.body.appendChild(forceLoginBtn);
+    }
+
+    function updateStats(messageCount) {
+        const totalMessagesElement = document.getElementById('totalMessages');
+        if (totalMessagesElement) {
+            totalMessagesElement.textContent = messageCount;
+        }
+    }
+
+    function updateLastUpdateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        const lastUpdateElement = document.getElementById('lastUpdate');
+        if (lastUpdateElement) {
+            lastUpdateElement.textContent = timeString;
+        }
     }
 
     function escapeHtml(text) {
@@ -949,23 +1174,86 @@
     }
 
     function showNotification(message, type = 'success') {
+        // Remover notificações antigas
+        const existing = document.querySelectorAll('.notification');
+        existing.forEach(n => n.remove());
+        
         const notification = document.createElement('div');
         notification.className = `notification ${type === 'error' ? 'error' : ''}`;
         notification.innerHTML = `
-            <i class="fas ${type === 'success' ? 'fa-check' : 'fa-exclamation'}"></i>
-            ${escapeHtml(message)}
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                <span>${escapeHtml(message)}</span>
+            </div>
         `;
         
         document.body.appendChild(notification);
         
         setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
         }, 3000);
     }
 
-    // Adicionar função para criar usuário de teste
+    // FUNÇÕES DE DEBUG E UTILIDADE
+    window.debugLocalStorage = function() {
+        console.clear();
+        console.log('=== DEBUG COMPLETO DO LOCALSTORAGE ===');
+        
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            console.log(`\n🔑 ${key}:`);
+            try {
+                const value = localStorage.getItem(key);
+                const parsed = JSON.parse(value);
+                console.log('📋 Parseado:', parsed);
+                console.log('📝 Original:', value);
+            } catch (e) {
+                console.log('📝 Valor (não JSON):', localStorage.getItem(key));
+            }
+        }
+        
+        console.log('\n=== USUÁRIO ATUAL ===');
+        console.log('currentUser:', currentUser);
+        
+        // Mostrar na tela também
+        const debugInfo = document.createElement('div');
+        debugInfo.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 9999;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+            border: 2px solid yellow;
+        `;
+        
+        let debugHTML = '<h3 style="color: yellow;">Debug Info</h3>';
+        
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const value = localStorage.getItem(key);
+            debugHTML += `<div style="margin-bottom: 10px;">
+                <strong style="color: #4CAF50">${key}:</strong><br>
+                <pre style="background: #222; padding: 5px; border-radius: 3px; overflow: auto;">${escapeHtml(value)}</pre>
+            </div>`;
+        }
+        
+        debugHTML += `<button onclick="this.parentElement.remove()" 
+            style="background: #f44336; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+            Fechar
+        </button>`;
+        
+        debugInfo.innerHTML = debugHTML;
+        document.body.appendChild(debugInfo);
+    };
+
     window.createTestUser = function() {
         const testUser = {
             id: 999,
@@ -973,27 +1261,37 @@
             ra: "9999",
             serie: "1ª",
             curso: "Matemática",
-            pontuacao: 100
+            pontuacao: 100,
+            status: "ativo"
         };
         
         localStorage.setItem('coliseum_user', JSON.stringify(testUser));
         currentUser = testUser;
         enableChat();
-        showNotification('Usuário teste criado!', 'success');
+        showNotification('Usuário teste criado! Pode enviar mensagens.', 'success');
         console.log('👤 Usuário teste criado:', testUser);
+        
+        // Recarregar chat
+        loadMessages();
     };
 
-    // Testar no console
-    window.debugChat = function() {
-        console.log('=== CHAT DEBUG ===');
-        console.log('currentUser:', currentUser);
-        console.log('localStorage:', localStorage.getItem('coliseum_user'));
-        console.log('API URL:', API_URL);
-        console.log('=================');
+    window.forceLogin = function() {
+        localStorage.removeItem('coliseum_user');
+        sessionStorage.clear();
+        location.reload();
     };
+
+    // Inicializar verificador de usuário
+    setInterval(() => {
+        if (!currentUser) {
+            console.log('🔄 Verificando usuário periodicamente...');
+            forceUserDetection();
+        }
+    }, 10000);
 </script>
 </body>
 </html>
+
 
 
 
