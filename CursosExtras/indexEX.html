@@ -816,24 +816,66 @@ function aplicarFiltros() {
     filtrarCursos(filtroAtivo);
 }
 
-// ✅ FILTRAR CURSOS
 function filtrarCursos(filtro) {
-    const searchTerm = document.getElementById('course-search').value.toLowerCase();
-    
-    filteredCursos = cursos.filter(curso => {
-        // Aplicar filtro de matéria
-        const passaFiltro = filtro === 'all' || curso.materia === filtro;
+    try {
+        // Verificar se existe campo de busca
+        const searchInput = document.getElementById('course-search');
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
         
-        // Aplicar filtro de busca
-        const passaBusca = !searchTerm || 
-            curso.titulo.toLowerCase().includes(searchTerm) ||
-            (curso.descricao && curso.descricao.toLowerCase().includes(searchTerm)) ||
-            (curso.categoria && curso.categoria.toLowerCase().includes(searchTerm));
+        // Verificar se existem cursos
+        if (!Array.isArray(cursos) || cursos.length === 0) {
+            console.warn('⚠️ Nenhum curso disponível para filtrar');
+            exibirCursos(); // Exibir estado vazio
+            return;
+        }
         
-        return passaFiltro && passaBusca;
-    });
-    
-    exibirCursos();
+        // Filtrar cursos
+        filteredCursos = cursos.filter(curso => {
+            // Verificar se curso é válido
+            if (!curso || typeof curso !== 'object') return false;
+            
+            // Aplicar filtro principal
+            let passaFiltro = true;
+            if (filtro !== 'all') {
+                // Tentar filtrar por categoria primeiro, depois por matéria
+                if (curso.categoria && curso.categoria === filtro) {
+                    passaFiltro = true;
+                } else if (curso.materia && curso.materia === filtro) {
+                    passaFiltro = true;
+                } else {
+                    passaFiltro = false;
+                }
+            }
+            
+            // Aplicar filtro de busca se houver termo
+            let passaBusca = true;
+            if (searchTerm) {
+                const buscaCampos = [
+                    curso.titulo,
+                    curso.descricao,
+                    curso.materia,
+                    curso.categoria,
+                    curso.nivel
+                ];
+                
+                passaBusca = buscaCampos.some(campo => 
+                    campo && typeof campo === 'string' && 
+                    campo.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            return passaFiltro && passaBusca;
+        });
+        
+        console.log(`✅ Filtro "${filtro}" aplicado: ${filteredCursos.length} de ${cursos.length} cursos`);
+        
+        // Exibir resultados
+        exibirCursos();
+        
+    } catch (error) {
+        console.error('❌ Erro ao filtrar cursos:', error);
+        mostrarAlerta('Erro ao filtrar cursos. Tente novamente.', 'error');
+    }
 }
 
 // ✅ EXIBIR CURSOS
