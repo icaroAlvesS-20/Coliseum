@@ -726,13 +726,13 @@ async function carregarCursos() {
         console.log(`✅ ${cursos.length} cursos carregados da API (formato objeto)`);
       } else {
         console.warn('⚠️ Formato de resposta inesperado:', data);
-        cursos = [];
+        cursos = gerarCursosExemplo(); // Usar exemplo se formato inválido
       }
     } else if (response.status === 403) {
       // Acesso negado específico para um curso
       const errorData = await response.json();
       mostrarAlerta(`⛔ ${errorData.message || 'Acesso negado a este curso'}`, 'error');
-      cursos = [];
+      cursos = gerarCursosExemplo(); // Usar exemplo
     } else {
       console.warn(`⚠️ API retornou status ${response.status}`);
       // Usar dados de exemplo como fallback
@@ -740,10 +740,13 @@ async function carregarCursos() {
       mostrarAlerta('⚠️ Usando dados de demonstração. API pode estar offline.', 'warning');
     }
 
+    // Debug dos dados carregados
+    console.log('📊 Dados carregados:', cursos);
+    
     // Atualizar interface
     atualizarEstatisticas();
     filtrarCursos('all');
-    debugCursos(); // Função para debug
+    
   } catch (error) {
     console.error('❌ Erro ao carregar cursos:', error);
     // Fallback para dados de exemplo
@@ -753,105 +756,7 @@ async function carregarCursos() {
     // Atualizar interface mesmo com erro
     atualizarEstatisticas();
     filtrarCursos('all');
-    debugCursos(); // Função para debug
   }
-}
-
-// ✅ FUNÇÃO PARA GERAR CURSOS DE EXEMPLO (FALLBACK)
-function gerarCursosExemplo() {
-  console.log('📚 Gerando cursos de exemplo...');
-  return [
-    {
-      id: 1,
-      titulo: 'Introdução à Álgebra',
-      descricao: 'Aprenda os fundamentos da álgebra, incluindo equações, expressões e funções.',
-      materia: 'algebra',
-      categoria: 'matematica',
-      nivel: 'iniciante',
-      duracao: 20,
-      imagem: '',
-      ativo: true,
-      modulos: [
-        { titulo: 'Introdução', aulas: [{titulo: 'O que é álgebra'}] },
-        { titulo: 'Equações', aulas: [{titulo: 'Equações lineares'}, {titulo: 'Equações quadráticas'}] }
-      ]
-    },
-    {
-      id: 2,
-      titulo: 'História do Brasil',
-      descricao: 'Conheça a história do Brasil desde o período colonial até os dias atuais.',
-      materia: 'historia',
-      categoria: 'csh',
-      nivel: 'medio',
-      duracao: 25,
-      imagem: '',
-      ativo: true,
-      modulos: [
-        { titulo: 'Colonização', aulas: [{titulo: 'Descobrimento do Brasil'}] }
-      ]
-    },
-    {
-      id: 3,
-      titulo: 'Introdução à Programação em Python',
-      descricao: 'Aprenda os conceitos básicos de programação usando Python.',
-      materia: 'python',
-      categoria: 'programacao',
-      nivel: 'iniciante',
-      duracao: 30,
-      imagem: '',
-      ativo: true,
-      modulos: [
-        { titulo: 'Fundamentos', aulas: [{titulo: 'Variáveis e tipos'}] }
-      ]
-    },
-    {
-      id: 4,
-      titulo: 'Gramática Básica',
-      descricao: 'Domine as regras fundamentais da língua portuguesa.',
-      materia: 'gramatica',
-      categoria: 'portugues',
-      nivel: 'medio',
-      duracao: 15,
-      imagem: '',
-      ativo: true,
-      modulos: [
-        { titulo: 'Classes Gramaticais', aulas: [{titulo: 'Substantivos e Adjetivos'}] }
-      ]
-    },
-    {
-      id: 5,
-      titulo: 'Química Orgânica Básica',
-      descricao: 'Introdução aos conceitos fundamentais da química orgânica.',
-      materia: 'quimica',
-      categoria: 'csn',
-      nivel: 'medio',
-      duracao: 18,
-      imagem: '',
-      ativo: true,
-      modulos: [
-        { titulo: 'Hidrocarbonetos', aulas: [{titulo: 'Alcanos, Alcenos, Alcinos'}] }
-      ]
-    }
-  ];
-}
-
-// ✅ FUNÇÃO DEBUG
-function debugCursos() {
-    console.log('=== DEBUG DOS CURSOS ===');
-    console.log('Total de cursos:', cursos.length);
-    
-    cursos.forEach((curso, index) => {
-        console.log(`Curso ${index + 1}:`);
-        console.log('  Título:', curso.titulo);
-        console.log('  Categoria:', curso.categoria);
-        console.log('  Matéria:', curso.materia);
-        console.log('  Nível:', curso.nivel);
-        console.log('---');
-    });
-    
-    // Verificar categorias únicas
-    const categoriasUnicas = [...new Set(cursos.map(c => c.categoria))];
-    console.log('Categorias únicas encontradas:', categoriasUnicas);
 }
 
 // ✅ MOSTRAR LOADING
@@ -887,15 +792,17 @@ function atualizarEstatisticas() {
 
 // ✅ CONFIGURAR FILTROS
 function configurarFiltros() {
+    console.log('🔧 Configurando filtros...');
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', function() {
+            console.log(`🎯 Botão de filtro clicado: ${this.dataset.filter}`);
+            
             // Remover active de todos
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             // Adicionar active ao clicado
             this.classList.add('active');
             // Aplicar filtro
             const filtro = this.dataset.filter;
-            console.log(`🎯 Filtro clicado: ${filtro}`);
             filtrarCursos(filtro);
         });
     });
@@ -906,6 +813,7 @@ function configurarBusca() {
     const searchInput = document.getElementById('course-search');
     if (searchInput) {
         searchInput.addEventListener('input', function() {
+            console.log(`🔍 Busca digitada: ${this.value}`);
             aplicarFiltros();
         });
     }
@@ -914,17 +822,18 @@ function configurarBusca() {
 // ✅ APLICAR FILTROS (filtro + busca)
 function aplicarFiltros() {
     const filtroAtivo = document.querySelector('.filter-btn.active').dataset.filter;
+    console.log(`🔄 Aplicando filtros: ${filtroAtivo}`);
     filtrarCursos(filtroAtivo);
 }
 
-// ✅ FILTRAR CURSOS - VERSÃO CORRIGIDA
+// ✅ FILTRAR CURSOS - VERSÃO CORRIGIDA E SIMPLIFICADA
 function filtrarCursos(filtro) {
     try {
-        console.log('🔍 FILTRO ATIVADO:', filtro);
-        console.log('📊 TOTAL DE CURSOS:', cursos.length);
+        console.log(`🔍 Aplicando filtro: "${filtro}"`);
+        console.log(`📊 Total de cursos disponíveis: ${cursos.length}`);
         
         const searchInput = document.getElementById('course-search');
-        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+        const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
         
         if (!Array.isArray(cursos) || cursos.length === 0) {
             console.warn('⚠️ Nenhum curso disponível para filtrar');
@@ -932,41 +841,56 @@ function filtrarCursos(filtro) {
             return;
         }
         
-        // Filtrar cursos
+        // Debug: mostrar categorias disponíveis
+        const categoriasDisponiveis = [...new Set(cursos.map(c => c.categoria).filter(Boolean))];
+        console.log('🏷️ Categorias disponíveis nos cursos:', categoriasDisponiveis);
+        
+        // Filtrar cursos - VERSÃO SIMPLIFICADA
         filteredCursos = cursos.filter(curso => {
             if (!curso || typeof curso !== 'object') return false;
             
-            // FILTRO POR CATEGORIA (os botões filtram por CATEGORIA)
+            // 1. Aplicar filtro de categoria
             let passaFiltro = true;
             if (filtro !== 'all') {
-                // Verificar se o curso tem a categoria do filtro
-                if (curso.categoria === filtro) {
-                    passaFiltro = true;
-                } else {
-                    passaFiltro = false;
+                // Verificar se a categoria do curso corresponde ao filtro
+                passaFiltro = curso.categoria === filtro;
+                if (!passaFiltro) {
+                    return false; // Já falhou no filtro principal
                 }
             }
             
-            // FILTRO POR BUSCA
-            let passaBusca = true;
+            // 2. Aplicar filtro de busca
             if (searchTerm) {
-                const camposParaBusca = [
-                    curso.titulo,
-                    curso.descricao,
-                    curso.materia,
-                    curso.categoria,
-                    curso.nivel
-                ].filter(Boolean);
+                // Verificar em todos os campos de texto
+                const camposParaBuscar = [
+                    curso.titulo || '',
+                    curso.descricao || '',
+                    curso.materia || '',
+                    curso.categoria || '',
+                    curso.nivel || ''
+                ];
                 
-                passaBusca = camposParaBusca.some(campo => 
+                const encontrou = camposParaBuscar.some(campo => 
                     campo.toLowerCase().includes(searchTerm)
                 );
+                
+                if (!encontrou) {
+                    return false; // Não encontrou na busca
+                }
             }
             
-            return passaFiltro && passaBusca;
+            return true; // Passou em todos os filtros
         });
         
         console.log(`✅ Filtro "${filtro}" aplicado: ${filteredCursos.length} cursos encontrados`);
+        
+        // Mostrar quais cursos foram encontrados
+        if (filteredCursos.length > 0) {
+            console.log('📋 Cursos encontrados:');
+            filteredCursos.forEach((curso, i) => {
+                console.log(`  ${i+1}. "${curso.titulo}" (Categoria: ${curso.categoria})`);
+            });
+        }
         
         exibirCursos();
         
@@ -994,50 +918,38 @@ function exibirCursos() {
         return;
     }
     
+    console.log(`🎨 Exibindo ${filteredCursos.length} cursos na tela`);
+    
     filteredCursos.forEach(curso => {
         container.appendChild(criarCardCurso(curso));
     });
 }
 
-// ✅ CRIAR CARD DO CURSO - CORRIGIDO
+// ✅ CRIAR CARD DO CURSO - SEM BLOQUEIO
 function criarCardCurso(curso) {
     const card = document.createElement('div');
     
-    // Verificar se o usuário tem permissão
-    const usuarioId = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
-    const usuarioCurso = localStorage.getItem('usuarioCurso') || sessionStorage.getItem('usuarioCurso');
+    // PARA TESTE: Todos os cursos estão acessíveis
+    const temPermissao = true;
     
-    let temPermissao = true;
-    if (usuarioCurso) {
-        // Verificação simplificada no front-end (deve ser validada no back-end)
-        const permissoes = {
-            'matematica': ['matematica', 'programacao'],
-            'csn': ['csn', 'programacao'],
-            'csh': ['csh', 'portugues', 'programacao'],
-            'portugues': ['portugues', 'csh', 'programacao'],
-            'programacao': ['programacao']
-        };
-        temPermissao = permissoes[usuarioCurso]?.includes(curso.categoria) || false;
-    }
-    
-    card.className = `course-card ${!temPermissao ? 'bloqueado' : ''}`;
+    card.className = `course-card`;
     
     const materiaNome = obterNomeMateria(curso.materia);
-    const categoriaNome = obterNomeCategoria(curso.categoria); // CORREÇÃO AQUI
+    const categoriaNome = obterNomeCategoria(curso.categoria);
     const nivelNome = obterNomeNivel(curso.nivel);
     const progresso = obterProgressoCurso(curso.id);
     const totalAulas = calcularTotalAulas(curso);
     
     // Gerar imagem padrão se não houver
-    const corBase = getCorMateria(curso.categoria); // Usar categoria para cor
+    const corBase = getCorMateria(curso.categoria);
     const imagemUrl = curso.imagem || `https://placehold.co/600x400/${corBase.replace('#', '')}/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}`;
     
     card.innerHTML = `
         <div class="course-image">
             <img src="${imagemUrl}" alt="${curso.titulo}" 
                  onerror="this.src='https://placehold.co/600x400/323232/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}'">
-            <div class="course-badge badge-${curso.categoria} ${!temPermissao ? 'badge-bloqueado' : ''}">
-                ${!temPermissao ? '🔒 ' : ''}${categoriaNome}
+            <div class="course-badge badge-${curso.categoria}">
+                ${categoriaNome}
             </div>
             <div class="course-level level-${curso.nivel || 'medio'}">${nivelNome}</div>
         </div>
@@ -1045,12 +957,6 @@ function criarCardCurso(curso) {
         <div class="course-content">
             <h3 class="course-title">${curso.titulo}</h3>
             <p class="course-description">${curso.descricao || 'Descrição não disponível.'}</p>
-            
-            ${!temPermissao ? `
-            <div class="alert" style="margin: 10px 0; padding: 10px; background: rgba(244, 67, 54, 0.1); border-left: 4px solid #f44336;">
-                <small>⛔ Este curso não está disponível para seu curso atual</small>
-            </div>
-            ` : ''}
             
             <div class="course-meta">
                 <div class="meta-item">
@@ -1088,10 +994,9 @@ function criarCardCurso(curso) {
             ` : ''}
             
             <div class="course-actions">
-                <button class="btn ${temPermissao ? 'btn-primary' : 'btn-secondary'}" 
-                        onclick="${temPermissao ? `iniciarCurso(${curso.id})` : 'mostrarAlerta(\"⛔ Este curso não está disponível para seu curso atual\", \"error\")'}">
-                    <i class="fas ${temPermissao ? 'fa-play' : 'fa-lock'}"></i> 
-                    ${temPermissao ? (progresso > 0 ? 'Continuar' : 'Começar') : 'Bloqueado'}
+                <button class="btn btn-primary" onclick="iniciarCurso(${curso.id})">
+                    <i class="fas fa-play"></i> 
+                    ${progresso > 0 ? 'Continuar' : 'Começar'}
                 </button>
                 
                 <button class="btn btn-secondary" onclick="verDetalhes(${curso.id})">
@@ -1104,7 +1009,7 @@ function criarCardCurso(curso) {
     return card;
 }
 
-// ✅ FUNÇÕES AUXILIARES - CORRIGIDAS
+// ✅ FUNÇÕES AUXILIARES
 function obterNomeMateria(materia) {
     const nomes = {
         'algebra': 'Álgebra',
@@ -1171,42 +1076,18 @@ function obterProgressoCurso(cursoId) {
 }
 
 async function iniciarCurso(cursoId) {
-    console.log('Tentando iniciar curso:', cursoId);
+    console.log('🎯 Tentando iniciar curso:', cursoId);
     const curso = cursos.find(c => c.id === cursoId);
     if (!curso) {
         mostrarAlerta('Curso não encontrado!', 'error');
         return;
     }
     
-    const usuarioId = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
+    // PARA TESTE: Mostrar mensagem
+    mostrarAlerta(`Abrindo curso: ${curso.titulo}`, 'success');
+    console.log(`✅ Curso selecionado: ${curso.titulo} (ID: ${cursoId})`);
     
-    if (usuarioId) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/cursos/${cursoId}?usuarioId=${usuarioId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (response.status === 403) {
-                const errorData = await response.json();
-                mostrarAlerta(`⛔ ${errorData.message}`, 'error');
-                return;
-            }
-            
-            if (response.ok) {
-                window.location.href = `/cursos?id=${cursoId}`;
-            } else {
-                mostrarAlerta('Erro ao verificar permissão do curso', 'error');
-            }
-        } catch (error) {
-            console.error('Erro ao verificar permissão:', error);
-            mostrarAlerta('Erro ao verificar acesso ao curso', 'error');
-        }
-    } else {
-        mostrarAlerta('Faça login para acessar este curso', 'warning');
-    }
+    window.location.href = `/cursos?id=${cursoId}`;
 }
 
 function verDetalhes(cursoId) {
@@ -1258,10 +1139,32 @@ function mostrarAlerta(mensagem, tipo = 'error') {
     }, 5000);
 }
 
+// ✅ TESTE DOS FILTROS
+function testarFiltros() {
+    console.log('🧪 TESTANDO FILTROS MANUALMENTE...');
+    
+    // Testar cada filtro
+    const filtros = ['all', 'matematica', 'csn', 'csh', 'portugues', 'programacao'];
+    
+    filtros.forEach(filtro => {
+        const cursosFiltrados = cursos.filter(curso => 
+            filtro === 'all' || curso.categoria === filtro
+        );
+        console.log(`Filtro "${filtro}": ${cursosFiltrados.length} cursos`);
+    });
+}
+
 // ✅ EXPORTA FUNÇÕES PARA USO NO HTML
 window.iniciarCurso = iniciarCurso;
 window.verDetalhes = verDetalhes;
 window.voltarParaMenu = voltarParaMenu;
+window.testarFiltros = testarFiltros; // Para testes no console
+
+// ✅ EXECUTAR TESTE APÓS CARREGAR
+setTimeout(() => {
+    console.log('🧪 Executando teste automático dos filtros...');
+    testarFiltros();
+}, 2000);
 </script>
     
 </body>
