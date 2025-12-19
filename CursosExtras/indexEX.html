@@ -675,7 +675,7 @@
 
     <button class="btn-voltar" onclick="voltarParaMenu()">←</button>
 
-    <script>
+<script>
 // ✅ CONSTANTES E CONFIGURAÇÕES
 const API_BASE_URL = 'https://coliseum-api.onrender.com/api';
 let cursos = [];
@@ -743,6 +743,7 @@ async function carregarCursos() {
     // Atualizar interface
     atualizarEstatisticas();
     filtrarCursos('all');
+    debugCursos(); // Função para debug
   } catch (error) {
     console.error('❌ Erro ao carregar cursos:', error);
     // Fallback para dados de exemplo
@@ -752,7 +753,105 @@ async function carregarCursos() {
     // Atualizar interface mesmo com erro
     atualizarEstatisticas();
     filtrarCursos('all');
+    debugCursos(); // Função para debug
   }
+}
+
+// ✅ FUNÇÃO PARA GERAR CURSOS DE EXEMPLO (FALLBACK)
+function gerarCursosExemplo() {
+  console.log('📚 Gerando cursos de exemplo...');
+  return [
+    {
+      id: 1,
+      titulo: 'Introdução à Álgebra',
+      descricao: 'Aprenda os fundamentos da álgebra, incluindo equações, expressões e funções.',
+      materia: 'algebra',
+      categoria: 'matematica',
+      nivel: 'iniciante',
+      duracao: 20,
+      imagem: '',
+      ativo: true,
+      modulos: [
+        { titulo: 'Introdução', aulas: [{titulo: 'O que é álgebra'}] },
+        { titulo: 'Equações', aulas: [{titulo: 'Equações lineares'}, {titulo: 'Equações quadráticas'}] }
+      ]
+    },
+    {
+      id: 2,
+      titulo: 'História do Brasil',
+      descricao: 'Conheça a história do Brasil desde o período colonial até os dias atuais.',
+      materia: 'historia',
+      categoria: 'csh',
+      nivel: 'medio',
+      duracao: 25,
+      imagem: '',
+      ativo: true,
+      modulos: [
+        { titulo: 'Colonização', aulas: [{titulo: 'Descobrimento do Brasil'}] }
+      ]
+    },
+    {
+      id: 3,
+      titulo: 'Introdução à Programação em Python',
+      descricao: 'Aprenda os conceitos básicos de programação usando Python.',
+      materia: 'python',
+      categoria: 'programacao',
+      nivel: 'iniciante',
+      duracao: 30,
+      imagem: '',
+      ativo: true,
+      modulos: [
+        { titulo: 'Fundamentos', aulas: [{titulo: 'Variáveis e tipos'}] }
+      ]
+    },
+    {
+      id: 4,
+      titulo: 'Gramática Básica',
+      descricao: 'Domine as regras fundamentais da língua portuguesa.',
+      materia: 'gramatica',
+      categoria: 'portugues',
+      nivel: 'medio',
+      duracao: 15,
+      imagem: '',
+      ativo: true,
+      modulos: [
+        { titulo: 'Classes Gramaticais', aulas: [{titulo: 'Substantivos e Adjetivos'}] }
+      ]
+    },
+    {
+      id: 5,
+      titulo: 'Química Orgânica Básica',
+      descricao: 'Introdução aos conceitos fundamentais da química orgânica.',
+      materia: 'quimica',
+      categoria: 'csn',
+      nivel: 'medio',
+      duracao: 18,
+      imagem: '',
+      ativo: true,
+      modulos: [
+        { titulo: 'Hidrocarbonetos', aulas: [{titulo: 'Alcanos, Alcenos, Alcinos'}] }
+      ]
+    }
+  ];
+}
+
+// ✅ FUNÇÃO DEBUG
+function debugCursos() {
+    console.log('=== DEBUG DOS CURSOS ===');
+    console.log('Total de cursos:', cursos.length);
+    
+    cursos.forEach((curso, index) => {
+        console.log(`Curso ${index + 1}:`);
+        console.log('  Título:', curso.titulo);
+        console.log('  Categoria:', curso.categoria);
+        console.log('  Matéria:', curso.materia);
+        console.log('  Nível:', curso.nivel);
+        console.log('---');
+    });
+    
+    // Verificar categorias únicas
+    const categoriasUnicas = [...new Set(cursos.map(c => c.categoria))];
+    console.log('Categorias únicas encontradas:', categoriasUnicas);
 }
 
 // ✅ MOSTRAR LOADING
@@ -768,10 +867,10 @@ function mostrarLoading() {
     }
 }
 
-// ✅ ATUALIZAR ESTATÍSTICAS
 // ✅ ATUALIZAR ESTATÍSTICAS - CORRIGIDO
 function atualizarEstatisticas() {
     const totalCursos = cursos.length;
+    // CORREÇÃO: usar 'categoria' ao invés de 'materia'
     const cursosMatematica = cursos.filter(c => c.categoria === 'matematica').length;
     const cursosCsn = cursos.filter(c => c.categoria === 'csn').length;
     const cursosCsh = cursos.filter(c => c.categoria === 'csh').length;
@@ -796,6 +895,7 @@ function configurarFiltros() {
             this.classList.add('active');
             // Aplicar filtro
             const filtro = this.dataset.filter;
+            console.log(`🎯 Filtro clicado: ${filtro}`);
             filtrarCursos(filtro);
         });
     });
@@ -817,20 +917,11 @@ function aplicarFiltros() {
     filtrarCursos(filtroAtivo);
 }
 
-// ✅ FILTRAR CURSOS - VERSÃO DEBUG
+// ✅ FILTRAR CURSOS - VERSÃO CORRIGIDA
 function filtrarCursos(filtro) {
     try {
         console.log('🔍 FILTRO ATIVADO:', filtro);
         console.log('📊 TOTAL DE CURSOS:', cursos.length);
-        
-        // Debug: mostrar estrutura dos primeiros 3 cursos
-        if (cursos.length > 0) {
-            console.log('🎯 ESTRUTURA DO PRIMEIRO CURSO:');
-            console.log('Título:', cursos[0].titulo);
-            console.log('Categoria:', cursos[0].categoria);
-            console.log('Matéria:', cursos[0].materia);
-            console.log('---');
-        }
         
         const searchInput = document.getElementById('course-search');
         const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
@@ -845,15 +936,13 @@ function filtrarCursos(filtro) {
         filteredCursos = cursos.filter(curso => {
             if (!curso || typeof curso !== 'object') return false;
             
-            // FILTRO POR CATEGORIA (importante: os botões filtram por CATEGORIA)
+            // FILTRO POR CATEGORIA (os botões filtram por CATEGORIA)
             let passaFiltro = true;
             if (filtro !== 'all') {
                 // Verificar se o curso tem a categoria do filtro
                 if (curso.categoria === filtro) {
-                    console.log(`✅ Curso "${curso.titulo}" passa filtro "${filtro}" (categoria: ${curso.categoria})`);
                     passaFiltro = true;
                 } else {
-                    console.log(`❌ Curso "${curso.titulo}" NÃO passa filtro "${filtro}" (categoria: ${curso.categoria})`);
                     passaFiltro = false;
                 }
             }
@@ -867,7 +956,7 @@ function filtrarCursos(filtro) {
                     curso.materia,
                     curso.categoria,
                     curso.nivel
-                ].filter(Boolean); // Remove valores nulos/undefined
+                ].filter(Boolean);
                 
                 passaBusca = camposParaBusca.some(campo => 
                     campo.toLowerCase().includes(searchTerm)
@@ -910,6 +999,7 @@ function exibirCursos() {
     });
 }
 
+// ✅ CRIAR CARD DO CURSO - CORRIGIDO
 function criarCardCurso(curso) {
     const card = document.createElement('div');
     
@@ -927,19 +1017,19 @@ function criarCardCurso(curso) {
             'portugues': ['portugues', 'csh', 'programacao'],
             'programacao': ['programacao']
         };
-        temPermissao = permissoes[usuarioCurso]?.includes(curso.materia) || false;
+        temPermissao = permissoes[usuarioCurso]?.includes(curso.categoria) || false;
     }
     
     card.className = `course-card ${!temPermissao ? 'bloqueado' : ''}`;
     
-    const materiaNome = obterNomeMateriaCorreto(curso.materia);
-    const categoriaNome = obterNomeCategoriaCompleto(curso.categoria);
+    const materiaNome = obterNomeMateria(curso.materia);
+    const categoriaNome = obterNomeCategoria(curso.categoria); // CORREÇÃO AQUI
     const nivelNome = obterNomeNivel(curso.nivel);
     const progresso = obterProgressoCurso(curso.id);
     const totalAulas = calcularTotalAulas(curso);
     
     // Gerar imagem padrão se não houver
-    const corBase = getCorMateria(curso.materia);
+    const corBase = getCorMateria(curso.categoria); // Usar categoria para cor
     const imagemUrl = curso.imagem || `https://placehold.co/600x400/${corBase.replace('#', '')}/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}`;
     
     card.innerHTML = `
@@ -947,7 +1037,7 @@ function criarCardCurso(curso) {
             <img src="${imagemUrl}" alt="${curso.titulo}" 
                  onerror="this.src='https://placehold.co/600x400/323232/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}'">
             <div class="course-badge badge-${curso.categoria} ${!temPermissao ? 'badge-bloqueado' : ''}">
-                    ${!temPermissao ? '🔒 ' : ''}${categoriaNome}
+                ${!temPermissao ? '🔒 ' : ''}${categoriaNome}
             </div>
             <div class="course-level level-${curso.nivel || 'medio'}">${nivelNome}</div>
         </div>
@@ -982,7 +1072,7 @@ function criarCardCurso(curso) {
             </div>
             
             <div class="course-category">
-                <small>Categoria: ${obterNomeCategoria(curso.categoria)}</small>
+                <small>Matéria: ${materiaNome}</small>
             </div>
             
             ${progresso > 0 ? `
@@ -1014,20 +1104,8 @@ function criarCardCurso(curso) {
     return card;
 }
 
-// ✅ FUNÇÕES AUXILIARES
-function obterNomeCategoriaCompleto(categoria) {
-    const nomes = {
-        'matematica': 'Matemática',
-        'csn': 'CSN',
-        'csh': 'CSH',
-        'portugues': 'Português',
-        'programacao': 'Programação'
-    };
-    return nomes[categoria] || categoria;
-}
-
-// ✅ FUNÇÃO PARA OBTER NOME DA MATÉRIA (correta)
-function obterNomeMateriaCorreto(materia) {
+// ✅ FUNÇÕES AUXILIARES - CORRIGIDAS
+function obterNomeMateria(materia) {
     const nomes = {
         'algebra': 'Álgebra',
         'geometria': 'Geometria',
@@ -1045,6 +1123,17 @@ function obterNomeMateriaCorreto(materia) {
     return nomes[materia] || materia;
 }
 
+function obterNomeCategoria(categoria) {
+    const nomes = {
+        'matematica': 'Matemática',
+        'csn': 'CSN',
+        'csh': 'CSH',
+        'portugues': 'Português',
+        'programacao': 'Programação'
+    };
+    return nomes[categoria] || categoria;
+}
+
 function obterNomeNivel(nivel) {
     const nomes = {
         'iniciante': 'Iniciante',
@@ -1057,7 +1146,7 @@ function obterNomeNivel(nivel) {
     return nomes[nivel] || nivel || 'Ensino Médio';
 }
 
-function getCorMateria(materia) {
+function getCorMateria(categoria) {
     const cores = {
         'matematica': '#4361ee',
         'csn': '#4cc9f0',
@@ -1065,7 +1154,7 @@ function getCorMateria(materia) {
         'portugues': '#ffcf00',
         'programacao': '#ff6b00'
     };
-    return cores[materia] || '#323232';
+    return cores[categoria] || '#323232';
 }
 
 function calcularTotalAulas(curso) {
@@ -1083,7 +1172,7 @@ function obterProgressoCurso(cursoId) {
 
 async function iniciarCurso(cursoId) {
     console.log('Tentando iniciar curso:', cursoId);
-        const curso = cursos.find(c => c.id === cursoId);
+    const curso = cursos.find(c => c.id === cursoId);
     if (!curso) {
         mostrarAlerta('Curso não encontrado!', 'error');
         return;
@@ -1135,7 +1224,6 @@ function verDetalhes(cursoId) {
 
 📋 Descrição:
 ${curso.descricao || 'Sem descrição disponível.'}
-
         `;
         alert(detalhes);
     } else {
@@ -1174,6 +1262,7 @@ function mostrarAlerta(mensagem, tipo = 'error') {
 window.iniciarCurso = iniciarCurso;
 window.verDetalhes = verDetalhes;
 window.voltarParaMenu = voltarParaMenu;
-    </script>
+</script>
+    
 </body>
 </html>
