@@ -769,13 +769,14 @@ function mostrarLoading() {
 }
 
 // ✅ ATUALIZAR ESTATÍSTICAS
+// ✅ ATUALIZAR ESTATÍSTICAS - CORRIGIDO
 function atualizarEstatisticas() {
     const totalCursos = cursos.length;
-    const cursosMatematica = cursos.filter(c => c.materia === 'matematica').length;
-    const cursosCsn = cursos.filter(c => c.materia === 'csn').length;
-    const cursosCsh = cursos.filter(c => c.materia === 'csh').length;
-    const cursosPortugues = cursos.filter(c => c.materia === 'portugues').length;
-    const cursosProgramacao = cursos.filter(c => c.materia === 'programacao').length;
+    const cursosMatematica = cursos.filter(c => c.categoria === 'matematica').length;
+    const cursosCsn = cursos.filter(c => c.categoria === 'csn').length;
+    const cursosCsh = cursos.filter(c => c.categoria === 'csh').length;
+    const cursosPortugues = cursos.filter(c => c.categoria === 'portugues').length;
+    const cursosProgramacao = cursos.filter(c => c.categoria === 'programacao').length;
 
     document.getElementById('total-cursos').textContent = totalCursos;
     document.getElementById('cursos-matematica').textContent = cursosMatematica;
@@ -816,50 +817,59 @@ function aplicarFiltros() {
     filtrarCursos(filtroAtivo);
 }
 
+// ✅ FILTRAR CURSOS - VERSÃO DEBUG
 function filtrarCursos(filtro) {
     try {
-        // Verificar se existe campo de busca
+        console.log('🔍 FILTRO ATIVADO:', filtro);
+        console.log('📊 TOTAL DE CURSOS:', cursos.length);
+        
+        // Debug: mostrar estrutura dos primeiros 3 cursos
+        if (cursos.length > 0) {
+            console.log('🎯 ESTRUTURA DO PRIMEIRO CURSO:');
+            console.log('Título:', cursos[0].titulo);
+            console.log('Categoria:', cursos[0].categoria);
+            console.log('Matéria:', cursos[0].materia);
+            console.log('---');
+        }
+        
         const searchInput = document.getElementById('course-search');
         const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
         
-        // Verificar se existem cursos
         if (!Array.isArray(cursos) || cursos.length === 0) {
             console.warn('⚠️ Nenhum curso disponível para filtrar');
-            exibirCursos(); // Exibir estado vazio
+            exibirCursos();
             return;
         }
         
         // Filtrar cursos
         filteredCursos = cursos.filter(curso => {
-            // Verificar se curso é válido
             if (!curso || typeof curso !== 'object') return false;
             
-            // Aplicar filtro principal
+            // FILTRO POR CATEGORIA (importante: os botões filtram por CATEGORIA)
             let passaFiltro = true;
             if (filtro !== 'all') {
-                // Tentar filtrar por categoria primeiro, depois por matéria
-                if (curso.categoria && curso.categoria === filtro) {
-                    passaFiltro = true;
-                } else if (curso.materia && curso.materia === filtro) {
+                // Verificar se o curso tem a categoria do filtro
+                if (curso.categoria === filtro) {
+                    console.log(`✅ Curso "${curso.titulo}" passa filtro "${filtro}" (categoria: ${curso.categoria})`);
                     passaFiltro = true;
                 } else {
+                    console.log(`❌ Curso "${curso.titulo}" NÃO passa filtro "${filtro}" (categoria: ${curso.categoria})`);
                     passaFiltro = false;
                 }
             }
             
-            // Aplicar filtro de busca se houver termo
+            // FILTRO POR BUSCA
             let passaBusca = true;
             if (searchTerm) {
-                const buscaCampos = [
+                const camposParaBusca = [
                     curso.titulo,
                     curso.descricao,
                     curso.materia,
                     curso.categoria,
                     curso.nivel
-                ];
+                ].filter(Boolean); // Remove valores nulos/undefined
                 
-                passaBusca = buscaCampos.some(campo => 
-                    campo && typeof campo === 'string' && 
+                passaBusca = camposParaBusca.some(campo => 
                     campo.toLowerCase().includes(searchTerm)
                 );
             }
@@ -867,9 +877,8 @@ function filtrarCursos(filtro) {
             return passaFiltro && passaBusca;
         });
         
-        console.log(`✅ Filtro "${filtro}" aplicado: ${filteredCursos.length} de ${cursos.length} cursos`);
+        console.log(`✅ Filtro "${filtro}" aplicado: ${filteredCursos.length} cursos encontrados`);
         
-        // Exibir resultados
         exibirCursos();
         
     } catch (error) {
@@ -901,8 +910,6 @@ function exibirCursos() {
     });
 }
 
-// ✅ CRIAR CARD DO CURSO
-// ✅ CRIAR CARD DO CURSO
 function criarCardCurso(curso) {
     const card = document.createElement('div');
     
@@ -925,7 +932,8 @@ function criarCardCurso(curso) {
     
     card.className = `course-card ${!temPermissao ? 'bloqueado' : ''}`;
     
-    const materiaNome = obterNomeMateria(curso.materia);
+    const materiaNome = obterNomeMateriaCorreto(curso.materia);
+    const categoriaNome = obterNomeCategoriaCompleto(curso.categoria);
     const nivelNome = obterNomeNivel(curso.nivel);
     const progresso = obterProgressoCurso(curso.id);
     const totalAulas = calcularTotalAulas(curso);
@@ -938,8 +946,8 @@ function criarCardCurso(curso) {
         <div class="course-image">
             <img src="${imagemUrl}" alt="${curso.titulo}" 
                  onerror="this.src='https://placehold.co/600x400/323232/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}'">
-            <div class="course-badge badge-${curso.materia} ${!temPermissao ? 'badge-bloqueado' : ''}">
-                ${!temPermissao ? '🔒 ' : ''}${materiaNome}
+            <div class="course-badge badge-${curso.categoria} ${!temPermissao ? 'badge-bloqueado' : ''}">
+                    ${!temPermissao ? '🔒 ' : ''}${categoriaNome}
             </div>
             <div class="course-level level-${curso.nivel || 'medio'}">${nivelNome}</div>
         </div>
@@ -1007,7 +1015,7 @@ function criarCardCurso(curso) {
 }
 
 // ✅ FUNÇÕES AUXILIARES
-function obterNomeMateria(materia) {
+function obterNomeCategoriaCompleto(categoria) {
     const nomes = {
         'matematica': 'Matemática',
         'csn': 'CSN',
@@ -1015,10 +1023,11 @@ function obterNomeMateria(materia) {
         'portugues': 'Português',
         'programacao': 'Programação'
     };
-    return nomes[materia] || materia;
+    return nomes[categoria] || categoria;
 }
 
-function obterNomeCategoria(categoria) {
+// ✅ FUNÇÃO PARA OBTER NOME DA MATÉRIA (correta)
+function obterNomeMateriaCorreto(materia) {
     const nomes = {
         'algebra': 'Álgebra',
         'geometria': 'Geometria',
@@ -1033,7 +1042,7 @@ function obterNomeCategoria(categoria) {
         'react': 'React',
         'python': 'Python'
     };
-    return nomes[categoria] || categoria;
+    return nomes[materia] || materia;
 }
 
 function obterNomeNivel(nivel) {
