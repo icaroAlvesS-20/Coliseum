@@ -572,6 +572,26 @@
                 grid-template-columns: repeat(2, 1fr);
                 gap: 10px;
             }
+            /* ========== ESTILOS PARA CURSOS BLOQUEADOS ========== */
+            .course-card.bloqueado {
+                opacity: 0.6;
+                filter: grayscale(50%);
+                cursor: not-allowed;
+            }
+            .course-card.bloqueado:hover {
+                transform: none;
+                border-color: #f44336;
+            }
+            .course-card.bloqueado .btn-primary {
+                background: linear-gradient(135deg, #f44336, #d32f2f);
+                cursor: not-allowed;
+            }
+            .badge-bloqueado {
+                background: #f44336 !important;
+                color: white !important;
+            }
+
+/* ========== MEDIA QUERIES ========== */
         }
     </style>
 </head>
@@ -674,129 +694,68 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ✅ FUNÇÃO PRINCIPAL PARA CARREGAR CURSOS
 async function carregarCursos() {
-    try {
-        mostrarLoading();
-        console.log('🔄 Carregando cursos da API...');
+  try {
+    mostrarLoading();
+    console.log('🔄 Carregando cursos da API...');
 
-        // Tentativa de carregamento da API
-        const response = await fetch(`${API_BASE_URL}/cursos`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            mode: 'cors'
-        });
+    // ✅ OBTER ID DO USUÁRIO LOGADO
+    const usuarioId = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
+    
+    // Construir URL com parâmetro do usuário
+    let url = `${API_BASE_URL}/cursos`;
+    if (usuarioId) {
+      url += `?usuarioId=${usuarioId}`;
+    }
 
-        if (response.ok) {
-            const data = await response.json();
-            
-            // Verificar estrutura da resposta
-            if (Array.isArray(data)) {
-                cursos = data.filter(curso => curso.ativo !== false);
-                console.log(`✅ ${cursos.length} cursos carregados da API`);
-            } else if (data.success && Array.isArray(data.cursos)) {
-                cursos = data.cursos.filter(curso => curso.ativo !== false);
-                console.log(`✅ ${cursos.length} cursos carregados da API (formato objeto)`);
-            } else {
-                console.warn('⚠️ Formato de resposta inesperado:', data);
-                cursos = [];
-            }
-        } else {
-            console.warn(`⚠️ API retornou status ${response.status}`);
-            // Usar dados de exemplo como fallback
-            cursos = gerarCursosExemplo();
-            mostrarAlerta('⚠️ Usando dados de demonstração. API pode estar offline.', 'warning');
-        }
+    // Tentativa de carregamento da API
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      mode: 'cors'
+    });
 
-    } catch (error) {
-        console.error('❌ Erro ao carregar cursos:', error);
-        // Fallback para dados de exemplo
-        cursos = gerarCursosExemplo();
-        mostrarAlerta('⚠️ Não foi possível conectar à API. Usando dados de demonstração.', 'warning');
+    if (response.ok) {
+      const data = await response.json();
+      
+      // Verificar estrutura da resposta
+      if (Array.isArray(data)) {
+        cursos = data.filter(curso => curso.ativo !== false);
+        console.log(`✅ ${cursos.length} cursos carregados da API`);
+      } else if (data.success && Array.isArray(data.cursos)) {
+        cursos = data.cursos.filter(curso => curso.ativo !== false);
+        console.log(`✅ ${cursos.length} cursos carregados da API (formato objeto)`);
+      } else {
+        console.warn('⚠️ Formato de resposta inesperado:', data);
+        cursos = [];
+      }
+    } else if (response.status === 403) {
+      // Acesso negado específico para um curso
+      const errorData = await response.json();
+      mostrarAlerta(`⛔ ${errorData.message || 'Acesso negado a este curso'}`, 'error');
+      cursos = [];
+    } else {
+      console.warn(`⚠️ API retornou status ${response.status}`);
+      // Usar dados de exemplo como fallback
+      cursos = gerarCursosExemplo();
+      mostrarAlerta('⚠️ Usando dados de demonstração. API pode estar offline.', 'warning');
     }
 
     // Atualizar interface
     atualizarEstatisticas();
     filtrarCursos('all');
-}
-
-// ✅ DADOS DE EXEMPLO PARA FALLBACK
-function gerarCursosExemplo() {
-    return [
-        {
-            id: 1,
-            titulo: "Matemática Básica",
-            descricao: "Aprenda os fundamentos da matemática com exemplos práticos.",
-            materia: "matematica",
-            categoria: "algebra",
-            nivel: "fundamental",
-            duracao: 20,
-            imagem: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-            modulos: [{ aulas: [{}] }],
-            ativo: true
-        },
-        {
-            id: 2,
-            titulo: "Química Orgânica",
-            descricao: "Conceitos fundamentais de química orgânica para ensino médio.",
-            materia: "csn",
-            categoria: "quimica",
-            nivel: "medio",
-            duracao: 30,
-            imagem: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-            modulos: [{ aulas: [{}] }],
-            ativo: true
-        },
-        {
-            id: 3,
-            titulo: "História do Brasil",
-            descricao: "Panorama completo da história brasileira.",
-            materia: "csh",
-            categoria: "historia",
-            nivel: "medio",
-            duracao: 25,
-            imagem: "https://images.unsplash.com/photo-1576086213369-97a306d36557?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-            modulos: [{ aulas: [{}] }],
-            ativo: true
-        },
-        {
-            id: 4,
-            titulo: "Gramática Avançada",
-            descricao: "Aprofunde seus conhecimentos em gramática portuguesa.",
-            materia: "portugues",
-            categoria: "gramatica",
-            nivel: "avancado",
-            duracao: 35,
-            imagem: "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-            modulos: [{ aulas: [{}] }],
-            ativo: true
-        },
-        {
-            id: 5,
-            titulo: "JavaScript Básico",
-            descricao: "Introdução à programação com JavaScript.",
-            materia: "programacao",
-            categoria: "js",
-            nivel: "iniciante",
-            duracao: 40,
-            imagem: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-            modulos: [{ aulas: [{}] }],
-            ativo: true
-        },
-        {
-            id: 6,
-            titulo: "Física Mecânica",
-            descricao: "Conceitos fundamentais da mecânica clássica.",
-            materia: "csn",
-            categoria: "fisica",
-            nivel: "medio",
-            duracao: 30,
-            imagem: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-            modulos: [{ aulas: [{}] }],
-            ativo: true
-        }
-    ];
+  } catch (error) {
+    console.error('❌ Erro ao carregar cursos:', error);
+    // Fallback para dados de exemplo
+    cursos = gerarCursosExemplo();
+    mostrarAlerta('⚠️ Não foi possível conectar à API. Usando dados de demonstração.', 'warning');
+    
+    // Atualizar interface mesmo com erro
+    atualizarEstatisticas();
+    filtrarCursos('all');
+  }
 }
 
 // ✅ MOSTRAR LOADING
@@ -904,9 +863,28 @@ function exibirCursos() {
 }
 
 // ✅ CRIAR CARD DO CURSO
+// ✅ CRIAR CARD DO CURSO
 function criarCardCurso(curso) {
     const card = document.createElement('div');
-    card.className = 'course-card';
+    
+    // Verificar se o usuário tem permissão
+    const usuarioId = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
+    const usuarioCurso = localStorage.getItem('usuarioCurso') || sessionStorage.getItem('usuarioCurso');
+    
+    let temPermissao = true;
+    if (usuarioCurso) {
+        // Verificação simplificada no front-end (deve ser validada no back-end)
+        const permissoes = {
+            'matematica': ['matematica', 'programacao'],
+            'csn': ['csn', 'programacao'],
+            'csh': ['csh', 'portugues', 'programacao'],
+            'portugues': ['portugues', 'csh', 'programacao'],
+            'programacao': ['programacao']
+        };
+        temPermissao = permissoes[usuarioCurso]?.includes(curso.materia) || false;
+    }
+    
+    card.className = `course-card ${!temPermissao ? 'bloqueado' : ''}`;
     
     const materiaNome = obterNomeMateria(curso.materia);
     const nivelNome = obterNomeNivel(curso.nivel);
@@ -921,13 +899,21 @@ function criarCardCurso(curso) {
         <div class="course-image">
             <img src="${imagemUrl}" alt="${curso.titulo}" 
                  onerror="this.src='https://placehold.co/600x400/323232/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}'">
-            <div class="course-badge badge-${curso.materia}">${materiaNome}</div>
+            <div class="course-badge badge-${curso.materia} ${!temPermissao ? 'badge-bloqueado' : ''}">
+                ${!temPermissao ? '🔒 ' : ''}${materiaNome}
+            </div>
             <div class="course-level level-${curso.nivel || 'medio'}">${nivelNome}</div>
         </div>
         
         <div class="course-content">
             <h3 class="course-title">${curso.titulo}</h3>
             <p class="course-description">${curso.descricao || 'Descrição não disponível.'}</p>
+            
+            ${!temPermissao ? `
+            <div class="alert" style="margin: 10px 0; padding: 10px; background: rgba(244, 67, 54, 0.1); border-left: 4px solid #f44336;">
+                <small>⛔ Este curso não está disponível para seu curso atual</small>
+            </div>
+            ` : ''}
             
             <div class="course-meta">
                 <div class="meta-item">
@@ -965,8 +951,10 @@ function criarCardCurso(curso) {
             ` : ''}
             
             <div class="course-actions">
-                <button class="btn btn-primary" onclick="iniciarCurso(${curso.id})">
-                    <i class="fas fa-play"></i> ${progresso > 0 ? 'Continuar' : 'Começar'}
+                <button class="btn ${temPermissao ? 'btn-primary' : 'btn-secondary'}" 
+                        onclick="${temPermissao ? `iniciarCurso(${curso.id})` : 'mostrarAlerta(\"⛔ Este curso não está disponível para seu curso atual\", \"error\")'}">
+                    <i class="fas ${temPermissao ? 'fa-play' : 'fa-lock'}"></i> 
+                    ${temPermissao ? (progresso > 0 ? 'Continuar' : 'Começar') : 'Bloqueado'}
                 </button>
                 
                 <button class="btn btn-secondary" onclick="verDetalhes(${curso.id})">
@@ -1042,16 +1030,46 @@ function calcularTotalAulas(curso) {
 }
 
 function obterProgressoCurso(cursoId) {
-    // Em produção, isso viria da API de progresso
-    // Para demonstração, retorna progresso aleatório ou 0
     return Math.random() > 0.7 ? Math.floor(Math.random() * 100) : 0;
 }
 
-// ✅ FUNÇÕES DE AÇÃO
-function iniciarCurso(cursoId) {
-    console.log('Iniciando curso:', cursoId);
-    // Redireciona para a página do curso
-    window.location.href = `/cursos?id=${cursoId}`;
+async function iniciarCurso(cursoId) {
+    console.log('Tentando iniciar curso:', cursoId);
+        const curso = cursos.find(c => c.id === cursoId);
+    if (!curso) {
+        mostrarAlerta('Curso não encontrado!', 'error');
+        return;
+    }
+    
+    const usuarioId = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
+    
+    if (usuarioId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/cursos/${cursoId}?usuarioId=${usuarioId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.status === 403) {
+                const errorData = await response.json();
+                mostrarAlerta(`⛔ ${errorData.message}`, 'error');
+                return;
+            }
+            
+            if (response.ok) {
+                window.location.href = `/cursos?id=${cursoId}`;
+            } else {
+                mostrarAlerta('Erro ao verificar permissão do curso', 'error');
+            }
+        } catch (error) {
+            console.error('Erro ao verificar permissão:', error);
+            mostrarAlerta('Erro ao verificar acesso ao curso', 'error');
+        }
+    } else {
+        mostrarAlerta('Faça login para acessar este curso', 'warning');
+    }
 }
 
 function verDetalhes(cursoId) {
