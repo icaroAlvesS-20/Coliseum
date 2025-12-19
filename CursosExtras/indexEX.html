@@ -490,6 +490,23 @@
             transform: scale(1.1);
             box-shadow: 0 6px 20px rgba(255, 207, 0, 0.6);
         }
+        .course-card.bloqueado {
+                opacity: 0.6;
+                filter: grayscale(50%);
+                cursor: not-allowed;
+        }
+         .course-card.bloqueado:hover {
+                transform: none;
+                border-color: #f44336;
+         }
+        .course-card.bloqueado .btn-primary {
+                background: linear-gradient(135deg, #f44336, #d32f2f);
+                cursor: not-allowed;
+        }
+        .badge-bloqueado {
+                background: #f44336 !important;
+                color: white !important;
+         }
 
         /* ========== MEDIA QUERIES ========== */
         @media (max-width: 1024px) {
@@ -572,26 +589,6 @@
                 grid-template-columns: repeat(2, 1fr);
                 gap: 10px;
             }
-            /* ========== ESTILOS PARA CURSOS BLOQUEADOS ========== */
-            .course-card.bloqueado {
-                opacity: 0.6;
-                filter: grayscale(50%);
-                cursor: not-allowed;
-            }
-            .course-card.bloqueado:hover {
-                transform: none;
-                border-color: #f44336;
-            }
-            .course-card.bloqueado .btn-primary {
-                background: linear-gradient(135deg, #f44336, #d32f2f);
-                cursor: not-allowed;
-            }
-            .badge-bloqueado {
-                background: #f44336 !important;
-                color: white !important;
-            }
-
-/* ========== MEDIA QUERIES ========== */
         }
     </style>
 </head>
