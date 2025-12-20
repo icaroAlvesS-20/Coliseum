@@ -413,25 +413,46 @@ let filtroAtivo = 'all';
 
 // ✅ FUNÇÃO PARA OBTER DADOS DO USUÁRIO
 function obterUsuarioLogado() {
-    return {
+    const usuario = {
         id: localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId'),
         curso: localStorage.getItem('cursoUsuario') || sessionStorage.getItem('cursoUsuario'),
         nome: localStorage.getItem('usuarioNome') || sessionStorage.getItem('usuarioNome')
     };
+    
+    console.log('👤 Usuário logado:', usuario);
+    return usuario;
 }
 
-// ✅ FUNÇÃO PARA VERIFICAR PERMISSÃO
+// ✅ FUNÇÃO PARA VERIFICAR PERMISSÃO (ATUALIZADA)
 function verificarPermissao(cursoUsuario, materiaCurso) {
     const mapeamento = {
         'matematica': ['matematica', 'programacao'],
         'csn': ['csn', 'programacao'],
         'csh': ['csh', 'portugues', 'programacao'],
         'portugues': ['portugues', 'csh', 'programacao'],
-        'programacao': ['programacao']
+        'programacao': ['programacao'] // USUÁRIOS DE PROGRAMAÇÃO SÓ VEEM PROGRAMACAO
     };
     
     const categoria = obterCategoria(materiaCurso);
-    return mapeamento[cursoUsuario]?.includes(categoria) || false;
+    
+    console.log(`🔐 Verificando permissão: ${cursoUsuario} → ${categoria} (da matéria: ${materiaCurso})`);
+    
+    // Se não tem curso definido (não logado), não tem permissão
+    if (!cursoUsuario) {
+        console.log('❌ Não logado');
+        return false;
+    }
+    
+    // Se o mapeamento não existe para o curso do usuário
+    if (!mapeamento[cursoUsuario]) {
+        console.log(`❌ Curso ${cursoUsuario} não está no mapeamento`);
+        return false;
+    }
+    
+    const temPermissao = mapeamento[cursoUsuario].includes(categoria);
+    console.log(`✅ Permissão: ${temPermissao ? 'SIM' : 'NÃO'}`);
+    
+    return temPermissao;
 }
 
 // ✅ FUNÇÃO PARA CONVERTER MATÉRIA EM CATEGORIA
@@ -477,7 +498,7 @@ function obterCategoria(materia) {
         return 'portugues';
     }
     
-    // Programação (SEU CASO)
+    // Programação
     if (materiaLower.includes('javascript') || 
         materiaLower.includes('python') || 
         materiaLower.includes('php') ||
@@ -496,7 +517,6 @@ function obterCategoria(materia) {
         return 'programacao';
     }
     
-    // Se não identificar, assume CSH como padrão
     return 'csh';
 }
 
@@ -510,7 +530,6 @@ async function carregarCursos() {
             url += `?usuarioId=${usuario.id}`;
         }
         
-        console.log('🔍 Buscando cursos da URL:', url);
         const response = await fetch(url);
         
         if (!response.ok) {
@@ -518,19 +537,8 @@ async function carregarCursos() {
         }
         
         const dados = await response.json();
-        console.log('📦 Dados recebidos:', dados);
-        
-        // Se a API já filtrou, usa os dados diretamente
-        // Se não, filtra no frontend
         cursos = Array.isArray(dados) ? dados : (dados.cursos || []);
         
-        // Log para verificar as matérias
-        console.log('📊 Cursos carregados:');
-        cursos.forEach(curso => {
-            console.log(`  "${curso.titulo}" - Matéria: "${curso.materia}" - Categoria: "${obterCategoria(curso.materia)}"`);
-        });
-        
-        // Se não tem cursos, usa exemplos
         if (cursos.length === 0) {
             cursos = gerarCursosExemplo();
         }
@@ -547,7 +555,7 @@ async function carregarCursos() {
     }
 }
 
-// ✅ CURSOS DE EXEMPLO (FALLBACK)
+// ✅ CURSOS DE EXEMPLO
 function gerarCursosExemplo() {
     return [
         {
@@ -561,20 +569,11 @@ function gerarCursosExemplo() {
         },
         {
             id: 2,
-            titulo: "Python para Iniciantes",
-            descricao: "Introdução à programação com Python",
-            materia: "python",
+            titulo: "Matemática Básica",
+            descricao: "Fundamentos de matemática",
+            materia: "matematica",
             nivel: "iniciante",
-            duracao: 25,
-            modulos: [{ aulas: [{}] }]
-        },
-        {
-            id: 3,
-            titulo: "Desenvolvimento Web",
-            descricao: "HTML, CSS e JavaScript",
-            materia: "programacao",
-            nivel: "medio",
-            duracao: 30,
+            duracao: 15,
             modulos: [{ aulas: [{}] }]
         }
     ];
@@ -608,13 +607,11 @@ function mostrarCursos() {
     const termoBusca = document.getElementById('course-search').value.toLowerCase();
     
     let cursosFiltrados = cursos.filter(curso => {
-        // Aplicar filtro
         if (filtroAtivo !== 'all') {
             const categoria = obterCategoria(curso.materia);
             if (categoria !== filtroAtivo) return false;
         }
         
-        // Aplicar busca
         if (termoBusca) {
             const texto = (curso.titulo + ' ' + curso.descricao + ' ' + curso.materia).toLowerCase();
             if (!texto.includes(termoBusca)) return false;
@@ -643,9 +640,7 @@ function mostrarCursos() {
 // ✅ CRIAR CARD DO CURSO
 function criarCardCurso(curso, usuario) {
     const categoria = obterCategoria(curso.materia);
-    const temPermissao = usuario.curso ? verificarPermissao(usuario.curso, curso.materia) : false;
-    
-    console.log(`🎯 Criando card: "${curso.titulo}" | Matéria: "${curso.materia}" | Categoria: "${categoria}" | Permissão: ${temPermissao}`);
+    const temPermissao = verificarPermissao(usuario.curso, curso.materia);
     
     const card = document.createElement('div');
     card.className = `course-card ${temPermissao ? '' : 'bloqueado'}`;
@@ -654,6 +649,17 @@ function criarCardCurso(curso, usuario) {
     const imagemUrl = curso.imagem || `https://placehold.co/600x400/323232/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}`;
     
     card.innerHTML = `
+        ${!temPermissao && usuario.curso ? `
+        <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;color:#f44336;text-align:center;padding:20px;">
+            <div>
+                <i class="fas fa-lock" style="font-size:2rem;margin-bottom:10px;"></i>
+                <h4>Curso Bloqueado</h4>
+                <p>Você é do curso <strong>${usuario.curso.toUpperCase()}</strong><br>
+                e não pode acessar cursos de <strong>${obterNomeCategoria(categoria)}</strong></p>
+            </div>
+        </div>
+        ` : ''}
+        
         <div class="course-image">
             <img src="${imagemUrl}" alt="${curso.titulo}" 
                  onerror="this.src='https://placehold.co/600x400/323232/ffffff?text=Curso'">
@@ -747,7 +753,6 @@ function iniciarCurso(cursoId) {
         return;
     }
     
-    // Redirecionar para a página do curso
     window.location.href = `/curso-detailed.html?id=${cursoId}&usuarioId=${usuario.id}`;
 }
 
@@ -846,6 +851,5 @@ document.addEventListener('DOMContentLoaded', () => {
     carregarCursos();
 });
 </script>
-    
 </body>
 </html>
