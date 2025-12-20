@@ -436,31 +436,68 @@ function verificarPermissao(cursoUsuario, materiaCurso) {
 
 // ✅ FUNÇÃO PARA CONVERTER MATÉRIA EM CATEGORIA
 function obterCategoria(materia) {
-    const mapeamento = {
-        'algebra': 'matematica',
-        'geometria': 'matematica',
-        'matematica': 'matematica',
-        
-        'quimica': 'csn',
-        'fisica': 'csn',
-        'biologia': 'csn',
-        
-        'historia': 'csh',
-        'geografia': 'csh',
-        'filosofia': 'csh',
-        
-        'gramatica': 'portugues',
-        'interpretacao': 'portugues',
-        'literatura': 'portugues',
-        
-        'python': 'programacao',
-        'javascript': 'programacao',
-        'php': 'programacao',
-        'react': 'programacao',
-        'programacao': 'programacao'
-    };
+    const materiaLower = materia.toLowerCase();
     
-    return mapeamento[materia] || 'csh';
+    // Matemática
+    if (materiaLower.includes('algebra') || 
+        materiaLower.includes('geometria') || 
+        materiaLower.includes('matematica') ||
+        materiaLower.includes('matemática')) {
+        return 'matematica';
+    }
+    
+    // CSN (Ciências da Natureza)
+    if (materiaLower.includes('quimica') || 
+        materiaLower.includes('fisica') || 
+        materiaLower.includes('biologia') ||
+        materiaLower.includes('química') || 
+        materiaLower.includes('física')) {
+        return 'csn';
+    }
+    
+    // CSH (Ciências Humanas)
+    if (materiaLower.includes('historia') || 
+        materiaLower.includes('geografia') || 
+        materiaLower.includes('filosofia') ||
+        materiaLower.includes('sociologia') ||
+        materiaLower.includes('história')) {
+        return 'csh';
+    }
+    
+    // Português
+    if (materiaLower.includes('gramatica') || 
+        materiaLower.includes('interpretacao') || 
+        materiaLower.includes('literatura') ||
+        materiaLower.includes('redacao') ||
+        materiaLower.includes('portugues') ||
+        materiaLower.includes('português') ||
+        materiaLower.includes('gramática') || 
+        materiaLower.includes('interpretação') || 
+        materiaLower.includes('redação')) {
+        return 'portugues';
+    }
+    
+    // Programação (SEU CASO)
+    if (materiaLower.includes('javascript') || 
+        materiaLower.includes('python') || 
+        materiaLower.includes('php') ||
+        materiaLower.includes('react') ||
+        materiaLower.includes('programacao') ||
+        materiaLower.includes('programação') ||
+        materiaLower.includes('js') ||
+        materiaLower.includes('node') ||
+        materiaLower.includes('html') ||
+        materiaLower.includes('css') ||
+        materiaLower.includes('web') ||
+        materiaLower.includes('frontend') ||
+        materiaLower.includes('backend') ||
+        materiaLower.includes('codigo') ||
+        materiaLower.includes('código')) {
+        return 'programacao';
+    }
+    
+    // Se não identificar, assume CSH como padrão
+    return 'csh';
 }
 
 // ✅ CARREGAR CURSOS DA API
@@ -473,6 +510,7 @@ async function carregarCursos() {
             url += `?usuarioId=${usuario.id}`;
         }
         
+        console.log('🔍 Buscando cursos da URL:', url);
         const response = await fetch(url);
         
         if (!response.ok) {
@@ -480,10 +518,17 @@ async function carregarCursos() {
         }
         
         const dados = await response.json();
+        console.log('📦 Dados recebidos:', dados);
         
         // Se a API já filtrou, usa os dados diretamente
         // Se não, filtra no frontend
         cursos = Array.isArray(dados) ? dados : (dados.cursos || []);
+        
+        // Log para verificar as matérias
+        console.log('📊 Cursos carregados:');
+        cursos.forEach(curso => {
+            console.log(`  "${curso.titulo}" - Matéria: "${curso.materia}" - Categoria: "${obterCategoria(curso.materia)}"`);
+        });
         
         // Se não tem cursos, usa exemplos
         if (cursos.length === 0) {
@@ -507,30 +552,27 @@ function gerarCursosExemplo() {
     return [
         {
             id: 1,
-            titulo: "Álgebra Linear",
-            descricao: "Fundamentos da álgebra linear",
-            materia: "algebra",
-            categoria: "matematica",
-            nivel: "medio",
+            titulo: "JavaScript Básico",
+            descricao: "Aprenda JavaScript do zero",
+            materia: "javascript",
+            nivel: "iniciante",
             duracao: 20,
             modulos: [{ aulas: [{}] }]
         },
         {
             id: 2,
-            titulo: "Química Orgânica",
-            descricao: "Compostos de carbono",
-            materia: "quimica",
-            categoria: "csn",
-            nivel: "medio",
+            titulo: "Python para Iniciantes",
+            descricao: "Introdução à programação com Python",
+            materia: "python",
+            nivel: "iniciante",
             duracao: 25,
             modulos: [{ aulas: [{}] }]
         },
         {
             id: 3,
-            titulo: "História do Brasil",
-            descricao: "Panorama histórico",
-            materia: "historia",
-            categoria: "csh",
+            titulo: "Desenvolvimento Web",
+            descricao: "HTML, CSS e JavaScript",
+            materia: "programacao",
             nivel: "medio",
             duracao: 30,
             modulos: [{ aulas: [{}] }]
@@ -602,6 +644,8 @@ function mostrarCursos() {
 function criarCardCurso(curso, usuario) {
     const categoria = obterCategoria(curso.materia);
     const temPermissao = usuario.curso ? verificarPermissao(usuario.curso, curso.materia) : false;
+    
+    console.log(`🎯 Criando card: "${curso.titulo}" | Matéria: "${curso.materia}" | Categoria: "${categoria}" | Permissão: ${temPermissao}`);
     
     const card = document.createElement('div');
     card.className = `course-card ${temPermissao ? '' : 'bloqueado'}`;
@@ -680,7 +724,10 @@ function obterNomeMateria(materia) {
         'geografia': 'Geografia',
         'gramatica': 'Gramática',
         'javascript': 'JavaScript',
-        'python': 'Python'
+        'python': 'Python',
+        'php': 'PHP',
+        'react': 'React',
+        'programacao': 'Programação'
     };
     return nomes[materia] || materia;
 }
@@ -799,5 +846,6 @@ document.addEventListener('DOMContentLoaded', () => {
     carregarCursos();
 });
 </script>
+    
 </body>
 </html>
