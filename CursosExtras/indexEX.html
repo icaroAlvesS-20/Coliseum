@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cursos Extras - Coliseum</title>
-    <meta name="description" content="Cursos extras para complementar seus estudos">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -21,11 +20,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
             color: #fff;
         }
 
-        /* Header Styles */
         .header {
             width: 100%;
             max-width: 1200px;
@@ -42,8 +39,6 @@
             color: #ffcf00;
             font-size: 32px;
             margin-bottom: 10px;
-            font-weight: bold;
-            text-shadow: 0 2px 4px rgba(255, 207, 0, 0.3);
         }
 
         .header p {
@@ -51,7 +46,6 @@
             font-size: 1.1rem;
         }
 
-        /* Container principal */
         .conteudo-principal {
             width: 100%;
             max-width: 1200px;
@@ -61,7 +55,6 @@
             margin-bottom: 40px;
         }
 
-        /* Stats Section */
         .stats-section {
             background: #323232;
             border-radius: 15px;
@@ -82,12 +75,6 @@
             background: #2a2a2a;
             border-radius: 12px;
             border: 1px solid #444;
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            border-color: #ffcf00;
         }
 
         .stat-value {
@@ -102,7 +89,6 @@
             font-size: 0.85rem;
         }
 
-        /* Filtros */
         .filters {
             display: flex;
             justify-content: center;
@@ -120,8 +106,6 @@
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 600;
-            font-size: 0.9rem;
-            white-space: nowrap;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -132,11 +116,8 @@
             background: #ffcf00;
             color: #000;
             border-color: #ffcf00;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 207, 0, 0.3);
         }
 
-        /* Search */
         .search-box {
             max-width: 500px;
             margin: 0 auto 30px auto;
@@ -151,17 +132,11 @@
             border-radius: 12px;
             color: #fff;
             font-size: 1rem;
-            transition: all 0.3s ease;
         }
 
         .search-box input:focus {
             outline: none;
             border-color: #ffcf00;
-            box-shadow: 0 0 20px rgba(255, 207, 0, 0.3);
-        }
-
-        .search-box input::placeholder {
-            color: #888;
         }
 
         .search-icon {
@@ -170,10 +145,8 @@
             top: 50%;
             transform: translateY(-50%);
             color: #ffcf00;
-            font-size: 1.1rem;
         }
 
-        /* Courses Grid */
         .courses-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -187,80 +160,14 @@
             overflow: hidden;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
             border: 2px solid #444;
-            transition: all 0.3s ease;
-            position: relative;
             display: flex;
             flex-direction: column;
             height: 100%;
         }
 
-        .course-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
-            border-color: #ffcf00;
-        }
-
         .course-card.bloqueado {
             opacity: 0.7;
             filter: grayscale(70%);
-            cursor: not-allowed;
-            position: relative;
-        }
-
-        .course-card.bloqueado:hover {
-            transform: none !important;
-            box-shadow: none !important;
-            border-color: #f44336 !important;
-        }
-
-        /* Overlay de bloqueio */
-        .bloqueado-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 15px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .course-card.bloqueado:hover .bloqueado-overlay {
-            opacity: 1;
-        }
-
-        .bloqueado-mensagem {
-            text-align: center;
-            padding: 20px;
-            max-width: 80%;
-        }
-
-        .bloqueado-mensagem i {
-            font-size: 2.5rem;
-            color: #f44336;
-            margin-bottom: 15px;
-        }
-
-        .bloqueado-mensagem h4 {
-            color: #f44336;
-            margin-bottom: 10px;
-            font-size: 1.2rem;
-        }
-
-        .bloqueado-mensagem p {
-            color: #ccc;
-            line-height: 1.4;
-            margin-bottom: 10px;
-        }
-
-        .bloqueado-mensagem small {
-            color: #888;
-            font-size: 0.8rem;
         }
 
         .course-image {
@@ -285,8 +192,6 @@
             border-radius: 15px;
             font-size: 0.75rem;
             font-weight: bold;
-            text-transform: uppercase;
-            z-index: 2;
             background: rgba(0, 0, 0, 0.7);
             color: white;
         }
@@ -295,28 +200,8 @@
         .badge-csn { background: #4cc9f0; }
         .badge-csh { background: #f72585; }
         .badge-portugues { background: #ffcf00; color: black; }
-        .badge-programacao { background: #ff6b00; color: white; }
-        .badge-bloqueado {
-            background: #f44336 !important;
-            color: white !important;
-        }
-
-        .course-level {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            padding: 5px 10px;
-            border-radius: 12px;
-            font-size: 0.65rem;
-            font-weight: bold;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            z-index: 2;
-        }
-
-        .level-fundamental { background: #4CAF50; }
-        .level-medio { background: #FF9800; }
-        .level-vestibular { background: #F44336; }
+        .badge-programacao { background: #ff6b00; }
+        .badge-bloqueado { background: #f44336; }
 
         .course-content {
             padding: 20px;
@@ -329,18 +214,12 @@
             color: #ffcf00;
             font-size: 1.3rem;
             margin-bottom: 10px;
-            font-weight: bold;
-            line-height: 1.3;
         }
 
         .course-description {
             color: #ccc;
             margin-bottom: 15px;
             line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
             flex: 1;
         }
 
@@ -364,50 +243,11 @@
             color: #ffcf00;
             font-weight: bold;
             font-size: 0.9rem;
-            line-height: 1.2;
         }
 
         .meta-label {
             color: #888;
             font-size: 0.7rem;
-            margin-top: 2px;
-            line-height: 1.2;
-        }
-
-        .course-category {
-            margin-bottom: 12px;
-        }
-
-        .course-category small {
-            color: #ffcf00;
-            font-size: 0.8rem;
-        }
-
-        .course-progress {
-            margin-bottom: 15px;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: #444;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-bottom: 6px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ffcf00, #ff6b00);
-            border-radius: 3px;
-            transition: width 0.3s ease;
-        }
-
-        .progress-text {
-            display: flex;
-            justify-content: space-between;
-            color: #aaa;
-            font-size: 0.75rem;
         }
 
         .course-actions {
@@ -423,13 +263,10 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            font-size: 0.85rem;
-            min-height: 44px;
         }
 
         .btn-primary {
@@ -444,52 +281,11 @@
         }
 
         .btn-bloqueado {
-            background: linear-gradient(135deg, #555, #333) !important;
-            color: #999 !important;
-            cursor: not-allowed !important;
-            border: 1px solid #666 !important;
+            background: #555;
+            color: #999;
+            cursor: not-allowed;
         }
 
-        .btn-bloqueado:hover {
-            transform: none !important;
-            box-shadow: none !important;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-primary:hover {
-            box-shadow: 0 5px 15px rgba(255, 207, 0, 0.4);
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 50px 20px;
-            color: #888;
-            grid-column: 1 / -1;
-        }
-
-        .empty-state i {
-            font-size: 3.5rem;
-            margin-bottom: 15px;
-            color: #ffcf00;
-        }
-
-        .empty-state h3 {
-            color: #ffcf00;
-            margin-bottom: 8px;
-            font-size: 1.3rem;
-        }
-
-        .empty-state p {
-            color: #ccc;
-            line-height: 1.4;
-        }
-
-        /* Loading State */
         .loading {
             text-align: center;
             padding: 40px;
@@ -497,52 +293,13 @@
             grid-column: 1 / -1;
         }
 
-        .loading i {
-            font-size: 2rem;
-            margin-bottom: 15px;
-            animation: spin 1s linear infinite;
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #888;
+            grid-column: 1 / -1;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Alert */
-        .alert {
-            padding: 15px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 4px solid;
-            background: rgba(244, 67, 54, 0.1);
-            color: #f44336;
-            border-left-color: #f44336;
-        }
-
-        .alert-success {
-            background: rgba(76, 175, 80, 0.1);
-            color: #4CAF50;
-            border-left-color: #4CAF50;
-        }
-
-        .alert-warning {
-            background: rgba(255, 152, 0, 0.1);
-            color: #FF9800;
-            border-left-color: #FF9800;
-        }
-
-        .alert-close {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: inherit;
-        }
-
-        /* Botão voltar */
         .btn-voltar {
             position: fixed;
             bottom: 30px;
@@ -553,300 +310,20 @@
             background: #ffcf00;
             color: #000;
             font-size: 24px;
-            font-weight: bold;
             border: none;
             cursor: pointer;
-            z-index: 1000;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.4);
-            transition: all 0.3s ease;
-        }
-
-        .btn-voltar:hover {
-            background: #e6b800;
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(255, 207, 0, 0.6);
-        }
-
-        /* Modal de regras */
-        .modal-regras {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-
-        .modal-conteudo {
-            background: #323232;
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 500px;
-            width: 90%;
-            border: 2px solid #ffcf00;
-            color: white;
-            text-align: center;
-        }
-
-        .modal-conteudo h3 {
-            color: #ffcf00;
-            margin-bottom: 15px;
-            font-size: 1.5rem;
-        }
-
-        .modal-conteudo i {
-            font-size: 3rem;
-            color: #ffcf00;
-            margin-bottom: 15px;
-        }
-
-        .regras-lista {
-            text-align: left;
-            margin: 20px 0;
-            background: #2a2a2a;
-            padding: 15px;
-            border-radius: 10px;
-        }
-
-        .regra-item {
-            margin-bottom: 10px;
-            padding: 8px;
-            border-left: 3px solid #ffcf00;
-            background: rgba(255, 207, 0, 0.1);
-        }
-
-        .btn-fechar-modal {
-            background: #ffcf00;
-            color: black;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            font-size: 1rem;
-            margin-top: 15px;
-        }
-
-        /* Alert de login */
-        .login-alert {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #4CAF50;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            z-index: 9999;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            animation: slideIn 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .login-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #ffcf00;
-            color: black;
-            padding: 10px 20px;
-            border-radius: 10px;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 9999;
-            box-shadow: 0 4px 12px rgba(255,207,0,0.4);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* Botão de debug */
-        .debug-btn {
-            position: fixed;
-            bottom: 100px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #4361ee;
-            color: white;
-            font-size: 24px;
-            border: none;
-            cursor: pointer;
-            z-index: 1000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
-        }
-
-        /* Botões de teste rápido */
-        .test-buttons-container {
-            position: fixed;
-            bottom: 180px;
-            right: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            z-index: 1000;
-        }
-
-        .test-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 12px;
-        }
-
-        .test-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-        }
-
-        /* ========== MEDIA QUERIES ========== */
-        @media (max-width: 1024px) {
-            .courses-grid {
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-                gap: 20px;
-            }
         }
 
         @media (max-width: 768px) {
-            body {
-                padding: 15px;
-            }
-            
-            .header {
-                padding: 15px;
-            }
-            
-            .btn-voltar {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
-                bottom: 20px;
-                right: 20px;
-            }
-            
-            .debug-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
-                bottom: 80px;
-                right: 20px;
-            }
-            
-            .test-buttons-container {
-                bottom: 140px;
-                right: 20px;
-            }
-            
-            .test-btn {
-                width: 45px;
-                height: 45px;
-                font-size: 11px;
-            }
-            
             .courses-grid {
                 grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
-            .course-actions {
-                flex-direction: column;
             }
             
             .course-meta {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-            }
-            
-            .login-alert, .login-btn {
-                top: 10px;
-                right: 10px;
-                left: 10px;
-                text-align: center;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 10px;
-            }
-            
-            .header {
-                padding: 12px;
-            }
-            
-            .stats-section {
-                padding: 20px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .stat-card {
-                padding: 15px;
-            }
-            
-            .stat-value {
-                font-size: 1.8rem;
-            }
-            
-            .filter-btn {
-                padding: 10px 15px;
-                font-size: 0.8rem;
-            }
-            
-            .course-image {
-                height: 160px;
-            }
-            
-            .course-content {
-                padding: 15px;
-            }
-            
-            .course-title {
-                font-size: 1.1rem;
-            }
-            
-            .bloqueado-mensagem {
-                padding: 15px;
-            }
-            
-            .bloqueado-mensagem i {
-                font-size: 2rem;
             }
         }
     </style>
@@ -858,12 +335,9 @@
         <p id="header-subtitle">Aprenda com cursos complementares para reforçar seus estudos</p>
     </div>
 
-    <!-- Main Content -->
     <div class="conteudo-principal">
-        <!-- Alert Container -->
         <div id="alert-container"></div>
 
-        <!-- Stats Section -->
         <div class="stats-section">
             <div class="stats-grid">
                 <div class="stat-card">
@@ -886,17 +360,16 @@
                     <div class="stat-value" id="cursos-portugues">0</div>
                     <div class="stat-label">Português</div>
                 </div>
-                 <div class="stat-card">
+                <div class="stat-card">
                     <div class="stat-value" id="cursos-programacao">0</div>
                     <div class="stat-label">Programação</div>
                 </div>
             </div>
         </div>
 
-        <!-- Filtros por Matéria -->
         <div class="filters">
             <button class="filter-btn active" data-filter="all">
-                <i class="fas fa-layer-group"></i> Todas as Matérias
+                <i class="fas fa-layer-group"></i> Todas
             </button>
             <button class="filter-btn" data-filter="matematica">
                 <i class="fas fa-calculator"></i> Matemática
@@ -915,15 +388,13 @@
             </button>
         </div>
 
-        <!-- Search -->
         <div class="search-box">
-            <input type="text" id="course-search" placeholder="Buscar cursos por título, descrição...">
+            <input type="text" id="course-search" placeholder="Buscar cursos...">
             <div class="search-icon">
                 <i class="fas fa-search"></i>
             </div>
         </div>
 
-        <!-- Courses Grid -->
         <div class="courses-grid" id="courses-container">
             <div class="loading">
                 <i class="fas fa-spinner fa-spin"></i>
@@ -933,647 +404,148 @@
     </div>
 
     <button class="btn-voltar" onclick="voltarParaMenu()">←</button>
-    <button class="debug-btn" onclick="debugLogin()" title="Debug Login">🐛</button>
 
 <script>
-// ==================== SISTEMA DE LOGIN E SINCRONIZAÇÃO ====================
-
 // ✅ CONSTANTES
 const API_BASE_URL = 'https://coliseum-api.onrender.com/api';
 let cursos = [];
-let filteredCursos = [];
+let filtroAtivo = 'all';
 
-// ✅ SISTEMA DE SINCRONIZAÇÃO ENTRE ADMIN E CURSOS
-class SincronizadorLogin {
-    constructor() {
-        console.log('🔄 Iniciando sincronizador de login...');
-    }
-
-    // Verificar se veio do admin
-    verificarOrigemAdmin() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const fromAdmin = urlParams.get('fromAdmin');
-        
-        if (fromAdmin === 'true') {
-            console.log('🏛️ Detecção: Vindo do Admin');
-            
-            // Tentar carregar as credenciais do localStorage
-            const sincronizado = this.sincronizarDoLocalStorage();
-            
-            // Remover parâmetro da URL sem recarregar
-            this.removerParametroURL('fromAdmin');
-            
-            return sincronizado;
-        }
-        
-        return false;
-    }
-
-    // Remover parâmetro da URL
-    removerParametroURL(parametro) {
-        const url = new URL(window.location);
-        url.searchParams.delete(parametro);
-        window.history.replaceState({}, document.title, url);
-    }
-
-    // Sincronizar credenciais do localStorage
-    sincronizarDoLocalStorage() {
-        console.log('💾 Tentando sincronizar credenciais do localStorage...');
-        
-        // Verificar todos os possíveis campos de login
-        const possiveisCampos = {
-            usuarioId: ['usuarioId', 'userId', 'id_usuario', 'user_id', 'admin_user_id'],
-            cursoUsuario: ['cursoUsuario', 'curso', 'materia', 'userCurso', 'admin_user_curso'],
-            usuarioNome: ['usuarioNome', 'userName', 'nome', 'username', 'admin_user_name']
-        };
-
-        let credenciais = {
-            usuarioId: null,
-            cursoUsuario: null,
-            usuarioNome: null
-        };
-
-        // Buscar em todas as chaves possíveis
-        Object.keys(possiveisCampos).forEach(chave => {
-            possiveisCampos[chave].forEach(tentativa => {
-                const valor = localStorage.getItem(tentativa);
-                if (valor && !credenciais[chave]) {
-                    credenciais[chave] = valor;
-                    console.log(`✅ ${chave} encontrado como "${tentativa}": ${valor}`);
-                }
-            });
-        });
-
-        // Se encontrou credenciais, salvar de forma padronizada
-        if (credenciais.usuarioId && credenciais.cursoUsuario) {
-            console.log('🎉 Credenciais sincronizadas do admin:', credenciais);
-            
-            // Salvar no localStorage de forma padronizada
-            this.salvarCredenciais(credenciais);
-            
-            // Mostrar alerta
-            setTimeout(() => {
-                mostrarAlerta(`✅ Login sincronizado do admin: ${credenciais.usuarioNome || 'Usuário'} (${credenciais.cursoUsuario.toUpperCase()})`, 'success');
-            }, 1000);
-            
-            return true;
-        } else {
-            console.log('⚠️ Não foi possível encontrar credenciais completas no localStorage');
-            return false;
-        }
-    }
-
-    // Salvar credenciais de forma padronizada
-    salvarCredenciais(credenciais) {
-        localStorage.setItem('usuarioId', credenciais.usuarioId);
-        localStorage.setItem('cursoUsuario', credenciais.cursoUsuario);
-        if (credenciais.usuarioNome) {
-            localStorage.setItem('usuarioNome', credenciais.usuarioNome);
-        }
-        
-        // Salvar também no sessionStorage para redundância
-        sessionStorage.setItem('usuarioId', credenciais.usuarioId);
-        sessionStorage.setItem('cursoUsuario', credenciais.cursoUsuario);
-        if (credenciais.usuarioNome) {
-            sessionStorage.setItem('usuarioNome', credenciais.usuarioNome);
-        }
-    }
-
-    // Forçar login manual (para testes)
-    forcarLoginManual(usuarioId, cursoUsuario, usuarioNome = 'Usuário Teste') {
-        console.log('🔧 Forçando login manual:', { usuarioId, cursoUsuario, usuarioNome });
-        
-        const credenciais = {
-            usuarioId: usuarioId.toString(),
-            cursoUsuario: cursoUsuario,
-            usuarioNome: usuarioNome
-        };
-        
-        this.salvarCredenciais(credenciais);
-        
-        console.log('✅ Login manual forçado com sucesso!');
-        
-        // Mostrar alerta e recarregar
-        mostrarAlerta(`✅ Login forçado: ${usuarioNome} (${cursoUsuario.toUpperCase()})`, 'success');
-        
-        // Recarregar a página
-        setTimeout(() => {
-            location.reload();
-        }, 1500);
-    }
+// ✅ FUNÇÃO PARA OBTER DADOS DO USUÁRIO
+function obterUsuarioLogado() {
+    return {
+        id: localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId'),
+        curso: localStorage.getItem('cursoUsuario') || sessionStorage.getItem('cursoUsuario'),
+        nome: localStorage.getItem('usuarioNome') || sessionStorage.getItem('usuarioNome')
+    };
 }
 
-// ✅ SISTEMA PRINCIPAL DE LOGIN
-class SistemaLogin {
-    constructor() {
-        console.log('🔐 Iniciando sistema de login...');
-        this.usuarioId = null;
-        this.cursoUsuario = null;
-        this.usuarioNome = null;
-    }
-
-    // Método principal para encontrar credenciais
-    encontrarCredenciais() {
-        console.log('🔍 Procurando credenciais do usuário...');
-        
-        // 1. Tentar localStorage
-        this.usuarioId = localStorage.getItem('usuarioId');
-        this.cursoUsuario = localStorage.getItem('cursoUsuario');
-        this.usuarioNome = localStorage.getItem('usuarioNome');
-        
-        console.log('📍 localStorage:', {
-            usuarioId: this.usuarioId,
-            cursoUsuario: this.cursoUsuario,
-            usuarioNome: this.usuarioNome
-        });
-        
-        // 2. Tentar sessionStorage se não encontrou
-        if (!this.usuarioId) this.usuarioId = sessionStorage.getItem('usuarioId');
-        if (!this.cursoUsuario) this.cursoUsuario = sessionStorage.getItem('cursoUsuario');
-        if (!this.usuarioNome) this.usuarioNome = sessionStorage.getItem('usuarioNome');
-        
-        console.log('📍 sessionStorage:', {
-            usuarioId: this.usuarioId,
-            cursoUsuario: this.cursoUsuario,
-            usuarioNome: this.usuarioNome
-        });
-        
-        // 3. Tentar cookies
-        this.buscarEmCookies();
-        
-        // 4. Tentar URL parameters
-        this.buscarNaURL();
-        
-        // 5. Se encontrou, garantir que está no localStorage (para consistência)
-        if (this.usuarioId && this.cursoUsuario) {
-            this.salvarNoLocalStorage();
-            return true;
-        }
-        
-        console.warn('⚠️ Nenhuma credencial encontrada');
-        return false;
-    }
-    
-    buscarEmCookies() {
-        try {
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                const [key, value] = cookie.trim().split('=');
-                if (key === 'usuarioId' && !this.usuarioId) {
-                    this.usuarioId = value;
-                    console.log('🍪 Usuário ID encontrado em cookie:', value);
-                }
-                if (key === 'cursoUsuario' && !this.cursoUsuario) {
-                    this.cursoUsuario = value;
-                    console.log('🍪 Curso encontrado em cookie:', value);
-                }
-                if (key === 'usuarioNome' && !this.usuarioNome) {
-                    this.usuarioNome = value;
-                    console.log('🍪 Nome encontrado em cookie:', value);
-                }
-            }
-        } catch (e) {
-            console.log('⚠️ Erro ao ler cookies:', e.message);
-        }
-    }
-    
-    buscarNaURL() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (!this.usuarioId) {
-            this.usuarioId = urlParams.get('usuarioId') || urlParams.get('userId');
-            if (this.usuarioId) console.log('🌐 Usuário ID encontrado na URL:', this.usuarioId);
-        }
-        if (!this.cursoUsuario) {
-            this.cursoUsuario = urlParams.get('curso') || urlParams.get('cursoUsuario') || urlParams.get('materia');
-            if (this.cursoUsuario) console.log('🌐 Curso encontrado na URL:', this.cursoUsuario);
-        }
-        if (!this.usuarioNome) {
-            this.usuarioNome = urlParams.get('nome') || urlParams.get('usuarioNome') || urlParams.get('username');
-            if (this.usuarioNome) console.log('🌐 Nome encontrado na URL:', this.usuarioNome);
-        }
-    }
-    
-    salvarNoLocalStorage() {
-        console.log('💾 Salvando credenciais no localStorage...');
-        localStorage.setItem('usuarioId', this.usuarioId);
-        localStorage.setItem('cursoUsuario', this.cursoUsuario);
-        if (this.usuarioNome) {
-            localStorage.setItem('usuarioNome', this.usuarioNome);
-        }
-        
-        console.log('✅ Credenciais salvas:', {
-            usuarioId: this.usuarioId,
-            cursoUsuario: this.cursoUsuario,
-            usuarioNome: this.usuarioNome
-        });
-    }
-    
-    estaLogado() {
-        return !!(this.usuarioId && this.cursoUsuario);
-    }
-    
-    mostrarStatusLogin() {
-        if (this.estaLogado()) {
-            this.mostrarAlertaLogin();
-            this.atualizarCabecalho();
-        } else {
-            this.mostrarBotaoLogin();
-        }
-    }
-    
-    mostrarAlertaLogin() {
-        // Remover alerta anterior se existir
-        const alertaAnterior = document.querySelector('.login-alert');
-        if (alertaAnterior) alertaAnterior.remove();
-        
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'login-alert';
-        alertDiv.innerHTML = `
-            <i class="fas fa-check-circle"></i> 
-            <span>Logado como: <strong>${this.usuarioNome || 'Usuário'}</strong> (${this.cursoUsuario.toUpperCase()})</span>
-            <button onclick="this.parentElement.remove()" style="
-                background: none;
-                border: none;
-                color: white;
-                margin-left: 10px;
-                cursor: pointer;
-                font-size: 1.2rem;
-            ">×</button>
-        `;
-        
-        document.body.appendChild(alertDiv);
-        
-        // Remover após 5 segundos
-        setTimeout(() => {
-            if (alertDiv.parentElement) {
-                alertDiv.remove();
-            }
-        }, 5000);
-    }
-    
-    mostrarBotaoLogin() {
-        // Remover botão anterior se existir
-        const botaoAnterior = document.querySelector('.login-btn');
-        if (botaoAnterior) botaoAnterior.remove();
-        
-        const loginBtn = document.createElement('button');
-        loginBtn.className = 'login-btn';
-        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Fazer Login';
-        loginBtn.onclick = () => window.location.href = this.getLoginUrl();
-        
-        document.body.appendChild(loginBtn);
-    }
-    
-    atualizarCabecalho() {
-        const headerSubtitle = document.getElementById('header-subtitle');
-        if (headerSubtitle && this.usuarioNome && this.cursoUsuario) {
-            const originalText = 'Aprenda com cursos complementares para reforçar seus estudos';
-            headerSubtitle.innerHTML = `${originalText}<br>
-                <small style="color: #ffcf00; font-size: 0.9rem;">
-                    👤 ${this.usuarioNome} - Curso: ${this.cursoUsuario.toUpperCase()}
-                </small>`;
-        }
-    }
-    
-    getLoginUrl() {
-        // Verificar se está no Vercel ou localhost
-        const isVercel = window.location.hostname.includes('vercel.app');
-        return isVercel ? '/login.html' : '/login.html';
-    }
-}
-
-// ✅ INSTANCIAR SISTEMAS
-const sincronizador = new SincronizadorLogin();
-const sistemaLogin = new SistemaLogin();
-
-// ==================== FUNÇÕES PRINCIPAIS ====================
-
-// ✅ TESTAR CONEXÃO COM API
-async function testarConexaoAPI() {
-    try {
-        console.log('🌐 Testando conexão com API...');
-        const response = await fetch(`${API_BASE_URL}/health`, {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            console.log('✅ API online:', data);
-            mostrarAlerta('✅ Conexão com API estabelecida!', 'success');
-            return true;
-        } else {
-            console.warn('⚠️ API offline ou com erro:', response.status);
-            mostrarAlerta('⚠️ API offline, usando dados locais', 'warning');
-            return false;
-        }
-    } catch (error) {
-        console.error('❌ Erro ao testar API:', error);
-        mostrarAlerta('❌ Não foi possível conectar à API', 'error');
-        return false;
-    }
-}
-
-// ✅ INICIALIZAÇÃO
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🚀 Inicializando página de Cursos Extras...');
-    
-    // Testar conexão com API
-    await testarConexaoAPI();
-    
-    // 1. Verificar se veio do admin
-    const veioDoAdmin = sincronizador.verificarOrigemAdmin();
-    
-    // 2. Verificar login normalmente
-    const logado = sistemaLogin.encontrarCredenciais();
-    
-    // 3. Se não logado e não veio do admin, tentar método alternativo
-    if (!logado && !veioDoAdmin) {
-        console.log('🔍 Tentando método alternativo de login...');
-        tentarLoginAlternativo();
-        // Verificar novamente após tentativa
-        sistemaLogin.encontrarCredenciais();
-    }
-    
-    // 4. Mostrar status do login
-    sistemaLogin.mostrarStatusLogin();
-    
-    // 5. Carregar cursos
-    await carregarCursos();
-    configurarFiltros();
-    configurarBusca();
-    
-    // 6. Adicionar botões de teste rápido se estiver em desenvolvimento
-    if (window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1') || window.location.hostname.includes('vercel.app')) {
-        adicionarBotoesTesteRapido();
-    }
-    
-    // 7. Mostrar debug info
-    console.log('📊 Status final do login:', {
-        logado: sistemaLogin.estaLogado(),
-        usuarioId: sistemaLogin.usuarioId,
-        cursoUsuario: sistemaLogin.cursoUsuario,
-        usuarioNome: sistemaLogin.usuarioNome,
-        veioDoAdmin: veioDoAdmin
-    });
-});
-
-// ✅ MÉTODO ALTERNATIVO DE LOGIN
-function tentarLoginAlternativo() {
-    console.log('🔄 Tentando métodos alternativos de login...');
-    
-    // Método 1: Verificar cookies de sessão
-    if (verificarCookiesSessao()) {
-        return true;
-    }
-    
-    // Método 2: Login automático para desenvolvimento
-    if (window.location.hostname.includes('localhost') || window.location.hostname.includes('vercel.app')) {
-        console.log('🖥️ Ambiente de desenvolvimento detectado, tentando login automático...');
-        return tentarLoginDesenvolvimento();
-    }
-    
-    return false;
-}
-
-function verificarCookiesSessao() {
-    try {
-        const cookies = document.cookie.split(';');
-        let encontrouCredenciais = false;
-        const credenciais = {
-            usuarioId: null,
-            cursoUsuario: null,
-            usuarioNome: null
-        };
-        
-        cookies.forEach(cookie => {
-            const [nome, valor] = cookie.trim().split('=');
-            if (nome === 'usuarioId') {
-                credenciais.usuarioId = valor;
-                encontrouCredenciais = true;
-                console.log('🍪 Usuário ID encontrado em cookie:', valor);
-            }
-            if (nome === 'cursoUsuario') {
-                credenciais.cursoUsuario = valor;
-                encontrouCredenciais = true;
-                console.log('🍪 Curso encontrado em cookie:', valor);
-            }
-            if (nome === 'usuarioNome') {
-                credenciais.usuarioNome = valor;
-                console.log('🍪 Nome encontrado em cookie:', valor);
-            }
-        });
-        
-        if (encontrouCredenciais && credenciais.usuarioId && credenciais.cursoUsuario) {
-            sincronizador.salvarCredenciais(credenciais);
-            mostrarAlerta('✅ Login restaurado da sessão anterior!', 'success');
-            return true;
-        }
-        
-        return false;
-    } catch (e) {
-        console.log('⚠️ Erro ao verificar cookies:', e.message);
-        return false;
-    }
-}
-
-function tentarLoginDesenvolvimento() {
-    // Para desenvolvimento, cria um usuário de teste
-    const usuarioTeste = {
-        usuarioId: '999',
-        cursoUsuario: 'programacao',
-        usuarioNome: 'Usuário de Teste'
+// ✅ FUNÇÃO PARA VERIFICAR PERMISSÃO
+function verificarPermissao(cursoUsuario, materiaCurso) {
+    const mapeamento = {
+        'matematica': ['matematica', 'programacao'],
+        'csn': ['csn', 'programacao'],
+        'csh': ['csh', 'portugues', 'programacao'],
+        'portugues': ['portugues', 'csh', 'programacao'],
+        'programacao': ['programacao']
     };
     
-    sincronizador.salvarCredenciais(usuarioTeste);
-    console.log('✅ Login automático configurado para desenvolvimento');
-    mostrarAlerta('🔧 Modo de desenvolvimento: Login automático ativado', 'warning');
-    return true;
+    const categoria = obterCategoria(materiaCurso);
+    return mapeamento[cursoUsuario]?.includes(categoria) || false;
 }
 
-// ✅ FUNÇÃO PRINCIPAL PARA CARREGAR CURSOS
+// ✅ FUNÇÃO PARA CONVERTER MATÉRIA EM CATEGORIA
+function obterCategoria(materia) {
+    const mapeamento = {
+        'algebra': 'matematica',
+        'geometria': 'matematica',
+        'matematica': 'matematica',
+        
+        'quimica': 'csn',
+        'fisica': 'csn',
+        'biologia': 'csn',
+        
+        'historia': 'csh',
+        'geografia': 'csh',
+        'filosofia': 'csh',
+        
+        'gramatica': 'portugues',
+        'interpretacao': 'portugues',
+        'literatura': 'portugues',
+        
+        'python': 'programacao',
+        'javascript': 'programacao',
+        'php': 'programacao',
+        'react': 'programacao',
+        'programacao': 'programacao'
+    };
+    
+    return mapeamento[materia] || 'csh';
+}
+
+// ✅ CARREGAR CURSOS DA API
 async function carregarCursos() {
-  try {
-    mostrarLoading();
-    console.log('🔄 Carregando cursos da API...');
-
-    // ✅ OBTER ID DO USUÁRIO LOGADO
-    const usuarioId = sistemaLogin.usuarioId;
-    
-    // Construir URL base
-    let url = `${API_BASE_URL}/cursos`;
-    
-    console.log('🌐 Chamando API:', url);
-    
-    // Tentativa de carregamento da API
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      mode: 'cors'
-    });
-
-    console.log('📡 Resposta da API:', {
-      status: response.status,
-      ok: response.ok
-    });
-
-    if (response.ok) {
-      const cursosData = await response.json();
-      console.log('📦 Dados recebidos da API:', cursosData);
-      
-      // Filtrar cursos por permissão SE usuário logado
-      if (usuarioId && sistemaLogin.cursoUsuario) {
-        cursos = cursosData.filter(curso => 
-          verificarPermissaoFrontend(sistemaLogin.cursoUsuario, obterCategoriaDaMateria(curso.materia))
-        );
-        console.log(`✅ ${cursos.length} cursos permitidos para ${sistemaLogin.cursoUsuario}`);
-      } else {
-        cursos = cursosData;
-        console.log(`✅ ${cursos.length} cursos carregados (sem filtro)`);
-      }
-    } else {
-      console.warn(`⚠️ API retornou status ${response.status}`);
-      // Usar dados de exemplo como fallback
-      cursos = gerarCursosExemplo();
-      mostrarAlerta('⚠️ Usando dados de demonstração. API pode estar offline.', 'warning');
+    try {
+        const usuario = obterUsuarioLogado();
+        
+        let url = `${API_BASE_URL}/cursos`;
+        if (usuario.id) {
+            url += `?usuarioId=${usuario.id}`;
+        }
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`Erro ${response.status}`);
+        }
+        
+        const dados = await response.json();
+        
+        // Se a API já filtrou, usa os dados diretamente
+        // Se não, filtra no frontend
+        cursos = Array.isArray(dados) ? dados : (dados.cursos || []);
+        
+        // Se não tem cursos, usa exemplos
+        if (cursos.length === 0) {
+            cursos = gerarCursosExemplo();
+        }
+        
+        atualizarEstatisticas();
+        mostrarCursos();
+        
+    } catch (error) {
+        console.error('Erro ao carregar cursos:', error);
+        cursos = gerarCursosExemplo();
+        atualizarEstatisticas();
+        mostrarCursos();
+        mostrarAlerta('⚠️ Não foi possível carregar todos os cursos', 'warning');
     }
-
-    // Debug dos dados carregados
-    console.log('📊 Cursos carregados:', cursos);
-    
-    // Atualizar interface
-    atualizarEstatisticas();
-    filtrarCursos('all');
-    
-  } catch (error) {
-    console.error('❌ Erro ao carregar cursos:', error);
-    // Fallback para dados de exemplo
-    cursos = gerarCursosExemplo();
-    mostrarAlerta('⚠️ Não foi possível conectar à API. Usando dados de demonstração.', 'warning');
-    
-    // Atualizar interface mesmo com erro
-    atualizarEstatisticas();
-    filtrarCursos('all');
-  }
 }
 
-// ✅ GERAR CURSOS DE EXEMPLO (FALLBACK)
+// ✅ CURSOS DE EXEMPLO (FALLBACK)
 function gerarCursosExemplo() {
     return [
         {
             id: 1,
-            titulo: "Álgebra Linear Básica",
-            descricao: "Aprenda os fundamentos da álgebra linear para resolução de problemas matemáticos.",
+            titulo: "Álgebra Linear",
+            descricao: "Fundamentos da álgebra linear",
             materia: "algebra",
+            categoria: "matematica",
             nivel: "medio",
             duracao: 20,
-            imagem: null,
-            ativo: true,
-            modulos: [{ aulas: [{}] }, { aulas: [{}] }]
+            modulos: [{ aulas: [{}] }]
         },
         {
             id: 2,
             titulo: "Química Orgânica",
-            descricao: "Estudo dos compostos de carbono e suas aplicações no cotidiano.",
+            descricao: "Compostos de carbono",
             materia: "quimica",
+            categoria: "csn",
             nivel: "medio",
             duracao: 25,
-            imagem: null,
-            ativo: true,
             modulos: [{ aulas: [{}] }]
         },
         {
             id: 3,
             titulo: "História do Brasil",
-            descricao: "Panorama histórico do Brasil desde o descobrimento até os dias atuais.",
+            descricao: "Panorama histórico",
             materia: "historia",
+            categoria: "csh",
             nivel: "medio",
             duracao: 30,
-            imagem: null,
-            ativo: true,
-            modulos: [{ aulas: [{}] }, { aulas: [{}] }, { aulas: [{}] }]
-        },
-        {
-            id: 4,
-            titulo: "Gramática Avançada",
-            descricao: "Aprofunde seus conhecimentos em gramática portuguesa.",
-            materia: "gramatica",
-            nivel: "avancado",
-            duracao: 18,
-            imagem: null,
-            ativo: true,
-            modulos: [{ aulas: [{}] }, { aulas: [{}] }]
-        },
-        {
-            id: 5,
-            titulo: "Introdução ao JavaScript",
-            descricao: "Aprenda os fundamentos da programação com JavaScript.",
-            materia: "javascript",
-            nivel: "iniciante",
-            duracao: 15,
-            imagem: null,
-            ativo: true,
             modulos: [{ aulas: [{}] }]
-        },
-        {
-            id: 6,
-            titulo: "Física Moderna",
-            descricao: "Conceitos avançados de física quântica e relatividade.",
-            materia: "fisica",
-            nivel: "avancado",
-            duracao: 35,
-            imagem: null,
-            ativo: true,
-            modulos: [{ aulas: [{}] }, { aulas: [{}] }]
-        },
-        {
-            id: 7,
-            titulo: "Geografia Mundial",
-            descricao: "Estudo dos aspectos físicos e humanos da Terra.",
-            materia: "geografia",
-            nivel: "medio",
-            duracao: 22,
-            imagem: null,
-            ativo: true,
-            modulos: [{ aulas: [{}] }, { aulas: [{}] }]
         }
     ];
-}
-
-// ✅ MOSTRAR LOADING
-function mostrarLoading() {
-    const container = document.getElementById('courses-container');
-    if (container) {
-        container.innerHTML = `
-            <div class="loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Carregando cursos...</p>
-            </div>
-        `;
-    }
 }
 
 // ✅ ATUALIZAR ESTATÍSTICAS
 function atualizarEstatisticas() {
     const totalCursos = cursos.length;
-    const cursosMatematica = cursos.filter(c => 
-        obterCategoriaDaMateria(c.materia) === 'matematica'
-    ).length;
-    const cursosCsn = cursos.filter(c => 
-        obterCategoriaDaMateria(c.materia) === 'csn'
-    ).length;
-    const cursosCsh = cursos.filter(c => 
-        obterCategoriaDaMateria(c.materia) === 'csh'
-    ).length;
-    const cursosPortugues = cursos.filter(c => 
-        obterCategoriaDaMateria(c.materia) === 'portugues'
-    ).length;
-    const cursosProgramacao = cursos.filter(c => 
-        obterCategoriaDaMateria(c.materia) === 'programacao'
-    ).length;
+    const cursosMatematica = cursos.filter(c => obterCategoria(c.materia) === 'matematica').length;
+    const cursosCsn = cursos.filter(c => obterCategoria(c.materia) === 'csn').length;
+    const cursosCsh = cursos.filter(c => obterCategoria(c.materia) === 'csh').length;
+    const cursosPortugues = cursos.filter(c => obterCategoria(c.materia) === 'portugues').length;
+    const cursosProgramacao = cursos.filter(c => obterCategoria(c.materia) === 'programacao').length;
 
     document.getElementById('total-cursos').textContent = totalCursos;
     document.getElementById('cursos-matematica').textContent = cursosMatematica;
@@ -1583,152 +555,33 @@ function atualizarEstatisticas() {
     document.getElementById('cursos-programacao').textContent = cursosProgramacao;
 }
 
-// ✅ CONFIGURAR FILTROS
-function configurarFiltros() {
-    console.log('🔧 Configurando filtros...');
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            console.log(`🎯 Botão de filtro clicado: ${this.dataset.filter}`);
-            
-            // Remover active de todos
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            // Adicionar active ao clicado
-            this.classList.add('active');
-            // Aplicar filtro
-            const filtro = this.dataset.filter;
-            filtrarCursos(filtro);
-        });
-    });
-}
-
-// ✅ CONFIGURAR BUSCA
-function configurarBusca() {
-    const searchInput = document.getElementById('course-search');
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            console.log(`🔍 Busca digitada: ${this.value}`);
-            aplicarFiltros();
-        });
-    }
-}
-
-// ✅ APLICAR FILTROS (filtro + busca)
-function aplicarFiltros() {
-    const filtroAtivo = document.querySelector('.filter-btn.active').dataset.filter;
-    console.log(`🔄 Aplicando filtros: ${filtroAtivo}`);
-    filtrarCursos(filtroAtivo);
-}
-
-// ✅ FUNÇÃO AUXILIAR PARA CONVERTER MATÉRIA EM CATEGORIA
-function obterCategoriaDaMateria(materia) {
-    const mapeamento = {
-        // Matemática
-        'algebra': 'matematica',
-        'geometria': 'matematica',
-        'matematica': 'matematica',
-        
-        // CSN
-        'quimica': 'csn',
-        'fisica': 'csn',
-        'biologia': 'csn',
-        
-        // CSH
-        'historia': 'csh',
-        'geografia': 'csh',
-        'filosofia': 'csh',
-        'sociologia': 'csh',
-        
-        // Português
-        'gramatica': 'portugues',
-        'interpretacao': 'portugues',
-        'literatura': 'portugues',
-        'redacao': 'portugues',
-        
-        // Programação
-        'python': 'programacao',
-        'javascript': 'programacao',
-        'php': 'programacao',
-        'react': 'programacao',
-        'programacao': 'programacao',
-        'js': 'programacao'
-    };
-    
-    return mapeamento[materia] || 'csh';
-}
-
-// ✅ FILTRAR CURSOS
-function filtrarCursos(filtro) {
-    try {
-        console.log(`🔍 Aplicando filtro: "${filtro}"`);
-        console.log(`📊 Total de cursos disponíveis: ${cursos.length}`);
-        
-        const searchInput = document.getElementById('course-search');
-        const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
-        
-        if (!Array.isArray(cursos) || cursos.length === 0) {
-            console.warn('⚠️ Nenhum curso disponível para filtrar');
-            exibirCursos();
-            return;
-        }
-        
-        // Filtrar cursos
-        filteredCursos = cursos.filter(curso => {
-            if (!curso || typeof curso !== 'object') return false;
-            
-            // Converter matéria para categoria
-            const cursoCategoria = obterCategoriaDaMateria(curso.materia);
-            
-            // 1. Aplicar filtro de categoria
-            let passaFiltro = true;
-            if (filtro !== 'all') {
-                // Verificar se a categoria do curso corresponde ao filtro
-                passaFiltro = cursoCategoria === filtro;
-                if (!passaFiltro) {
-                    return false; // Já falhou no filtro principal
-                }
-            }
-            
-            // 2. Aplicar filtro de busca
-            if (searchTerm) {
-                // Verificar em todos os campos de texto
-                const camposParaBuscar = [
-                    curso.titulo || '',
-                    curso.descricao || '',
-                    curso.materia || '',
-                    cursoCategoria || '',
-                    curso.nivel || ''
-                ];
-                
-                const encontrou = camposParaBuscar.some(campo => 
-                    campo.toLowerCase().includes(searchTerm)
-                );
-                
-                if (!encontrou) {
-                    return false; // Não encontrou na busca
-                }
-            }
-            
-            return true; // Passou em todos os filtros
-        });
-        
-        console.log(`✅ Filtro "${filtro}" aplicado: ${filteredCursos.length} cursos encontrados`);
-        
-        exibirCursos();
-        
-    } catch (error) {
-        console.error('❌ Erro ao filtrar cursos:', error);
-        mostrarAlerta('Erro ao filtrar cursos. Tente novamente.', 'error');
-    }
-}
-
-// ✅ EXIBIR CURSOS
-function exibirCursos() {
+// ✅ MOSTRAR CURSOS
+function mostrarCursos() {
     const container = document.getElementById('courses-container');
     if (!container) return;
     
     container.innerHTML = '';
     
-    if (filteredCursos.length === 0) {
+    const usuario = obterUsuarioLogado();
+    const termoBusca = document.getElementById('course-search').value.toLowerCase();
+    
+    let cursosFiltrados = cursos.filter(curso => {
+        // Aplicar filtro
+        if (filtroAtivo !== 'all') {
+            const categoria = obterCategoria(curso.materia);
+            if (categoria !== filtroAtivo) return false;
+        }
+        
+        // Aplicar busca
+        if (termoBusca) {
+            const texto = (curso.titulo + ' ' + curso.descricao + ' ' + curso.materia).toLowerCase();
+            if (!texto.includes(termoBusca)) return false;
+        }
+        
+        return true;
+    });
+    
+    if (cursosFiltrados.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-graduation-cap"></i>
@@ -1739,97 +592,30 @@ function exibirCursos() {
         return;
     }
     
-    console.log(`🎨 Exibindo ${filteredCursos.length} cursos na tela`);
-    
-    filteredCursos.forEach(curso => {
-        container.appendChild(criarCardCurso(curso));
+    cursosFiltrados.forEach(curso => {
+        const card = criarCardCurso(curso, usuario);
+        container.appendChild(card);
     });
 }
 
-// ✅ CRIAR CARD DO CURSO - COM VERIFICAÇÃO DE PERMISSÃO
-function criarCardCurso(curso) {
+// ✅ CRIAR CARD DO CURSO
+function criarCardCurso(curso, usuario) {
+    const categoria = obterCategoria(curso.materia);
+    const temPermissao = usuario.curso ? verificarPermissao(usuario.curso, curso.materia) : false;
+    
     const card = document.createElement('div');
-    
-    // ✅ VERIFICAR PERMISSÃO DO USUÁRIO
-    const usuarioId = sistemaLogin.usuarioId;
-    const cursoUsuario = sistemaLogin.cursoUsuario;
-    
-    let temPermissao = false;
-    let mensagemBloqueio = '';
-    
-    console.log(`🔐 Verificando permissão para curso: ${curso.titulo}`);
-    console.log(`   Usuário ID: ${usuarioId}`);
-    console.log(`   Curso do usuário: ${cursoUsuario}`);
-    console.log(`   Matéria do curso: ${curso.materia}`);
-    
-    // Converter "materia" do backend para "categoria" do frontend
-    const categoriaCurso = obterCategoriaDaMateria(curso.materia);
-    
-    if (usuarioId && cursoUsuario) {
-        temPermissao = verificarPermissaoFrontend(cursoUsuario, categoriaCurso);
-        console.log(`   Permissão concedida: ${temPermissao}`);
-        
-        if (!temPermissao) {
-            mensagemBloqueio = `
-                <div class="bloqueado-overlay">
-                    <div class="bloqueado-mensagem">
-                        <i class="fas fa-lock"></i>
-                        <h4>Curso Bloqueado</h4>
-                        <p>Você é do curso <strong>${cursoUsuario.toUpperCase()}</strong> 
-                           e não pode acessar cursos de <strong>${obterNomeCategoria(categoriaCurso)}</strong>.</p>
-                        <small>Clique em "Ver Regras" para mais informações.</small>
-                    </div>
-                </div>
-            `;
-        }
-    } else {
-        // Se não tem usuário logado, mostrar mensagem diferente
-        temPermissao = false;
-        mensagemBloqueio = `
-            <div class="bloqueado-overlay">
-                <div class="bloqueado-mensagem">
-                    <i class="fas fa-user-lock"></i>
-                    <h4>Login Necessário</h4>
-                    <p>Faça login para acessar este curso.</p>
-                    <button onclick="irParaLogin()" style="
-                        background: #ffcf00;
-                        color: black;
-                        border: none;
-                        padding: 8px 16px;
-                        border-radius: 5px;
-                        margin-top: 10px;
-                        cursor: pointer;
-                        font-weight: bold;
-                    ">
-                        <i class="fas fa-sign-in-alt"></i> Fazer Login
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-    
     card.className = `course-card ${temPermissao ? '' : 'bloqueado'}`;
     
-    const materiaNome = obterNomeMateria(curso.materia);
-    const categoriaNome = obterNomeCategoria(categoriaCurso);
-    const nivelNome = obterNomeNivel(curso.nivel);
-    const progresso = obterProgressoCurso(curso.id);
-    const totalAulas = calcularTotalAulas(curso);
-    
-    // Gerar imagem padrão se não houver
-    const corBase = getCorMateria(categoriaCurso);
-    const imagemUrl = curso.imagem || `https://placehold.co/600x400/${corBase.replace('#', '')}/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}`;
+    const totalAulas = curso.modulos ? curso.modulos.reduce((total, modulo) => total + (modulo.aulas?.length || 0), 0) : 0;
+    const imagemUrl = curso.imagem || `https://placehold.co/600x400/323232/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}`;
     
     card.innerHTML = `
-        ${mensagemBloqueio}
-        
         <div class="course-image">
             <img src="${imagemUrl}" alt="${curso.titulo}" 
-                 onerror="this.src='https://placehold.co/600x400/323232/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}'">
-            <div class="course-badge ${temPermissao ? `badge-${categoriaCurso}` : 'badge-bloqueado'}">
-                ${temPermissao ? categoriaNome : 'BLOQUEADO'}
+                 onerror="this.src='https://placehold.co/600x400/323232/ffffff?text=Curso'">
+            <div class="course-badge ${temPermissao ? `badge-${categoria}` : 'badge-bloqueado'}">
+                ${temPermissao ? obterNomeCategoria(categoria) : 'BLOQUEADO'}
             </div>
-            <div class="course-level level-${curso.nivel || 'medio'}">${nivelNome}</div>
         </div>
         
         <div class="course-content">
@@ -1842,7 +628,7 @@ function criarCardCurso(curso) {
                     <div class="meta-label">Horas</div>
                 </div>
                 <div class="meta-item">
-                    <div class="meta-value">${curso.modulos ? curso.modulos.length : 0}</div>
+                    <div class="meta-value">${curso.modulos?.length || 0}</div>
                     <div class="meta-label">Módulos</div>
                 </div>
                 <div class="meta-item">
@@ -1850,50 +636,22 @@ function criarCardCurso(curso) {
                     <div class="meta-label">Aulas</div>
                 </div>
                 <div class="meta-item">
-                    <div class="meta-value">${nivelNome.split(' ')[0]}</div>
+                    <div class="meta-value">${curso.nivel?.charAt(0).toUpperCase() || 'M'}</div>
                     <div class="meta-label">Nível</div>
                 </div>
             </div>
             
-            <div class="course-category">
-                <small>Matéria: ${materiaNome}</small>
-                ${!temPermissao && usuarioId ? `
-                    <br><small style="color: #f44336;">
-                        <i class="fas fa-ban"></i> 
-                        Acesso restrito para ${cursoUsuario.toUpperCase()}
-                    </small>
-                ` : ''}
-            </div>
-            
-            ${progresso > 0 ? `
-            <div class="course-progress">
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${progresso}%"></div>
-                </div>
-                <div class="progress-text">
-                    <span>Progresso</span>
-                    <span>${progresso}%</span>
-                </div>
-            </div>
-            ` : ''}
-            
             <div class="course-actions">
                 <button class="btn ${temPermissao ? 'btn-primary' : 'btn-bloqueado'}" 
-                        onclick="${temPermissao ? `iniciarCurso(${curso.id})` : 'mostrarModalRegras()'}"
+                        onclick="${temPermissao ? `iniciarCurso(${curso.id})` : 'mostrarMensagemBloqueio()'}"
                         ${!temPermissao ? 'disabled' : ''}>
                     <i class="fas ${temPermissao ? 'fa-play' : 'fa-lock'}"></i> 
-                    ${temPermissao ? (progresso > 0 ? 'Continuar' : 'Começar') : 'Bloqueado'}
+                    ${temPermissao ? 'Começar' : 'Bloqueado'}
                 </button>
                 
-                ${!temPermissao && usuarioId ? `
-                <button class="btn btn-secondary" onclick="mostrarModalRegras()">
-                    <i class="fas fa-info-circle"></i> Ver Regras
-                </button>
-                ` : `
                 <button class="btn btn-secondary" onclick="verDetalhes(${curso.id})">
                     <i class="fas fa-info-circle"></i> Detalhes
                 </button>
-                `}
             </div>
         </div>
     `;
@@ -1901,94 +659,7 @@ function criarCardCurso(curso) {
     return card;
 }
 
-// ✅ FUNÇÃO DE VERIFICAÇÃO NO FRONTEND
-function verificarPermissaoFrontend(cursoUsuario, materiaCurso) {
-    const mapeamentoCursos = {
-        // Se o usuário é de "matematica", pode acessar:
-        'matematica': ['matematica', 'programacao'],
-        
-        // Se o usuário é de "csn", pode acessar:
-        'csn': ['csn', 'programacao'],
-        
-        // Se o usuário é de "csh", pode acessar:
-        'csh': ['csh', 'portugues', 'programacao'],
-        
-        // Se o usuário é de "portugues", pode acessar:
-        'portugues': ['portugues', 'csh', 'programacao'],
-        
-        // Se o usuário é de "programacao", pode acessar:
-        'programacao': ['programacao']
-    };
-    
-    const permitido = mapeamentoCursos[cursoUsuario]?.includes(materiaCurso) || false;
-    console.log(`🔐 Permissão: ${cursoUsuario} → ${materiaCurso} = ${permitido ? '✅' : '❌'}`);
-    return permitido;
-}
-
-// ✅ INICIAR CURSO COM VALIDAÇÃO
-async function iniciarCurso(cursoId) {
-    console.log('🎯 Tentando iniciar curso:', cursoId);
-    const curso = cursos.find(c => c.id === cursoId);
-    if (!curso) {
-        mostrarAlerta('Curso não encontrado!', 'error');
-        return;
-    }
-    
-    // ✅ VERIFICAÇÃO FINAL ANTES DE ACESSAR
-    const usuarioId = sistemaLogin.usuarioId;
-    const cursoUsuario = sistemaLogin.cursoUsuario;
-    
-    if (!usuarioId || !cursoUsuario) {
-        mostrarAlerta('Faça login para acessar os cursos!', 'warning');
-        irParaLogin();
-        return;
-    }
-    
-    const categoriaCurso = obterCategoriaDaMateria(curso.materia);
-    
-    if (!verificarPermissaoFrontend(cursoUsuario, categoriaCurso)) {
-        mostrarAlerta(
-            `⛔ Acesso Negado! Você é do curso ${cursoUsuario.toUpperCase()} e não pode acessar cursos de ${obterNomeCategoria(categoriaCurso)}.`,
-            'error'
-        );
-        return;
-    }
-    
-    // ✅ ACESSO PERMITIDO
-    console.log(`✅ Acesso permitido ao curso: ${curso.titulo}`);
-    mostrarAlerta(`Redirecionando para o curso: ${curso.titulo}`, 'success');
-    
-    // Redirecionar para a página do curso
-    setTimeout(() => {
-        window.location.href = `/curso-detailed.html?id=${cursoId}&usuarioId=${usuarioId}`;
-    }, 1000);
-}
-
 // ✅ FUNÇÕES AUXILIARES
-function obterNomeMateria(materia) {
-    const nomes = {
-        'algebra': 'Álgebra',
-        'geometria': 'Geometria',
-        'quimica': 'Química',
-        'fisica': 'Física',
-        'historia': 'História',
-        'geografia': 'Geografia',
-        'gramatica': 'Gramática',
-        'interpretacao': 'Interpretação',
-        'python': 'Python',
-        'javascript': 'JavaScript',
-        'php': 'PHP',
-        'react': 'React',
-        'matematica': 'Matemática',
-        'biologia': 'Biologia',
-        'filosofia': 'Filosofia',
-        'sociologia': 'Sociologia',
-        'literatura': 'Literatura',
-        'redacao': 'Redação'
-    };
-    return nomes[materia] || materia;
-}
-
 function obterNomeCategoria(categoria) {
     const nomes = {
         'matematica': 'Matemática',
@@ -2000,340 +671,133 @@ function obterNomeCategoria(categoria) {
     return nomes[categoria] || categoria;
 }
 
-function obterNomeNivel(nivel) {
+function obterNomeMateria(materia) {
     const nomes = {
-        'iniciante': 'Iniciante',
-        'intermediario': 'Intermediário',
-        'avancado': 'Avançado',
-        'fundamental': 'Fundamental',
-        'medio': 'Ensino Médio',
-        'vestibular': 'Vestibular'
+        'algebra': 'Álgebra',
+        'quimica': 'Química',
+        'fisica': 'Física',
+        'historia': 'História',
+        'geografia': 'Geografia',
+        'gramatica': 'Gramática',
+        'javascript': 'JavaScript',
+        'python': 'Python'
     };
-    return nomes[nivel] || nivel || 'Ensino Médio';
+    return nomes[materia] || materia;
 }
 
-function getCorMateria(categoria) {
-    const cores = {
-        'matematica': '#4361ee',
-        'csn': '#4cc9f0',
-        'csh': '#f72585',
-        'portugues': '#ffcf00',
-        'programacao': '#ff6b00'
-    };
-    return cores[categoria] || '#323232';
+// ✅ INICIAR CURSO
+function iniciarCurso(cursoId) {
+    const usuario = obterUsuarioLogado();
+    const curso = cursos.find(c => c.id === cursoId);
+    
+    if (!usuario.id) {
+        mostrarAlerta('Faça login para acessar o curso', 'warning');
+        return;
+    }
+    
+    if (!curso) {
+        mostrarAlerta('Curso não encontrado', 'error');
+        return;
+    }
+    
+    // Redirecionar para a página do curso
+    window.location.href = `/curso-detailed.html?id=${cursoId}&usuarioId=${usuario.id}`;
 }
 
-function calcularTotalAulas(curso) {
-    if (!curso.modulos) return 0;
-    let total = 0;
-    curso.modulos.forEach(modulo => {
-        total += modulo.aulas ? modulo.aulas.length : 0;
-    });
-    return total;
-}
-
-function obterProgressoCurso(cursoId) {
-    // Simula progresso - na implementação real, buscar do localStorage ou API
-    const progressoSalvo = localStorage.getItem(`progresso_curso_${cursoId}`);
-    return progressoSalvo ? parseInt(progressoSalvo) : 0;
-}
-
+// ✅ VER DETALHES
 function verDetalhes(cursoId) {
     const curso = cursos.find(c => c.id === cursoId);
     if (curso) {
-        const categoria = obterCategoriaDaMateria(curso.materia);
+        const categoria = obterCategoria(curso.materia);
         const detalhes = `
 🏫 ${curso.titulo}
 
 📚 Matéria: ${obterNomeMateria(curso.materia)}
 🏷️ Categoria: ${obterNomeCategoria(categoria)}
-📊 Nível: ${obterNomeNivel(curso.nivel)}
+📊 Nível: ${curso.nivel || 'Médio'}
 ⏱️ Duração: ${curso.duracao || '--'} horas
-📂 Módulos: ${curso.modulos ? curso.modulos.length : 0}
-📝 Aulas: ${calcularTotalAulas(curso)}
+📂 Módulos: ${curso.modulos?.length || 0}
+📝 Aulas: ${curso.modulos ? curso.modulos.reduce((t, m) => t + (m.aulas?.length || 0), 0) : 0}
 
 📋 Descrição:
 ${curso.descricao || 'Sem descrição disponível.'}
         `;
         alert(detalhes);
-    } else {
-        mostrarAlerta('Curso não encontrado!', 'error');
     }
 }
 
-function voltarParaMenu() {
-    // Verificar se está no Vercel ou localhost
-    const isVercel = window.location.hostname.includes('vercel.app');
-    const basePath = isVercel ? '/' : '/menu.html';
-    window.location.href = basePath;
+// ✅ MOSTRAR MENSAGEM DE BLOQUEIO
+function mostrarMensagemBloqueio() {
+    const usuario = obterUsuarioLogado();
+    if (!usuario.curso) {
+        mostrarAlerta('Faça login para ver seus cursos disponíveis', 'warning');
+    } else {
+        mostrarAlerta(`Você é do curso ${usuario.curso.toUpperCase()} e não tem acesso a este curso`, 'error');
+    }
 }
 
-function irParaLogin() {
-    console.log('🔐 Redirecionando para página de login...');
-    const isVercel = window.location.hostname.includes('vercel.app');
-    const loginPath = isVercel ? '/login.html' : '/login.html';
-    window.location.href = loginPath;
-}
-
+// ✅ MOSTRAR ALERTA
 function mostrarAlerta(mensagem, tipo = 'error') {
-    const alertContainer = document.getElementById('alert-container');
-    if (!alertContainer) return;
+    const container = document.getElementById('alert-container');
+    if (!container) return;
     
     const alert = document.createElement('div');
-    alert.className = `alert alert-${tipo === 'success' ? 'success' : tipo === 'warning' ? 'warning' : 'error'}`;
+    alert.className = `alert alert-${tipo}`;
+    alert.style.cssText = `
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border-left: 4px solid;
+        ${tipo === 'success' ? 'background: rgba(76, 175, 80, 0.1); color: #4CAF50; border-left-color: #4CAF50;' : 
+          tipo === 'warning' ? 'background: rgba(255, 152, 0, 0.1); color: #FF9800; border-left-color: #FF9800;' : 
+          'background: rgba(244, 67, 54, 0.1); color: #f44336; border-left-color: #f44336;'}
+    `;
     alert.innerHTML = `
         <span>${mensagem}</span>
-        <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+        <button onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;margin-left:10px;cursor:pointer">×</button>
     `;
     
-    alertContainer.appendChild(alert);
-    
-    // Remover automaticamente após 5 segundos
-    setTimeout(() => {
-        if (alert.parentElement) {
-            alert.remove();
-        }
-    }, 5000);
+    container.appendChild(alert);
+    setTimeout(() => alert.remove(), 5000);
 }
 
-// ✅ MODAL DE REGRAS DE ACESSO
-function mostrarModalRegras() {
-    const cursoUsuario = sistemaLogin.cursoUsuario;
-    const usuarioNome = sistemaLogin.usuarioNome || 'Usuário';
-    
-    const regras = {
-        'matematica': [
-            'Pode acessar cursos de: Matemática',
-            'Pode acessar cursos de: Programação',
-            'Não pode acessar cursos de: CSN, CSH, Português (exceto os permitidos)'
-        ],
-        'csn': [
-            'Pode acessar cursos de: CSN (Ciências da Natureza)',
-            'Pode acessar cursos de: Programação',
-            'Não pode acessar cursos de: Matemática, CSH, Português (exceto os permitidos)'
-        ],
-        'csh': [
-            'Pode acessar cursos de: CSH (Ciências Humanas)',
-            'Pode acessar cursos de: Português',
-            'Pode acessar cursos de: Programação',
-            'Não pode acessar cursos de: Matemática, CSN (exceto os permitidos)'
-        ],
-        'portugues': [
-            'Pode acessar cursos de: Português',
-            'Pode acessar cursos de: CSH',
-            'Pode acessar cursos de: Programação',
-            'Não pode acessar cursos de: Matemática, CSN (exceto os permitidos)'
-        ],
-        'programacao': [
-            'Pode acessar cursos de: Programação',
-            'Não pode acessar cursos de: Matemática, CSN, CSH, Português (exceto os permitidos)'
-        ]
-    };
-    
-    const modal = document.createElement('div');
-    modal.className = 'modal-regras';
-    modal.innerHTML = `
-        <div class="modal-conteudo">
-            <i class="fas fa-lock"></i>
-            <h3>Regras de Acesso aos Cursos</h3>
-            
-            ${cursoUsuario ? `
-                <p>Olá, <strong>${usuarioNome}</strong>!</p>
-                <p>Seu curso atual: <strong>${cursoUsuario.toUpperCase()}</strong></p>
-                
-                <div class="regras-lista">
-                    <h4>Suas permissões:</h4>
-                    ${regras[cursoUsuario] ? regras[cursoUsuario].map(regra => `
-                        <div class="regra-item">
-                            <i class="fas fa-check-circle" style="color: #4CAF50; margin-right: 8px;"></i>
-                            ${regra}
-                        </div>
-                    `).join('') : `
-                        <div class="regra-item">
-                            <i class="fas fa-exclamation-triangle" style="color: #FF9800; margin-right: 8px;"></i>
-                            Curso não identificado. Contate o administrador.
-                        </div>
-                    `}
-                </div>
-                
-                <p><small>Para alterar seu curso, contate o administrador do sistema.</small></p>
-            ` : `
-                <div class="regras-lista">
-                    <h4>Regras Gerais:</h4>
-                    <div class="regra-item">
-                        <i class="fas fa-user-plus" style="color: #4361ee; margin-right: 8px;"></i>
-                        Faça login para ver suas permissões específicas
-                    </div>
-                    <div class="regra-item">
-                        <i class="fas fa-graduation-cap" style="color: #ffcf00; margin-right: 8px;"></i>
-                        Cada curso tem acesso restrito por área de estudo
-                    </div>
-                    <div class="regra-item">
-                        <i class="fas fa-exclamation-circle" style="color: #f44336; margin-right: 8px;"></i>
-                        Cursos bloqueados aparecem em cinza com badge vermelho
-                    </div>
-                </div>
-                
-                <p><small>Faça login para desbloquear os cursos disponíveis para você.</small></p>
-            `}
-            
-            <button class="btn-fechar-modal" onclick="this.closest('.modal-regras').remove()">
-                Entendi
-            </button>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    
-    // Fechar modal ao clicar fora
-    modal.addEventListener('click', function(e) {
-        if (e.target === this) {
-            this.remove();
-        }
-    });
+// ✅ VOLTAR PARA MENU
+function voltarParaMenu() {
+    window.location.href = '/menu.html';
 }
 
-// ✅ ADICIONAR BOTÕES DE TESTE RÁPIDO
-function adicionarBotoesTesteRapido() {
-    console.log('🎮 Adicionando botões de teste rápido...');
-    
-    const container = document.createElement('div');
-    container.className = 'test-buttons-container';
-    
-    const tiposTeste = [
-        { id: 1, nome: 'Mat', cor: '#4361ee', curso: 'matematica', nomeUsuario: 'Aluno Matemática' },
-        { id: 2, nome: 'CSN', cor: '#4cc9f0', curso: 'csn', nomeUsuario: 'Aluno CSN' },
-        { id: 3, nome: 'CSH', cor: '#f72585', curso: 'csh', nomeUsuario: 'Aluno CSH' },
-        { id: 4, nome: 'Port', cor: '#ffcf00', curso: 'portugues', nomeUsuario: 'Aluno Português' },
-        { id: 5, nome: 'Prog', cor: '#ff6b00', curso: 'programacao', nomeUsuario: 'Aluno Programação' }
-    ];
-    
-    tiposTeste.forEach(tipo => {
-        const btn = document.createElement('button');
-        btn.className = 'test-btn';
-        btn.title = `Testar como ${tipo.nomeUsuario}`;
-        btn.innerHTML = tipo.nome;
-        btn.style.background = tipo.cor;
-        
-        btn.onclick = () => {
-            sincronizador.forcarLoginManual(tipo.id, tipo.curso, tipo.nomeUsuario);
-        };
-        
-        container.appendChild(btn);
-    });
-    
-    document.body.appendChild(container);
-}
-
-// ✅ FUNÇÃO DE DEBUG
-function debugLogin() {
-    console.clear();
-    console.log('🐛 ===== DEBUG DE LOGIN =====');
-    
-    // Informações atuais
-    console.log('📊 INFORMAÇÕES ATUAIS:');
-    console.log('- Usuário ID:', sistemaLogin.usuarioId);
-    console.log('- Curso:', sistemaLogin.cursoUsuario);
-    console.log('- Nome:', sistemaLogin.usuarioNome);
-    console.log('- Logado:', sistemaLogin.estaLogado());
-    
-    // LocalStorage
-    console.log('\n📦 LOCALSTORAGE:');
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        console.log(`  ${key}: ${localStorage.getItem(key)}`);
-    }
-    
-    // SessionStorage
-    console.log('\n📦 SESSIONSTORAGE:');
-    for (let i = 0; i < sessionStorage.length; i++) {
-        const key = sessionStorage.key(i);
-        console.log(`  ${key}: ${sessionStorage.getItem(key)}`);
-    }
-    
-    // Cookies
-    console.log('\n🍪 COOKIES:');
-    console.log('  Document cookie:', document.cookie);
-    
-    // Testar conexão com API
-    console.log('\n🌐 TESTANDO CONEXÃO COM API...');
-    testarConexaoAPI();
-    
-    // Tentar recarregar credenciais
-    console.log('\n🔄 RECARREGANDO CREDENCIAIS...');
-    sistemaLogin.encontrarCredenciais();
-    sistemaLogin.mostrarStatusLogin();
-    
-    // Mostrar alerta
-    mostrarAlerta('Debug executado! Verifique o console (F12).', 'warning');
-}
-
-// ✅ TESTE DOS FILTROS
-function testarFiltros() {
-    console.log('🧪 TESTANDO FILTROS MANUALMENTE...');
-    
-    const filtros = ['all', 'matematica', 'csn', 'csh', 'portugues', 'programacao'];
-    
-    filtros.forEach(filtro => {
-        const cursosFiltrados = cursos.filter(curso => {
-            if (filtro === 'all') return true;
-            const categoria = obterCategoriaDaMateria(curso.materia);
-            return categoria === filtro;
+// ✅ INICIALIZAR
+document.addEventListener('DOMContentLoaded', () => {
+    // Configurar filtros
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            filtroAtivo = this.dataset.filter;
+            mostrarCursos();
         });
-        console.log(`Filtro "${filtro}": ${cursosFiltrados.length} cursos`);
     });
-}
-
-// ✅ FUNÇÃO PARA LIMPAR LOGIN
-function limparLogin() {
-    console.log('🗑️  Limpando dados de login...');
     
-    // Limpar localStorage
-    localStorage.removeItem('usuarioId');
-    localStorage.removeItem('cursoUsuario');
-    localStorage.removeItem('usuarioNome');
+    // Configurar busca
+    document.getElementById('course-search').addEventListener('input', () => {
+        mostrarCursos();
+    });
     
-    // Limpar sessionStorage
-    sessionStorage.removeItem('usuarioId');
-    sessionStorage.removeItem('cursoUsuario');
-    sessionStorage.removeItem('usuarioNome');
+    // Atualizar cabeçalho
+    const usuario = obterUsuarioLogado();
+    if (usuario.nome && usuario.curso) {
+        const subtitle = document.getElementById('header-subtitle');
+        if (subtitle) {
+            subtitle.innerHTML = `Aprenda com cursos complementares para reforçar seus estudos<br>
+                <small style="color: #ffcf00; font-size: 0.9rem;">
+                    👤 ${usuario.nome} - Curso: ${usuario.curso.toUpperCase()}
+                </small>`;
+        }
+    }
     
-    // Limpar cookies
-    document.cookie = "usuarioId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    document.cookie = "cursoUsuario=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    document.cookie = "usuarioNome=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    
-    // Atualizar variáveis
-    sistemaLogin.usuarioId = null;
-    sistemaLogin.cursoUsuario = null;
-    sistemaLogin.usuarioNome = null;
-    
-    mostrarAlerta('✅ Login removido com sucesso!', 'success');
-    
-    // Recarregar a página
-    setTimeout(() => {
-        location.reload();
-    }, 1500);
-}
-
-// ✅ EXPORTAR FUNÇÕES PARA HTML
-window.iniciarCurso = iniciarCurso;
-window.verDetalhes = verDetalhes;
-window.voltarParaMenu = voltarParaMenu;
-window.mostrarModalRegras = mostrarModalRegras;
-window.irParaLogin = irParaLogin;
-window.debugLogin = debugLogin;
-window.testarFiltros = testarFiltros;
-window.limparLogin = limparLogin;
-window.sistemaLogin = sistemaLogin;
-window.sincronizador = sincronizador;
-
-// ✅ EXECUTAR TESTE APÓS CARREGAR
-setTimeout(() => {
-    console.log('🧪 Executando teste automático dos filtros...');
-    testarFiltros();
-}, 2000);
+    // Carregar cursos
+    carregarCursos();
+});
 </script>
-    
 </body>
 </html>
