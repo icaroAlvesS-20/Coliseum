@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -479,20 +480,38 @@ const API_BASE_URL = 'https://coliseum-api.onrender.com/api';
 let cursos = [];
 let filtroAtivo = 'all';
 
+// ==================== POLÍTICAS DE ACESSO ====================
+// Definição de quais cursos cada tipo de usuário pode acessar
+const POLITICAS_ACESSO = {
+    // Matemática: só pode acessar matemática e programação
+    'matematica': ['matematica', 'programacao'],
+    
+    // CSN: só pode acessar csn e programação
+    'csn': ['csn', 'programacao'],
+    
+    // CSH: só pode acessar csh, português e programação
+    'csh': ['csh', 'portugues', 'programacao'],
+    
+    // Português: só pode acessar português e csh
+    'portugues': ['portugues', 'csh'],
+    
+    // Programação: só pode acessar programação
+    'programacao': ['programacao']
+};
+
 // ==================== FUNÇÕES PRINCIPAIS ====================
 
-// ✅ OBTER USUÁRIO LOGADO (CORRIGIDO)
+// ✅ OBTER USUÁRIO LOGADO
 function obterUsuarioLogado() {
-    // Verificar múltiplos locais possíveis
     const usuario = {
         id: localStorage.getItem('usuarioId') || 
              sessionStorage.getItem('usuarioId') || 
              localStorage.getItem('userId'),
         
-        curso: localStorage.getItem('cursoUsuario') || 
+        curso: (localStorage.getItem('cursoUsuario') || 
                sessionStorage.getItem('cursoUsuario') || 
                localStorage.getItem('usuarioCurso') || 
-               sessionStorage.getItem('usuarioCurso'),
+               sessionStorage.getItem('usuarioCurso'))?.toLowerCase(),
         
         nome: localStorage.getItem('usuarioNome') || 
               sessionStorage.getItem('usuarioNome')
@@ -510,7 +529,12 @@ function obterCategoria(materia) {
     if (materiaLower.includes('algebra') || 
         materiaLower.includes('geometria') || 
         materiaLower.includes('matematica') ||
-        materiaLower.includes('matemática')) {
+        materiaLower.includes('matemática') ||
+        materiaLower.includes('calculo') ||
+        materiaLower.includes('cálculo') ||
+        materiaLower.includes('trigonometria') ||
+        materiaLower.includes('aritmetica') ||
+        materiaLower.includes('aritmética')) {
         return 'matematica';
     }
     
@@ -519,7 +543,11 @@ function obterCategoria(materia) {
         materiaLower.includes('fisica') || 
         materiaLower.includes('biologia') ||
         materiaLower.includes('química') || 
-        materiaLower.includes('física')) {
+        materiaLower.includes('física') ||
+        materiaLower.includes('ciencia') ||
+        materiaLower.includes('ciência') ||
+        materiaLower.includes('laboratorio') ||
+        materiaLower.includes('laboratório')) {
         return 'csn';
     }
     
@@ -528,7 +556,11 @@ function obterCategoria(materia) {
         materiaLower.includes('geografia') || 
         materiaLower.includes('filosofia') ||
         materiaLower.includes('sociologia') ||
-        materiaLower.includes('história')) {
+        materiaLower.includes('história') ||
+        materiaLower.includes('antropologia') ||
+        materiaLower.includes('politica') ||
+        materiaLower.includes('política') ||
+        materiaLower.includes('economia')) {
         return 'csh';
     }
     
@@ -541,7 +573,10 @@ function obterCategoria(materia) {
         materiaLower.includes('português') ||
         materiaLower.includes('gramática') || 
         materiaLower.includes('interpretação') || 
-        materiaLower.includes('redação')) {
+        materiaLower.includes('redação') ||
+        materiaLower.includes('linguistica') ||
+        materiaLower.includes('linguística') ||
+        materiaLower.includes('ortografia')) {
         return 'portugues';
     }
     
@@ -560,36 +595,70 @@ function obterCategoria(materia) {
         materiaLower.includes('frontend') ||
         materiaLower.includes('backend') ||
         materiaLower.includes('codigo') ||
-        materiaLower.includes('código')) {
+        materiaLower.includes('código') ||
+        materiaLower.includes('java') ||
+        materiaLower.includes('c++') ||
+        materiaLower.includes('c#') ||
+        materiaLower.includes('ruby') ||
+        materiaLower.includes('go') ||
+        materiaLower.includes('swift') ||
+        materiaLower.includes('kotlin') ||
+        materiaLower.includes('typescript') ||
+        materiaLower.includes('angular') ||
+        materiaLower.includes('vue') ||
+        materiaLower.includes('flutter') ||
+        materiaLower.includes('reactnative') ||
+        materiaLower.includes('react native') ||
+        materiaLower.includes('database') ||
+        materiaLower.includes('banco de dados') ||
+        materiaLower.includes('sql') ||
+        materiaLower.includes('nosql') ||
+        materiaLower.includes('mongodb') ||
+        materiaLower.includes('api') ||
+        materiaLower.includes('rest') ||
+        materiaLower.includes('graphql') ||
+        materiaLower.includes('algoritmo') ||
+        materiaLower.includes('estrutura de dados')) {
         return 'programacao';
     }
     
-    return 'csh';
+    return 'csh'; // Padrão
 }
 
-// ✅ VERIFICAR PERMISSÃO (SIMPLIFICADA)
+// ✅ VERIFICAR PERMISSÃO (REVISTA)
 function verificarPermissao(cursoUsuario, materiaCurso) {
-    const categoria = obterCategoria(materiaCurso);
-    
     // Se não está logado, não tem permissão
     if (!cursoUsuario) {
-        console.log(`❌ Não logado - Curso bloqueado: ${materiaCurso} (${categoria})`);
+        console.log(`❌ Não logado - Curso bloqueado: ${materiaCurso}`);
         return false;
     }
     
-    // Mapeamento de permissões
-    const mapeamento = {
-        'matematica': ['matematica', 'programacao'],
-        'csn': ['csn', 'programacao'],
-        'csh': ['csh', 'portugues', 'programacao'],
-        'portugues': ['portugues', 'csh', 'programacao'],
-        'programacao': ['programacao']
-    };
+    const categoria = obterCategoria(materiaCurso);
     
-    const temPermissao = mapeamento[cursoUsuario]?.includes(categoria) || false;
-    console.log(`🔐 ${cursoUsuario} → ${categoria}: ${temPermissao ? '✅' : '❌'}`);
+    // Se o curso do usuário não está nas políticas de acesso
+    if (!POLITICAS_ACESSO[cursoUsuario]) {
+        console.log(`❌ Curso do usuário não reconhecido: ${cursoUsuario}`);
+        return false;
+    }
+    
+    // Verificar se a categoria do curso está nas permissões do usuário
+    const temPermissao = POLITICAS_ACESSO[cursoUsuario].includes(categoria);
+    
+    console.log(`🔐 ${cursoUsuario.toUpperCase()} → ${categoria.toUpperCase()}: ${temPermissao ? '✅' : '❌'}`);
     
     return temPermissao;
+}
+
+// ✅ OBTER CURSOS BLOQUEADOS PARA O USUÁRIO
+function obterCursosBloqueados(cursoUsuario) {
+    if (!cursoUsuario || !POLITICAS_ACESSO[cursoUsuario]) {
+        return ['matematica', 'csn', 'csh', 'portugues', 'programacao'];
+    }
+    
+    const cursosPermitidos = POLITICAS_ACESSO[cursoUsuario];
+    const todasCategorias = ['matematica', 'csn', 'csh', 'portugues', 'programacao'];
+    
+    return todasCategorias.filter(categoria => !cursosPermitidos.includes(categoria));
 }
 
 // ✅ CARREGAR CURSOS
@@ -614,10 +683,11 @@ async function carregarCursos() {
         
         console.log(`📦 ${cursos.length} cursos carregados`);
         
-        // Log de debug
-        cursos.forEach(curso => {
-            console.log(`  "${curso.titulo}" - Matéria: "${curso.materia}"`);
-        });
+        // Adicionar categoria a cada curso
+        cursos = cursos.map(curso => ({
+            ...curso,
+            categoria: obterCategoria(curso.materia || '')
+        }));
         
         if (cursos.length === 0) {
             cursos = gerarCursosExemplo();
@@ -635,11 +705,85 @@ async function carregarCursos() {
     }
 }
 
-
+// ✅ CURSOS DE EXEMPLO
+function gerarCursosExemplo() {
+    return [
+        {
+            id: 1,
+            titulo: "JavaScript Básico",
+            descricao: "Aprenda JavaScript do zero",
+            materia: "javascript",
+            nivel: "iniciante",
+            duracao: 20,
+            modulos: [{ aulas: [{}] }],
+            categoria: "programacao"
+        },
+        {
+            id: 2,
+            titulo: "Python para Iniciantes",
+            descricao: "Introdução à programação",
+            materia: "python",
+            nivel: "iniciante",
+            duracao: 25,
+            modulos: [{ aulas: [{}] }],
+            categoria: "programacao"
+        },
+        {
+            id: 3,
+            titulo: "Álgebra Linear",
+            descricao: "Fundamentos da álgebra",
+            materia: "algebra",
+            nivel: "intermediario",
+            duracao: 30,
+            modulos: [{ aulas: [{}] }],
+            categoria: "matematica"
+        },
+        {
+            id: 4,
+            titulo: "Química Orgânica",
+            descricao: "Estudo dos compostos orgânicos",
+            materia: "quimica organica",
+            nivel: "avancado",
+            duracao: 35,
+            modulos: [{ aulas: [{}] }],
+            categoria: "csn"
+        },
+        {
+            id: 5,
+            titulo: "História do Brasil",
+            descricao: "Panorama histórico brasileiro",
+            materia: "historia brasil",
+            nivel: "intermediario",
+            duracao: 25,
+            modulos: [{ aulas: [{}] }],
+            categoria: "csh"
+        },
+        {
+            id: 6,
+            titulo: "Gramática Avançada",
+            descricao: "Aprofundamento em gramática",
+            materia: "gramatica portugues",
+            nivel: "avancado",
+            duracao: 30,
+            modulos: [{ aulas: [{}] }],
+            categoria: "portugues"
+        }
+    ];
+}
 
 // ✅ ATUALIZAR ESTATÍSTICAS
 function atualizarEstatisticas() {
+    const usuario = obterUsuarioLogado();
+    
+    // Total de cursos disponíveis
     const totalCursos = cursos.length;
+    
+    // Cursos disponíveis para o usuário
+    const cursosDisponiveis = usuario.curso ? 
+        cursos.filter(c => verificarPermissao(usuario.curso, c.materia)).length : 
+        cursos.length;
+    
+    // Cursos por categoria
     const cursosMatematica = cursos.filter(c => obterCategoria(c.materia) === 'matematica').length;
     const cursosCsn = cursos.filter(c => obterCategoria(c.materia) === 'csn').length;
     const cursosCsh = cursos.filter(c => obterCategoria(c.materia) === 'csh').length;
@@ -691,6 +835,16 @@ function mostrarCursos() {
         return;
     }
     
+    // Ordenar cursos: disponíveis primeiro
+    cursosFiltrados.sort((a, b) => {
+        const aDisponivel = usuario.curso ? verificarPermissao(usuario.curso, a.materia) : true;
+        const bDisponivel = usuario.curso ? verificarPermissao(usuario.curso, b.materia) : true;
+        
+        if (aDisponivel && !bDisponivel) return -1;
+        if (!aDisponivel && bDisponivel) return 1;
+        return 0;
+    });
+    
     cursosFiltrados.forEach(curso => {
         const card = criarCardCurso(curso, usuario);
         container.appendChild(card);
@@ -708,17 +862,29 @@ function criarCardCurso(curso, usuario) {
     const totalAulas = curso.modulos ? curso.modulos.reduce((total, modulo) => total + (modulo.aulas?.length || 0), 0) : 0;
     const imagemUrl = curso.imagem || `https://placehold.co/600x400/323232/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}`;
     
-    card.innerHTML = `
-        ${!temPermissao && usuario.curso ? `
-        <div class="bloqueado-overlay">
-            <div>
-                <i class="fas fa-lock" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                <h4 style="color: #f44336; margin-bottom: 10px;">Curso Bloqueado</h4>
-                <p>Você é do curso <strong>${usuario.curso.toUpperCase()}</strong></p>
-                <p>e não pode acessar cursos de <strong>${obterNomeCategoria(categoria)}</strong></p>
+    // Texto explicativo para bloqueio
+    let textoBloqueio = '';
+    if (!temPermissao && usuario.curso) {
+        const nomeCursoUsuario = obterNomeCategoria(usuario.curso);
+        const nomeCategoriaCurso = obterNomeCategoria(categoria);
+        
+        textoBloqueio = `
+            <div class="bloqueado-overlay">
+                <div>
+                    <i class="fas fa-lock" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                    <h4 style="color: #f44336; margin-bottom: 10px;">Curso Bloqueado</h4>
+                    <p>Você é do curso <strong>${nomeCursoUsuario}</strong></p>
+                    <p>e não pode acessar cursos de <strong>${nomeCategoriaCurso}</strong></p>
+                    <p style="font-size: 0.8rem; color: #aaa; margin-top: 10px;">
+                        🔒 Seu curso tem acesso apenas a: ${POLITICAS_ACESSO[usuario.curso]?.map(c => obterNomeCategoria(c)).join(', ') || 'Nenhum'}
+                    </p>
+                </div>
             </div>
-        </div>
-        ` : ''}
+        `;
+    }
+    
+    card.innerHTML = `
+        ${textoBloqueio}
         
         <div class="course-image">
             <img src="${imagemUrl}" alt="${curso.titulo}" 
@@ -816,11 +982,13 @@ function iniciarCurso(cursoId) {
     // Verificar permissão novamente antes de redirecionar
     const temPermissao = verificarPermissao(usuario.curso, curso.materia);
     if (!temPermissao) {
-        mostrarAlerta(`Você não tem permissão para acessar este curso`, 'error');
+        const nomeCursoUsuario = obterNomeCategoria(usuario.curso);
+        const nomeCategoriaCurso = obterNomeCategoria(obterCategoria(curso.materia));
+        mostrarAlerta(`❌ Você é do curso ${nomeCursoUsuario} e não pode acessar cursos de ${nomeCategoriaCurso}`, 'error');
         return;
     }
     
-    mostrarAlerta(`Abrindo curso: ${curso.titulo}`, 'success');
+    mostrarAlerta(`✅ Acessando curso: ${curso.titulo}`, 'success');
     
     // Redirecionar para o curso
     setTimeout(() => {
@@ -833,7 +1001,10 @@ function verDetalhes(cursoId) {
     const curso = cursos.find(c => c.id === cursoId);
     if (curso) {
         const categoria = obterCategoria(curso.materia);
-        const detalhes = `
+        const usuario = obterUsuarioLogado();
+        const temPermissao = verificarPermissao(usuario.curso, curso.materia);
+        
+        let detalhes = `
 🏫 ${curso.titulo}
 
 📚 Matéria: ${obterNomeMateria(curso.materia)}
@@ -845,7 +1016,19 @@ function verDetalhes(cursoId) {
 
 📋 Descrição:
 ${curso.descricao || 'Sem descrição disponível.'}
-        `;
+
+`;
+        
+        // Adicionar informação de acesso
+        if (usuario.curso) {
+            detalhes += `\n🔐 Status de Acesso: ${temPermissao ? '✅ DISPONÍVEL' : '❌ BLOQUEADO'}`;
+            if (!temPermissao) {
+                detalhes += `\nVocê é do curso ${obterNomeCategoria(usuario.curso)} e não pode acessar cursos de ${obterNomeCategoria(categoria)}`;
+            }
+        } else {
+            detalhes += `\n⚠️ Faça login para verificar seu acesso`;
+        }
+        
         alert(detalhes);
     }
 }
@@ -856,7 +1039,10 @@ function mostrarMensagemBloqueio() {
     if (!usuario.curso) {
         mostrarAlerta('Faça login para ver seus cursos disponíveis', 'warning');
     } else {
-        mostrarAlerta(`Você é do curso ${usuario.curso.toUpperCase()} e não tem acesso a este curso`, 'error');
+        const cursosBloqueados = obterCursosBloqueados(usuario.curso);
+        const cursosBloqueadosNomes = cursosBloqueados.map(c => obterNomeCategoria(c)).join(', ');
+        
+        mostrarAlerta(`❌ Você é do curso ${obterNomeCategoria(usuario.curso)}. Cursos bloqueados: ${cursosBloqueadosNomes}`, 'error');
     }
 }
 
@@ -866,7 +1052,7 @@ function mostrarAlerta(mensagem, tipo = 'error') {
     if (!container) return;
     
     const alert = document.createElement('div');
-    alert.className = `alert alert-${tipo === 'success' ? 'success' : tipo === 'warning' ? 'warning' : 'error'}`;
+    alert.className = `alert ${tipo === 'success' ? 'alert-success' : tipo === 'warning' ? 'alert-warning' : 'error'}`;
     alert.innerHTML = `
         <span>${mensagem}</span>
         <button onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;margin-left:10px;cursor:pointer">×</button>
@@ -892,8 +1078,8 @@ function corrigirLogin() {
                                 sessionStorage.getItem('userCurso');
         
         if (cursoAlternativo) {
-            localStorage.setItem('cursoUsuario', cursoAlternativo);
-            sessionStorage.setItem('cursoUsuario', cursoAlternativo);
+            localStorage.setItem('cursoUsuario', cursoAlternativo.toLowerCase());
+            sessionStorage.setItem('cursoUsuario', cursoAlternativo.toLowerCase());
             console.log('✅ Curso corrigido:', cursoAlternativo);
         }
     }
@@ -905,6 +1091,24 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Corrigir login se necessário
     corrigirLogin();
+    
+    // Obter usuário
+    const usuario = obterUsuarioLogado();
+    
+    // Mostrar mensagem de boas-vindas
+    if (usuario.nome) {
+        mostrarAlerta(`👋 Bem-vindo, ${usuario.nome}!`, 'success');
+        
+        // Mostrar restrições de acesso
+        if (usuario.curso) {
+            const cursosPermitidos = POLITICAS_ACESSO[usuario.curso] || [];
+            const cursosPermitidosNomes = cursosPermitidos.map(c => obterNomeCategoria(c)).join(', ');
+            
+            setTimeout(() => {
+                mostrarAlerta(`📚 Seu curso (${obterNomeCategoria(usuario.curso)}) tem acesso a: ${cursosPermitidosNomes}`, 'warning');
+            }, 1500);
+        }
+    }
     
     // Configurar filtros
     document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -922,19 +1126,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Atualizar cabeçalho com informações do usuário
-    const usuario = obterUsuarioLogado();
     if (usuario.nome) {
         const subtitle = document.getElementById('header-subtitle');
         if (subtitle) {
             let texto = 'Aprenda com cursos complementares para reforçar seus estudos';
             
             if (usuario.curso) {
+                const cursosDisponiveis = cursos.filter(c => verificarPermissao(usuario.curso, c.materia)).length;
                 texto += `<br><small style="color: #ffcf00; font-size: 0.9rem;">
-                    👤 ${usuario.nome} - Curso: ${usuario.curso.toUpperCase()}
+                    👤 ${usuario.nome} - Curso: ${obterNomeCategoria(usuario.curso)} 
+                    (${cursosDisponiveis} cursos disponíveis)
                 </small>`;
             } else {
                 texto += `<br><small style="color: #ff6b00; font-size: 0.9rem;">
-                    ⚠️ Faça login completo para ver todos os cursos
+                    ⚠️ Faça login completo para ver seus cursos disponíveis
                 </small>`;
             }
             
@@ -948,14 +1153,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ✅ TESTE RÁPIDO NO CONSOLE
 window.testarUsuario = function() {
-    console.log('👤 Usuário atual:', obterUsuarioLogado());
+    const usuario = obterUsuarioLogado();
+    console.log('👤 Usuário atual:', usuario);
     console.log('📊 Cursos carregados:', cursos.length);
-    console.log('🔧 Configuração salva:', {
-        usuarioId: localStorage.getItem('usuarioId'),
-        cursoUsuario: localStorage.getItem('cursoUsuario'),
-        usuarioCurso: localStorage.getItem('usuarioCurso'),
-        usuarioNome: localStorage.getItem('usuarioNome')
-    });
+    
+    if (usuario.curso) {
+        console.log('🔐 Políticas de acesso para', usuario.curso + ':', POLITICAS_ACESSO[usuario.curso]);
+        
+        // Testar permissões para cada curso
+        cursos.forEach(curso => {
+            const categoria = obterCategoria(curso.materia);
+            const temPermissao = verificarPermissao(usuario.curso, curso.materia);
+            console.log(`  ${temPermissao ? '✅' : '❌'} "${curso.titulo}" (${categoria})`);
+        });
+    }
+};
+
+// ✅ SIMULAR LOGIN PARA TESTES (apenas para desenvolvimento)
+window.simularLogin = function(curso) {
+    const cursosValidos = ['matematica', 'csn', 'csh', 'portugues', 'programacao'];
+    
+    if (!cursosValidos.includes(curso)) {
+        alert('Curso inválido. Use: matematica, csn, csh, portugues, programacao');
+        return;
+    }
+    
+    localStorage.setItem('cursoUsuario', curso);
+    localStorage.setItem('usuarioNome', 'Usuário Teste');
+    localStorage.setItem('usuarioId', '999');
+    
+    mostrarAlerta(`✅ Login simulado como ${obterNomeCategoria(curso)}. Recarregando...`, 'success');
+    
+    setTimeout(() => {
+        location.reload();
+    }, 1500);
+};
+
+// ✅ RESETAR LOGIN
+window.resetarLogin = function() {
+    localStorage.removeItem('cursoUsuario');
+    localStorage.removeItem('usuarioNome');
+    localStorage.removeItem('usuarioId');
+    
+    sessionStorage.removeItem('cursoUsuario');
+    sessionStorage.removeItem('usuarioNome');
+    sessionStorage.removeItem('usuarioId');
+    
+    mostrarAlerta('✅ Login resetado. Recarregando...', 'success');
+    
+    setTimeout(() => {
+        location.reload();
+    }, 1500);
 };
 </script>
     
