@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cursos Extras  Coliseum</title>
+    <title>Cursos Extras - Coliseum</title>
     <meta name="description" content="Cursos extras para complementar seus estudos">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -1248,9 +1248,38 @@ const sistemaLogin = new SistemaLogin();
 
 // ==================== FUNÇÕES PRINCIPAIS ====================
 
+// ✅ TESTAR CONEXÃO COM API
+async function testarConexaoAPI() {
+    try {
+        console.log('🌐 Testando conexão com API...');
+        const response = await fetch(`${API_BASE_URL}/health`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ API online:', data);
+            mostrarAlerta('✅ Conexão com API estabelecida!', 'success');
+            return true;
+        } else {
+            console.warn('⚠️ API offline ou com erro:', response.status);
+            mostrarAlerta('⚠️ API offline, usando dados locais', 'warning');
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ Erro ao testar API:', error);
+        mostrarAlerta('❌ Não foi possível conectar à API', 'error');
+        return false;
+    }
+}
+
 // ✅ INICIALIZAÇÃO
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Inicializando página de Cursos Extras...');
+    
+    // Testar conexão com API
+    await testarConexaoAPI();
     
     // 1. Verificar se veio do admin
     const veioDoAdmin = sincronizador.verificarOrigemAdmin();
@@ -1371,12 +1400,9 @@ async function carregarCursos() {
     // ✅ OBTER ID DO USUÁRIO LOGADO
     const usuarioId = sistemaLogin.usuarioId;
     
-    // Construir URL com parâmetro do usuário
+    // Construir URL base
     let url = `${API_BASE_URL}/cursos`;
-    if (usuarioId) {
-      url += `?usuarioId=${usuarioId}`;
-    }
-
+    
     console.log('🌐 Chamando API:', url);
     
     // Tentativa de carregamento da API
@@ -1386,8 +1412,7 @@ async function carregarCursos() {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      mode: 'cors',
-      credentials: 'include'
+      mode: 'cors'
     });
 
     console.log('📡 Resposta da API:', {
@@ -1396,30 +1421,19 @@ async function carregarCursos() {
     });
 
     if (response.ok) {
-      const data = await response.json();
-      console.log('📦 Dados recebidos da API:', data);
+      const cursosData = await response.json();
+      console.log('📦 Dados recebidos da API:', cursosData);
       
-      // Verificar estrutura da resposta
-      if (Array.isArray(data)) {
-        cursos = data.filter(curso => curso.ativo !== false);
-        console.log(`✅ ${cursos.length} cursos carregados da API`);
-      } else if (data.success && Array.isArray(data.cursos)) {
-        cursos = data.cursos.filter(curso => curso.ativo !== false);
-        console.log(`✅ ${cursos.length} cursos carregados da API (formato objeto)`);
-      } else if (data.curso) {
-        // Se for um único curso
-        cursos = [data.curso].filter(curso => curso.ativo !== false);
-        console.log(`✅ 1 curso carregado da API`);
+      // Filtrar cursos por permissão SE usuário logado
+      if (usuarioId && sistemaLogin.cursoUsuario) {
+        cursos = cursosData.filter(curso => 
+          verificarPermissaoFrontend(sistemaLogin.cursoUsuario, obterCategoriaDaMateria(curso.materia))
+        );
+        console.log(`✅ ${cursos.length} cursos permitidos para ${sistemaLogin.cursoUsuario}`);
       } else {
-        console.warn('⚠️ Formato de resposta inesperado:', data);
-        cursos = gerarCursosExemplo();
+        cursos = cursosData;
+        console.log(`✅ ${cursos.length} cursos carregados (sem filtro)`);
       }
-    } else if (response.status === 403) {
-      // Acesso negado específico para um curso
-      const errorData = await response.json().catch(() => ({}));
-      console.error('⛔ Acesso negado:', errorData);
-      cursos = gerarCursosExemplo();
-      mostrarAlerta(`⛔ ${errorData.message || 'Acesso negado a alguns cursos'}`, 'error');
     } else {
       console.warn(`⚠️ API retornou status ${response.status}`);
       // Usar dados de exemplo como fallback
@@ -1454,7 +1468,6 @@ function gerarCursosExemplo() {
             titulo: "Álgebra Linear Básica",
             descricao: "Aprenda os fundamentos da álgebra linear para resolução de problemas matemáticos.",
             materia: "algebra",
-            categoria: "matematica",
             nivel: "medio",
             duracao: 20,
             imagem: null,
@@ -1466,7 +1479,6 @@ function gerarCursosExemplo() {
             titulo: "Química Orgânica",
             descricao: "Estudo dos compostos de carbono e suas aplicações no cotidiano.",
             materia: "quimica",
-            categoria: "csn",
             nivel: "medio",
             duracao: 25,
             imagem: null,
@@ -1478,7 +1490,6 @@ function gerarCursosExemplo() {
             titulo: "História do Brasil",
             descricao: "Panorama histórico do Brasil desde o descobrimento até os dias atuais.",
             materia: "historia",
-            categoria: "csh",
             nivel: "medio",
             duracao: 30,
             imagem: null,
@@ -1490,7 +1501,6 @@ function gerarCursosExemplo() {
             titulo: "Gramática Avançada",
             descricao: "Aprofunde seus conhecimentos em gramática portuguesa.",
             materia: "gramatica",
-            categoria: "portugues",
             nivel: "avancado",
             duracao: 18,
             imagem: null,
@@ -1501,8 +1511,7 @@ function gerarCursosExemplo() {
             id: 5,
             titulo: "Introdução ao JavaScript",
             descricao: "Aprenda os fundamentos da programação com JavaScript.",
-            materia: "js",
-            categoria: "programacao",
+            materia: "javascript",
             nivel: "iniciante",
             duracao: 15,
             imagem: null,
@@ -1514,7 +1523,6 @@ function gerarCursosExemplo() {
             titulo: "Física Moderna",
             descricao: "Conceitos avançados de física quântica e relatividade.",
             materia: "fisica",
-            categoria: "csn",
             nivel: "avancado",
             duracao: 35,
             imagem: null,
@@ -1526,7 +1534,6 @@ function gerarCursosExemplo() {
             titulo: "Geografia Mundial",
             descricao: "Estudo dos aspectos físicos e humanos da Terra.",
             materia: "geografia",
-            categoria: "csh",
             nivel: "medio",
             duracao: 22,
             imagem: null,
@@ -1552,11 +1559,21 @@ function mostrarLoading() {
 // ✅ ATUALIZAR ESTATÍSTICAS
 function atualizarEstatisticas() {
     const totalCursos = cursos.length;
-    const cursosMatematica = cursos.filter(c => c.categoria === 'matematica').length;
-    const cursosCsn = cursos.filter(c => c.categoria === 'csn').length;
-    const cursosCsh = cursos.filter(c => c.categoria === 'csh').length;
-    const cursosPortugues = cursos.filter(c => c.categoria === 'portugues').length;
-    const cursosProgramacao = cursos.filter(c => c.categoria === 'programacao').length;
+    const cursosMatematica = cursos.filter(c => 
+        obterCategoriaDaMateria(c.materia) === 'matematica'
+    ).length;
+    const cursosCsn = cursos.filter(c => 
+        obterCategoriaDaMateria(c.materia) === 'csn'
+    ).length;
+    const cursosCsh = cursos.filter(c => 
+        obterCategoriaDaMateria(c.materia) === 'csh'
+    ).length;
+    const cursosPortugues = cursos.filter(c => 
+        obterCategoriaDaMateria(c.materia) === 'portugues'
+    ).length;
+    const cursosProgramacao = cursos.filter(c => 
+        obterCategoriaDaMateria(c.materia) === 'programacao'
+    ).length;
 
     document.getElementById('total-cursos').textContent = totalCursos;
     document.getElementById('cursos-matematica').textContent = cursosMatematica;
@@ -1602,6 +1619,43 @@ function aplicarFiltros() {
     filtrarCursos(filtroAtivo);
 }
 
+// ✅ FUNÇÃO AUXILIAR PARA CONVERTER MATÉRIA EM CATEGORIA
+function obterCategoriaDaMateria(materia) {
+    const mapeamento = {
+        // Matemática
+        'algebra': 'matematica',
+        'geometria': 'matematica',
+        'matematica': 'matematica',
+        
+        // CSN
+        'quimica': 'csn',
+        'fisica': 'csn',
+        'biologia': 'csn',
+        
+        // CSH
+        'historia': 'csh',
+        'geografia': 'csh',
+        'filosofia': 'csh',
+        'sociologia': 'csh',
+        
+        // Português
+        'gramatica': 'portugues',
+        'interpretacao': 'portugues',
+        'literatura': 'portugues',
+        'redacao': 'portugues',
+        
+        // Programação
+        'python': 'programacao',
+        'javascript': 'programacao',
+        'php': 'programacao',
+        'react': 'programacao',
+        'programacao': 'programacao',
+        'js': 'programacao'
+    };
+    
+    return mapeamento[materia] || 'csh';
+}
+
 // ✅ FILTRAR CURSOS
 function filtrarCursos(filtro) {
     try {
@@ -1617,19 +1671,18 @@ function filtrarCursos(filtro) {
             return;
         }
         
-        // Debug: mostrar categorias disponíveis
-        const categoriasDisponiveis = [...new Set(cursos.map(c => c.categoria).filter(Boolean))];
-        console.log('🏷️ Categorias disponíveis nos cursos:', categoriasDisponiveis);
-        
         // Filtrar cursos
         filteredCursos = cursos.filter(curso => {
             if (!curso || typeof curso !== 'object') return false;
+            
+            // Converter matéria para categoria
+            const cursoCategoria = obterCategoriaDaMateria(curso.materia);
             
             // 1. Aplicar filtro de categoria
             let passaFiltro = true;
             if (filtro !== 'all') {
                 // Verificar se a categoria do curso corresponde ao filtro
-                passaFiltro = curso.categoria === filtro;
+                passaFiltro = cursoCategoria === filtro;
                 if (!passaFiltro) {
                     return false; // Já falhou no filtro principal
                 }
@@ -1642,7 +1695,7 @@ function filtrarCursos(filtro) {
                     curso.titulo || '',
                     curso.descricao || '',
                     curso.materia || '',
-                    curso.categoria || '',
+                    cursoCategoria || '',
                     curso.nivel || ''
                 ];
                 
@@ -1659,14 +1712,6 @@ function filtrarCursos(filtro) {
         });
         
         console.log(`✅ Filtro "${filtro}" aplicado: ${filteredCursos.length} cursos encontrados`);
-        
-        // Mostrar quais cursos foram encontrados
-        if (filteredCursos.length > 0) {
-            console.log('📋 Cursos encontrados:');
-            filteredCursos.forEach((curso, i) => {
-                console.log(`  ${i+1}. "${curso.titulo}" (Categoria: ${curso.categoria})`);
-            });
-        }
         
         exibirCursos();
         
@@ -1715,10 +1760,13 @@ function criarCardCurso(curso) {
     console.log(`🔐 Verificando permissão para curso: ${curso.titulo}`);
     console.log(`   Usuário ID: ${usuarioId}`);
     console.log(`   Curso do usuário: ${cursoUsuario}`);
-    console.log(`   Categoria do curso: ${curso.categoria}`);
+    console.log(`   Matéria do curso: ${curso.materia}`);
+    
+    // Converter "materia" do backend para "categoria" do frontend
+    const categoriaCurso = obterCategoriaDaMateria(curso.materia);
     
     if (usuarioId && cursoUsuario) {
-        temPermissao = verificarPermissaoFrontend(cursoUsuario, curso.categoria);
+        temPermissao = verificarPermissaoFrontend(cursoUsuario, categoriaCurso);
         console.log(`   Permissão concedida: ${temPermissao}`);
         
         if (!temPermissao) {
@@ -1728,7 +1776,7 @@ function criarCardCurso(curso) {
                         <i class="fas fa-lock"></i>
                         <h4>Curso Bloqueado</h4>
                         <p>Você é do curso <strong>${cursoUsuario.toUpperCase()}</strong> 
-                           e não pode acessar cursos de <strong>${obterNomeCategoria(curso.categoria)}</strong>.</p>
+                           e não pode acessar cursos de <strong>${obterNomeCategoria(categoriaCurso)}</strong>.</p>
                         <small>Clique em "Ver Regras" para mais informações.</small>
                     </div>
                 </div>
@@ -1763,13 +1811,13 @@ function criarCardCurso(curso) {
     card.className = `course-card ${temPermissao ? '' : 'bloqueado'}`;
     
     const materiaNome = obterNomeMateria(curso.materia);
-    const categoriaNome = obterNomeCategoria(curso.categoria);
+    const categoriaNome = obterNomeCategoria(categoriaCurso);
     const nivelNome = obterNomeNivel(curso.nivel);
     const progresso = obterProgressoCurso(curso.id);
     const totalAulas = calcularTotalAulas(curso);
     
     // Gerar imagem padrão se não houver
-    const corBase = getCorMateria(curso.categoria);
+    const corBase = getCorMateria(categoriaCurso);
     const imagemUrl = curso.imagem || `https://placehold.co/600x400/${corBase.replace('#', '')}/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}`;
     
     card.innerHTML = `
@@ -1778,7 +1826,7 @@ function criarCardCurso(curso) {
         <div class="course-image">
             <img src="${imagemUrl}" alt="${curso.titulo}" 
                  onerror="this.src='https://placehold.co/600x400/323232/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}'">
-            <div class="course-badge ${temPermissao ? `badge-${curso.categoria}` : 'badge-bloqueado'}">
+            <div class="course-badge ${temPermissao ? `badge-${categoriaCurso}` : 'badge-bloqueado'}">
                 ${temPermissao ? categoriaNome : 'BLOQUEADO'}
             </div>
             <div class="course-level level-${curso.nivel || 'medio'}">${nivelNome}</div>
@@ -1896,9 +1944,11 @@ async function iniciarCurso(cursoId) {
         return;
     }
     
-    if (!verificarPermissaoFrontend(cursoUsuario, curso.categoria)) {
+    const categoriaCurso = obterCategoriaDaMateria(curso.materia);
+    
+    if (!verificarPermissaoFrontend(cursoUsuario, categoriaCurso)) {
         mostrarAlerta(
-            `⛔ Acesso Negado! Você é do curso ${cursoUsuario.toUpperCase()} e não pode acessar cursos de ${obterNomeCategoria(curso.categoria)}.`,
+            `⛔ Acesso Negado! Você é do curso ${cursoUsuario.toUpperCase()} e não pode acessar cursos de ${obterNomeCategoria(categoriaCurso)}.`,
             'error'
         );
         return;
@@ -1929,7 +1979,12 @@ function obterNomeMateria(materia) {
         'javascript': 'JavaScript',
         'php': 'PHP',
         'react': 'React',
-        'matematica': 'Matemática'
+        'matematica': 'Matemática',
+        'biologia': 'Biologia',
+        'filosofia': 'Filosofia',
+        'sociologia': 'Sociologia',
+        'literatura': 'Literatura',
+        'redacao': 'Redação'
     };
     return nomes[materia] || materia;
 }
@@ -1986,11 +2041,12 @@ function obterProgressoCurso(cursoId) {
 function verDetalhes(cursoId) {
     const curso = cursos.find(c => c.id === cursoId);
     if (curso) {
+        const categoria = obterCategoriaDaMateria(curso.materia);
         const detalhes = `
 🏫 ${curso.titulo}
 
 📚 Matéria: ${obterNomeMateria(curso.materia)}
-🏷️ Categoria: ${obterNomeCategoria(curso.categoria)}
+🏷️ Categoria: ${obterNomeCategoria(categoria)}
 📊 Nível: ${obterNomeNivel(curso.nivel)}
 ⏱️ Duração: ${curso.duracao || '--'} horas
 📂 Módulos: ${curso.modulos ? curso.modulos.length : 0}
@@ -2076,7 +2132,7 @@ function mostrarModalRegras() {
     
     const modal = document.createElement('div');
     modal.className = 'modal-regras';
-       modal.innerHTML = `
+    modal.innerHTML = `
         <div class="modal-conteudo">
             <i class="fas fa-lock"></i>
             <h3>Regras de Acesso aos Cursos</h3>
@@ -2199,6 +2255,10 @@ function debugLogin() {
     console.log('\n🍪 COOKIES:');
     console.log('  Document cookie:', document.cookie);
     
+    // Testar conexão com API
+    console.log('\n🌐 TESTANDO CONEXÃO COM API...');
+    testarConexaoAPI();
+    
     // Tentar recarregar credenciais
     console.log('\n🔄 RECARREGANDO CREDENCIAIS...');
     sistemaLogin.encontrarCredenciais();
@@ -2215,9 +2275,11 @@ function testarFiltros() {
     const filtros = ['all', 'matematica', 'csn', 'csh', 'portugues', 'programacao'];
     
     filtros.forEach(filtro => {
-        const cursosFiltrados = cursos.filter(curso => 
-            filtro === 'all' || curso.categoria === filtro
-        );
+        const cursosFiltrados = cursos.filter(curso => {
+            if (filtro === 'all') return true;
+            const categoria = obterCategoriaDaMateria(curso.materia);
+            return categoria === filtro;
+        });
         console.log(`Filtro "${filtro}": ${cursosFiltrados.length} cursos`);
     });
 }
