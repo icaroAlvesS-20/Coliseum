@@ -214,12 +214,14 @@
             z-index: 1;
         }
 
-        .badge-matematica { background: #4361ee; }
-        .badge-csn { background: #4cc9f0; }
-        .badge-csh { background: #f72585; }
-        .badge-portugues { background: #ffcf00; color: black; }
+        .badge-robotica { background: #4361ee; }
+        .badge-preparatorio { background: #4cc9f0; }
+        .badge-reforco { background: #f72585; }
+        .badge-games { background: rgba(147, 51, 234, 0.2); }
+        .badge-informatica { background: #ffcf00; color: black; }
         .badge-programacao { background: #ff6b00; }
         .badge-bloqueado { background: #f44336; }
+        
 
         .course-content {
             padding: 20px;
@@ -414,20 +416,24 @@
                     <div class="stat-label">Total de Cursos</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="cursos-matematica">0</div>
-                    <div class="stat-label">Matemática</div>
+                    <div class="stat-value" id="cursos-reforco">0</div>
+                    <div class="stat-label">Reforço</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="cursos-csn">0</div>
-                    <div class="stat-label">CSN</div>
+                    <div class="stat-value" id="cursos-preparatorio">0</div>
+                    <div class="stat-label">Preparatório</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="cursos-csh">0</div>
-                    <div class="stat-label">CSH</div>
+                    <div class="stat-value" id="cursos-informatica">0</div>
+                    <div class="stat-label">Informática</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="cursos-portugues">0</div>
-                    <div class="stat-label">Português</div>
+                    <div class="stat-value" id="cursos-robotica">0</div>
+                    <div class="stat-label">Robótica</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="cursos-games">0</div>
+                    <div class="stat-label">Games</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value" id="cursos-programacao">0</div>
@@ -440,17 +446,20 @@
             <button class="filter-btn active" data-filter="all">
                 <i class="fas fa-layer-group"></i> Todas
             </button>
-            <button class="filter-btn" data-filter="matematica">
-                <i class="fas fa-calculator"></i> Matemática
+            <button class="filter-btn" data-filter="reforco">
+                <i class="fas fa-calculator"></i> Reforço
             </button>
-            <button class="filter-btn" data-filter="csn">
-                <i class="fas fa-flask"></i> CSN
+            <button class="filter-btn" data-filter="preparatorio">
+                <i class="fas fa-flask"></i> Preparatório
             </button>
-            <button class="filter-btn" data-filter="csh">
-                <i class="fas fa-globe-americas"></i> CSH
+            <button class="filter-btn" data-filter="informatica">
+                <i class="fas fa-globe-americas"></i> Informática
             </button>
-            <button class="filter-btn" data-filter="portugues">
-                <i class="fas fa-book"></i> Português
+            <button class="filter-btn" data-filter="robotica">
+                <i class="fas fa-book"></i> Robótica
+            </button>
+            <button class="filter-btn" data-filter="games">
+                <i class="fas fa-book"></i> Games
             </button>
             <button class="filter-btn" data-filter="programacao">
                 <i class="fas fa-code"></i> Programação
@@ -483,19 +492,17 @@ let filtroAtivo = 'all';
 // ==================== POLÍTICAS DE ACESSO ====================
 // Definição de quais cursos cada tipo de usuário pode acessar
 const POLITICAS_ACESSO = {
-    // Matemática: só pode acessar matemática e programação
-    'matematica': ['matematica', 'programacao'],
     
-    // CSN: só pode acessar csn e programação
-    'csn': ['csn', 'programacao'],
+    'reforco': ['reforco'],
     
-    // CSH: só pode acessar csh, português e programação
-    'csh': ['csh', 'portugues', 'programacao'],
+    'preparatorio': ['preparatorio'],
+
+    'informatica': ['informatica'],
     
-    // Português: só pode acessar português e csh
-    'portugues': ['portugues', 'csh'],
+    'robotica': ['robotica'],
     
-    // Programação: só pode acessar programação
+    'games': ['games'],
+    
     'programacao': ['programacao']
 };
 
@@ -535,7 +542,7 @@ function obterCategoria(materia) {
         materiaLower.includes('trigonometria') ||
         materiaLower.includes('aritmetica') ||
         materiaLower.includes('aritmética')) {
-        return 'matematica';
+        return 'preparatorio';
     }
     
     // CSN
@@ -548,7 +555,7 @@ function obterCategoria(materia) {
         materiaLower.includes('ciência') ||
         materiaLower.includes('laboratorio') ||
         materiaLower.includes('laboratório')) {
-        return 'csn';
+        return 'reforco';
     }
     
     // CSH
@@ -561,7 +568,7 @@ function obterCategoria(materia) {
         materiaLower.includes('politica') ||
         materiaLower.includes('política') ||
         materiaLower.includes('economia')) {
-        return 'csh';
+        return 'informatica';
     }
     
     // Português
@@ -577,8 +584,9 @@ function obterCategoria(materia) {
         materiaLower.includes('linguistica') ||
         materiaLower.includes('linguística') ||
         materiaLower.includes('ortografia')) {
-        return 'portugues';
+        return 'robotica';
     }
+
     
     // Programação
     if (materiaLower.includes('javascript') || 
@@ -621,8 +629,6 @@ function obterCategoria(materia) {
         materiaLower.includes('estrutura de dados')) {
         return 'programacao';
     }
-    
-    return 'csh'; // Padrão
 }
 
 // ✅ VERIFICAR PERMISSÃO (REVISTA)
@@ -652,11 +658,11 @@ function verificarPermissao(cursoUsuario, materiaCurso) {
 // ✅ OBTER CURSOS BLOQUEADOS PARA O USUÁRIO
 function obterCursosBloqueados(cursoUsuario) {
     if (!cursoUsuario || !POLITICAS_ACESSO[cursoUsuario]) {
-        return ['matematica', 'csn', 'csh', 'portugues', 'programacao'];
+        return ['preparatorio', 'reforco', 'informatica', 'robotica', 'games', 'programacao'];
     }
     
     const cursosPermitidos = POLITICAS_ACESSO[cursoUsuario];
-    const todasCategorias = ['matematica', 'csn', 'csh', 'portugues', 'programacao'];
+    const todasCategorias = ['preparatorio', 'reforco', 'informatica', 'robotica', 'games', 'programacao'];
     
     return todasCategorias.filter(categoria => !cursosPermitidos.includes(categoria));
 }
@@ -705,72 +711,6 @@ async function carregarCursos() {
     }
 }
 
-// ✅ CURSOS DE EXEMPLO
-function gerarCursosExemplo() {
-    return [
-        {
-            id: 1,
-            titulo: "JavaScript Básico",
-            descricao: "Aprenda JavaScript do zero",
-            materia: "javascript",
-            nivel: "iniciante",
-            duracao: 20,
-            modulos: [{ aulas: [{}] }],
-            categoria: "programacao"
-        },
-        {
-            id: 2,
-            titulo: "Python para Iniciantes",
-            descricao: "Introdução à programação",
-            materia: "python",
-            nivel: "iniciante",
-            duracao: 25,
-            modulos: [{ aulas: [{}] }],
-            categoria: "programacao"
-        },
-        {
-            id: 3,
-            titulo: "Álgebra Linear",
-            descricao: "Fundamentos da álgebra",
-            materia: "algebra",
-            nivel: "intermediario",
-            duracao: 30,
-            modulos: [{ aulas: [{}] }],
-            categoria: "matematica"
-        },
-        {
-            id: 4,
-            titulo: "Química Orgânica",
-            descricao: "Estudo dos compostos orgânicos",
-            materia: "quimica organica",
-            nivel: "avancado",
-            duracao: 35,
-            modulos: [{ aulas: [{}] }],
-            categoria: "csn"
-        },
-        {
-            id: 5,
-            titulo: "História do Brasil",
-            descricao: "Panorama histórico brasileiro",
-            materia: "historia brasil",
-            nivel: "intermediario",
-            duracao: 25,
-            modulos: [{ aulas: [{}] }],
-            categoria: "csh"
-        },
-        {
-            id: 6,
-            titulo: "Gramática Avançada",
-            descricao: "Aprofundamento em gramática",
-            materia: "gramatica portugues",
-            nivel: "avancado",
-            duracao: 30,
-            modulos: [{ aulas: [{}] }],
-            categoria: "portugues"
-        }
-    ];
-}
-
 // ✅ ATUALIZAR ESTATÍSTICAS
 function atualizarEstatisticas() {
     const usuario = obterUsuarioLogado();
@@ -784,17 +724,19 @@ function atualizarEstatisticas() {
         cursos.length;
     
     // Cursos por categoria
-    const cursosMatematica = cursos.filter(c => obterCategoria(c.materia) === 'matematica').length;
-    const cursosCsn = cursos.filter(c => obterCategoria(c.materia) === 'csn').length;
-    const cursosCsh = cursos.filter(c => obterCategoria(c.materia) === 'csh').length;
-    const cursosPortugues = cursos.filter(c => obterCategoria(c.materia) === 'portugues').length;
+    const cursosPreparatorio = cursos.filter(c => obterCategoria(c.materia) === 'preparatorio').length;
+    const cursosReforco = cursos.filter(c => obterCategoria(c.materia) === 'reforco').length;
+    const cursosInformatica = cursos.filter(c => obterCategoria(c.materia) === 'informatica').length;
+    const cursosRobotica = cursos.filter(c => obterCategoria(c.materia) === 'robotica').length;
+    const cursosGames = cursos.filter(c => obterCategoria(c.materia) === 'games').length;
     const cursosProgramacao = cursos.filter(c => obterCategoria(c.materia) === 'programacao').length;
 
     document.getElementById('total-cursos').textContent = totalCursos;
-    document.getElementById('cursos-matematica').textContent = cursosMatematica;
-    document.getElementById('cursos-csn').textContent = cursosCsn;
-    document.getElementById('cursos-csh').textContent = cursosCsh;
-    document.getElementById('cursos-portugues').textContent = cursosPortugues;
+    document.getElementById('cursos-preparatorio').textContent = cursosPreparatorio;
+    document.getElementById('cursos-reforco').textContent = cursosReforco;
+    document.getElementById('cursos-informatica').textContent = cursosInformatica;
+    document.getElementById('cursos-Robotica').textContent = cursosRobotica;
+    document.getElementById('cursos-Games').textContent = cursosGames;
     document.getElementById('cursos-programacao').textContent = cursosProgramacao;
 }
 
@@ -938,11 +880,13 @@ function criarCardCurso(curso, usuario) {
 // ✅ FUNÇÕES AUXILIARES
 function obterNomeCategoria(categoria) {
     const nomes = {
-        'matematica': 'Matemática',
-        'csn': 'CSN',
-        'csh': 'CSH',
-        'portugues': 'Português',
+        'preparatorio': 'Preparatório',
+        'reforco': 'Reforço',
+        'informatica': 'Informática',
+        'robotica': 'Robótica',
+        'games': 'Games'
         'programacao': 'Programação'
+
     };
     return nomes[categoria] || categoria;
 }
