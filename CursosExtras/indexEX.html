@@ -200,6 +200,69 @@
             border-color: #ffcf00;
         }
 
+        .course-card.bloqueado {
+            opacity: 0.7;
+            filter: grayscale(70%);
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .course-card.bloqueado:hover {
+            transform: none !important;
+            box-shadow: none !important;
+            border-color: #f44336 !important;
+        }
+
+        /* Overlay de bloqueio */
+        .bloqueado-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 15px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .course-card.bloqueado:hover .bloqueado-overlay {
+            opacity: 1;
+        }
+
+        .bloqueado-mensagem {
+            text-align: center;
+            padding: 20px;
+            max-width: 80%;
+        }
+
+        .bloqueado-mensagem i {
+            font-size: 2.5rem;
+            color: #f44336;
+            margin-bottom: 15px;
+        }
+
+        .bloqueado-mensagem h4 {
+            color: #f44336;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .bloqueado-mensagem p {
+            color: #ccc;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        .bloqueado-mensagem small {
+            color: #888;
+            font-size: 0.8rem;
+        }
+
         .course-image {
             width: 100%;
             height: 180px;
@@ -233,6 +296,10 @@
         .badge-csh { background: #f72585; }
         .badge-portugues { background: #ffcf00; color: black; }
         .badge-programacao { background: #ff6b00; color: white; }
+        .badge-bloqueado {
+            background: #f44336 !important;
+            color: white !important;
+        }
 
         .course-level {
             position: absolute;
@@ -376,6 +443,18 @@
             border: 1px solid #555;
         }
 
+        .btn-bloqueado {
+            background: linear-gradient(135deg, #555, #333) !important;
+            color: #999 !important;
+            cursor: not-allowed !important;
+            border: 1px solid #666 !important;
+        }
+
+        .btn-bloqueado:hover {
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
@@ -490,23 +569,71 @@
             transform: scale(1.1);
             box-shadow: 0 6px 20px rgba(255, 207, 0, 0.6);
         }
-        .course-card.bloqueado {
-                opacity: 0.6;
-                filter: grayscale(50%);
-                cursor: not-allowed;
+
+        /* Modal de regras */
+        .modal-regras {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
         }
-         .course-card.bloqueado:hover {
-                transform: none;
-                border-color: #f44336;
-         }
-        .course-card.bloqueado .btn-primary {
-                background: linear-gradient(135deg, #f44336, #d32f2f);
-                cursor: not-allowed;
+
+        .modal-conteudo {
+            background: #323232;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            border: 2px solid #ffcf00;
+            color: white;
+            text-align: center;
         }
-        .badge-bloqueado {
-                background: #f44336 !important;
-                color: white !important;
-         }
+
+        .modal-conteudo h3 {
+            color: #ffcf00;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .modal-conteudo i {
+            font-size: 3rem;
+            color: #ffcf00;
+            margin-bottom: 15px;
+        }
+
+        .regras-lista {
+            text-align: left;
+            margin: 20px 0;
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .regra-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-left: 3px solid #ffcf00;
+            background: rgba(255, 207, 0, 0.1);
+        }
+
+        .btn-fechar-modal {
+            background: #ffcf00;
+            color: black;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            font-size: 1rem;
+            margin-top: 15px;
+        }
 
         /* ========== MEDIA QUERIES ========== */
         @media (max-width: 1024px) {
@@ -540,6 +667,11 @@
             
             .course-actions {
                 flex-direction: column;
+            }
+            
+            .course-meta {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
             }
         }
 
@@ -585,9 +717,12 @@
                 font-size: 1.1rem;
             }
             
-            .course-meta {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
+            .bloqueado-mensagem {
+                padding: 15px;
+            }
+            
+            .bloqueado-mensagem i {
+                font-size: 2rem;
             }
         }
     </style>
@@ -681,13 +816,27 @@ const API_BASE_URL = 'https://coliseum-api.onrender.com/api';
 let cursos = [];
 let filteredCursos = [];
 
-// ✅ INICIALIZAÇÃO SIMPLIFICADA
+// ✅ INICIALIZAÇÃO
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Inicializando página de Cursos Extras...');
     await carregarCursos();
     configurarFiltros();
     configurarBusca();
+    exibirCursoUsuario();
 });
+
+// ✅ EXIBIR INFORMAÇÕES DO USUÁRIO LOGADO
+function exibirCursoUsuario() {
+    const cursoUsuario = localStorage.getItem('cursoUsuario') || sessionStorage.getItem('cursoUsuario');
+    const usuarioNome = localStorage.getItem('usuarioNome') || sessionStorage.getItem('usuarioNome');
+    
+    if (cursoUsuario && usuarioNome) {
+        const header = document.querySelector('.header p');
+        if (header) {
+            header.innerHTML += `<br><small style="color: #ffcf00;">👤 ${usuarioNome} - Curso: ${cursoUsuario.toUpperCase()}</small>`;
+        }
+    }
+}
 
 // ✅ FUNÇÃO PRINCIPAL PARA CARREGAR CURSOS
 async function carregarCursos() {
@@ -759,6 +908,84 @@ async function carregarCursos() {
   }
 }
 
+// ✅ GERAR CURSOS DE EXEMPLO (FALLBACK)
+function gerarCursosExemplo() {
+    return [
+        {
+            id: 1,
+            titulo: "Álgebra Linear Básica",
+            descricao: "Aprenda os fundamentos da álgebra linear para resolução de problemas matemáticos.",
+            materia: "algebra",
+            categoria: "matematica",
+            nivel: "medio",
+            duracao: 20,
+            imagem: null,
+            ativo: true,
+            modulos: [{ aulas: [{}] }, { aulas: [{}] }]
+        },
+        {
+            id: 2,
+            titulo: "Química Orgânica",
+            descricao: "Estudo dos compostos de carbono e suas aplicações no cotidiano.",
+            materia: "quimica",
+            categoria: "csn",
+            nivel: "medio",
+            duracao: 25,
+            imagem: null,
+            ativo: true,
+            modulos: [{ aulas: [{}] }]
+        },
+        {
+            id: 3,
+            titulo: "História do Brasil",
+            descricao: "Panorama histórico do Brasil desde o descobrimento até os dias atuais.",
+            materia: "historia",
+            categoria: "csh",
+            nivel: "medio",
+            duracao: 30,
+            imagem: null,
+            ativo: true,
+            modulos: [{ aulas: [{}] }, { aulas: [{}] }, { aulas: [{}] }]
+        },
+        {
+            id: 4,
+            titulo: "Gramática Avançada",
+            descricao: "Aprofunde seus conhecimentos em gramática portuguesa.",
+            materia: "gramatica",
+            categoria: "portugues",
+            nivel: "avancado",
+            duracao: 18,
+            imagem: null,
+            ativo: true,
+            modulos: [{ aulas: [{}] }, { aulas: [{}] }]
+        },
+        {
+            id: 5,
+            titulo: "Introdução ao JavaScript",
+            descricao: "Aprenda os fundamentos da programação com JavaScript.",
+            materia: "js",
+            categoria: "programacao",
+            nivel: "iniciante",
+            duracao: 15,
+            imagem: null,
+            ativo: true,
+            modulos: [{ aulas: [{}] }]
+        },
+        {
+            id: 6,
+            titulo: "Física Moderna",
+            descricao: "Conceitos avançados de física quântica e relatividade.",
+            materia: "fisica",
+            categoria: "csn",
+            nivel: "avancado",
+            duracao: 35,
+            imagem: null,
+            ativo: true,
+            modulos: [{ aulas: [{}] }, { aulas: [{}] }]
+        }
+    ];
+}
+
 // ✅ MOSTRAR LOADING
 function mostrarLoading() {
     const container = document.getElementById('courses-container');
@@ -772,10 +999,9 @@ function mostrarLoading() {
     }
 }
 
-// ✅ ATUALIZAR ESTATÍSTICAS - CORRIGIDO
+// ✅ ATUALIZAR ESTATÍSTICAS
 function atualizarEstatisticas() {
     const totalCursos = cursos.length;
-    // CORREÇÃO: usar 'categoria' ao invés de 'materia'
     const cursosMatematica = cursos.filter(c => c.categoria === 'matematica').length;
     const cursosCsn = cursos.filter(c => c.categoria === 'csn').length;
     const cursosCsh = cursos.filter(c => c.categoria === 'csh').length;
@@ -826,7 +1052,7 @@ function aplicarFiltros() {
     filtrarCursos(filtroAtivo);
 }
 
-// ✅ FILTRAR CURSOS - VERSÃO CORRIGIDA E SIMPLIFICADA
+// ✅ FILTRAR CURSOS
 function filtrarCursos(filtro) {
     try {
         console.log(`🔍 Aplicando filtro: "${filtro}"`);
@@ -845,7 +1071,7 @@ function filtrarCursos(filtro) {
         const categoriasDisponiveis = [...new Set(cursos.map(c => c.categoria).filter(Boolean))];
         console.log('🏷️ Categorias disponíveis nos cursos:', categoriasDisponiveis);
         
-        // Filtrar cursos - VERSÃO SIMPLIFICADA
+        // Filtrar cursos
         filteredCursos = cursos.filter(curso => {
             if (!curso || typeof curso !== 'object') return false;
             
@@ -925,14 +1151,48 @@ function exibirCursos() {
     });
 }
 
-// ✅ CRIAR CARD DO CURSO - SEM BLOQUEIO
+// ✅ CRIAR CARD DO CURSO - COM VERIFICAÇÃO DE PERMISSÃO
 function criarCardCurso(curso) {
     const card = document.createElement('div');
     
-    // PARA TESTE: Todos os cursos estão acessíveis
-    const temPermissao = true;
+    // ✅ VERIFICAR PERMISSÃO DO USUÁRIO
+    const usuarioId = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
+    const cursoUsuario = localStorage.getItem('cursoUsuario') || sessionStorage.getItem('cursoUsuario');
     
-    card.className = `course-card`;
+    let temPermissao = false;
+    let mensagemBloqueio = '';
+    
+    if (usuarioId && cursoUsuario) {
+        temPermissao = verificarPermissaoFrontend(cursoUsuario, curso.categoria);
+        
+        if (!temPermissao) {
+            mensagemBloqueio = `
+                <div class="bloqueado-overlay">
+                    <div class="bloqueado-mensagem">
+                        <i class="fas fa-lock"></i>
+                        <h4>Curso Bloqueado</h4>
+                        <p>Você é do curso <strong>${cursoUsuario.toUpperCase()}</strong> 
+                           e não pode acessar cursos de <strong>${obterNomeCategoria(curso.categoria)}</strong>.</p>
+                        <small>Clique em "Ver Regras" para mais informações.</small>
+                    </div>
+                </div>
+            `;
+        }
+    } else {
+        // Se não tem usuário logado, permitir visualização mas bloquear acesso
+        temPermissao = false;
+        mensagemBloqueio = `
+            <div class="bloqueado-overlay">
+                <div class="bloqueado-mensagem">
+                    <i class="fas fa-user-lock"></i>
+                    <h4>Login Necessário</h4>
+                    <p>Faça login para acessar este curso.</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    card.className = `course-card ${temPermissao ? '' : 'bloqueado'}`;
     
     const materiaNome = obterNomeMateria(curso.materia);
     const categoriaNome = obterNomeCategoria(curso.categoria);
@@ -945,11 +1205,13 @@ function criarCardCurso(curso) {
     const imagemUrl = curso.imagem || `https://placehold.co/600x400/${corBase.replace('#', '')}/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}`;
     
     card.innerHTML = `
+        ${mensagemBloqueio}
+        
         <div class="course-image">
             <img src="${imagemUrl}" alt="${curso.titulo}" 
                  onerror="this.src='https://placehold.co/600x400/323232/ffffff?text=${encodeURIComponent(curso.titulo.substring(0, 20))}'">
-            <div class="course-badge badge-${curso.categoria}">
-                ${categoriaNome}
+            <div class="course-badge ${temPermissao ? `badge-${curso.categoria}` : 'badge-bloqueado'}">
+                ${temPermissao ? categoriaNome : 'BLOQUEADO'}
             </div>
             <div class="course-level level-${curso.nivel || 'medio'}">${nivelNome}</div>
         </div>
@@ -979,6 +1241,7 @@ function criarCardCurso(curso) {
             
             <div class="course-category">
                 <small>Matéria: ${materiaNome}</small>
+                ${!temPermissao ? `<br><small style="color: #f44336;"><i class="fas fa-ban"></i> Acesso restrito</small>` : ''}
             </div>
             
             ${progresso > 0 ? `
@@ -994,19 +1257,84 @@ function criarCardCurso(curso) {
             ` : ''}
             
             <div class="course-actions">
-                <button class="btn btn-primary" onclick="iniciarCurso(${curso.id})">
-                    <i class="fas fa-play"></i> 
-                    ${progresso > 0 ? 'Continuar' : 'Começar'}
+                <button class="btn ${temPermissao ? 'btn-primary' : 'btn-bloqueado'}" 
+                        onclick="${temPermissao ? `iniciarCurso(${curso.id})` : 'mostrarModalRegras()'}"
+                        ${!temPermissao ? 'disabled' : ''}>
+                    <i class="fas ${temPermissao ? 'fa-play' : 'fa-lock'}"></i> 
+                    ${temPermissao ? (progresso > 0 ? 'Continuar' : 'Começar') : 'Bloqueado'}
                 </button>
                 
+                ${!temPermissao ? `
+                <button class="btn btn-secondary" onclick="mostrarModalRegras()">
+                    <i class="fas fa-info-circle"></i> Ver Regras
+                </button>
+                ` : `
                 <button class="btn btn-secondary" onclick="verDetalhes(${curso.id})">
                     <i class="fas fa-info-circle"></i> Detalhes
                 </button>
+                `}
             </div>
         </div>
     `;
     
     return card;
+}
+
+// ✅ FUNÇÃO DE VERIFICAÇÃO NO FRONTEND (replica a lógica do servidor)
+function verificarPermissaoFrontend(cursoUsuario, materiaCurso) {
+    const mapeamentoCursos = {
+        // Se o usuário é de "matematica", pode acessar:
+        'matematica': ['matematica', 'programacao'],
+        
+        // Se o usuário é de "csn", pode acessar:
+        'csn': ['csn', 'programacao'],
+        
+        // Se o usuário é de "csh", pode acessar:
+        'csh': ['csh', 'portugues', 'programacao'],
+        
+        // Se o usuário é de "portugues", pode acessar:
+        'portugues': ['portugues', 'csh', 'programacao'],
+        
+        // Se o usuário é de "programacao", pode acessar:
+        'programacao': ['programacao']
+    };
+    
+    return mapeamentoCursos[cursoUsuario]?.includes(materiaCurso) || false;
+}
+
+// ✅ MODIFIQUE A FUNÇÃO iniciarCurso PARA VALIDAR NOVAMENTE
+async function iniciarCurso(cursoId) {
+    console.log('🎯 Tentando iniciar curso:', cursoId);
+    const curso = cursos.find(c => c.id === cursoId);
+    if (!curso) {
+        mostrarAlerta('Curso não encontrado!', 'error');
+        return;
+    }
+    
+    // ✅ VERIFICAÇÃO FINAL ANTES DE ACESSAR
+    const usuarioId = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
+    const cursoUsuario = localStorage.getItem('cursoUsuario') || sessionStorage.getItem('cursoUsuario');
+    
+    if (!usuarioId || !cursoUsuario) {
+        mostrarAlerta('Faça login para acessar os cursos!', 'warning');
+        window.location.href = '/login';
+        return;
+    }
+    
+    if (!verificarPermissaoFrontend(cursoUsuario, curso.categoria)) {
+        mostrarAlerta(
+            `⛔ Acesso Negado! Você é do curso ${cursoUsuario.toUpperCase()} e não pode acessar cursos de ${obterNomeCategoria(curso.categoria)}.`,
+            'error'
+        );
+        return;
+    }
+    
+    // ✅ ACESSO PERMITIDO
+    console.log(`✅ Acesso permitido ao curso: ${curso.titulo}`);
+    mostrarAlerta(`Redirecionando para o curso: ${curso.titulo}`, 'success');
+    
+    // Redirecionar para a página do curso
+    window.location.href = `/cursos?id=${cursoId}&usuarioId=${usuarioId}`;
 }
 
 // ✅ FUNÇÕES AUXILIARES
@@ -1023,7 +1351,8 @@ function obterNomeMateria(materia) {
         'php': 'PHP',
         'js': 'JavaScript',
         'react': 'React',
-        'python': 'Python'
+        'python': 'Python',
+        'matematica': 'Matemática'
     };
     return nomes[materia] || materia;
 }
@@ -1072,22 +1401,9 @@ function calcularTotalAulas(curso) {
 }
 
 function obterProgressoCurso(cursoId) {
-    return Math.random() > 0.7 ? Math.floor(Math.random() * 100) : 0;
-}
-
-async function iniciarCurso(cursoId) {
-    console.log('🎯 Tentando iniciar curso:', cursoId);
-    const curso = cursos.find(c => c.id === cursoId);
-    if (!curso) {
-        mostrarAlerta('Curso não encontrado!', 'error');
-        return;
-    }
-    
-    // PARA TESTE: Mostrar mensagem
-    mostrarAlerta(`Abrindo curso: ${curso.titulo}`, 'success');
-    console.log(`✅ Curso selecionado: ${curso.titulo} (ID: ${cursoId})`);
-    
-    window.location.href = `/cursos?id=${cursoId}`;
+    // Simula progresso - na implementação real, buscar do localStorage ou API
+    const progressoSalvo = localStorage.getItem(`progresso_curso_${cursoId}`);
+    return progressoSalvo ? parseInt(progressoSalvo) : 0;
 }
 
 function verDetalhes(cursoId) {
@@ -1139,7 +1455,104 @@ function mostrarAlerta(mensagem, tipo = 'error') {
     }, 5000);
 }
 
-// ✅ TESTE DOS FILTROS
+// ✅ MODAL DE REGRAS DE ACESSO
+function mostrarModalRegras() {
+    const cursoUsuario = localStorage.getItem('cursoUsuario') || sessionStorage.getItem('cursoUsuario');
+    const usuarioNome = localStorage.getItem('usuarioNome') || sessionStorage.getItem('usuarioNome') || 'Usuário';
+    
+    const regras = {
+        'matematica': [
+            'Pode acessar cursos de: Matemática',
+            'Pode acessar cursos de: Programação',
+            'Não pode acessar cursos de: CSN, CSH, Português (exceto os permitidos)'
+        ],
+        'csn': [
+            'Pode acessar cursos de: CSN (Ciências da Natureza)',
+            'Pode acessar cursos de: Programação',
+            'Não pode acessar cursos de: Matemática, CSH, Português (exceto os permitidos)'
+        ],
+        'csh': [
+            'Pode acessar cursos de: CSH (Ciências Humanas)',
+            'Pode acessar cursos de: Português',
+            'Pode acessar cursos de: Programação',
+            'Não pode acessar cursos de: Matemática, CSN (exceto os permitidos)'
+        ],
+        'portugues': [
+            'Pode acessar cursos de: Português',
+            'Pode acessar cursos de: CSH',
+            'Pode acessar cursos de: Programação',
+            'Não pode acessar cursos de: Matemática, CSN (exceto os permitidos)'
+        ],
+        'programacao': [
+            'Pode acessar cursos de: Programação',
+            'Não pode acessar cursos de: Matemática, CSN, CSH, Português (exceto os permitidos)'
+        ]
+    };
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal-regras';
+    modal.innerHTML = `
+        <div class="modal-conteudo">
+            <i class="fas fa-lock"></i>
+            <h3>Regras de Acesso aos Cursos</h3>
+            
+            ${cursoUsuario ? `
+                <p>Olá, <strong>${usuarioNome}</strong>!</p>
+                <p>Seu curso atual: <strong>${cursoUsuario.toUpperCase()}</strong></p>
+                
+                <div class="regras-lista">
+                    <h4>Suas permissões:</h4>
+                    ${regras[cursoUsuario] ? regras[cursoUsuario].map(regra => `
+                        <div class="regra-item">
+                            <i class="fas fa-check-circle" style="color: #4CAF50; margin-right: 8px;"></i>
+                            ${regra}
+                        </div>
+                    `).join('') : `
+                        <div class="regra-item">
+                            <i class="fas fa-exclamation-triangle" style="color: #FF9800; margin-right: 8px;"></i>
+                            Curso não identificado. Contate o administrador.
+                        </div>
+                    `}
+                </div>
+                
+                <p><small>Para alterar seu curso, contate o administrador do sistema.</small></p>
+            ` : `
+                <div class="regras-lista">
+                    <h4>Regras Gerais:</h4>
+                    <div class="regra-item">
+                        <i class="fas fa-user-plus" style="color: #4361ee; margin-right: 8px;"></i>
+                        Faça login para ver suas permissões específicas
+                    </div>
+                    <div class="regra-item">
+                        <i class="fas fa-graduation-cap" style="color: #ffcf00; margin-right: 8px;"></i>
+                        Cada curso tem acesso restrito por área de estudo
+                    </div>
+                    <div class="regra-item">
+                        <i class="fas fa-exclamation-circle" style="color: #f44336; margin-right: 8px;"></i>
+                        Cursos bloqueados aparecem em cinza com badge vermelho
+                    </div>
+                </div>
+                
+                <p><small>Faça login para desbloquear os cursos disponíveis para você.</small></p>
+            `}
+            
+            <button class="btn-fechar-modal" onclick="this.closest('.modal-regras').remove()">
+                Entendi
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Fechar modal ao clicar fora
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.remove();
+        }
+    });
+}
+
+// ✅ TESTE DOS FILTROS (para debug)
 function testarFiltros() {
     console.log('🧪 TESTANDO FILTROS MANUALMENTE...');
     
@@ -1158,7 +1571,8 @@ function testarFiltros() {
 window.iniciarCurso = iniciarCurso;
 window.verDetalhes = verDetalhes;
 window.voltarParaMenu = voltarParaMenu;
-window.testarFiltros = testarFiltros; // Para testes no console
+window.mostrarModalRegras = mostrarModalRegras;
+window.testarFiltros = testarFiltros;
 
 // ✅ EXECUTAR TESTE APÓS CARREGAR
 setTimeout(() => {
