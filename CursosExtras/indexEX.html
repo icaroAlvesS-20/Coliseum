@@ -635,6 +635,72 @@
             margin-top: 15px;
         }
 
+        /* Alert de login */
+        .login-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .login-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ffcf00;
+            color: black;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(255,207,0,0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Botão de debug */
+        .debug-btn {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #4361ee;
+            color: white;
+            font-size: 24px;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
+        }
+
         /* ========== MEDIA QUERIES ========== */
         @media (max-width: 1024px) {
             .courses-grid {
@@ -660,6 +726,14 @@
                 right: 20px;
             }
             
+            .debug-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                bottom: 80px;
+                right: 20px;
+            }
+            
             .courses-grid {
                 grid-template-columns: 1fr;
                 gap: 20px;
@@ -672,6 +746,13 @@
             .course-meta {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 10px;
+            }
+            
+            .login-alert, .login-btn {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                text-align: center;
             }
         }
 
@@ -731,7 +812,7 @@
 
     <div class="header">
         <h2>Cursos Extras</h2>
-        <p>Aprenda com cursos complementares para reforçar seus estudos</p>
+        <p id="header-subtitle">Aprenda com cursos complementares para reforçar seus estudos</p>
     </div>
 
     <!-- Main Content -->
@@ -809,34 +890,221 @@
     </div>
 
     <button class="btn-voltar" onclick="voltarParaMenu()">←</button>
+    <button class="debug-btn" onclick="debugLogin()" title="Debug Login">🐛</button>
 
 <script>
-// ✅ CONSTANTES E CONFIGURAÇÕES
+// ==================== SISTEMA DE LOGIN ====================
+
+// ✅ CONSTANTES
 const API_BASE_URL = 'https://coliseum-api.onrender.com/api';
 let cursos = [];
 let filteredCursos = [];
 
+// ✅ SISTEMA DE DETECÇÃO DE LOGIN
+class SistemaLogin {
+    constructor() {
+        console.log('🔐 Iniciando sistema de login...');
+        this.usuarioId = null;
+        this.cursoUsuario = null;
+        this.usuarioNome = null;
+    }
+
+    // Método principal para encontrar credenciais
+    encontrarCredenciais() {
+        console.log('🔍 Procurando credenciais do usuário...');
+        
+        // 1. Tentar localStorage
+        this.usuarioId = localStorage.getItem('usuarioId');
+        this.cursoUsuario = localStorage.getItem('cursoUsuario');
+        this.usuarioNome = localStorage.getItem('usuarioNome');
+        
+        console.log('📍 localStorage:', {
+            usuarioId: this.usuarioId,
+            cursoUsuario: this.cursoUsuario,
+            usuarioNome: this.usuarioNome
+        });
+        
+        // 2. Tentar sessionStorage se não encontrou
+        if (!this.usuarioId) this.usuarioId = sessionStorage.getItem('usuarioId');
+        if (!this.cursoUsuario) this.cursoUsuario = sessionStorage.getItem('cursoUsuario');
+        if (!this.usuarioNome) this.usuarioNome = sessionStorage.getItem('usuarioNome');
+        
+        console.log('📍 sessionStorage:', {
+            usuarioId: this.usuarioId,
+            cursoUsuario: this.cursoUsuario,
+            usuarioNome: this.usuarioNome
+        });
+        
+        // 3. Tentar cookies
+        this.buscarEmCookies();
+        
+        // 4. Tentar URL parameters
+        this.buscarNaURL();
+        
+        // 5. Se encontrou, garantir que está no localStorage (para consistência)
+        if (this.usuarioId && this.cursoUsuario) {
+            this.salvarNoLocalStorage();
+            return true;
+        }
+        
+        console.warn('⚠️ Nenhuma credencial encontrada');
+        return false;
+    }
+    
+    buscarEmCookies() {
+        try {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [key, value] = cookie.trim().split('=');
+                if (key === 'usuarioId' && !this.usuarioId) {
+                    this.usuarioId = value;
+                    console.log('🍪 Usuário ID encontrado em cookie:', value);
+                }
+                if (key === 'cursoUsuario' && !this.cursoUsuario) {
+                    this.cursoUsuario = value;
+                    console.log('🍪 Curso encontrado em cookie:', value);
+                }
+                if (key === 'usuarioNome' && !this.usuarioNome) {
+                    this.usuarioNome = value;
+                    console.log('🍪 Nome encontrado em cookie:', value);
+                }
+            }
+        } catch (e) {
+            console.log('⚠️ Erro ao ler cookies:', e.message);
+        }
+    }
+    
+    buscarNaURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!this.usuarioId) {
+            this.usuarioId = urlParams.get('usuarioId') || urlParams.get('userId');
+            if (this.usuarioId) console.log('🌐 Usuário ID encontrado na URL:', this.usuarioId);
+        }
+        if (!this.cursoUsuario) {
+            this.cursoUsuario = urlParams.get('curso') || urlParams.get('cursoUsuario') || urlParams.get('materia');
+            if (this.cursoUsuario) console.log('🌐 Curso encontrado na URL:', this.cursoUsuario);
+        }
+        if (!this.usuarioNome) {
+            this.usuarioNome = urlParams.get('nome') || urlParams.get('usuarioNome') || urlParams.get('username');
+            if (this.usuarioNome) console.log('🌐 Nome encontrado na URL:', this.usuarioNome);
+        }
+    }
+    
+    salvarNoLocalStorage() {
+        console.log('💾 Salvando credenciais no localStorage...');
+        localStorage.setItem('usuarioId', this.usuarioId);
+        localStorage.setItem('cursoUsuario', this.cursoUsuario);
+        if (this.usuarioNome) {
+            localStorage.setItem('usuarioNome', this.usuarioNome);
+        }
+        
+        console.log('✅ Credenciais salvas:', {
+            usuarioId: this.usuarioId,
+            cursoUsuario: this.cursoUsuario,
+            usuarioNome: this.usuarioNome
+        });
+    }
+    
+    estaLogado() {
+        return !!(this.usuarioId && this.cursoUsuario);
+    }
+    
+    mostrarStatusLogin() {
+        if (this.estaLogado()) {
+            this.mostrarAlertaLogin();
+            this.atualizarCabecalho();
+        } else {
+            this.mostrarBotaoLogin();
+        }
+    }
+    
+    mostrarAlertaLogin() {
+        // Remover alerta anterior se existir
+        const alertaAnterior = document.querySelector('.login-alert');
+        if (alertaAnterior) alertaAnterior.remove();
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'login-alert';
+        alertDiv.innerHTML = `
+            <i class="fas fa-check-circle"></i> 
+            <span>Logado como: <strong>${this.usuarioNome || 'Usuário'}</strong> (${this.cursoUsuario.toUpperCase()})</span>
+            <button onclick="this.parentElement.remove()" style="
+                background: none;
+                border: none;
+                color: white;
+                margin-left: 10px;
+                cursor: pointer;
+                font-size: 1.2rem;
+            ">×</button>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // Remover após 5 segundos
+        setTimeout(() => {
+            if (alertDiv.parentElement) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+    
+    mostrarBotaoLogin() {
+        // Remover botão anterior se existir
+        const botaoAnterior = document.querySelector('.login-btn');
+        if (botaoAnterior) botaoAnterior.remove();
+        
+        const loginBtn = document.createElement('button');
+        loginBtn.className = 'login-btn';
+        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Fazer Login';
+        loginBtn.onclick = () => window.location.href = this.getLoginUrl();
+        
+        document.body.appendChild(loginBtn);
+    }
+    
+    atualizarCabecalho() {
+        const headerSubtitle = document.getElementById('header-subtitle');
+        if (headerSubtitle && this.usuarioNome && this.cursoUsuario) {
+            const originalText = 'Aprenda com cursos complementares para reforçar seus estudos';
+            headerSubtitle.innerHTML = `${originalText}<br>
+                <small style="color: #ffcf00; font-size: 0.9rem;">
+                    👤 ${this.usuarioNome} - Curso: ${this.cursoUsuario.toUpperCase()}
+                </small>`;
+        }
+    }
+    
+    getLoginUrl() {
+        // Verificar se está no Vercel ou localhost
+        const isVercel = window.location.hostname.includes('vercel.app');
+        return isVercel ? '/login.html' : '/login.html';
+    }
+}
+
+// ✅ INSTANCIAR SISTEMA DE LOGIN
+const sistemaLogin = new SistemaLogin();
+
+// ==================== FUNÇÕES PRINCIPAIS ====================
+
 // ✅ INICIALIZAÇÃO
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Inicializando página de Cursos Extras...');
+    
+    // Verificar login
+    const logado = sistemaLogin.encontrarCredenciais();
+    sistemaLogin.mostrarStatusLogin();
+    
+    // Carregar cursos
     await carregarCursos();
     configurarFiltros();
     configurarBusca();
-    exibirCursoUsuario();
-});
-
-// ✅ EXIBIR INFORMAÇÕES DO USUÁRIO LOGADO
-function exibirCursoUsuario() {
-    const cursoUsuario = localStorage.getItem('cursoUsuario') || sessionStorage.getItem('cursoUsuario');
-    const usuarioNome = localStorage.getItem('usuarioNome') || sessionStorage.getItem('usuarioNome');
     
-    if (cursoUsuario && usuarioNome) {
-        const header = document.querySelector('.header p');
-        if (header) {
-            header.innerHTML += `<br><small style="color: #ffcf00;">👤 ${usuarioNome} - Curso: ${cursoUsuario.toUpperCase()}</small>`;
-        }
-    }
-}
+    // Mostrar debug info
+    console.log('📊 Status final do login:', {
+        logado: logado,
+        usuarioId: sistemaLogin.usuarioId,
+        cursoUsuario: sistemaLogin.cursoUsuario,
+        usuarioNome: sistemaLogin.usuarioNome
+    });
+});
 
 // ✅ FUNÇÃO PRINCIPAL PARA CARREGAR CURSOS
 async function carregarCursos() {
@@ -845,7 +1113,7 @@ async function carregarCursos() {
     console.log('🔄 Carregando cursos da API...');
 
     // ✅ OBTER ID DO USUÁRIO LOGADO
-    const usuarioId = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
+    const usuarioId = sistemaLogin.usuarioId;
     
     // Construir URL com parâmetro do usuário
     let url = `${API_BASE_URL}/cursos`;
@@ -853,6 +1121,8 @@ async function carregarCursos() {
       url += `?usuarioId=${usuarioId}`;
     }
 
+    console.log('🌐 Chamando API:', url);
+    
     // Tentativa de carregamento da API
     const response = await fetch(url, {
       method: 'GET',
@@ -860,11 +1130,19 @@ async function carregarCursos() {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      mode: 'cors'
+      mode: 'cors',
+      credentials: 'include'
+    });
+
+    console.log('📡 Resposta da API:', {
+      status: response.status,
+      ok: response.ok,
+      url: response.url
     });
 
     if (response.ok) {
       const data = await response.json();
+      console.log('📦 Dados recebidos da API:', data);
       
       // Verificar estrutura da resposta
       if (Array.isArray(data)) {
@@ -873,15 +1151,20 @@ async function carregarCursos() {
       } else if (data.success && Array.isArray(data.cursos)) {
         cursos = data.cursos.filter(curso => curso.ativo !== false);
         console.log(`✅ ${cursos.length} cursos carregados da API (formato objeto)`);
+      } else if (data.curso) {
+        // Se for um único curso
+        cursos = [data.curso].filter(curso => curso.ativo !== false);
+        console.log(`✅ 1 curso carregado da API`);
       } else {
         console.warn('⚠️ Formato de resposta inesperado:', data);
-        cursos = gerarCursosExemplo(); // Usar exemplo se formato inválido
+        cursos = gerarCursosExemplo();
       }
     } else if (response.status === 403) {
       // Acesso negado específico para um curso
-      const errorData = await response.json();
-      mostrarAlerta(`⛔ ${errorData.message || 'Acesso negado a este curso'}`, 'error');
-      cursos = gerarCursosExemplo(); // Usar exemplo
+      const errorData = await response.json().catch(() => ({}));
+      console.error('⛔ Acesso negado:', errorData);
+      cursos = gerarCursosExemplo();
+      mostrarAlerta(`⛔ ${errorData.message || 'Acesso negado a alguns cursos'}`, 'error');
     } else {
       console.warn(`⚠️ API retornou status ${response.status}`);
       // Usar dados de exemplo como fallback
@@ -890,7 +1173,7 @@ async function carregarCursos() {
     }
 
     // Debug dos dados carregados
-    console.log('📊 Dados carregados:', cursos);
+    console.log('📊 Cursos carregados:', cursos);
     
     // Atualizar interface
     atualizarEstatisticas();
@@ -979,6 +1262,18 @@ function gerarCursosExemplo() {
             categoria: "csn",
             nivel: "avancado",
             duracao: 35,
+            imagem: null,
+            ativo: true,
+            modulos: [{ aulas: [{}] }, { aulas: [{}] }]
+        },
+        {
+            id: 7,
+            titulo: "Geografia Mundial",
+            descricao: "Estudo dos aspectos físicos e humanos da Terra.",
+            materia: "geografia",
+            categoria: "csh",
+            nivel: "medio",
+            duracao: 22,
             imagem: null,
             ativo: true,
             modulos: [{ aulas: [{}] }, { aulas: [{}] }]
@@ -1156,14 +1451,20 @@ function criarCardCurso(curso) {
     const card = document.createElement('div');
     
     // ✅ VERIFICAR PERMISSÃO DO USUÁRIO
-    const usuarioId = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
-    const cursoUsuario = localStorage.getItem('cursoUsuario') || sessionStorage.getItem('cursoUsuario');
+    const usuarioId = sistemaLogin.usuarioId;
+    const cursoUsuario = sistemaLogin.cursoUsuario;
     
     let temPermissao = false;
     let mensagemBloqueio = '';
     
+    console.log(`🔐 Verificando permissão para curso: ${curso.titulo}`);
+    console.log(`   Usuário ID: ${usuarioId}`);
+    console.log(`   Curso do usuário: ${cursoUsuario}`);
+    console.log(`   Categoria do curso: ${curso.categoria}`);
+    
     if (usuarioId && cursoUsuario) {
         temPermissao = verificarPermissaoFrontend(cursoUsuario, curso.categoria);
+        console.log(`   Permissão concedida: ${temPermissao}`);
         
         if (!temPermissao) {
             mensagemBloqueio = `
@@ -1179,7 +1480,7 @@ function criarCardCurso(curso) {
             `;
         }
     } else {
-        // Se não tem usuário logado, permitir visualização mas bloquear acesso
+        // Se não tem usuário logado, mostrar mensagem diferente
         temPermissao = false;
         mensagemBloqueio = `
             <div class="bloqueado-overlay">
@@ -1187,6 +1488,18 @@ function criarCardCurso(curso) {
                     <i class="fas fa-user-lock"></i>
                     <h4>Login Necessário</h4>
                     <p>Faça login para acessar este curso.</p>
+                    <button onclick="irParaLogin()" style="
+                        background: #ffcf00;
+                        color: black;
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 5px;
+                        margin-top: 10px;
+                        cursor: pointer;
+                        font-weight: bold;
+                    ">
+                        <i class="fas fa-sign-in-alt"></i> Fazer Login
+                    </button>
                 </div>
             </div>
         `;
@@ -1241,7 +1554,12 @@ function criarCardCurso(curso) {
             
             <div class="course-category">
                 <small>Matéria: ${materiaNome}</small>
-                ${!temPermissao ? `<br><small style="color: #f44336;"><i class="fas fa-ban"></i> Acesso restrito</small>` : ''}
+                ${!temPermissao && usuarioId ? `
+                    <br><small style="color: #f44336;">
+                        <i class="fas fa-ban"></i> 
+                        Acesso restrito para ${cursoUsuario.toUpperCase()}
+                    </small>
+                ` : ''}
             </div>
             
             ${progresso > 0 ? `
@@ -1264,7 +1582,7 @@ function criarCardCurso(curso) {
                     ${temPermissao ? (progresso > 0 ? 'Continuar' : 'Começar') : 'Bloqueado'}
                 </button>
                 
-                ${!temPermissao ? `
+                ${!temPermissao && usuarioId ? `
                 <button class="btn btn-secondary" onclick="mostrarModalRegras()">
                     <i class="fas fa-info-circle"></i> Ver Regras
                 </button>
@@ -1280,7 +1598,7 @@ function criarCardCurso(curso) {
     return card;
 }
 
-// ✅ FUNÇÃO DE VERIFICAÇÃO NO FRONTEND (replica a lógica do servidor)
+// ✅ FUNÇÃO DE VERIFICAÇÃO NO FRONTEND
 function verificarPermissaoFrontend(cursoUsuario, materiaCurso) {
     const mapeamentoCursos = {
         // Se o usuário é de "matematica", pode acessar:
@@ -1299,10 +1617,12 @@ function verificarPermissaoFrontend(cursoUsuario, materiaCurso) {
         'programacao': ['programacao']
     };
     
-    return mapeamentoCursos[cursoUsuario]?.includes(materiaCurso) || false;
+    const permitido = mapeamentoCursos[cursoUsuario]?.includes(materiaCurso) || false;
+    console.log(`🔐 Permissão: ${cursoUsuario} → ${materiaCurso} = ${permitido ? '✅' : '❌'}`);
+    return permitido;
 }
 
-// ✅ MODIFIQUE A FUNÇÃO iniciarCurso PARA VALIDAR NOVAMENTE
+// ✅ INICIAR CURSO COM VALIDAÇÃO
 async function iniciarCurso(cursoId) {
     console.log('🎯 Tentando iniciar curso:', cursoId);
     const curso = cursos.find(c => c.id === cursoId);
@@ -1312,12 +1632,12 @@ async function iniciarCurso(cursoId) {
     }
     
     // ✅ VERIFICAÇÃO FINAL ANTES DE ACESSAR
-    const usuarioId = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
-    const cursoUsuario = localStorage.getItem('cursoUsuario') || sessionStorage.getItem('cursoUsuario');
+    const usuarioId = sistemaLogin.usuarioId;
+    const cursoUsuario = sistemaLogin.cursoUsuario;
     
     if (!usuarioId || !cursoUsuario) {
         mostrarAlerta('Faça login para acessar os cursos!', 'warning');
-        window.location.href = '/login';
+        irParaLogin();
         return;
     }
     
@@ -1334,7 +1654,9 @@ async function iniciarCurso(cursoId) {
     mostrarAlerta(`Redirecionando para o curso: ${curso.titulo}`, 'success');
     
     // Redirecionar para a página do curso
-    window.location.href = `/cursos?id=${cursoId}&usuarioId=${usuarioId}`;
+    setTimeout(() => {
+        window.location.href = `/curso-detailed.html?id=${cursoId}&usuarioId=${usuarioId}`;
+    }, 1000);
 }
 
 // ✅ FUNÇÕES AUXILIARES
@@ -1430,8 +1752,16 @@ ${curso.descricao || 'Sem descrição disponível.'}
 
 function voltarParaMenu() {
     // Verificar se está no Vercel ou localhost
-    const basePath = window.location.hostname.includes('vercel.app') ? '/' : '/menu';
+    const isVercel = window.location.hostname.includes('vercel.app');
+    const basePath = isVercel ? '/' : '/menu.html';
     window.location.href = basePath;
+}
+
+function irParaLogin() {
+    console.log('🔐 Redirecionando para página de login...');
+    const isVercel = window.location.hostname.includes('vercel.app');
+    const loginPath = isVercel ? '/login.html' : '/login.html';
+    window.location.href = loginPath;
 }
 
 function mostrarAlerta(mensagem, tipo = 'error') {
@@ -1457,8 +1787,8 @@ function mostrarAlerta(mensagem, tipo = 'error') {
 
 // ✅ MODAL DE REGRAS DE ACESSO
 function mostrarModalRegras() {
-    const cursoUsuario = localStorage.getItem('cursoUsuario') || sessionStorage.getItem('cursoUsuario');
-    const usuarioNome = localStorage.getItem('usuarioNome') || sessionStorage.getItem('usuarioNome') || 'Usuário';
+    const cursoUsuario = sistemaLogin.cursoUsuario;
+    const usuarioNome = sistemaLogin.usuarioNome || 'Usuário';
     
     const regras = {
         'matematica': [
@@ -1552,11 +1882,49 @@ function mostrarModalRegras() {
     });
 }
 
-// ✅ TESTE DOS FILTROS (para debug)
+// ✅ FUNÇÃO DE DEBUG
+function debugLogin() {
+    console.clear();
+    console.log('🐛 ===== DEBUG DE LOGIN =====');
+    
+    // Informações atuais
+    console.log('📊 INFORMAÇÕES ATUAIS:');
+    console.log('- Usuário ID:', sistemaLogin.usuarioId);
+    console.log('- Curso:', sistemaLogin.cursoUsuario);
+    console.log('- Nome:', sistemaLogin.usuarioNome);
+    console.log('- Logado:', sistemaLogin.estaLogado());
+    
+    // LocalStorage
+    console.log('\n📦 LOCALSTORAGE:');
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        console.log(`  ${key}: ${localStorage.getItem(key)}`);
+    }
+    
+    // SessionStorage
+    console.log('\n📦 SESSIONSTORAGE:');
+    for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        console.log(`  ${key}: ${sessionStorage.getItem(key)}`);
+    }
+    
+    // Cookies
+    console.log('\n🍪 COOKIES:');
+    console.log('  Document cookie:', document.cookie);
+    
+    // Tentar recarregar credenciais
+    console.log('\n🔄 RECARREGANDO CREDENCIAIS...');
+    sistemaLogin.encontrarCredenciais();
+    sistemaLogin.mostrarStatusLogin();
+    
+    // Mostrar alerta
+    mostrarAlerta('Debug executado! Verifique o console (F12).', 'warning');
+}
+
+// ✅ TESTE DOS FILTROS
 function testarFiltros() {
     console.log('🧪 TESTANDO FILTROS MANUALMENTE...');
     
-    // Testar cada filtro
     const filtros = ['all', 'matematica', 'csn', 'csh', 'portugues', 'programacao'];
     
     filtros.forEach(filtro => {
@@ -1567,12 +1935,15 @@ function testarFiltros() {
     });
 }
 
-// ✅ EXPORTA FUNÇÕES PARA USO NO HTML
+// ✅ EXPORTAR FUNÇÕES PARA HTML
 window.iniciarCurso = iniciarCurso;
 window.verDetalhes = verDetalhes;
 window.voltarParaMenu = voltarParaMenu;
 window.mostrarModalRegras = mostrarModalRegras;
+window.irParaLogin = irParaLogin;
+window.debugLogin = debugLogin;
 window.testarFiltros = testarFiltros;
+window.sistemaLogin = sistemaLogin;
 
 // ✅ EXECUTAR TESTE APÓS CARREGAR
 setTimeout(() => {
