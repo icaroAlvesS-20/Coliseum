@@ -508,24 +508,39 @@ const POLITICAS_ACESSO = {
 
 // ==================== FUNÇÕES PRINCIPAIS ====================
 
-// ✅ OBTER USUÁRIO LOGADO
 function obterUsuarioLogado() {
-    const usuario = {
-        id: localStorage.getItem('usuarioId') || 
-             sessionStorage.getItem('usuarioId') || 
-             localStorage.getItem('userId'),
+    try {
+        const usuario = {
+            id: localStorage.getItem('usuarioId') || 
+                 sessionStorage.getItem('usuarioId') || 
+                 localStorage.getItem('userId') ||
+                 sessionStorage.getItem('userId'),
+            
+            curso: (localStorage.getItem('cursoUsuario') || 
+                   sessionStorage.getItem('cursoUsuario') || 
+                   localStorage.getItem('usuarioCurso') || 
+                   sessionStorage.getItem('usuarioCurso') ||
+                   localStorage.getItem('curso') ||
+                   sessionStorage.getItem('curso'))?.toString().toLowerCase().trim(),
+            
+            nome: localStorage.getItem('usuarioNome') || 
+                  sessionStorage.getItem('usuarioNome') ||
+                  localStorage.getItem('nomeUsuario') ||
+                  sessionStorage.getItem('nomeUsuario')
+        };
         
-        curso: (localStorage.getItem('cursoUsuario') || 
-               sessionStorage.getItem('cursoUsuario') || 
-               localStorage.getItem('usuarioCurso') || 
-               sessionStorage.getItem('usuarioCurso'))?.toLowerCase(),
+        // ✅ CORREÇÃO: Validar valores
+        if (usuario.curso === 'undefined' || usuario.curso === 'null' || usuario.curso === '') {
+            usuario.curso = null;
+        }
         
-        nome: localStorage.getItem('usuarioNome') || 
-              sessionStorage.getItem('usuarioNome')
-    };
-    
-    console.log('👤 Usuário encontrado:', usuario);
-    return usuario;
+        console.log('👤 Usuário encontrado:', usuario);
+        return usuario;
+        
+    } catch (error) {
+        console.error('❌ Erro ao obter usuário:', error);
+        return { id: null, curso: null, nome: null };
+    }
 }
 
 // ✅ CONVERTER MATÉRIA EM CATEGORIA
@@ -633,24 +648,41 @@ function obterCategoria(materia) {
 
 // ✅ VERIFICAR PERMISSÃO (REVISTA)
 function verificarPermissao(cursoUsuario, materiaCurso) {
+    console.log(`🔐 Verificando permissão: Usuário=${cursoUsuario}, Matéria=${materiaCurso}`);
+    
+    // ✅ CORREÇÃO: Verificar se os parâmetros são válidos
+    if (!cursoUsuario || !materiaCurso) {
+        console.log(`⚠️ Dados inválidos: cursoUsuario=${cursoUsuario}, materiaCurso=${materiaCurso}`);
+        return false;
+    }
+    
     // Se não está logado, não tem permissão
-    if (!cursoUsuario) {
+    if (!cursoUsuario || cursoUsuario === 'undefined' || cursoUsuario === 'null') {
         console.log(`❌ Não logado - Curso bloqueado: ${materiaCurso}`);
         return false;
     }
     
-    const categoria = obterCategoria(materiaCurso);
+    // Converter para minúsculas e remover espaços
+    const cursoUsuarioLower = cursoUsuario.toString().toLowerCase().trim();
+    const materiaCursoLower = materiaCurso.toString().toLowerCase().trim();
+    
+    console.log(`📝 Normalizado: Usuário=${cursoUsuarioLower}, Matéria=${materiaCursoLower}`);
+    
+    const categoria = obterCategoria(materiaCursoLower);
+    
+    console.log(`🏷️ Categoria da matéria: ${categoria}`);
     
     // Se o curso do usuário não está nas políticas de acesso
-    if (!POLITICAS_ACESSO[cursoUsuario]) {
-        console.log(`❌ Curso do usuário não reconhecido: ${cursoUsuario}`);
+    if (!POLITICAS_ACESSO[cursoUsuarioLower]) {
+        console.log(`❌ Curso do usuário não reconhecido: ${cursoUsuarioLower}`);
+        console.log(`📋 Cursos válidos: ${Object.keys(POLITICAS_ACESSO).join(', ')}`);
         return false;
     }
     
     // Verificar se a categoria do curso está nas permissões do usuário
-    const temPermissao = POLITICAS_ACESSO[cursoUsuario].includes(categoria);
+    const temPermissao = POLITICAS_ACESSO[cursoUsuarioLower].includes(categoria);
     
-    console.log(`🔐 ${cursoUsuario.toUpperCase()} → ${categoria.toUpperCase()}: ${temPermissao ? '✅' : '❌'}`);
+    console.log(`🔐 ${cursoUsuarioLower.toUpperCase()} → ${categoria?.toUpperCase() || 'N/A'}: ${temPermissao ? '✅' : '❌'}`);
     
     return temPermissao;
 }
@@ -667,7 +699,7 @@ function obterCursosBloqueados(cursoUsuario) {
     return todasCategorias.filter(categoria => !cursosPermitidos.includes(categoria));
 }
 
-// ✅ CARREGAR CURSOS
+// ✅ CARREGAR CURSOS (COMPLETA E CORRIGIDA)
 async function carregarCursos() {
     try {
         const usuario = obterUsuarioLogado();
@@ -681,13 +713,23 @@ async function carregarCursos() {
         const response = await fetch(url);
         
         if (!response.ok) {
-            throw new Error(`Erro ${response.status}`);
+            throw new Error(`Erro ${response.status}: ${response.statusText}`);
         }
         
         const dados = await response.json();
-        cursos = Array.isArray(dados) ? dados : (dados.cursos || []);
         
-        console.log(`📦 ${cursos.length} cursos carregados`);
+        // Processar resposta
+        if (Array.isArray(dados)) {
+            cursos = dados;
+        } else if (dados && dados.cursos) {
+            cursos = dados.cursos;
+        } else if (dados && dados.success && dados.cursos) {
+            cursos = dados.cursos;
+        } else {
+            cursos = [];
+        }
+        
+        console.log(`📦 ${cursos.length} cursos carregados da API`);
         
         // Adicionar categoria a cada curso
         cursos = cursos.map(curso => ({
@@ -700,32 +742,43 @@ async function carregarCursos() {
         
     } catch (error) {
         console.error('❌ Erro ao carregar cursos:', error);
-        cursos = gerarCursosExemplo();
+        
+        // ✅ SEM gerarCursosExemplo - apenas limpa e mostra mensagem
+        cursos = [];
         atualizarEstatisticas();
         mostrarCursos();
-        mostrarAlerta('⚠️ Usando dados locais', 'warning');
+        
+        mostrarAlerta(`❌ Erro ao carregar cursos: ${error.message}`, 'error');
     }
 }
 
-// ✅ ATUALIZAR ESTATÍSTICAS
+// ✅ ATUALIZAR ESTATÍSTICAS (CORRIGIDA)
 function atualizarEstatisticas() {
     const usuario = obterUsuarioLogado();
+    
+    console.log('📊 Atualizando estatísticas para usuário:', usuario.curso);
     
     // Total de cursos disponíveis
     const totalCursos = cursos.length;
     
     // Cursos disponíveis para o usuário
-    const cursosDisponiveis = usuario.curso ? 
-        cursos.filter(c => verificarPermissao(usuario.curso, c.materia)).length : 
-        cursos.length;
+    let cursosDisponiveis = 0;
+    if (usuario.curso && usuario.curso !== 'undefined' && usuario.curso !== 'null') {
+        cursosDisponiveis = cursos.filter(c => {
+            if (!c.materia) return false;
+            return verificarPermissao(usuario.curso, c.materia);
+        }).length;
+    } else {
+        cursosDisponiveis = cursos.length;
+    }
     
     // Cursos por categoria
-    const cursosPreparatorio = cursos.filter(c => obterCategoria(c.materia) === 'preparatorio').length;
-    const cursosReforco = cursos.filter(c => obterCategoria(c.materia) === 'reforco').length;
-    const cursosInformatica = cursos.filter(c => obterCategoria(c.materia) === 'informatica').length;
-    const cursosRobotica = cursos.filter(c => obterCategoria(c.materia) === 'robotica').length;
-    const cursosGames = cursos.filter(c => obterCategoria(c.materia) === 'games').length;
-    const cursosProgramacao = cursos.filter(c => obterCategoria(c.materia) === 'programacao').length;
+    const cursosPreparatorio = cursos.filter(c => obterCategoria(c.materia || '') === 'preparatorio').length;
+    const cursosReforco = cursos.filter(c => obterCategoria(c.materia || '') === 'reforco').length;
+    const cursosInformatica = cursos.filter(c => obterCategoria(c.materia || '') === 'informatica').length;
+    const cursosRobotica = cursos.filter(c => obterCategoria(c.materia || '') === 'robotica').length;
+    const cursosGames = cursos.filter(c => obterCategoria(c.materia || '') === 'games').length;
+    const cursosProgramacao = cursos.filter(c => obterCategoria(c.materia || '') === 'programacao').length;
 
     document.getElementById('total-cursos').textContent = totalCursos;
     document.getElementById('cursos-preparatorio').textContent = cursosPreparatorio;
@@ -734,8 +787,10 @@ function atualizarEstatisticas() {
     document.getElementById('cursos-robotica').textContent = cursosRobotica;
     document.getElementById('cursos-games').textContent = cursosGames;
     document.getElementById('cursos-programacao').textContent = cursosProgramacao;
+    
+    console.log(`📈 Estatísticas: Total=${totalCursos}, Disponíveis=${cursosDisponiveis}`);
 }
-
+    
 // ✅ MOSTRAR CURSOS
 function mostrarCursos() {
     const container = document.getElementById('courses-container');
