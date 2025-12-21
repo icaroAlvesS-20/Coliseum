@@ -491,50 +491,15 @@ let filtroAtivo = 'all';
 
 // ==================== POLÍTICAS DE ACESSO ====================
 const POLITICAS_ACESSO = {
-    'reforco': ['reforco'],           
-    'preparatorio': ['preparatorio'], 
-    'informatica': ['informatica'],  
-    'robotica': ['robotica'],         
-    'games': ['games'],               
-    'programacao': ['programacao']    
+    'reforco': ['reforco'],
+    'preparatorio': ['preparatorio'],
+    'informatica': ['informatica'],
+    'robotica': ['robotica'],
+    'games': ['games'],
+    'programacao': ['programacao']
 };
-
+    
 // ==================== FUNÇÕES PRINCIPAIS ====================
-
-function obterUsuarioLogado() {
-    try {
-        const usuario = {
-            id: localStorage.getItem('usuarioId') || 
-                 sessionStorage.getItem('usuarioId') || 
-                 localStorage.getItem('userId') ||
-                 sessionStorage.getItem('userId'),
-            
-            curso: (localStorage.getItem('cursoUsuario') || 
-                   sessionStorage.getItem('cursoUsuario') || 
-                   localStorage.getItem('usuarioCurso') || 
-                   sessionStorage.getItem('usuarioCurso') ||
-                   localStorage.getItem('curso') ||
-                   sessionStorage.getItem('curso'))?.toString().toLowerCase().trim(),
-            
-            nome: localStorage.getItem('usuarioNome') || 
-                  sessionStorage.getItem('usuarioNome') ||
-                  localStorage.getItem('nomeUsuario') ||
-                  sessionStorage.getItem('nomeUsuario')
-        };
-        
-        // ✅ CORREÇÃO: Validar valores
-        if (usuario.curso === 'undefined' || usuario.curso === 'null' || usuario.curso === '') {
-            usuario.curso = null;
-        }
-        
-        console.log('👤 Usuário encontrado:', usuario);
-        return usuario;
-        
-    } catch (error) {
-        console.error('❌ Erro ao obter usuário:', error);
-        return { id: null, curso: null, nome: null };
-    }
-}
 
 function obterCategoria(materia) {
     if (!materia) return 'outros';
@@ -583,19 +548,72 @@ function obterCategoria(materia) {
     return 'outros';
 }
 
+function obterUsuarioLogado() {
+    try {
+        const usuario = {
+            id: localStorage.getItem('usuarioId') || 
+                 sessionStorage.getItem('usuarioId') || 
+                 localStorage.getItem('userId') ||
+                 sessionStorage.getItem('userId'),
+            
+            curso: (localStorage.getItem('cursoUsuario') || 
+                   sessionStorage.getItem('cursoUsuario') || 
+                   localStorage.getItem('usuarioCurso') || 
+                   sessionStorage.getItem('usuarioCurso') ||
+                   localStorage.getItem('curso') ||
+                   sessionStorage.getItem('curso'))?.toString().toLowerCase().trim(),
+            
+            nome: localStorage.getItem('usuarioNome') || 
+                  sessionStorage.getItem('usuarioNome') ||
+                  localStorage.getItem('nomeUsuario') ||
+                  sessionStorage.getItem('nomeUsuario')
+        };
+        
+        // ✅ CORREÇÃO: Validar valores
+        if (usuario.curso === 'undefined' || usuario.curso === 'null' || usuario.curso === '') {
+            usuario.curso = null;
+        }
+        
+        console.log('👤 Usuário encontrado:', usuario);
+        return usuario;
+        
+    } catch (error) {
+        console.error('❌ Erro ao obter usuário:', error);
+        return { id: null, curso: null, nome: null };
+    }
+}
+
+
+// ✅ FUNÇÃO CORRIGIDA: verificar se usuário tem acesso ao curso
 function verificarPermissao(cursoUsuario, materiaCurso) {
     console.log(`🔐 Verificando: Usuário=${cursoUsuario}, Matéria=${materiaCurso}`);
     
     if (!cursoUsuario || !materiaCurso) {
+        console.log(`⚠️ Dados inválidos: cursoUsuario=${cursoUsuario}, materiaCurso=${materiaCurso}`);
         return false;
     }
     
-    const cursoDaMateria = obterCursoDaMateria(materiaCurso);
-    console.log(`📚 Matéria "${materiaCurso}" pertence ao curso: ${cursoDaMateria}`);
+    // Se não está logado, não tem permissão
+    if (!cursoUsuario || cursoUsuario === 'undefined' || cursoUsuario === 'null') {
+        console.log(`❌ Não logado - Curso bloqueado: ${materiaCurso}`);
+        return false;
+    }
     
-    const temPermissao = POLITICAS_ACESSO[cursoUsuario]?.includes(cursoDaMateria) || false;
+    // Converter para minúsculas e remover espaços
+    const cursoUsuarioLower = cursoUsuario.toString().toLowerCase().trim();
+    const materiaCursoLower = materiaCurso.toString().toLowerCase().trim();
     
-    console.log(`✅ ${cursoUsuario.toUpperCase()} → ${cursoDaMateria.toUpperCase()}: ${temPermissao ? 'PERMITIDO' : 'BLOQUEADO'}`);
+    console.log(`📝 Normalizado: Usuário=${cursoUsuarioLower}, Matéria=${materiaCursoLower}`);
+    
+    // Descobrir a qual CURSO essa matéria pertence
+    const cursoDaMateria = obterCursoDaMateria(materiaCursoLower);
+    
+    console.log(`🏷️ Matéria "${materiaCurso}" pertence ao curso: ${cursoDaMateria}`);
+    
+    // Verificar se o usuário tem permissão para esse curso
+    const temPermissao = POLITICAS_ACESSO[cursoUsuarioLower]?.includes(cursoDaMateria) || false;
+    
+    console.log(`✅ ${cursoUsuarioLower.toUpperCase()} → ${cursoDaMateria?.toUpperCase() || 'N/A'}: ${temPermissao ? 'PERMITIDO' : 'BLOQUEADO'}`);
     
     return temPermissao;
 }
@@ -644,11 +662,7 @@ async function carregarCursos() {
         
         console.log(`📦 ${cursos.length} cursos carregados da API`);
         
-        // Adicionar categoria a cada curso
-        cursos = cursos.map(curso => ({
-            ...curso,
-            categoria: obterCategoria(curso.materia || '')
-        }));
+        // NÃO ADICIONE categoria aqui - vamos calcular dinamicamente
         
         atualizarEstatisticas();
         mostrarCursos();
@@ -656,7 +670,6 @@ async function carregarCursos() {
     } catch (error) {
         console.error('❌ Erro ao carregar cursos:', error);
         
-        // ✅ SEM gerarCursosExemplo - apenas limpa e mostra mensagem
         cursos = [];
         atualizarEstatisticas();
         mostrarCursos();
@@ -665,7 +678,6 @@ async function carregarCursos() {
     }
 }
 
-// ✅ ATUALIZAR ESTATÍSTICAS (CORRIGIDA)
 function atualizarEstatisticas() {
     const usuario = obterUsuarioLogado();
     
@@ -685,14 +697,15 @@ function atualizarEstatisticas() {
         cursosDisponiveis = cursos.length;
     }
     
-    // Cursos por categoria
-    const cursosPreparatorio = cursos.filter(c => obterCategoria(c.materia || '') === 'preparatorio').length;
-    const cursosReforco = cursos.filter(c => obterCategoria(c.materia || '') === 'reforco').length;
-    const cursosInformatica = cursos.filter(c => obterCategoria(c.materia || '') === 'informatica').length;
-    const cursosRobotica = cursos.filter(c => obterCategoria(c.materia || '') === 'robotica').length;
-    const cursosGames = cursos.filter(c => obterCategoria(c.materia || '') === 'games').length;
-    const cursosProgramacao = cursos.filter(c => obterCategoria(c.materia || '') === 'programacao').length;
+    // Cursos por categoria - USANDO obterCursoDaMateria
+    const cursosPreparatorio = cursos.filter(c => obterCursoDaMateria(c.materia || '') === 'preparatorio').length;
+    const cursosReforco = cursos.filter(c => obterCursoDaMateria(c.materia || '') === 'reforco').length;
+    const cursosInformatica = cursos.filter(c => obterCursoDaMateria(c.materia || '') === 'informatica').length;
+    const cursosRobotica = cursos.filter(c => obterCursoDaMateria(c.materia || '') === 'robotica').length;
+    const cursosGames = cursos.filter(c => obterCursoDaMateria(c.materia || '') === 'games').length;
+    const cursosProgramacao = cursos.filter(c => obterCursoDaMateria(c.materia || '') === 'programacao').length;
 
+    // Atualizar DOM
     document.getElementById('total-cursos').textContent = totalCursos;
     document.getElementById('cursos-preparatorio').textContent = cursosPreparatorio;
     document.getElementById('cursos-reforco').textContent = cursosReforco;
@@ -706,8 +719,8 @@ function atualizarEstatisticas() {
     
 // ✅ MOSTRAR CURSOS
 function mostrarCursos() {
-    const container = document.getElementById('courses-container');
-    if (!container) return;
+const categoria = obterCursoDaMateria(curso.materia);
+if (categoria !== filtroAtivo) return false;
     
     container.innerHTML = '';
     
@@ -759,8 +772,8 @@ function mostrarCursos() {
 
 // ✅ CRIAR CARD DO CURSO
 function criarCardCurso(curso, usuario) {
-    const categoria = obterCategoria(curso.materia);
-    const temPermissao = verificarPermissao(usuario.curso, curso.materia);
+const categoria = obterCursoDaMateria(curso.materia);
+const temPermissao = verificarPermissao(usuario.curso, curso.materia);
     
     const card = document.createElement('div');
     card.className = `course-card ${temPermissao ? '' : 'bloqueado'}`;
