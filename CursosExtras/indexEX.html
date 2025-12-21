@@ -695,10 +695,6 @@ async function carregarCursos() {
             categoria: obterCategoria(curso.materia || '')
         }));
         
-        if (cursos.length === 0) {
-            cursos = gerarCursosExemplo();
-        }
-        
         atualizarEstatisticas();
         mostrarCursos();
         
