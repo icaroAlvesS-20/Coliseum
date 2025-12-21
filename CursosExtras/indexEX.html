@@ -490,20 +490,13 @@ let cursos = [];
 let filtroAtivo = 'all';
 
 // ==================== POLÍTICAS DE ACESSO ====================
-// Definição de quais cursos cada tipo de usuário pode acessar
 const POLITICAS_ACESSO = {
-    
-    'reforco': ['reforco'],
-    
-    'preparatorio': ['preparatorio'],
-
-    'informatica': ['informatica'],
-    
-    'robotica': ['robotica'],
-    
-    'games': ['games'],
-    
-    'programacao': ['programacao']
+    'reforco': ['reforco'],           
+    'preparatorio': ['preparatorio'], 
+    'informatica': ['informatica'],  
+    'robotica': ['robotica'],         
+    'games': ['games'],               
+    'programacao': ['programacao']    
 };
 
 // ==================== FUNÇÕES PRINCIPAIS ====================
@@ -544,149 +537,59 @@ function obterUsuarioLogado() {
 }
 
 // ✅ CONVERTER MATÉRIA EM CATEGORIA
-function obterCategoria(materia) {
+function obterCursoDaMateria(materia) {
     const materiaLower = materia.toLowerCase();
     
-    // Matemática
-    if (materiaLower.includes('algebra') || 
-        materiaLower.includes('geometria') || 
-        materiaLower.includes('matematica') ||
-        materiaLower.includes('matemática') ||
-        materiaLower.includes('calculo') ||
-        materiaLower.includes('cálculo') ||
-        materiaLower.includes('trigonometria') ||
-        materiaLower.includes('aritmetica') ||
-        materiaLower.includes('aritmética')) {
-        return 'preparatorio';
-    }
-    
-    // CSN
-    if (materiaLower.includes('quimica') || 
-        materiaLower.includes('fisica') || 
-        materiaLower.includes('biologia') ||
-        materiaLower.includes('química') || 
-        materiaLower.includes('física') ||
-        materiaLower.includes('ciencia') ||
-        materiaLower.includes('ciência') ||
-        materiaLower.includes('laboratorio') ||
-        materiaLower.includes('laboratório')) {
+    // Reforço escolar
+    if (['algebra', 'geometria', 'quimica', 'fisica', 'biologia'].some(m => materiaLower.includes(m))) {
         return 'reforco';
     }
     
-    // CSH
-    if (materiaLower.includes('historia') || 
-        materiaLower.includes('geografia') || 
-        materiaLower.includes('filosofia') ||
-        materiaLower.includes('sociologia') ||
-        materiaLower.includes('história') ||
-        materiaLower.includes('antropologia') ||
-        materiaLower.includes('politica') ||
-        materiaLower.includes('política') ||
-        materiaLower.includes('economia')) {
+    // Preparatório vestibular
+    if (['historia', 'geografia', 'gramatica', 'redacao'].some(m => materiaLower.includes(m))) {
+        return 'preparatorio';
+    }
+    
+    // Informática
+    if (['windows', 'word', 'excel', 'powerpoint', 'internet', 'digitação'].some(m => materiaLower.includes(m))) {
         return 'informatica';
     }
     
-    // Português
-    if (materiaLower.includes('gramatica') || 
-        materiaLower.includes('interpretacao') || 
-        materiaLower.includes('literatura') ||
-        materiaLower.includes('redacao') ||
-        materiaLower.includes('portugues') ||
-        materiaLower.includes('português') ||
-        materiaLower.includes('gramática') || 
-        materiaLower.includes('interpretação') || 
-        materiaLower.includes('redação') ||
-        materiaLower.includes('linguistica') ||
-        materiaLower.includes('linguística') ||
-        materiaLower.includes('ortografia')) {
+    // Robótica
+    if (['arduino', 'robotica', 'eletronica', 'mecanica', 'automação'].some(m => materiaLower.includes(m))) {
         return 'robotica';
     }
-
+    
+    // Games
+    if (['unity', 'blender', 'game', 'jogo', 'design'].some(m => materiaLower.includes(m))) {
+        return 'games';
+    }
     
     // Programação
-    if (materiaLower.includes('javascript') || 
-        materiaLower.includes('python') || 
-        materiaLower.includes('php') ||
-        materiaLower.includes('react') ||
-        materiaLower.includes('programacao') ||
-        materiaLower.includes('programação') ||
-        materiaLower.includes('js') ||
-        materiaLower.includes('node') ||
-        materiaLower.includes('html') ||
-        materiaLower.includes('css') ||
-        materiaLower.includes('web') ||
-        materiaLower.includes('frontend') ||
-        materiaLower.includes('backend') ||
-        materiaLower.includes('codigo') ||
-        materiaLower.includes('código') ||
-        materiaLower.includes('java') ||
-        materiaLower.includes('c++') ||
-        materiaLower.includes('c#') ||
-        materiaLower.includes('ruby') ||
-        materiaLower.includes('go') ||
-        materiaLower.includes('swift') ||
-        materiaLower.includes('kotlin') ||
-        materiaLower.includes('typescript') ||
-        materiaLower.includes('angular') ||
-        materiaLower.includes('vue') ||
-        materiaLower.includes('flutter') ||
-        materiaLower.includes('reactnative') ||
-        materiaLower.includes('react native') ||
-        materiaLower.includes('database') ||
-        materiaLower.includes('banco de dados') ||
-        materiaLower.includes('sql') ||
-        materiaLower.includes('nosql') ||
-        materiaLower.includes('mongodb') ||
-        materiaLower.includes('api') ||
-        materiaLower.includes('rest') ||
-        materiaLower.includes('graphql') ||
-        materiaLower.includes('algoritmo') ||
-        materiaLower.includes('estrutura de dados')) {
+    if (['python', 'javascript', 'java', 'html', 'css', 'react', 'node', 'programação', 'codigo'].some(m => materiaLower.includes(m))) {
         return 'programacao';
     }
+    
+    return 'outros';
 }
 
-// ✅ VERIFICAR PERMISSÃO (REVISTA)
 function verificarPermissao(cursoUsuario, materiaCurso) {
-    console.log(`🔐 Verificando permissão: Usuário=${cursoUsuario}, Matéria=${materiaCurso}`);
+    console.log(`🔐 Verificando: Usuário=${cursoUsuario}, Matéria=${materiaCurso}`);
     
-    // ✅ CORREÇÃO: Verificar se os parâmetros são válidos
     if (!cursoUsuario || !materiaCurso) {
-        console.log(`⚠️ Dados inválidos: cursoUsuario=${cursoUsuario}, materiaCurso=${materiaCurso}`);
         return false;
     }
     
-    // Se não está logado, não tem permissão
-    if (!cursoUsuario || cursoUsuario === 'undefined' || cursoUsuario === 'null') {
-        console.log(`❌ Não logado - Curso bloqueado: ${materiaCurso}`);
-        return false;
-    }
+    const cursoDaMateria = obterCursoDaMateria(materiaCurso);
+    console.log(`📚 Matéria "${materiaCurso}" pertence ao curso: ${cursoDaMateria}`);
     
-    // Converter para minúsculas e remover espaços
-    const cursoUsuarioLower = cursoUsuario.toString().toLowerCase().trim();
-    const materiaCursoLower = materiaCurso.toString().toLowerCase().trim();
+    const temPermissao = POLITICAS_ACESSO[cursoUsuario]?.includes(cursoDaMateria) || false;
     
-    console.log(`📝 Normalizado: Usuário=${cursoUsuarioLower}, Matéria=${materiaCursoLower}`);
-    
-    const categoria = obterCategoria(materiaCursoLower);
-    
-    console.log(`🏷️ Categoria da matéria: ${categoria}`);
-    
-    // Se o curso do usuário não está nas políticas de acesso
-    if (!POLITICAS_ACESSO[cursoUsuarioLower]) {
-        console.log(`❌ Curso do usuário não reconhecido: ${cursoUsuarioLower}`);
-        console.log(`📋 Cursos válidos: ${Object.keys(POLITICAS_ACESSO).join(', ')}`);
-        return false;
-    }
-    
-    // Verificar se a categoria do curso está nas permissões do usuário
-    const temPermissao = POLITICAS_ACESSO[cursoUsuarioLower].includes(categoria);
-    
-    console.log(`🔐 ${cursoUsuarioLower.toUpperCase()} → ${categoria?.toUpperCase() || 'N/A'}: ${temPermissao ? '✅' : '❌'}`);
+    console.log(`✅ ${cursoUsuario.toUpperCase()} → ${cursoDaMateria.toUpperCase()}: ${temPermissao ? 'PERMITIDO' : 'BLOQUEADO'}`);
     
     return temPermissao;
 }
-
+    
 // ✅ OBTER CURSOS BLOQUEADOS PARA O USUÁRIO
 function obterCursosBloqueados(cursoUsuario) {
     if (!cursoUsuario || !POLITICAS_ACESSO[cursoUsuario]) {
