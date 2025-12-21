@@ -717,10 +717,9 @@ function atualizarEstatisticas() {
     console.log(`📈 Estatísticas: Total=${totalCursos}, Disponíveis=${cursosDisponiveis}`);
 }
     
-// ✅ MOSTRAR CURSOS
 function mostrarCursos() {
-const categoria = obterCursoDaMateria(curso.materia);
-if (categoria !== filtroAtivo) return false;
+    const container = document.getElementById('courses-container');
+    if (!container) return;
     
     container.innerHTML = '';
     
@@ -730,7 +729,7 @@ if (categoria !== filtroAtivo) return false;
     let cursosFiltrados = cursos.filter(curso => {
         // Aplicar filtro
         if (filtroAtivo !== 'all') {
-            const categoria = obterCategoria(curso.materia);
+            const categoria = obterCursoDaMateria(curso.materia || '');
             if (categoria !== filtroAtivo) return false;
         }
         
@@ -772,8 +771,8 @@ if (categoria !== filtroAtivo) return false;
 
 // ✅ CRIAR CARD DO CURSO
 function criarCardCurso(curso, usuario) {
-const categoria = obterCursoDaMateria(curso.materia);
-const temPermissao = verificarPermissao(usuario.curso, curso.materia);
+    const categoria = obterCursoDaMateria(curso.materia || '');
+    const temPermissao = verificarPermissao(usuario.curso, curso.materia);
     
     const card = document.createElement('div');
     card.className = `course-card ${temPermissao ? '' : 'bloqueado'}`;
@@ -904,7 +903,7 @@ function iniciarCurso(cursoId) {
     const temPermissao = verificarPermissao(usuario.curso, curso.materia);
     if (!temPermissao) {
         const nomeCursoUsuario = obterNomeCategoria(usuario.curso);
-        const nomeCategoriaCurso = obterNomeCategoria(obterCategoria(curso.materia));
+        const nomeCategoriaCurso = obterNomeCategoria(obterCursoDaMateria(curso.materia));
         mostrarAlerta(`❌ Você é do curso ${nomeCursoUsuario} e não pode acessar cursos de ${nomeCategoriaCurso}`, 'error');
         return;
     }
@@ -921,7 +920,7 @@ function iniciarCurso(cursoId) {
 function verDetalhes(cursoId) {
     const curso = cursos.find(c => c.id === cursoId);
     if (curso) {
-        const categoria = obterCategoria(curso.materia);
+        const categoria = obterCursoDaMateria(curso.materia);
         const usuario = obterUsuarioLogado();
         const temPermissao = verificarPermissao(usuario.curso, curso.materia);
         
