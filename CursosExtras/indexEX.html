@@ -537,35 +537,46 @@ function obterUsuarioLogado() {
 }
 
 function obterCategoria(materia) {
+    if (!materia) return 'outros';
+    
     const materiaLower = materia.toLowerCase();
     
-    // Reforço escolar
-    if (['algebra', 'geometria', 'quimica', 'fisica', 'biologia'].some(m => materiaLower.includes(m))) {
+    if (['algebra', 'geometria', 'quimica', 'fisica', 'biologia', 
+         'matematica', 'matemática', 'calculo', 'cálculo', 'trigonometria',
+         'aritmetica', 'aritmética', 'química', 'física'].some(m => materiaLower.includes(m))) {
         return 'reforco';
     }
     
-    // Preparatório vestibular
-    if (['historia', 'geografia', 'gramatica', 'redacao'].some(m => materiaLower.includes(m))) {
+    if (['historia', 'geografia', 'gramatica', 'redacao', 'literatura',
+         'história', 'filosofia', 'sociologia', 'antropologia', 'politica',
+         'política', 'economia', 'gramática', 'interpretacao', 'interpretação',
+         'redação', 'linguistica', 'linguística', 'ortografia'].some(m => materiaLower.includes(m))) {
         return 'preparatorio';
     }
     
-    // Informática
-    if (['windows', 'word', 'excel', 'powerpoint', 'internet', 'digitação'].some(m => materiaLower.includes(m))) {
+    if (['windows', 'word', 'excel', 'powerpoint', 'internet', 'digitação',
+         'pacote', 'office', 'microsoft', 'informatica', 'informática'].some(m => materiaLower.includes(m))) {
         return 'informatica';
     }
     
-    // Robótica
-    if (['arduino', 'robotica', 'eletronica', 'mecanica', 'automação'].some(m => materiaLower.includes(m))) {
+    if (['arduino', 'robotica', 'robótica', 'eletronica', 'eletrônica', 
+         'mecanica', 'mecânica', 'automação', 'automatizacao', 'circuito',
+         'sensores', 'motores', 'robo', 'robô'].some(m => materiaLower.includes(m))) {
         return 'robotica';
     }
     
-    // Games
-    if (['unity', 'blender', 'game', 'jogo', 'design'].some(m => materiaLower.includes(m))) {
+    if (['unity', 'blender', 'game', 'jogo', 'design', 'modelagem', '3d',
+         'animacao', 'animação', 'unreal', 'engine', 'desenvolvimento jogos',
+         'game design', 'pixel', 'arte digital', 'concept art'].some(m => materiaLower.includes(m))) {
         return 'games';
     }
     
-    // Programação
-    if (['python', 'javascript', 'java', 'html', 'css', 'react', 'node', 'programação', 'codigo'].some(m => materiaLower.includes(m))) {
+    if (['python', 'javascript', 'java', 'html', 'css', 'react', 'node', 
+         'programação', 'programacao', 'codigo', 'código', 'php', 'js',
+         'frontend', 'backend', 'web', 'c++', 'c#', 'ruby', 'go', 'swift',
+         'kotlin', 'typescript', 'angular', 'vue', 'flutter', 'reactnative',
+         'database', 'banco de dados', 'sql', 'nosql', 'mongodb', 'api',
+         'rest', 'graphql', 'algoritmo', 'estrutura de dados'].some(m => materiaLower.includes(m))) {
         return 'programacao';
     }
     
