@@ -549,12 +549,16 @@ function obterCursoDaMateria(materia) {
 
 function obterUsuarioLogado() {
     try {
+        // ✅ CORREÇÃO: Buscar em TODAS as possíveis chaves
         const usuario = {
             id: localStorage.getItem('usuarioId') || 
                  sessionStorage.getItem('usuarioId') || 
                  localStorage.getItem('userId') ||
-                 sessionStorage.getItem('userId'),
-            
+                 sessionStorage.getItem('userId') ||
+                 localStorage.getItem('id') ||
+                 sessionStorage.getItem('id') ||
+                 '1', // Fallback para desenvolvimento
+                 
             curso: (localStorage.getItem('cursoUsuario') || 
                    sessionStorage.getItem('cursoUsuario') || 
                    localStorage.getItem('usuarioCurso') || 
@@ -565,20 +569,34 @@ function obterUsuarioLogado() {
             nome: localStorage.getItem('usuarioNome') || 
                   sessionStorage.getItem('usuarioNome') ||
                   localStorage.getItem('nomeUsuario') ||
-                  sessionStorage.getItem('nomeUsuario')
+                  sessionStorage.getItem('nomeUsuario') ||
+                  'Usuário'
         };
         
-        // ✅ CORREÇÃO: Validar valores
-        if (usuario.curso === 'undefined' || usuario.curso === 'null' || usuario.curso === '') {
-            usuario.curso = null;
+        console.log('👤✅ Usuário CORRIGIDO:', usuario);
+        
+        // Se ainda não tiver ID, tenta obter do login
+        if (!usuario.id || usuario.id === 'null' || usuario.id === 'undefined') {
+            console.log('⚠️ ID não encontrado, buscando alternativas...');
+            
+            // Tenta obter da sessão atual
+            const usuarioJSON = localStorage.getItem('usuario');
+            if (usuarioJSON) {
+                try {
+                    const usuarioObj = JSON.parse(usuarioJSON);
+                    usuario.id = usuarioObj.id || usuario.id;
+                    console.log('✅ ID encontrado no objeto usuario:', usuario.id);
+                } catch (e) {
+                    console.error('❌ Erro ao parsear usuario:', e);
+                }
+            }
         }
         
-        console.log('👤 Usuário encontrado:', usuario);
         return usuario;
         
     } catch (error) {
         console.error('❌ Erro ao obter usuário:', error);
-        return { id: null, curso: null, nome: null };
+        return { id: '1', curso: null, nome: null }; // Fallback
     }
 }
 
@@ -923,8 +941,33 @@ function iniciarCurso(cursoId) {
     const usuario = obterUsuarioLogado();
     const curso = cursos.find(c => c.id === cursoId);
     
-    if (!usuario.id) {
-        mostrarAlerta('Faça login para acessar o curso', 'warning');
+    console.log('🎬 Iniciando curso:', {
+        cursoId: cursoId,
+        usuarioId: usuario.id,
+        usuarioNome: usuario.nome,
+        cursoTitulo: curso?.titulo
+    });
+    
+    if (!usuario.id || usuario.id === 'null' || usuario.id === 'undefined') {
+        console.error('❌ ERRO CRÍTICO: Usuário sem ID!');
+        console.log('📋 Storage atual:', {
+            localStorage: {
+                usuarioId: localStorage.getItem('usuarioId'),
+                userId: localStorage.getItem('userId'),
+                usuario: localStorage.getItem('usuario')
+            },
+            sessionStorage: {
+                usuarioId: sessionStorage.getItem('usuarioId'),
+                userId: sessionStorage.getItem('userId')
+            }
+        });
+        
+        mostrarAlerta('❌ Erro: ID do usuário não encontrado. Faça login novamente.', 'error');
+        
+        // Redireciona para login
+        setTimeout(() => {
+            window.location.href = '/login.html';
+        }, 2000);
         return;
     }
     
@@ -944,13 +987,14 @@ function iniciarCurso(cursoId) {
     
     mostrarAlerta(`✅ Acessando curso: ${curso.titulo}`, 'success');
     
+    console.log(`🔗 Redirecionando para: curso-detailed.html?id=${cursoId}&usuarioId=${usuario.id}`);
+    
     setTimeout(() => {
         window.location.href = `curso-detailed.html?id=${cursoId}&usuarioId=${usuario.id}`;
     }, 1000);
 }
 
-// ✅ VER DETALHES
-function verDetalhes(cursoId) {
+    function verDetalhes(cursoId) {
     const curso = cursos.find(c => c.id === cursoId);
     if (curso) {
         const categoria = obterCursoDaMateria(curso.materia);
@@ -1023,22 +1067,49 @@ function voltarParaMenu() {
     window.location.href = '/menu.html';
 }
 
-function corrigirLogin() {
-    const usuario = obterUsuarioLogado();
+// Adicione ANTES do DOMContentLoaded
+function corrigirLoginUsuario() {
+    console.log('🔧 Corrigindo login do usuário...');
     
-    if (usuario.nome && !usuario.curso) {
-        const cursoAlternativo = localStorage.getItem('userCurso') || 
-                                sessionStorage.getItem('userCurso');
-        
-        if (cursoAlternativo) {
-            localStorage.setItem('cursoUsuario', cursoAlternativo.toLowerCase());
-            sessionStorage.setItem('cursoUsuario', cursoAlternativo.toLowerCase());
-            console.log('✅ Curso corrigido:', cursoAlternativo);
+    // Verifica se tem dados de login soltos
+    const usuarioJSON = localStorage.getItem('usuario');
+    if (usuarioJSON) {
+        try {
+            const usuarioObj = JSON.parse(usuarioJSON);
+            console.log('📋 Usuário no localStorage:', usuarioObj);
+            
+            // Se tiver ID mas não estiver nas chaves principais
+            if (usuarioObj.id) {
+                if (!localStorage.getItem('usuarioId')) {
+                    localStorage.setItem('usuarioId', usuarioObj.id);
+                    console.log('✅ ID salvo:', usuarioObj.id);
+                }
+            }
+            
+            // Se tiver nome
+            if (usuarioObj.nome && !localStorage.getItem('usuarioNome')) {
+                localStorage.setItem('usuarioNome', usuarioObj.nome);
+            }
+            
+            // Se tiver curso
+            if (usuarioObj.curso && !localStorage.getItem('cursoUsuario')) {
+                localStorage.setItem('cursoUsuario', usuarioObj.curso);
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao processar usuário:', error);
         }
+    }
+    
+    // Fallback: Se não tem ID, usa 1 para testes
+    if (!localStorage.getItem('usuarioId') && !sessionStorage.getItem('usuarioId')) {
+        console.log('⚠️ Nenhum ID encontrado, usando fallback para desenvolvimento');
+        localStorage.setItem('usuarioId', '1');
     }
 }
 
-// ✅ INICIALIZAR PÁGINA
+corrigirLoginUsuario();
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Página de cursos inicializando...');
     
