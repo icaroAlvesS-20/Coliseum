@@ -644,13 +644,12 @@ function obterCursosBloqueados(cursoUsuario) {
     return todasCategorias.filter(categoria => categoria !== cursoUsuarioLower);
 }
 
-// ✅ CARREGAR CURSOS (COMPLETA E CORRIGIDA)
 async function carregarCursos() {
     try {
         const usuario = obterUsuarioLogado();
         
         let url = `${API_BASE_URL}/cursos`;
-        if (usuario.id) {
+        if (usuario.id && usuario.id !== '1') { // Se não for fallback
             url += `?usuarioId=${usuario.id}`;
         }
         
@@ -662,21 +661,30 @@ async function carregarCursos() {
         }
         
         const dados = await response.json();
+        console.log('📥 Resposta da API:', dados);
         
-        // Processar resposta
+        // ✅ CORREÇÃO: Processamento SIMPLIFICADO
         if (Array.isArray(dados)) {
             cursos = dados;
-        } else if (dados && dados.cursos) {
+            console.log(`✅ ${cursos.length} cursos carregados (array direto)`);
+        } else if (dados && Array.isArray(dados.cursos)) {
             cursos = dados.cursos;
-        } else if (dados && dados.success && dados.cursos) {
+            console.log(`✅ ${cursos.length} cursos carregados (propriedade cursos)`);
+        } else if (dados && dados.success && Array.isArray(dados.cursos)) {
             cursos = dados.cursos;
+            console.log(`✅ ${cursos.length} cursos carregados (sucesso + cursos)`);
         } else {
+            console.warn('⚠️ Formato inesperado da API:', dados);
             cursos = [];
         }
         
-        console.log(`📦 ${cursos.length} cursos carregados da API`);
-        
-        // NÃO ADICIONE categoria aqui - vamos calcular dinamicamente
+        // ✅ DEBUG: Mostrar os cursos recebidos
+        console.log('🎯 Cursos processados:', cursos);
+        if (cursos.length > 0) {
+            cursos.forEach((curso, i) => {
+                console.log(`   ${i + 1}. ${curso.titulo} (${curso.materia}) - ID: ${curso.id}`);
+            });
+        }
         
         atualizarEstatisticas();
         mostrarCursos();
@@ -684,7 +692,21 @@ async function carregarCursos() {
     } catch (error) {
         console.error('❌ Erro ao carregar cursos:', error);
         
-        cursos = [];
+        // Tenta carregar sem usuário ID
+        try {
+            console.log('🔄 Tentando carregar sem usuarioId...');
+            const response = await fetch(`${API_BASE_URL}/cursos`);
+            const dados = await response.json();
+            
+            if (Array.isArray(dados)) {
+                cursos = dados;
+                console.log(`✅ ${cursos.length} cursos carregados (sem usuarioId)`);
+            }
+        } catch (fallbackError) {
+            console.error('❌ Fallback também falhou:', fallbackError);
+            cursos = [];
+        }
+        
         atualizarEstatisticas();
         mostrarCursos();
         
