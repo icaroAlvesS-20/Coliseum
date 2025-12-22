@@ -549,54 +549,61 @@ function obterCursoDaMateria(materia) {
 
 function obterUsuarioLogado() {
     try {
-        // ✅ CORREÇÃO: Buscar em TODAS as possíveis chaves
+        console.log('🔍 Analisando storage para obter usuário...');
+        
+        // Primeiro, verifica se há um objeto completo de usuário
+        const usuarioJSON = localStorage.getItem('usuario') || sessionStorage.getItem('usuario');
+        
+        if (usuarioJSON) {
+            try {
+                const usuarioObj = JSON.parse(usuarioJSON);
+                console.log('✅ Usuário encontrado no objeto:', usuarioObj);
+                
+                // CORREÇÃO: Verificar se o objeto tem curso
+                if (usuarioObj.curso) {
+                    console.log('📋 Usando dados do objeto usuario:', usuarioObj);
+                    return {
+                        id: usuarioObj.id?.toString() || '1',
+                        curso: usuarioObj.curso?.toString().toLowerCase().trim(),
+                        nome: usuarioObj.nome || 'Usuário'
+                    };
+                }
+            } catch (e) {
+                console.error('❌ Erro ao parsear usuário:', e);
+            }
+        }
+        
+        // Se não tiver objeto, busca por chaves individuais
         const usuario = {
             id: localStorage.getItem('usuarioId') || 
                  sessionStorage.getItem('usuarioId') || 
                  localStorage.getItem('userId') ||
-                 sessionStorage.getItem('userId') ||
-                 localStorage.getItem('id') ||
-                 sessionStorage.getItem('id') ||
-                 '1', // Fallback para desenvolvimento
+                 sessionStorage.getItem('userId') || '1',
                  
             curso: (localStorage.getItem('cursoUsuario') || 
                    sessionStorage.getItem('cursoUsuario') || 
                    localStorage.getItem('usuarioCurso') || 
                    sessionStorage.getItem('usuarioCurso') ||
                    localStorage.getItem('curso') ||
-                   sessionStorage.getItem('curso'))?.toString().toLowerCase().trim(),
+                   sessionStorage.getItem('curso'))?.toString().toLowerCase().trim() || null,
             
             nome: localStorage.getItem('usuarioNome') || 
-                  sessionStorage.getItem('usuarioNome') ||
-                  localStorage.getItem('nomeUsuario') ||
-                  sessionStorage.getItem('nomeUsuario') ||
-                  'Usuário'
+                  sessionStorage.getItem('usuarioNome') || 'Usuário'
         };
         
-        console.log('👤✅ Usuário CORRIGIDO:', usuario);
+        console.log('👤 Usuário das chaves individuais:', usuario);
         
-        // Se ainda não tiver ID, tenta obter do login
-        if (!usuario.id || usuario.id === 'null' || usuario.id === 'undefined') {
-            console.log('⚠️ ID não encontrado, buscando alternativas...');
-            
-            // Tenta obter da sessão atual
-            const usuarioJSON = localStorage.getItem('usuario');
-            if (usuarioJSON) {
-                try {
-                    const usuarioObj = JSON.parse(usuarioJSON);
-                    usuario.id = usuarioObj.id || usuario.id;
-                    console.log('✅ ID encontrado no objeto usuario:', usuario.id);
-                } catch (e) {
-                    console.error('❌ Erro ao parsear usuario:', e);
-                }
-            }
+        // CORREÇÃO: Se o curso for "robotica" mas não deveria ser, verificar no backend
+        if (usuario.curso === 'robotica') {
+            console.log('⚠️ Curso está como robotica, verificando se está correto...');
+            // Pode ser um valor antigo no localStorage, vamos tentar buscar do backend
         }
         
         return usuario;
         
     } catch (error) {
         console.error('❌ Erro ao obter usuário:', error);
-        return { id: '1', curso: null, nome: null }; // Fallback
+        return { id: '1', curso: null, nome: null };
     }
 }
 
@@ -631,6 +638,50 @@ function verificarPermissao(cursoUsuario, materiaCurso) {
     console.log(`✅ ${cursoUsuarioLower.toUpperCase()} pode acessar ${categoriaDaMateria?.toUpperCase()}: ${temPermissao ? 'SIM' : 'NÃO'}`);
     
     return temPermissao;
+}
+    async function verificarEAtualizarDadosUsuario() {
+    try {
+        const usuarioId = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
+        
+        if (!usuarioId || usuarioId === '1') {
+            console.log('⚠️ Usuário não logado ou em modo teste');
+            return;
+        }
+        
+        console.log('🔄 Verificando dados do usuário no backend...');
+        
+        const response = await fetch(`${API_BASE_URL}/usuarios/${usuarioId}`);
+        
+        if (response.ok) {
+            const dados = await response.json();
+            
+            if (dados.success && dados.usuario) {
+                const usuarioReal = dados.usuario;
+                console.log('✅ Dados reais do usuário no backend:', usuarioReal);
+                
+                // CORREÇÃO: Atualizar localStorage com dados corretos
+                if (usuarioReal.curso && usuarioReal.curso !== localStorage.getItem('cursoUsuario')) {
+                    console.log(`🔄 Atualizando curso de "${localStorage.getItem('cursoUsuario')}" para "${usuarioReal.curso}"`);
+                    localStorage.setItem('cursoUsuario', usuarioReal.curso);
+                    localStorage.setItem('usuarioNome', usuarioReal.nome);
+                    
+                    // Atualizar objeto completo também
+                    const usuarioCompleto = {
+                        id: usuarioReal.id,
+                        nome: usuarioReal.nome,
+                        curso: usuarioReal.curso,
+                        ra: usuarioReal.ra,
+                        serie: usuarioReal.serie
+                    };
+                    localStorage.setItem('usuario', JSON.stringify(usuarioCompleto));
+                    
+                    mostrarAlerta(`✅ Curso atualizado para: ${obterNomeCategoria(usuarioReal.curso)}`, 'success');
+                }
+            }
+        }
+    } catch (error) {
+        console.error('❌ Erro ao verificar dados do usuário:', error);
+    }
 }
     
 function obterCursosBloqueados(cursoUsuario) {
@@ -1092,32 +1143,46 @@ function corrigirLoginUsuario() {
     
     // Verifica se tem dados de login soltos
     const usuarioJSON = localStorage.getItem('usuario');
+    
     if (usuarioJSON) {
         try {
             const usuarioObj = JSON.parse(usuarioJSON);
             console.log('📋 Usuário no localStorage:', usuarioObj);
             
-            // Se tiver ID mas não estiver nas chaves principais
-            if (usuarioObj.id) {
+            // ✅ CORREÇÃO: Verificar se o curso está correto
+            if (usuarioObj.curso && usuarioObj.curso !== 'robotica') {
+                console.log(`✅ Curso válido encontrado: ${usuarioObj.curso}`);
+                
+                // Garantir que todas as chaves estejam sincronizadas
                 if (!localStorage.getItem('usuarioId')) {
                     localStorage.setItem('usuarioId', usuarioObj.id);
-                    console.log('✅ ID salvo:', usuarioObj.id);
                 }
-            }
-            
-            // Se tiver nome
-            if (usuarioObj.nome && !localStorage.getItem('usuarioNome')) {
-                localStorage.setItem('usuarioNome', usuarioObj.nome);
-            }
-            
-            // Se tiver curso
-            if (usuarioObj.curso && !localStorage.getItem('cursoUsuario')) {
-                localStorage.setItem('cursoUsuario', usuarioObj.curso);
+                
+                if (!localStorage.getItem('cursoUsuario') || localStorage.getItem('cursoUsuario') === 'robotica') {
+                    console.log(`🔄 Corrigindo curso de "${localStorage.getItem('cursoUsuario')}" para "${usuarioObj.curso}"`);
+                    localStorage.setItem('cursoUsuario', usuarioObj.curso);
+                }
+                
+                if (!localStorage.getItem('usuarioNome')) {
+                    localStorage.setItem('usuarioNome', usuarioObj.nome);
+                }
+            } else if (usuarioObj.curso === 'robotica') {
+                console.warn('⚠️ Curso está como "robotica" no objeto. Pode estar errado.');
             }
             
         } catch (error) {
             console.error('❌ Erro ao processar usuário:', error);
         }
+    }
+    
+    // CORREÇÃO: Verificar inconsistências
+    const cursoStorage = localStorage.getItem('cursoUsuario');
+    const usuarioId = localStorage.getItem('usuarioId');
+    
+    if (cursoStorage === 'robotica' && usuarioId && usuarioId !== '1') {
+        console.log('⚠️ Curso está como "robotica". Vamos verificar se está correto...');
+        // Chamar a função para verificar no backend
+        verificarEAtualizarDadosUsuario();
     }
     
     // Fallback: Se não tem ID, usa 1 para testes
@@ -1126,74 +1191,7 @@ function corrigirLoginUsuario() {
         localStorage.setItem('usuarioId', '1');
     }
 }
-
-    corrigirLoginUsuario();
-
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Página de cursos inicializando...');
     
-    // Corrigir login se necessário
-    corrigirLoginUsuario();
-    
-    // Obter usuário
-    const usuario = obterUsuarioLogado();
-    
-    // Mostrar mensagem de boas-vindas
-    if (usuario.nome) {
-        mostrarAlerta(`👋 Bem-vindo, ${usuario.nome}!`, 'success');
-        
-        // Mostrar restrições de acesso
-        if (usuario.curso) {
-            const cursosPermitidos = POLITICAS_ACESSO[usuario.curso] || [];
-            const cursosPermitidosNomes = cursosPermitidos.map(c => obterNomeCategoria(c)).join(', ');
-            
-            setTimeout(() => {
-                mostrarAlerta(`📚 Seu curso (${obterNomeCategoria(usuario.curso)}) tem acesso a: ${cursosPermitidosNomes}`, 'warning');
-            }, 1500);
-        }
-    }
-    
-    // Configurar filtros
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            filtroAtivo = this.dataset.filter;
-            mostrarCursos();
-        });
-    });
-    
-    // Configurar busca
-    document.getElementById('course-search').addEventListener('input', () => {
-        mostrarCursos();
-    });
-    
-    // Atualizar cabeçalho com informações do usuário
-    if (usuario.nome) {
-        const subtitle = document.getElementById('header-subtitle');
-        if (subtitle) {
-            let texto = 'Aprenda com cursos complementares para reforçar seus estudos';
-            
-            if (usuario.curso) {
-                const cursosDisponiveis = cursos.filter(c => verificarPermissao(usuario.curso, c.materia)).length;
-                texto += `<br><small style="color: #ffcf00; font-size: 0.9rem;">
-                    👤 ${usuario.nome} - Curso: ${obterNomeCategoria(usuario.curso)} 
-                    (${cursosDisponiveis} cursos disponíveis)
-                </small>`;
-            } else {
-                texto += `<br><small style="color: #ff6b00; font-size: 0.9rem;">
-                    ⚠️ Faça login completo para ver seus cursos disponíveis
-                </small>`;
-            }
-            
-            subtitle.innerHTML = texto;
-        }
-    }
-    
-    // Carregar cursos
-    carregarCursos();
-});
-
 // ✅ TESTE RÁPIDO NO CONSOLE
 window.testarUsuario = function() {
     const usuario = obterUsuarioLogado();
