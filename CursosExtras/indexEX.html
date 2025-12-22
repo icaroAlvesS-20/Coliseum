@@ -711,6 +711,22 @@ function atualizarEstatisticas() {
     document.getElementById('cursos-programacao').textContent = cursosProgramacao;
     
     console.log(`📈 Estatísticas: Total=${totalCursos}, Disponíveis=${cursosDisponiveis}`);
+
+// Adicione após a linha 713 do seu código
+console.log('🎯 CURSOS DISPONÍVEIS PARA RENDERIZAÇÃO:', cursos);
+console.log('🎯 Total de cursos:', cursos.length);
+
+// Verificar cada curso individualmente
+cursos.forEach((curso, index) => {
+    console.log(`📚 Curso ${index + 1}:`, {
+        id: curso.id,
+        titulo: curso.titulo,
+        materia: curso.materia,
+        categoria: obterCursoDaMateria(curso.materia),
+        permitido: verificarPermissao(usuario.curso, curso.materia)
+    });
+});
+    
 }
     
 function mostrarCursos() {
