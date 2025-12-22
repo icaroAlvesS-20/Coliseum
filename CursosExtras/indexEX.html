@@ -884,7 +884,6 @@ function obterNomeMateria(materia) {
     return nomes[materia] || materia;
 }
 
-// ✅ INICIAR CURSO
 function iniciarCurso(cursoId) {
     const usuario = obterUsuarioLogado();
     const curso = cursos.find(c => c.id === cursoId);
@@ -899,7 +898,7 @@ function iniciarCurso(cursoId) {
         return;
     }
     
-    // Verificar permissão novamente antes de redirecionar
+    // Verificar permissão
     const temPermissao = verificarPermissao(usuario.curso, curso.materia);
     if (!temPermissao) {
         const nomeCursoUsuario = obterNomeCategoria(usuario.curso);
@@ -910,7 +909,6 @@ function iniciarCurso(cursoId) {
     
     mostrarAlerta(`✅ Acessando curso: ${curso.titulo}`, 'success');
     
-    // Redirecionar para o curso
     setTimeout(() => {
         window.location.href = `curso-detailed.html?id=${cursoId}&usuarioId=${usuario.id}`;
     }, 1000);
