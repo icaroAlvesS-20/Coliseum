@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -583,51 +582,48 @@ function obterUsuarioLogado() {
     }
 }
 
-
-// ✅ FUNÇÃO CORRIGIDA: verificar se usuário tem acesso ao curso
 function verificarPermissao(cursoUsuario, materiaCurso) {
     console.log(`🔐 Verificando: Usuário=${cursoUsuario}, Matéria=${materiaCurso}`);
     
-    if (!cursoUsuario || !materiaCurso) {
-        console.log(`⚠️ Dados inválidos: cursoUsuario=${cursoUsuario}, materiaCurso=${materiaCurso}`);
+    if (!cursoUsuario) {
+        console.log('❌ Usuário não logado');
         return false;
     }
     
-    // Se não está logado, não tem permissão
-    if (!cursoUsuario || cursoUsuario === 'undefined' || cursoUsuario === 'null') {
-        console.log(`❌ Não logado - Curso bloqueado: ${materiaCurso}`);
-        return false;
+    if (!materiaCurso) {
+        console.log('⚠️ Matéria não especificada');
+        return false; // Ou true se quiser permitir sem matéria
     }
     
-    // Converter para minúsculas e remover espaços
+    // Normalizar
     const cursoUsuarioLower = cursoUsuario.toString().toLowerCase().trim();
     const materiaCursoLower = materiaCurso.toString().toLowerCase().trim();
     
     console.log(`📝 Normalizado: Usuário=${cursoUsuarioLower}, Matéria=${materiaCursoLower}`);
     
-    // Descobrir a qual CURSO essa matéria pertence
-    const cursoDaMateria = obterCursoDaMateria(materiaCursoLower);
+    // ✅ PASSO 1: Descobrir categoria da matéria
+    const categoriaDaMateria = obterCursoDaMateria(materiaCursoLower);
     
-    console.log(`🏷️ Matéria "${materiaCurso}" pertence ao curso: ${cursoDaMateria}`);
+    console.log(`🏷️ Matéria "${materiaCurso}" → Categoria: ${categoriaDaMateria}`);
     
-    // Verificar se o usuário tem permissão para esse curso
-    const temPermissao = POLITICAS_ACESSO[cursoUsuarioLower]?.includes(cursoDaMateria) || false;
+    // ✅ PASSO 2: Verificar se usuário tem acesso àquela categoria
+    const temPermissao = cursoUsuarioLower === categoriaDaMateria;
     
-    console.log(`✅ ${cursoUsuarioLower.toUpperCase()} → ${cursoDaMateria?.toUpperCase() || 'N/A'}: ${temPermissao ? 'PERMITIDO' : 'BLOQUEADO'}`);
+    console.log(`✅ ${cursoUsuarioLower.toUpperCase()} pode acessar ${categoriaDaMateria?.toUpperCase()}: ${temPermissao ? 'SIM' : 'NÃO'}`);
     
     return temPermissao;
 }
     
-// ✅ OBTER CURSOS BLOQUEADOS PARA O USUÁRIO
 function obterCursosBloqueados(cursoUsuario) {
-    if (!cursoUsuario || !POLITICAS_ACESSO[cursoUsuario]) {
+    if (!cursoUsuario) {
         return ['preparatorio', 'reforco', 'informatica', 'robotica', 'games', 'programacao'];
     }
     
-    const cursosPermitidos = POLITICAS_ACESSO[cursoUsuario];
+    const cursoUsuarioLower = cursoUsuario.toString().toLowerCase().trim();
     const todasCategorias = ['preparatorio', 'reforco', 'informatica', 'robotica', 'games', 'programacao'];
     
-    return todasCategorias.filter(categoria => !cursosPermitidos.includes(categoria));
+    // Retorna todas as categorias EXCETO a do usuário
+    return todasCategorias.filter(categoria => categoria !== cursoUsuarioLower);
 }
 
 // ✅ CARREGAR CURSOS (COMPLETA E CORRIGIDA)
@@ -951,20 +947,24 @@ ${curso.descricao || 'Sem descrição disponível.'}
     }
 }
 
-// ✅ MOSTRAR MENSAGEM DE BLOQUEIO
 function mostrarMensagemBloqueio() {
     const usuario = obterUsuarioLogado();
+    
     if (!usuario.curso) {
         mostrarAlerta('Faça login para ver seus cursos disponíveis', 'warning');
     } else {
         const cursosBloqueados = obterCursosBloqueados(usuario.curso);
         const cursosBloqueadosNomes = cursosBloqueados.map(c => obterNomeCategoria(c)).join(', ');
         
-        mostrarAlerta(`❌ Você é do curso ${obterNomeCategoria(usuario.curso)}. Cursos bloqueados: ${cursosBloqueadosNomes}`, 'error');
+        mostrarAlerta(
+            `❌ Você é do curso ${obterNomeCategoria(usuario.curso)}. ` +
+            `Você só pode acessar cursos da sua própria categoria. ` +
+            `Cursos bloqueados: ${cursosBloqueadosNomes}`,
+            'error'
+        );
     }
 }
 
-// ✅ MOSTRAR ALERTA
 function mostrarAlerta(mensagem, tipo = 'error') {
     const container = document.getElementById('alert-container');
     if (!container) return;
@@ -980,18 +980,14 @@ function mostrarAlerta(mensagem, tipo = 'error') {
     setTimeout(() => alert.remove(), 5000);
 }
 
-// ✅ VOLTAR PARA MENU
 function voltarParaMenu() {
     window.location.href = '/menu.html';
 }
 
-// ✅ CORRIGIR LOGIN SE NECESSÁRIO
 function corrigirLogin() {
     const usuario = obterUsuarioLogado();
     
-    // Se tem nome mas não tem curso, tentar encontrar
     if (usuario.nome && !usuario.curso) {
-        // Verificar se tem curso em outro nome
         const cursoAlternativo = localStorage.getItem('userCurso') || 
                                 sessionStorage.getItem('userCurso');
         
