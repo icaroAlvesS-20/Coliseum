@@ -603,14 +603,15 @@ function obterUsuarioLogado() {
 function verificarPermissao(cursoUsuario, materiaCurso) {
     console.log(`🔐 Verificando: Usuário=${cursoUsuario}, Matéria=${materiaCurso}`);
     
-    if (!cursoUsuario) {
-        console.log('❌ Usuário não logado');
-        return false;
+    // Se não tem usuário logado, permite tudo (ou não, dependendo da regra)
+    if (!cursoUsuario || cursoUsuario === 'null' || cursoUsuario === 'undefined') {
+        console.log('⚠️ Usuário não logado, permitindo acesso');
+        return true; // Ou false, dependendo da sua regra
     }
     
     if (!materiaCurso) {
         console.log('⚠️ Matéria não especificada');
-        return false; // Ou true se quiser permitir sem matéria
+        return false;
     }
     
     // Normalizar
@@ -619,12 +620,12 @@ function verificarPermissao(cursoUsuario, materiaCurso) {
     
     console.log(`📝 Normalizado: Usuário=${cursoUsuarioLower}, Matéria=${materiaCursoLower}`);
     
-    // ✅ PASSO 1: Descobrir categoria da matéria
+    // Determinar categoria da matéria
     const categoriaDaMateria = obterCursoDaMateria(materiaCursoLower);
     
     console.log(`🏷️ Matéria "${materiaCurso}" → Categoria: ${categoriaDaMateria}`);
     
-    // ✅ PASSO 2: Verificar se usuário tem acesso àquela categoria
+    // Verificar se usuário tem acesso àquela categoria
     const temPermissao = cursoUsuarioLower === categoriaDaMateria;
     
     console.log(`✅ ${cursoUsuarioLower.toUpperCase()} pode acessar ${categoriaDaMateria?.toUpperCase()}: ${temPermissao ? 'SIM' : 'NÃO'}`);
@@ -648,43 +649,39 @@ async function carregarCursos() {
     try {
         const usuario = obterUsuarioLogado();
         
-        let url = `${API_BASE_URL}/cursos`;
-        if (usuario.id && usuario.id !== '1') { // Se não for fallback
-            url += `?usuarioId=${usuario.id}`;
-        }
-        
-        console.log('🌐 Buscando cursos:', url);
-        const response = await fetch(url);
+        console.log('🌐 Buscando TODOS os cursos...');
+        const response = await fetch(`${API_BASE_URL}/cursos`);
         
         if (!response.ok) {
             throw new Error(`Erro ${response.status}: ${response.statusText}`);
         }
         
         const dados = await response.json();
-        console.log('📥 Resposta da API:', dados);
+        console.log('📥 Resposta da API (todos os cursos):', dados);
         
-        // ✅ CORREÇÃO: Processamento SIMPLIFICADO
+        // ✅ A API sempre retorna um array direto
         if (Array.isArray(dados)) {
             cursos = dados;
-            console.log(`✅ ${cursos.length} cursos carregados (array direto)`);
-        } else if (dados && Array.isArray(dados.cursos)) {
-            cursos = dados.cursos;
-            console.log(`✅ ${cursos.length} cursos carregados (propriedade cursos)`);
-        } else if (dados && dados.success && Array.isArray(dados.cursos)) {
-            cursos = dados.cursos;
-            console.log(`✅ ${cursos.length} cursos carregados (sucesso + cursos)`);
+            console.log(`✅ ${cursos.length} cursos carregados (todos)`);
+            
+            // ✅ AGORA filtra no front-end se tiver usuário
+            if (usuario.id && usuario.id !== '1' && usuario.curso) {
+                const cursosFiltrados = dados.filter(curso => 
+                    verificarPermissao(usuario.curso, curso.materia)
+                );
+                cursos = cursosFiltrados;
+                console.log(`✅ Após filtro: ${cursos.length} cursos disponíveis para ${usuario.curso}`);
+            }
         } else {
             console.warn('⚠️ Formato inesperado da API:', dados);
             cursos = [];
         }
         
-        // ✅ DEBUG: Mostrar os cursos recebidos
-        console.log('🎯 Cursos processados:', cursos);
-        if (cursos.length > 0) {
-            cursos.forEach((curso, i) => {
-                console.log(`   ${i + 1}. ${curso.titulo} (${curso.materia}) - ID: ${curso.id}`);
-            });
-        }
+        // ✅ DEBUG: Mostrar os cursos
+        console.log('🎯 Cursos disponíveis:', cursos);
+        cursos.forEach((curso, i) => {
+            console.log(`   ${i + 1}. ${curso.titulo} (${curso.materia}) - ID: ${curso.id}`);
+        });
         
         atualizarEstatisticas();
         mostrarCursos();
@@ -692,15 +689,15 @@ async function carregarCursos() {
     } catch (error) {
         console.error('❌ Erro ao carregar cursos:', error);
         
-        // Tenta carregar sem usuário ID
+        // Fallback: tenta sem filtro
         try {
-            console.log('🔄 Tentando carregar sem usuarioId...');
+            console.log('🔄 Tentando carregar novamente...');
             const response = await fetch(`${API_BASE_URL}/cursos`);
             const dados = await response.json();
             
             if (Array.isArray(dados)) {
                 cursos = dados;
-                console.log(`✅ ${cursos.length} cursos carregados (sem usuarioId)`);
+                console.log(`✅ ${cursos.length} cursos carregados (fallback)`);
             }
         } catch (fallbackError) {
             console.error('❌ Fallback também falhou:', fallbackError);
