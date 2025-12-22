@@ -731,54 +731,77 @@ cursos.forEach((curso, index) => {
     
 function mostrarCursos() {
     const container = document.getElementById('courses-container');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ Container não encontrado!');
+        return;
+    }
     
     container.innerHTML = '';
     
     const usuario = obterUsuarioLogado();
     const termoBusca = document.getElementById('course-search').value.toLowerCase();
     
+    console.log('🔍 Filtrando cursos...');
+    console.log('👤 Usuário:', usuario.curso);
+    console.log('🔎 Termo de busca:', termoBusca);
+    console.log('🎯 Filtro ativo:', filtroAtivo);
+    console.log('📦 Total de cursos:', cursos.length);
+    
     let cursosFiltrados = cursos.filter(curso => {
-        // Aplicar filtro
+        // Verificar matéria do curso
+        if (!curso.materia) {
+            console.warn('⚠️ Curso sem matéria:', curso);
+            return false;
+        }
+        
+        const categoria = obterCursoDaMateria(curso.materia);
+        console.log(`   Curso: ${curso.titulo}, Matéria: ${curso.materia}, Categoria: ${categoria}`);
+        
+        // Aplicar filtro por categoria
         if (filtroAtivo !== 'all') {
-            const categoria = obterCursoDaMateria(curso.materia || '');
-            if (categoria !== filtroAtivo) return false;
+            if (categoria !== filtroAtivo) {
+                console.log(`   ❌ Não passa no filtro (${categoria} ≠ ${filtroAtivo})`);
+                return false;
+            }
         }
         
         // Aplicar busca
         if (termoBusca) {
             const texto = (curso.titulo + ' ' + curso.descricao + ' ' + curso.materia).toLowerCase();
-            if (!texto.includes(termoBusca)) return false;
+            if (!texto.includes(termoBusca)) {
+                console.log(`   ❌ Não contém termo "${termoBusca}"`);
+                return false;
+            }
         }
         
+        console.log(`   ✅ Passou nos filtros`);
         return true;
     });
+    
+    console.log(`📊 Cursos após filtro: ${cursosFiltrados.length}`);
     
     if (cursosFiltrados.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-graduation-cap"></i>
                 <h3>Nenhum curso encontrado</h3>
-                <p>Tente alterar os filtros ou termos de busca</p>
+                <p>${cursos.length === 0 ? 'Nenhum curso disponível no momento' : 'Tente alterar os filtros ou termos de busca'}</p>
+                <button onclick="carregarCursos()" style="margin-top: 15px; padding: 10px 20px; background: #ffcf00; color: black; border: none; border-radius: 8px; cursor: pointer;">
+                    <i class="fas fa-sync-alt"></i> Recarregar Cursos
+                </button>
             </div>
         `;
         return;
     }
     
-    // Ordenar cursos: disponíveis primeiro
-    cursosFiltrados.sort((a, b) => {
-        const aDisponivel = usuario.curso ? verificarPermissao(usuario.curso, a.materia) : true;
-        const bDisponivel = usuario.curso ? verificarPermissao(usuario.curso, b.materia) : true;
-        
-        if (aDisponivel && !bDisponivel) return -1;
-        if (!aDisponivel && bDisponivel) return 1;
-        return 0;
-    });
-    
+    // Criar cards sem ordenar (manter ordem da API)
+    console.log('🎨 Criando cards de curso...');
     cursosFiltrados.forEach(curso => {
         const card = criarCardCurso(curso, usuario);
         container.appendChild(card);
     });
+    
+    console.log('✅ Cards criados:', container.children.length);
 }
 
 // ✅ CRIAR CARD DO CURSO
