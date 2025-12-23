@@ -1721,29 +1721,21 @@ class GerenciadorCursos {
 function voltarParaCursos() {
     console.log('🔙 Botão voltar clicado');
     
-    // ✅ VERIFICAÇÃO MÚLTIPLA:
+    // ✅ VERIFICAÇÃO SIMPLES E DIRETA
     const urlParams = new URLSearchParams(window.location.search);
     const fromParam = urlParams.get('from');
-    const origin = sessionStorage.getItem('curso_origin');
     
     console.log('📋 Parâmetro "from":', fromParam);
-    console.log('📋 sessionStorage origem:', origin);
     console.log('🔗 Referrer:', document.referrer);
     
-    // ✅ DECISÃO SIMPLES: Se tem qualquer indicação de que veio de extras
-    if (fromParam === 'extras' || origin === 'extras') {
+    // ✅ SE TEM "from=extras" NA URL, VOLTA PARA EXTRAS
+    if (fromParam === 'extras') {
         console.log('📍 Voltando para Cursos Extras...');
-        
-        // Limpa sessionStorage
-        sessionStorage.removeItem('curso_origin');
-        sessionStorage.removeItem('curso_origin_url');
-        
-        // ✅ VOLTA PARA O ARQUIVO CORRETO
         window.location.href = '/CursosExtras/indexEX.html';
         return;
     }
     
-    // ✅ VERIFICAÇÃO ALTERNATIVA: Pelo referrer
+    // ✅ SE O REFERRER É EXTRAS, VOLTA PARA EXTRAS
     const referrer = document.referrer;
     if (referrer && (
         referrer.includes('indexEX.html') || 
@@ -1755,13 +1747,12 @@ function voltarParaCursos() {
         return;
     }
     
-    // ✅ FALLBACK 1: Tenta voltar no histórico
+    // ✅ FALLBACK: TENTA VOLTAR NO HISTÓRICO
     if (window.history.length > 1) {
         console.log('📍 Tentando voltar no histórico...');
         window.history.back();
-    } 
-    // ✅ FALLBACK 2: Vai para Cursos Extras
-    else {
+    } else {
+        // ✅ ÚLTIMO FALLBACK: VAI PARA EXTRAS
         console.log('📍 Fallback: Indo para Cursos Extras...');
         window.location.href = '/CursosExtras/indexEX.html';
     }
@@ -1808,6 +1799,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
 
 
 
