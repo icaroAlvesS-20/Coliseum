@@ -48,6 +48,10 @@
       "dest": "/Cursos/indexCR.html"
     },
     {
+      "src": "/cursos/(.*)",  
+      "dest": "/Cursos/indexCR.html"
+    },
+    {
       "src": "/login",
       "dest": "/Login/index.html"
     },
@@ -91,7 +95,7 @@
       "src": "/chat",
       "dest": "/Chat/indexCH.html"
     },
-      {
+    {
       "src": "/chat-geral",
       "dest": "/ChatGeral/indexCG.html"
     },
@@ -101,7 +105,8 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/Login/index.html"
+      "dest": "/Login/index.html",
+      "status": 404  
     }
   ]
 }
