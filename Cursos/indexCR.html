@@ -720,57 +720,138 @@ body {
     }
 }
     </style>
-    
+</head>
+<body>
+    <!-- CONTEÚDO PRINCIPAL - SEM BOTÕES INLINE -->
+    <div class="curso-container">
+        <!-- Cabeçalho do Curso -->
+        <div class="curso-header">
+            <h1 class="curso-titulo" id="curso-titulo">Carregando curso...</h1>
+            <p class="curso-descricao" id="curso-descricao">Aguarde enquanto carregamos o conteúdo do curso.</p>
+        </div>
+
+        <!-- Container de Módulos -->
+        <div class="modulos-container" id="modulos-container">
+            <div class="carregando">
+                <div class="loading-spinner"></div>
+                <h3>Carregando módulos...</h3>
+                <p>Buscando conteúdo do curso</p>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ============================================
-        // CAPTURADOR GLOBAL DE ERROS DE JSON
+        // CORREÇÃO DE EMERGÊNCIA PARA ERROS DE JSON
         // ============================================
-        window.addEventListener('error', function(e) {
-            if (e.message.includes('Unexpected token') || e.message.includes('JSON')) {
-                console.error('⚠️ ERRO DE SINTAXE DETECTADO:', e.message);
-                console.error('📄 Arquivo:', e.filename);
-                console.error('📍 Linha:', e.lineno, 'Coluna:', e.colno);
-                
-                if (e.error && e.error.stack) {
-                    console.error('🔍 Stack trace:', e.error.stack);
-                }
-                
-                // Tenta identificar se é da nossa API
-                if (e.filename && e.filename.includes('coliseum-api')) {
-                    console.error('🚨 ERRO PROVAVELMENTE NA RESPOSTA DA API!');
-                    console.error('💡 Verifique se a API está retornando JSON válido');
-                }
-            }
-        });
-
-        // ============================================
-        // FUNÇÃO GLOBAL VOLTAR PARA CURSOS
-        // ============================================
-        function voltarParaCursos() {
-            console.log('🔙 Voltando para cursos...');
+        (function() {
+            console.log('🛡️ Ativando proteção contra erros de JSON...');
             
-            try {
-                const urlParams = new URLSearchParams(window.location.search);
-                const fromParam = urlParams.get('from');
-                
-                if (fromParam === 'extras') {
-                    window.location.href = '/CursosExtras/indexEX.html';
-                    return;
+            // 1. CAPTURA TODOS OS ERROS DE SINTAXE
+            const originalErrorHandler = window.onerror;
+            window.onerror = function(message, source, lineno, colno, error) {
+                if (message.includes('Unexpected token') || message.includes('SyntaxError')) {
+                    console.error('🔴 ERRO DE SINTAXE CAPTURADO!');
+                    console.error('Mensagem:', message);
+                    console.error('Arquivo:', source);
+                    console.error('Linha:', lineno);
+                    console.error('Coluna:', colno);
+                    
+                    // Tenta evitar que a página quebre completamente
+                    if (error && error.stack) {
+                        console.error('Stack trace (primeiras 5 linhas):');
+                        error.stack.split('\n').slice(0, 5).forEach(line => {
+                            console.error('  ', line.trim());
+                        });
+                    }
+                    
+                    return true; // Impede que o erro seja propagado
                 }
                 
-                if (window.history.length > 1) {
-                    window.history.back();
-                } else {
+                if (originalErrorHandler) {
+                    return originalErrorHandler(message, source, lineno, colno, error);
+                }
+                
+                return false;
+            };
+            
+            // 2. INTERCEPTA TODAS AS REQUISIÇÕES FETCH
+            const originalFetch = window.fetch;
+            window.fetch = function(...args) {
+                return originalFetch.apply(this, args).then(async response => {
+                    // Clone a resposta para inspecionar sem consumir
+                    const clonedResponse = response.clone();
+                    
+                    try {
+                        const text = await clonedResponse.text();
+                        
+                        // Verifica se parece ser JSON
+                        if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
+                            console.log('📥 Resposta da API recebida:', text.substring(0, 300) + '...');
+                            
+                            try {
+                                JSON.parse(text);
+                            } catch (jsonError) {
+                                console.error('🚨 API RETORNOU JSON INVÁLIDO!');
+                                console.error('Erro:', jsonError.message);
+                                
+                                // Tenta corrigir problemas comuns
+                                let fixedText = text;
+                                
+                                // Remove vírgulas extras antes de } ou ]
+                                fixedText = fixedText.replace(/,\s*([}\]])/g, '$1');
+                                
+                                // Remove múltiplas chaves/colchetes
+                                fixedText = fixedText.replace(/\}\s*\}/g, '}}');
+                                fixedText = fixedText.replace(/\]\s*\]/g, ']]');
+                                
+                                // Remove espaços em branco problemáticos
+                                fixedText = fixedText.trim();
+                                
+                                console.log('🛠️ Texto corrigido:', fixedText.substring(0, 300) + '...');
+                                
+                                // Retorna resposta corrigida
+                                return new Response(fixedText, {
+                                    status: response.status,
+                                    statusText: response.statusText,
+                                    headers: response.headers
+                                });
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ Não foi possível inspecionar resposta:', error.message);
+                    }
+                    
+                    return response;
+                });
+            };
+            
+            // 3. FUNÇÃO VOLTAR PARA CURSOS (SEM ERRO)
+            window.voltarParaCursos = function() {
+                console.log('🔙 Função voltarParaCursos chamada');
+                
+                try {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const fromParam = urlParams.get('from');
+                    
+                    if (fromParam === 'extras') {
+                        window.location.href = '/CursosExtras/indexEX.html';
+                        return;
+                    }
+                    
+                    if (window.history.length > 1) {
+                        window.history.back();
+                    } else {
+                        window.location.href = '/index.html';
+                    }
+                } catch (error) {
+                    console.error('❌ Erro ao voltar:', error);
                     window.location.href = '/index.html';
                 }
-            } catch (error) {
-                console.error('❌ Erro ao voltar:', error);
-                window.location.href = '/index.html';
-            }
-        }
-
-        // Torna disponível globalmente
-        window.voltarParaCursos = voltarParaCursos;
+            };
+            
+            console.log('✅ Proteção ativada com sucesso');
+        })();
 
         // ============================================
         // CRIAÇÃO DO BOTÃO VOLTAR DINÂMICO
@@ -778,23 +859,22 @@ body {
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 DOM carregado - criando botão voltar');
             
-            // Remove qualquer botão antigo (limpeza)
-            const oldBtn = document.getElementById('btn-voltar-cursos');
-            if (oldBtn) {
-                console.log('🗑️ Removendo botão antigo');
-                oldBtn.remove();
-            }
+            // Remove qualquer botão antigo (limpeza total)
+            const botoesParaRemover = [
+                ...document.querySelectorAll('button[onclick*="voltarParaCursos"]'),
+                ...document.querySelectorAll('button.btn-voltar'),
+                ...document.querySelectorAll('#btn-voltar-cursos'),
+                ...document.querySelectorAll('#btn-voltar-fixo')
+            ];
             
-            // Remove qualquer botão com onclick quebrado
-            const botoesProblema = document.querySelectorAll('button[onclick*="voltarParaCursos"]');
-            botoesProblema.forEach(btn => {
-                console.log('⚠️ Removendo botão problemático');
+            botoesParaRemover.forEach(btn => {
+                console.log('🗑️ Removendo botão:', btn);
                 btn.remove();
             });
             
-            // Cria novo botão
+            // Cria novo botão com ID único
             const btn = document.createElement('button');
-            btn.id = 'btn-voltar-cursos';
+            btn.id = 'btn-voltar-' + Date.now();
             btn.innerHTML = '←';
             btn.title = 'Voltar para cursos';
             btn.setAttribute('aria-label', 'Voltar para a página de cursos');
@@ -838,38 +918,36 @@ body {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('🎯 Botão voltar clicado');
-                window.voltarParaCursos();
+                
+                try {
+                    if (window.voltarParaCursos && typeof window.voltarParaCursos === 'function') {
+                        window.voltarParaCursos();
+                    } else {
+                        // Fallback seguro
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const from = urlParams.get('from');
+                        
+                        if (from === 'extras') {
+                            window.location.href = '/CursosExtras/indexEX.html';
+                        } else if (window.history.length > 1) {
+                            window.history.back();
+                        } else {
+                            window.location.href = '/index.html';
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ Erro no clique do botão:', error);
+                    window.location.href = '/index.html';
+                }
             });
             
-            // Adiciona ao body
-            document.body.appendChild(btn);
-            console.log('✅ Botão voltar criado com sucesso');
+            // Adiciona ao body com timeout para garantir
+            setTimeout(() => {
+                document.body.appendChild(btn);
+                console.log('✅ Botão voltar criado com sucesso:', btn.id);
+            }, 100);
         });
-    </script>
-</head>
-<body>
-    <!-- CONTEÚDO PRINCIPAL - SEM BOTÕES INLINE -->
-    <div class="curso-container">
-        <!-- Cabeçalho do Curso -->
-        <div class="curso-header">
-            <h1 class="curso-titulo" id="curso-titulo">Carregando curso...</h1>
-            <p class="curso-descricao" id="curso-descricao">Aguarde enquanto carregamos o conteúdo do curso.</p>
-        </div>
 
-        <!-- Container de Módulos -->
-        <div class="modulos-container" id="modulos-container">
-            <div class="carregando">
-                <div class="loading-spinner"></div>
-                <h3>Carregando módulos...</h3>
-                <p>Buscando conteúdo do curso</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Status da API -->
-    <div class="api-status" id="api-status"></div>
-
-    <script>
         // ============================================
         // CLASSE GERENCIADOR DE CURSOS
         // ============================================
@@ -879,7 +957,6 @@ body {
                 this.usuarioId = this.obterUsuarioId();
                 this.cursoAtual = null;
                 this.modulosAtuais = [];
-                this.apiStatusElement = document.getElementById('api-status');
             }
 
             obterUsuarioId() {
@@ -917,101 +994,50 @@ body {
                     }
 
                     this.mostrarCarregando();
-                    this.atualizarStatusAPI('Conectando...', 'warning');
 
+                    // Buscar curso
+                    console.log('🌐 Buscando cursos da API...');
+                    const cursosResponse = await fetch(`${this.API_BASE}/cursos`);
+                    
+                    if (!cursosResponse.ok) {
+                        throw new Error(`Erro HTTP ${cursosResponse.status}: ${cursosResponse.statusText}`);
+                    }
+                    
+                    // Captura a resposta como TEXTO primeiro
+                    const responseText = await cursosResponse.text();
+                    console.log('📥 Resposta da API recebida');
+                    
                     try {
-                        // Buscar curso
-                        console.log('🌐 Buscando cursos da API...');
-                        const cursosResponse = await fetch(`${this.API_BASE}/cursos`);
+                        const todosCursos = JSON.parse(responseText);
+                        console.log('✅ JSON parseado com sucesso');
                         
-                        if (!cursosResponse.ok) {
-                            throw new Error(`Erro HTTP ${cursosResponse.status}: ${cursosResponse.statusText}`);
+                        // Encontra o curso
+                        let curso;
+                        if (Array.isArray(todosCursos)) {
+                            curso = todosCursos.find(c => c.id === cursoId);
+                        } else if (todosCursos && typeof todosCursos === 'object') {
+                            curso = (todosCursos.cursos || []).find(c => c.id === cursoId);
                         }
                         
-                        // Captura a resposta como TEXTO primeiro
-                        const responseText = await cursosResponse.text();
-                        console.log('📥 Resposta da API (primeiros 500 chars):', responseText.substring(0, 500));
+                        if (!curso) {
+                            throw new Error(`Curso com ID ${cursoId} não encontrado`);
+                        }
                         
-                        // VERIFICAÇÃO CRÍTICA: Procura por JSON mal-formado
-                        this.verificarJSONValido(responseText, 'cursos');
-                        
-                        try {
-                            const todosCursos = JSON.parse(responseText);
-                            console.log('✅ JSON parseado com sucesso');
-                            
-                            // Encontra o curso
-                            let curso;
-                            if (Array.isArray(todosCursos)) {
-                                curso = todosCursos.find(c => c.id === cursoId);
-                            } else if (todosCursos && typeof todosCursos === 'object') {
-                                curso = (todosCursos.cursos || []).find(c => c.id === cursoId);
-                            }
-                            
-                            if (!curso) {
-                                throw new Error(`Curso com ID ${cursoId} não encontrado`);
-                            }
-                            
-                            this.cursoAtual = curso;
-                            console.log('🎓 Curso encontrado:', curso.titulo);
-                            this.exibirCurso(curso);
-                            this.atualizarStatusAPI('Conectado', 'connected');
+                        this.cursoAtual = curso;
+                        console.log('🎓 Curso encontrado:', curso.titulo);
+                        this.exibirCurso(curso);
 
-                            // Buscar módulos
-                            await this.carregarModulos(cursoId, usuarioId);
-                            
-                        } catch (jsonError) {
-                            console.error('❌ ERRO DE JSON PARSE:', jsonError);
-                            console.error('📝 Texto problemático:', responseText.substring(0, 300));
-                            this.mostrarErro('Formato de dados inválido da API. Contate o suporte.');
-                            this.atualizarStatusAPI('Erro de dados', 'disconnected');
-                        }
+                        // Buscar módulos
+                        await this.carregarModulos(cursoId, usuarioId);
                         
-                    } catch (fetchError) {
-                        console.error('❌ Erro na requisição:', fetchError);
-                        this.mostrarErro(`Erro ao buscar cursos: ${fetchError.message}`);
-                        this.atualizarStatusAPI('Desconectado', 'disconnected');
+                    } catch (jsonError) {
+                        console.error('❌ ERRO DE JSON PARSE:', jsonError);
+                        this.mostrarErro('Formato de dados inválido da API. Contate o suporte.');
                     }
                     
                 } catch (error) {
                     console.error('❌ Erro geral:', error);
                     this.mostrarErro(error.message);
-                    this.atualizarStatusAPI('Erro', 'disconnected');
-                }
-            }
-
-            verificarJSONValido(texto, origem) {
-                console.log(`🔍 Verificando JSON da origem: ${origem}`);
-                
-                // Remove espaços em branco do início e fim
-                const textoLimpo = texto.trim();
-                
-                // Verifica se começa e termina corretamente
-                if (!textoLimpo.startsWith('{') && !textoLimpo.startsWith('[')) {
-                    console.error(`❌ JSON inválido (${origem}): Não começa com { ou [`);
-                    console.error('Primeiros 100 chars:', textoLimpo.substring(0, 100));
-                }
-                
-                // Verifica paridade de chaves/colchetes
-                const abreChaves = (textoLimpo.match(/\{/g) || []).length;
-                const fechaChaves = (textoLimpo.match(/\}/g) || []).length;
-                const abreColchetes = (textoLimpo.match(/\[/g) || []).length;
-                const fechaColchetes = (textoLimpo.match(/\]/g) || []).length;
-                
-                if (abreChaves !== fechaChaves) {
-                    console.error(`❌ JSON inválido (${origem}): Chaves não balanceadas!`);
-                    console.error(`Abre: ${abreChaves}, Fecha: ${fechaChaves}`);
-                }
-                
-                if (abreColchetes !== fechaColchetes) {
-                    console.error(`❌ JSON inválido (${origem}): Colchetes não balanceados!`);
-                    console.error(`Abre: ${abreColchetes}, Fecha: ${fechaColchetes}`);
-                }
-                
-                // Verifica vírgulas problemáticas
-                const virgulasAntesFechar = textoLimpo.match(/,\s*[\]\}]/g);
-                if (virgulasAntesFechar) {
-                    console.error(`❌ JSON inválido (${origem}): Vírgulas antes de fechar!`);
-                    console.error('Problemas encontrados:', virgulasAntesFechar);
                 }
             }
 
@@ -1029,10 +1055,6 @@ body {
                     
                     // Captura como texto primeiro
                     const responseText = await response.text();
-                    console.log('📥 Resposta módulos (primeiros 500 chars):', responseText.substring(0, 500));
-                    
-                    // Verifica JSON
-                    this.verificarJSONValido(responseText, 'módulos');
                     
                     try {
                         const data = JSON.parse(responseText);
@@ -1052,7 +1074,6 @@ body {
                         
                     } catch (jsonError) {
                         console.error('❌ ERRO DE JSON PARSE (módulos):', jsonError);
-                        console.error('📝 Texto problemático:', responseText.substring(0, 300));
                         this.mostrarErro('Formato inválido nos dados dos módulos');
                     }
                     
@@ -1173,9 +1194,14 @@ body {
             escapeHtml(text) {
                 if (text === null || text === undefined) return '';
                 
-                const div = document.createElement('div');
-                div.textContent = text.toString();
-                return div.innerHTML;
+                try {
+                    const div = document.createElement('div');
+                    div.textContent = text.toString();
+                    return div.innerHTML;
+                } catch (error) {
+                    console.error('❌ Erro ao escapar HTML:', error);
+                    return '';
+                }
             }
 
             iniciarAula(aulaId, moduloId) {
@@ -1197,13 +1223,18 @@ body {
             formatarDuracao(minutos) {
                 if (!minutos || isNaN(minutos)) return '10:00';
                 
-                const mins = parseInt(minutos);
-                if (mins < 60) {
-                    return `${mins}:00`;
-                } else {
-                    const horas = Math.floor(mins / 60);
-                    const minutosRestantes = mins % 60;
-                    return `${horas}:${minutosRestantes.toString().padStart(2, '0')}:00`;
+                try {
+                    const mins = parseInt(minutos);
+                    if (mins < 60) {
+                        return `${mins}:00`;
+                    } else {
+                        const horas = Math.floor(mins / 60);
+                        const minutosRestantes = mins % 60;
+                        return `${horas}:${minutosRestantes.toString().padStart(2, '0')}:00`;
+                    }
+                } catch (error) {
+                    console.error('❌ Erro ao formatar duração:', error);
+                    return '10:00';
                 }
             }
 
@@ -1256,30 +1287,6 @@ body {
                     </div>
                 `;
             }
-
-            atualizarStatusAPI(mensagem, tipo) {
-                if (!this.apiStatusElement) return;
-                
-                this.apiStatusElement.textContent = mensagem;
-                this.apiStatusElement.className = 'api-status';
-                
-                if (tipo === 'connected') {
-                    this.apiStatusElement.classList.add('connected');
-                } else if (tipo === 'disconnected') {
-                    this.apiStatusElement.classList.add('disconnected');
-                } else if (tipo === 'warning') {
-                    this.apiStatusElement.style.background = 'var(--warning)';
-                }
-                
-                this.apiStatusElement.style.opacity = '0.9';
-                
-                // Esconde após 5 segundos se for sucesso
-                if (tipo === 'connected') {
-                    setTimeout(() => {
-                        this.apiStatusElement.style.opacity = '0';
-                    }, 5000);
-                }
-            }
         }
 
         // ============================================
@@ -1310,11 +1317,6 @@ body {
             console.log('Usuário ID:', window.gerenciador?.usuarioId);
             console.log('Curso atual:', window.gerenciador?.cursoAtual);
             console.log('Módulos:', window.gerenciador?.modulosAtuais);
-            console.log('LocalStorage:', {
-                usuarioId: localStorage.getItem('usuarioId'),
-                cursoUsuario: localStorage.getItem('cursoUsuario'),
-                usuario: localStorage.getItem('usuario')
-            });
         };
     </script>
 </body>
