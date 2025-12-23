@@ -1718,13 +1718,16 @@ class GerenciadorCursos {
     }
 }
 
-// NO indexCR.html, MUDAR esta função:
 function voltarParaCursos() {
     const referrer = document.referrer;
-    if (referrer && referrer.includes('indexEX.html')) {
+    console.log('🔙 Referrer:', referrer);
+    
+    if (referrer && (referrer.includes('indexEX.html') || referrer.includes('extras'))) {
+        window.location.href = 'indexEX.html';
+    } else if (window.history.length > 1) {
         window.history.back();
     } else {
-        window.location.href = 'indexEX.html'; 
+        window.location.href = 'indexEX.html';
     }
 }
 
@@ -1776,6 +1779,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
 
 
 
