@@ -1721,40 +1721,51 @@ class GerenciadorCursos {
 function voltarParaCursos() {
     console.log('🔙 Botão voltar clicado');
     
-    // ✅ VERIFICA 1: Parâmetro from na URL
+    // ✅ VERIFICAÇÃO MÚLTIPLA:
     const urlParams = new URLSearchParams(window.location.search);
     const fromParam = urlParams.get('from');
-    
-    // ✅ VERIFICA 2: sessionStorage (Vercel-safe)
     const origin = sessionStorage.getItem('curso_origin');
-    const lastPage = sessionStorage.getItem('curso_last_page');
     
-    console.log('📋 fromParam:', fromParam);
-    console.log('📋 origin:', origin);
-    console.log('📋 lastPage:', lastPage);
+    console.log('📋 Parâmetro "from":', fromParam);
+    console.log('📋 sessionStorage origem:', origin);
+    console.log('🔗 Referrer:', document.referrer);
     
-    // ✅ DECISÃO: Se veio de extras, volta para extras
+    // ✅ DECISÃO SIMPLES: Se tem qualquer indicação de que veio de extras
     if (fromParam === 'extras' || origin === 'extras') {
-        console.log('📍 Voltando para cursos extras (rota /extras)...');
+        console.log('📍 Voltando para Cursos Extras...');
         
-        // Limpa o sessionStorage
+        // Limpa sessionStorage
         sessionStorage.removeItem('curso_origin');
-        sessionStorage.removeItem('curso_last_page');
+        sessionStorage.removeItem('curso_origin_url');
         
-        // Usa rota do Vercel
-        window.location.href = '/extras';
+        // ✅ VOLTA PARA O ARQUIVO CORRETO
+        window.location.href = '/CursosExtras/indexEX.html';
         return;
     }
     
-    // ✅ FALLBACK: Tenta voltar no histórico
+    // ✅ VERIFICAÇÃO ALTERNATIVA: Pelo referrer
+    const referrer = document.referrer;
+    if (referrer && (
+        referrer.includes('indexEX.html') || 
+        referrer.includes('CursosExtras') ||
+        referrer.includes('/extras')
+    )) {
+        console.log('📍 Referrer indica Cursos Extras...');
+        window.location.href = '/CursosExtras/indexEX.html';
+        return;
+    }
+    
+    // ✅ FALLBACK 1: Tenta voltar no histórico
     if (window.history.length > 1) {
         console.log('📍 Tentando voltar no histórico...');
         window.history.back();
-    } else {
-        // ✅ ÚLTIMO FALLBACK: Vai para extras
-        console.log('📍 Fallback: Indo para cursos extras...');
-        window.location.href = '/extras';
+    } 
+    // ✅ FALLBACK 2: Vai para Cursos Extras
+    else {
+        console.log('📍 Fallback: Indo para Cursos Extras...');
+        window.location.href = '/CursosExtras/indexEX.html';
     }
+}
 }
 // ✅ INICIALIZAÇÃO
 document.addEventListener('DOMContentLoaded', function() {
@@ -1797,6 +1808,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
 
 
 
