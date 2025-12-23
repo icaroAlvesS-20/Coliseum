@@ -1718,14 +1718,18 @@ class GerenciadorCursos {
     }
 }
 
+// NO indexCR.html, MUDAR esta função:
 function voltarParaCursos() {
     const referrer = document.referrer;
     if (referrer && referrer.includes('indexEX.html')) {
         window.history.back();
     } else {
-        window.location.href = 'indexEX.html';
+        window.location.href = 'indexEX.html'; 
     }
 }
+
+// E o botão deve ser:
+<button class="btn-voltar" onclick="voltarParaCursos()">←</button>
 
 // Atualizar o botão voltar no HTML:
 <button class="btn-voltar" onclick="voltarParaCursos()">←</button>
@@ -1772,6 +1776,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
 
 
 
