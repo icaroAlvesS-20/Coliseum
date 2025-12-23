@@ -1014,74 +1014,35 @@ function obterNomeMateria(materia) {
 function iniciarCurso(cursoId, event) {
     console.log('🎯 INICIAR CURSO CHAMADO - ID:', cursoId);
     
-    // BLOQUEIA COMPLETAMENTE
     if (event) {
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
-        console.log('🛑 Evento BLOQUEADO');
     }
     
-    // LOG DETALHADO
-    console.log('📝 Stack trace:', new Error().stack);
-    
-    // Obtém usuário
     const usuario = obterUsuarioLogado();
-    console.log('👤 Usuário:', usuario);
     
     if (!usuario || !usuario.id || usuario.id === '1') {
-        console.error('❌ SEM USUÁRIO VÁLIDO');
         mostrarAlerta('Faça login primeiro', 'error');
         return false;
     }
     
-    // Busca curso
     const curso = cursos.find(c => c.id === cursoId);
-    if (!curso) {
-        console.error('❌ CURSO NÃO ENCONTRADO');
-        return false;
-    }
+    if (!curso) return false;
     
-    console.log('📚 Curso:', curso.titulo);
+    // ✅ USAR ROTA DO VERCEL: /cursos
+    // ✅ PASSAR PARÂMETROS COMO QUERY STRING
+    const urlDestino = `/cursos?id=${cursoId}&usuarioId=${usuario.id}&from=extras`;
     
-    // ✅ CORREÇÃO CRÍTICA: URL ABSOLUTA
-    // Use o caminho COMPLETO para evitar ambiguidades
-    const urlBase = window.location.origin + window.location.pathname;
-    const pasta = urlBase.substring(0, urlBase.lastIndexOf('/'));
-    const urlDestino = `${pasta}/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`;
+    console.log('📍 Redirecionando via rota Vercel:', urlDestino);
     
-    console.log('📍 URL Base:', urlBase);
-    console.log('📍 Pasta:', pasta);
-    console.log('📍 URL Destino:', urlDestino);
+    // ✅ SALVA ORIGEM NO sessionStorage (Vercel-safe)
+    sessionStorage.setItem('curso_origin', 'extras');
+    sessionStorage.setItem('curso_last_page', '/extras');
     
-    // TESTA se o arquivo existe
-    fetch(urlDestino, { method: 'HEAD' })
-        .then(response => {
-            console.log('✅ Arquivo encontrado, status:', response.status);
-            
-            // ⚠️ DESATIVA QUALQUER OUTRO REDIRECIONAMENTO
-            window.onbeforeunload = null;
-            window.onunload = null;
-            
-            // REDIRECIONA COM FORÇA
-            setTimeout(() => {
-                console.log('🚀 EXECUTANDO REDIRECIONAMENTO FORÇADO');
-                window.location.replace(urlDestino); // ← replace() não deixa voltar
-            }, 100);
-        })
-        .catch(error => {
-            console.error('❌ Arquivo não encontrado:', error);
-            
-            // Tenta caminho relativo
-            const urlRelativa = `indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`;
-            console.log('🔄 Tentando URL relativa:', urlRelativa);
-            
-            setTimeout(() => {
-                window.location.replace(urlRelativa);
-            }, 100);
-        });
+    // ✅ REDIRECIONA
+    window.location.href = urlDestino;
     
-    // BLOQUEIA TUDO
     return false;
 }
     
