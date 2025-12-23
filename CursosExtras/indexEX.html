@@ -1030,16 +1030,23 @@ function iniciarCurso(cursoId, event) {
     const curso = cursos.find(c => c.id === cursoId);
     if (!curso) return false;
     
-    // ✅ SOLUÇÃO: Use o caminho CORRETO para o arquivo
-    const urlDestino = `/Cursos/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}&from=extras`;
+    const urlAtual = window.location.href;
+    console.log('📍 URL atual:', urlAtual);
+    
+    // Extrai o domínio base
+    const dominio = urlAtual.split('/extras')[0];
+    console.log('📍 Domínio base:', dominio);
+    
+    // Constrói a URL correta
+    const urlDestino = `${dominio}/Cursos/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}&from=extras`;
     
     console.log('📍 Redirecionando para:', urlDestino);
     
-    // Salva origem para o botão voltar
+    // ✅ Salva a origem de forma SEGURA
     sessionStorage.setItem('curso_origin', 'extras');
-    sessionStorage.setItem('curso_origin_url', window.location.href);
+    sessionStorage.setItem('curso_from_url', urlAtual);
     
-    // Redireciona
+    // ✅ REDIRECIONA DIRETAMENTE
     window.location.href = urlDestino;
     
     return false;
