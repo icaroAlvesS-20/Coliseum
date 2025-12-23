@@ -1049,16 +1049,16 @@ function iniciarCurso(cursoId) {
         
         console.log('✅ Permissão concedida!');
         
-        // ✅ CORREÇÃO: Usar a rota /cursos/:id em vez do caminho direto
-        const url = `/cursos?id=${cursoId}&usuarioId=${usuario.id}`;
-        console.log('🔗 Redirecionando para (rota Vercel):', url);
+        // ✅ CORREÇÃO: Redirecionar para indexCR.html com os parâmetros
+        const url = `indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`;
+        console.log('🔗 Redirecionando para:', url);
         
         // Mostrar mensagem
         mostrarAlerta(`✅ Acessando: ${curso.titulo}`, 'success');
         
         // Redirecionar
         setTimeout(() => {
-            console.log('🚀 Executando redirecionamento via Vercel...');
+            console.log('🚀 Executando redirecionamento...');
             window.location.href = url;
         }, 500);
         
