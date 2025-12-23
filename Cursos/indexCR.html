@@ -723,7 +723,7 @@ body {
     
     <script>
         // FUNÇÕES GLOBAIS SIMPLIFICADAS
-        window.voltarParaCursos = function() {
+        function voltarParaCursos() {
             console.log('Voltando...');
             const urlParams = new URLSearchParams(window.location.search);
             const fromParam = urlParams.get('from');
@@ -738,7 +738,10 @@ body {
             } else {
                 window.location.href = '/CursosExtras/indexEX.html';
             }
-        };
+        }
+        
+        // Torna disponível globalmente
+        window.voltarParaCursos = voltarParaCursos;
         
         // Criar botão voltar automaticamente
         window.addEventListener('DOMContentLoaded', function() {
@@ -749,7 +752,8 @@ body {
             // Criar novo botão
             const btn = document.createElement('button');
             btn.id = 'btn-voltar-cursos';
-            btn.innerHTML = '← Voltar';
+            btn.innerHTML = '←';
+            btn.title = 'Voltar para cursos';
             btn.style.cssText = `
                 position: fixed;
                 top: 20px;
@@ -758,11 +762,15 @@ body {
                 background: #2D2D2D;
                 color: #FFD700;
                 border: 2px solid #FFD700;
-                border-radius: 8px;
-                padding: 10px 20px;
-                font-size: 16px;
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
                 cursor: pointer;
                 transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             `;
             
             btn.onclick = window.voltarParaCursos;
@@ -829,16 +837,30 @@ body {
                     const cursosResponse = await fetch(`${this.API_BASE}/cursos`);
                     if (!cursosResponse.ok) throw new Error('Erro ao buscar cursos');
                     
-                    const todosCursos = await cursosResponse.json();
-                    const curso = todosCursos.find(c => c.id === cursoId);
+                    const responseText = await cursosResponse.text();
                     
-                    if (!curso) throw new Error('Curso não encontrado');
+                    // DEBUG: Verificar resposta da API
+                    console.log('Resposta da API (cursos):', responseText.substring(0, 500) + '...');
                     
-                    this.cursoAtual = curso;
-                    this.exibirCurso(curso);
+                    try {
+                        const todosCursos = JSON.parse(responseText);
+                        const curso = Array.isArray(todosCursos) ? 
+                            todosCursos.find(c => c.id === cursoId) : 
+                            (todosCursos.cursos || []).find(c => c.id === cursoId);
+                        
+                        if (!curso) throw new Error('Curso não encontrado');
+                        
+                        this.cursoAtual = curso;
+                        this.exibirCurso(curso);
 
-                    // Buscar módulos
-                    await this.carregarModulos(cursoId, usuarioId);
+                        // Buscar módulos
+                        await this.carregarModulos(cursoId, usuarioId);
+                        
+                    } catch (jsonError) {
+                        console.error('Erro ao parsear JSON de cursos:', jsonError);
+                        console.error('Texto problemático:', responseText);
+                        this.mostrarErro('Formato de dados inválido da API');
+                    }
                     
                 } catch (error) {
                     console.error('Erro:', error);
@@ -855,16 +877,27 @@ body {
                         return;
                     }
                     
-                    const data = await response.json();
-                    const modulos = Array.isArray(data) ? data : (data.modulos || []);
+                    // ADICIONE ESTA VERIFICAÇÃO PARA DETECTAR JSON MAL-FORMADO
+                    const responseText = await response.text();
+                    console.log('Resposta bruta da API (módulos):', responseText.substring(0, 500) + '...');
                     
-                    if (modulos.length === 0) {
-                        this.mostrarSemConteudo('Este curso ainda não possui módulos');
-                        return;
+                    try {
+                        const data = JSON.parse(responseText);
+                        const modulos = Array.isArray(data) ? data : (data.modulos || []);
+                        
+                        if (modulos.length === 0) {
+                            this.mostrarSemConteudo('Este curso ainda não possui módulos');
+                            return;
+                        }
+                        
+                        this.modulosAtuais = modulos;
+                        this.exibirModulos(modulos);
+                        
+                    } catch (jsonError) {
+                        console.error('Erro ao parsear JSON dos módulos:', jsonError);
+                        console.error('Texto que causou erro:', responseText);
+                        this.mostrarErro('Resposta da API em formato inválido');
                     }
-                    
-                    this.modulosAtuais = modulos;
-                    this.exibirModulos(modulos);
                     
                 } catch (error) {
                     console.error('Erro módulos:', error);
@@ -916,29 +949,45 @@ body {
                     item.addEventListener('click', (e) => {
                         const aulaId = parseInt(item.getAttribute('data-aula-id'));
                         const moduloId = parseInt(item.getAttribute('data-modulo-id'));
+                        
+                        // VERIFICAÇÃO ADICIONAL PARA EVITAR ERROS
+                        if (isNaN(aulaId) || aulaId <= 0) {
+                            console.error('ID da aula inválido:', item.getAttribute('data-aula-id'));
+                            alert('Erro: ID da aula inválido');
+                            return;
+                        }
+                        
                         this.iniciarAula(aulaId, moduloId);
                     });
                 });
             }
 
             gerarListaAulas(aulas, moduloId) {
-    if (!aulas || aulas.length === 0) {
-        return `<div class="aula-item empty">Nenhuma aula disponível</div>`;
-    }
+                if (!aulas || aulas.length === 0) {
+                    return `<div class="aula-item empty">Nenhuma aula disponível</div>`;
+                }
 
-    return aulas.map((aula, index) => `
-        <div class="aula-item" data-aula-id="${aula.id || 0}" data-modulo-id="${moduloId || 0}">
-            <div class="aula-checkbox"></div>
-            <div class="aula-info">
-                <div class="aula-titulo">${aula.titulo || `Aula ${index + 1}`}</div>
-                <div class="aula-descricao">${aula.descricao || ''}</div>
-            </div>
-            <div class="aula-meta">
-                <span class="aula-duracao">${this.formatarDuracao(aula.duracao)}</span>
-            </div>
-        </div>
-    `).join('');
-}
+                return aulas.map((aula, index) => `
+                    <div class="aula-item" data-aula-id="${aula.id || 0}" data-modulo-id="${moduloId || 0}">
+                        <div class="aula-checkbox"></div>
+                        <div class="aula-info">
+                            <div class="aula-titulo">${this.escapeHtml(aula.titulo) || `Aula ${index + 1}`}</div>
+                            <div class="aula-descricao">${this.escapeHtml(aula.descricao) || ''}</div>
+                        </div>
+                        <div class="aula-meta">
+                            <span class="aula-duracao">${this.formatarDuracao(aula.duracao)}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // FUNÇÃO PARA EVITAR INJEÇÃO HTML
+            escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
 
             iniciarAula(aulaId, moduloId) {
                 alert(`Iniciando aula ${aulaId} do módulo ${moduloId}\n\nEsta funcionalidade completa está no seu código original.`);
@@ -971,7 +1020,7 @@ body {
                     <div class="empty-state">
                         <i>❌</i>
                         <h3>Erro</h3>
-                        <p>${mensagem}</p>
+                        <p>${this.escapeHtml(mensagem)}</p>
                         <button onclick="location.reload()" class="btn btn-primary">Tentar Novamente</button>
                     </div>
                 `;
@@ -985,7 +1034,7 @@ body {
                     <div class="empty-state">
                         <i>📭</i>
                         <h3>Sem Conteúdo</h3>
-                        <p>${mensagem}</p>
+                        <p>${this.escapeHtml(mensagem)}</p>
                     </div>
                 `;
             }
@@ -1007,4 +1056,3 @@ body {
     </script>
 </body>
 </html>
-
