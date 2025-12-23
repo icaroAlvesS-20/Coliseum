@@ -965,12 +965,11 @@ function criarCardCurso(curso, usuario) {
             
      <div class="course-actions">
     <button class="btn ${temPermissao ? 'btn-primary' : 'btn-bloqueado'}" 
-            onclick="${temPermissao ? `return iniciarCurso(${curso.id})` : 'return mostrarMensagemBloqueio()'}"
-            ${!temPermissao ? 'disabled' : ''}>
-        <i class="fas ${temPermissao ? 'fa-play' : 'fa-lock'}"></i> 
-        ${temPermissao ? 'Começar' : 'Bloqueado'}
+        ${temPermissao ? `data-course-id="${curso.id}"` : ''}
+        ${!temPermissao ? 'disabled' : ''}>
+    <i class="fas ${temPermissao ? 'fa-play' : 'fa-lock'}"></i> 
+    ${temPermissao ? 'Começar' : 'Bloqueado'}
     </button>
-    
     <button class="btn btn-secondary" onclick="return verDetalhes(${curso.id})">
         <i class="fas fa-info-circle"></i> Detalhes
     </button>
@@ -1208,6 +1207,64 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+// Adicione este event listener para lidar com cliques nos botões
+document.addEventListener('click', function(event) {
+    // Verifica se clicou em um botão "Começar"
+    const btn = event.target.closest('.btn-primary');
+    if (btn && btn.hasAttribute('data-course-id')) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const courseId = parseInt(btn.getAttribute('data-course-id'));
+        console.log('🎯 Botão clicado via delegation, ID:', courseId);
+        
+        // Salva o referrer atual antes de redirecionar
+        sessionStorage.setItem('lastCoursePage', window.location.href);
+        
+        // Chama iniciarCurso com o ID
+        iniciarCurso(courseId, event);
+    }
+});
+
+// Modifique ligeiramente a função iniciarCurso para usar sessionStorage
+function iniciarCurso(cursoId, event) {
+    console.log('🎯 INICIAR CURSO CHAMADO - ID:', cursoId);
+    
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+    }
+    
+    const usuario = obterUsuarioLogado();
+    
+    if (!usuario || !usuario.id || usuario.id === '1') {
+        mostrarAlerta('Faça login primeiro', 'error');
+        return false;
+    }
+    
+    const curso = cursos.find(c => c.id === cursoId);
+    if (!curso) {
+        console.error('❌ CURSO NÃO ENCONTRADO');
+        return false;
+    }
+    
+    // Salva de onde veio no localStorage
+    localStorage.setItem('lastPage', 'cursos-extras');
+    
+    const urlBase = window.location.origin + window.location.pathname;
+    const pasta = urlBase.substring(0, urlBase.lastIndexOf('/'));
+    const urlDestino = `${pasta}/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`;
+    
+    console.log('📍 Redirecionando para:', urlDestino);
+    
+    // Redireciona imediatamente
+    window.location.href = urlDestino;
+    
+    return false;
+}
+
+    
 // ✅ TESTE RÁPIDO NO CONSOLE
 window.testarUsuario = function() {
     const usuario = obterUsuarioLogado();
