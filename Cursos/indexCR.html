@@ -1719,25 +1719,38 @@ class GerenciadorCursos {
 }
 
 function voltarParaCursos() {
-    const referrer = document.referrer;
-    console.log('🔙 Referrer:', referrer);
+    console.log('🔙 Botão voltar clicado');
     
-    if (referrer && (referrer.includes('indexEX.html') || referrer.includes('extras'))) {
+    // Verifica se tem referência salva
+    const lastPage = localStorage.getItem('lastPage');
+    const referrer = document.referrer;
+    
+    console.log('📋 LastPage:', lastPage);
+    console.log('🔗 Referrer:', referrer);
+    
+    // Se veio de cursos extras ou tem referência salva
+    if (lastPage === 'cursos-extras' || 
+        (referrer && referrer.includes('indexEX.html')) ||
+        (referrer && referrer.includes('extras'))) {
+        
+        // Limpa a referência
+        localStorage.removeItem('lastPage');
+        
+        // Redireciona para cursos extras
+        console.log('📍 Voltando para cursos extras...');
         window.location.href = 'indexEX.html';
+        
     } else if (window.history.length > 1) {
+        // Tenta voltar normalmente
+        console.log('📍 Voltando no histórico...');
         window.history.back();
     } else {
+        // Fallback: vai para cursos extras
+        console.log('📍 Fallback: indo para cursos extras...');
         window.location.href = 'indexEX.html';
     }
 }
 
-// E o botão deve ser:
-<button class="btn-voltar" onclick="voltarParaCursos()">←</button>
-
-// Atualizar o botão voltar no HTML:
-<button class="btn-voltar" onclick="voltarParaCursos()">←</button>
-
-    
 // ✅ INICIALIZAÇÃO
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM Carregado - Iniciando sistema de cursos...');
@@ -1779,6 +1792,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
 
 
 
