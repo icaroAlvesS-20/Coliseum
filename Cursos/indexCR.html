@@ -922,23 +922,23 @@ body {
             }
 
             gerarListaAulas(aulas, moduloId) {
-                if (!aulas || aulas.length === 0) {
-                    return `<div class="aula-item empty">Nenhuma aula disponível</div>`;
-                }
+    if (!aulas || aulas.length === 0) {
+        return `<div class="aula-item empty">Nenhuma aula disponível</div>`;
+    }
 
-                return aulas.map((aula, index) => `
-                    <div class="aula-item" data-aula-id="${aula.id}" data-modulo-id="${moduloId}">
-                        <div class="aula-checkbox"></div>
-                        <div class="aula-info">
-                            <div class="aula-titulo">${aula.titulo || `Aula ${index + 1}`}</div>
-                            <div class="aula-descricao">${aula.descricao || ''}</div>
-                        </div>
-                        <div class="aula-meta">
-                            <span class="aula-duracao">${this.formatarDuracao(aula.duracao)}</span>
-                        </div>
-                    </div>
-                `).join('');
-            }
+    return aulas.map((aula, index) => `
+        <div class="aula-item" data-aula-id="${aula.id || 0}" data-modulo-id="${moduloId || 0}">
+            <div class="aula-checkbox"></div>
+            <div class="aula-info">
+                <div class="aula-titulo">${aula.titulo || `Aula ${index + 1}`}</div>
+                <div class="aula-descricao">${aula.descricao || ''}</div>
+            </div>
+            <div class="aula-meta">
+                <span class="aula-duracao">${this.formatarDuracao(aula.duracao)}</span>
+            </div>
+        </div>
+    `).join('');
+}
 
             iniciarAula(aulaId, moduloId) {
                 alert(`Iniciando aula ${aulaId} do módulo ${moduloId}\n\nEsta funcionalidade completa está no seu código original.`);
@@ -1007,3 +1007,4 @@ body {
     </script>
 </body>
 </html>
+
