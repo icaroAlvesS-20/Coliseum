@@ -963,18 +963,18 @@ function criarCardCurso(curso, usuario) {
                 </div>
             </div>
             
-            <div class="course-actions">
-                <button class="btn ${temPermissao ? 'btn-primary' : 'btn-bloqueado'}" 
-                        onclick="${temPermissao ? `iniciarCurso(${curso.id})` : 'mostrarMensagemBloqueio()'}"
-                        ${!temPermissao ? 'disabled' : ''}>
-                    <i class="fas ${temPermissao ? 'fa-play' : 'fa-lock'}"></i> 
-                    ${temPermissao ? 'Começar' : 'Bloqueado'}
-                </button>
-                
-                <button class="btn btn-secondary" onclick="verDetalhes(${curso.id})">
-                    <i class="fas fa-info-circle"></i> Detalhes
-                </button>
-            </div>
+     <div class="course-actions">
+    <button class="btn ${temPermissao ? 'btn-primary' : 'btn-bloqueado'}" 
+            onclick="${temPermissao ? `return iniciarCurso(${curso.id})` : 'return mostrarMensagemBloqueio()'}"
+            ${!temPermissao ? 'disabled' : ''}>
+        <i class="fas ${temPermissao ? 'fa-play' : 'fa-lock'}"></i> 
+        ${temPermissao ? 'Começar' : 'Bloqueado'}
+    </button>
+    
+    <button class="btn btn-secondary" onclick="return verDetalhes(${curso.id})">
+        <i class="fas fa-info-circle"></i> Detalhes
+    </button>
+</div>
         </div>
     `;
     
@@ -1014,17 +1014,24 @@ function obterNomeMateria(materia) {
 
 function iniciarCurso(cursoId) {
     try {
-        console.log('🎬 Iniciando curso ID:', cursoId);
+        console.log('🎬 CLICK NO BOTÃO COMEÇAR - Curso ID:', cursoId);
+        
+        // PREVINE QUALQUER COMPORTAMENTO PADRÃO
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        
+        console.log('🛑 Evento parado:', event.type);
         
         const usuario = obterUsuarioLogado();
-        console.log('👤 Usuário logado:', usuario);
+        console.log('👤 Usuário:', usuario);
         
         // Validar usuário
         if (!usuario.id || usuario.id === '1') {
             console.error('❌ Usuário não logado corretamente');
             mostrarAlerta('❌ Faça login para acessar os cursos', 'error');
             setTimeout(() => window.location.href = '/login', 1500);
-            return;
+            return false;
         }
         
         // Encontrar curso
@@ -1032,7 +1039,7 @@ function iniciarCurso(cursoId) {
         if (!curso) {
             console.error('❌ Curso não encontrado:', cursoId);
             mostrarAlerta('Curso não encontrado', 'error');
-            return;
+            return false;
         }
         
         console.log('📚 Curso encontrado:', curso.titulo);
@@ -1044,27 +1051,32 @@ function iniciarCurso(cursoId) {
             const nomeCursoUsuario = obterNomeCategoria(usuario.curso);
             const nomeCategoriaCurso = obterNomeCategoria(obterCursoDaMateria(curso.materia));
             mostrarAlerta(`❌ Você é do curso ${nomeCursoUsuario} e não pode acessar cursos de ${nomeCategoriaCurso}`, 'error');
-            return;
+            return false;
         }
         
         console.log('✅ Permissão concedida!');
         
-        // ✅ CORREÇÃO: Redirecionar para indexCR.html com os parâmetros
+        // ✅ CORREÇÃO DEFINITIVA - URL correta
+        // Se indexCR.html está na mesma pasta:
         const url = `indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`;
-        console.log('🔗 Redirecionando para:', url);
         
-        // Mostrar mensagem
-        mostrarAlerta(`✅ Acessando: ${curso.titulo}`, 'success');
+        // Se estiver em subpasta "cursos":
+        // const url = `cursos/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`;
         
-        // Redirecionar
-        setTimeout(() => {
-            console.log('🚀 Executando redirecionamento...');
-            window.location.href = url;
-        }, 500);
+        console.log('🔗 URL gerada:', url);
+        
+        // Redirecionamento IMEDIATO sem setTimeout
+        console.log('🚀 Redirecionando AGORA...');
+        window.location.href = url;
+        
+        // Garante que não continue a execução
+        return false;
         
     } catch (error) {
         console.error('❌ Erro crítico em iniciarCurso:', error);
+        console.error('Stack trace:', error.stack);
         mostrarAlerta(`Erro: ${error.message}`, 'error');
+        return false;
     }
 }
     
