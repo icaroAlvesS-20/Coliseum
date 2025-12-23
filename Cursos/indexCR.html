@@ -919,8 +919,6 @@ body {
     </div>
 
     <div class="api-status" id="api-status"></div>
-    
-<button class="btn-voltar" onclick="voltarParaCursos()">←</button>
 
 <script>
 // ✅ SISTEMA CORRIGIDO - COM VERIFICAÇÕES DE ESTRUTURA
@@ -1718,51 +1716,66 @@ class GerenciadorCursos {
     }
 }
 
+// ✅ FUNÇÃO CORRIGIDA - SEM ERROS DE SINTAXE
 function voltarParaCursos() {
     console.log('🔙 Botão voltar clicado');
     
-    // ✅ VERIFICAÇÃO SIMPLES E DIRETA
+    // VERIFICAÇÃO SIMPLES
     const urlParams = new URLSearchParams(window.location.search);
     const fromParam = urlParams.get('from');
     
     console.log('📋 Parâmetro "from":', fromParam);
-    console.log('🔗 Referrer:', document.referrer);
     
-    // ✅ SE TEM "from=extras" NA URL, VOLTA PARA EXTRAS
+    // SE VEIO DE EXTRAS, VOLTA PARA EXTRAS
     if (fromParam === 'extras') {
         console.log('📍 Voltando para Cursos Extras...');
         window.location.href = '/CursosExtras/indexEX.html';
         return;
     }
     
-    // ✅ SE O REFERRER É EXTRAS, VOLTA PARA EXTRAS
-    const referrer = document.referrer;
-    if (referrer && (
-        referrer.includes('indexEX.html') || 
-        referrer.includes('CursosExtras') ||
-        referrer.includes('/extras')
-    )) {
-        console.log('📍 Referrer indica Cursos Extras...');
-        window.location.href = '/CursosExtras/indexEX.html';
-        return;
-    }
-    
-    // ✅ FALLBACK: TENTA VOLTAR NO HISTÓRICO
+    // SE NÃO, TENTA VOLTAR NO HISTÓRICO
     if (window.history.length > 1) {
         console.log('📍 Tentando voltar no histórico...');
         window.history.back();
     } else {
-        // ✅ ÚLTIMO FALLBACK: VAI PARA EXTRAS
+        // FALLBACK: VAI PARA EXTRAS
         console.log('📍 Fallback: Indo para Cursos Extras...');
         window.location.href = '/CursosExtras/indexEX.html';
     }
 }
 
-// ✅ INICIALIZAÇÃO
+// ✅ FUNÇÃO CORRIGIDA - SEM ERROS DE SINTAXE
+function voltarParaCursos() {
+    console.log('🔙 Botão voltar clicado');
+    
+    // VERIFICAÇÃO SIMPLES
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromParam = urlParams.get('from');
+    
+    console.log('📋 Parâmetro "from":', fromParam);
+    
+    // SE VEIO DE EXTRAS, VOLTA PARA EXTRAS
+    if (fromParam === 'extras') {
+        console.log('📍 Voltando para Cursos Extras...');
+        window.location.href = '/CursosExtras/indexEX.html';
+        return;
+    }
+    
+    // SE NÃO, TENTA VOLTAR NO HISTÓRICO
+    if (window.history.length > 1) {
+        console.log('📍 Tentando voltar no histórico...');
+        window.history.back();
+    } else {
+        // FALLBACK: VAI PARA EXTRAS
+        console.log('📍 Fallback: Indo para Cursos Extras...');
+        window.location.href = '/CursosExtras/indexEX.html';
+    }
+}
+
+// ✅ INICIALIZAÇÃO SIMPLIFICADA
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM Carregado - Iniciando sistema de cursos...');
     
-    // Verificar se estamos na página correta
     const urlParams = new URLSearchParams(window.location.search);
     const cursoId = urlParams.get('id');
     
@@ -1772,7 +1785,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div style="text-align: center; padding: 60px 20px;">
                 <h2 style="color: #f44336;">Erro: Curso não especificado</h2>
                 <p>Volte à página de cursos e selecione um curso para visualizar.</p>
-                <button onclick="window.history.back()" style="
+                <button onclick="window.location.href='/CursosExtras/indexEX.html'" style="
                     background: #ffcf00; 
                     color: black; 
                     border: none; 
@@ -1781,7 +1794,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     cursor: pointer; 
                     margin-top: 20px;
                     font-weight: 600;">
-                    ← Voltar para Cursos
+                    ← Voltar para Cursos Extras
                 </button>
             </div>
         `;
@@ -1795,17 +1808,48 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Página de curso válida - Iniciando carregamento...');
         gerenciadorCursos.carregarPaginaCurso();
     }
+    
+    // ✅ BOTÃO DE DEBUG TEMPORÁRIO
+    setTimeout(() => {
+        const debugBtn = document.createElement('button');
+        debugBtn.innerHTML = '🛠️ DEBUG';
+        debugBtn.style.cssText = `
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            background: #4361ee;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 1001;
+            font-weight: bold;
+        `;
+        
+        debugBtn.onclick = function() {
+            console.log('=== DEBUG ===');
+            console.log('URL:', window.location.href);
+            console.log('Parâmetro from:', new URLSearchParams(window.location.search).get('from'));
+            console.log('Referrer:', document.referrer);
+            console.log('=== FIM DEBUG ===');
+        };
+        
+        document.body.appendChild(debugBtn);
+    }, 3000);
+});
+    
+    const gerenciadorCursos = new GerenciadorCursos();
+    window.gerenciadorCursos = gerenciadorCursos;
+    
+    if (gerenciadorCursos.paginaValida) {
+        console.log('✅ Página de curso válida - Iniciando carregamento...');
+        gerenciadorCursos.carregarPaginaCurso();
+    }
 });
 </script>
+    <button class="btn-voltar" onclick="voltarParaCursos()">←</button>
 </body>
 </html>
-
-
-
-
-
-
-
-
 
 
