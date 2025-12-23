@@ -970,7 +970,7 @@ function criarCardCurso(curso, usuario) {
     <i class="fas ${temPermissao ? 'fa-play' : 'fa-lock'}"></i> 
     ${temPermissao ? 'Começar' : 'Bloqueado'}
     </button>
-    <button class="btn btn-secondary" onclick="return verDetalhes(${curso.id})">
+    <button class="btn btn-secondary" onclick="verDetalhes(${curso.id}); return false;">
         <i class="fas fa-info-circle"></i> Detalhes
     </button>
 </div>
@@ -1069,7 +1069,8 @@ function mostrarAlerta(mensagem, tipo = 'error') {
     if (!container) return;
     
     const alert = document.createElement('div');
-    alert.className = `alert ${tipo === 'success' ? 'alert-success' : tipo === 'warning' ? 'alert-warning' : 'error'}`;
+    // CORREÇÃO AQUI: removido o 'error' no final
+    alert.className = `alert ${tipo === 'success' ? 'alert-success' : tipo === 'warning' ? 'alert-warning' : ''}`;
     alert.innerHTML = `
         <span>${mensagem}</span>
         <button onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;margin-left:10px;cursor:pointer">×</button>
@@ -1144,7 +1145,6 @@ document.addEventListener('click', function(event) {
 function iniciarCurso(cursoId, event) {
     console.log('🎯 INICIAR CURSO - ID:', cursoId);
     
-    // Para completamente o evento
     if (event) {
         event.preventDefault();
         event.stopPropagation();
@@ -1167,47 +1167,36 @@ function iniciarCurso(cursoId, event) {
         return false;
     }
     
-    
-    
-    // Método 1: URL absoluta direta
     const dominio = 'https://coliseum-qhhdof7tu-icaroass-projects.vercel.app';
     const urlDestino = `${dominio}/Cursos/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}&from=extras`;
     
     console.log('📍 URL destino calculada:', urlDestino);
     
-    // ✅ Salva múltiplas referências para o botão voltar
     localStorage.setItem('last_course_origin', 'extras');
     sessionStorage.setItem('course_from_extras', 'true');
     sessionStorage.setItem('course_extras_timestamp', Date.now().toString());
     
-    // ✅ TESTA ANTES DE REDIRECIONAR
     console.log('🔍 Testando URL...');
     fetch(urlDestino, { method: 'HEAD' })
         .then(response => {
             console.log('✅ URL testada - Status:', response.status);
             if (response.ok) {
                 console.log('🚀 Redirecionando agora...');
-                // Força o redirecionamento
                 window.location.href = urlDestino;
             } else {
                 console.warn('⚠️ URL retornou status não OK, tentando alternativa...');
-                // Tenta caminho alternativo
                 window.location.href = `/Cursos/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}&from=extras`;
             }
         })
         .catch(error => {
             console.error('❌ Erro ao testar URL:', error.message);
             console.log('🔄 Tentando redirecionamento direto...');
-            // Tenta mesmo assim
             window.location.href = urlDestino;
         });
     
-    // Impede qualquer outro comportamento
     return false;
 }
-
     
-// ✅ TESTE RÁPIDO NO CONSOLE
 window.testarUsuario = function() {
     const usuario = obterUsuarioLogado();
     console.log('👤 Usuário atual:', usuario);
@@ -1216,7 +1205,6 @@ window.testarUsuario = function() {
     if (usuario.curso) {
         console.log('🔐 Políticas de acesso para', usuario.curso + ':', POLITICAS_ACESSO[usuario.curso]);
         
-        // Testar permissões para cada curso
         cursos.forEach(curso => {
             const categoria = obterCursoDaMateria(curso.materia);
             const temPermissao = verificarPermissao(usuario.curso, curso.materia);
@@ -1225,7 +1213,6 @@ window.testarUsuario = function() {
     }
 };
 
-// ✅ SIMULAR LOGIN PARA TESTES (apenas para desenvolvimento)
 window.simularLogin = function(curso) {
     const cursosValidos = ['reforco', 'preparatorio', 'informatica', 'robotica', 'games', 'programacao'];
     
@@ -1245,7 +1232,6 @@ window.simularLogin = function(curso) {
     }, 1500);
 };
 
-// ✅ RESETAR LOGIN
 window.resetarLogin = function() {
     localStorage.removeItem('cursoUsuario');
     localStorage.removeItem('usuarioNome');
@@ -1264,7 +1250,6 @@ window.resetarLogin = function() {
     }, 1500);
 };
 
-// ✅ DEBUG NO CONSOLE
 window.debugStorage = function() {
     console.log('🔍 DEBUG COMPLETO DO STORAGE');
     console.log('=== localStorage ===');
