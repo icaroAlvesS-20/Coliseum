@@ -1020,10 +1020,10 @@ function iniciarCurso(cursoId) {
         console.log('👤 Usuário logado:', usuario);
         
         // Validar usuário
-        if (!usuario.id || usuario.id === '1' || usuario.id === 'null' || usuario.id === 'undefined') {
+        if (!usuario.id || usuario.id === '1') {
             console.error('❌ Usuário não logado corretamente');
             mostrarAlerta('❌ Faça login para acessar os cursos', 'error');
-            setTimeout(() => window.location.href = 'login.html', 1500);
+            setTimeout(() => window.location.href = '/login', 1500);
             return;
         }
         
@@ -1049,17 +1049,16 @@ function iniciarCurso(cursoId) {
         
         console.log('✅ Permissão concedida!');
         
-        // Preparar URL - CORREÇÃO: Usar indexCR.html
-        const url = `indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`;
-        console.log('🔗 Redirecionando para:', url);
-        console.log('📍 Página atual:', window.location.pathname);
+        // ✅ CORREÇÃO: Usar a rota /cursos/:id em vez do caminho direto
+        const url = `/cursos?id=${cursoId}&usuarioId=${usuario.id}`;
+        console.log('🔗 Redirecionando para (rota Vercel):', url);
         
         // Mostrar mensagem
         mostrarAlerta(`✅ Acessando: ${curso.titulo}`, 'success');
         
-        // Redirecionar IMEDIATAMENTE
+        // Redirecionar
         setTimeout(() => {
-            console.log('🚀 Executando redirecionamento...');
+            console.log('🚀 Executando redirecionamento via Vercel...');
             window.location.href = url;
         }, 500);
         
