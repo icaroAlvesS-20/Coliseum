@@ -5,16 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curso - Coliseum</title>
     
-    <!-- Prevenir conflitos com scripts externos -->
+    <!-- Script imediato para definir funções globais -->
     <script>
-        // Evitar conflito com scripts de extensões
-        if (typeof EXCEPTIONS_HOSTS === 'undefined') {
-            var EXCEPTIONS_HOSTS = [];
-        }
-        
         // ========== FUNÇÃO GLOBAL PARA VOLTAR ==========
         window.voltarParaCursos = function() {
-            console.log('🔙 Botão voltar clicado');
+            console.log('🔙 Função voltarParaCursos chamada');
             
             const urlParams = new URLSearchParams(window.location.search);
             const fromParam = urlParams.get('from');
@@ -36,7 +31,7 @@
             }
         };
         
-        // Função auxiliar para criar botão voltar
+        // Função para criar botão voltar
         window.criarBotaoVoltar = function() {
             // Remover botão existente se houver
             const botaoExistente = document.getElementById('btn-voltar-cursos');
@@ -71,14 +66,14 @@
             `;
             
             // Event listeners
-            btnVoltar.addEventListener('mouseenter', () => {
-                btnVoltar.style.background = '#FFD700';
-                btnVoltar.style.color = '#1A1A1A';
+            btnVoltar.addEventListener('mouseenter', function() {
+                this.style.background = '#FFD700';
+                this.style.color = '#1A1A1A';
             });
             
-            btnVoltar.addEventListener('mouseleave', () => {
-                btnVoltar.style.background = '#2D2D2D';
-                btnVoltar.style.color = '#FFD700';
+            btnVoltar.addEventListener('mouseleave', function() {
+                this.style.background = '#2D2D2D';
+                this.style.color = '#FFD700';
             });
             
             // Usar a função global
@@ -88,11 +83,21 @@
             console.log('✅ Botão voltar criado dinamicamente');
         };
         
-        // Executar imediatamente para garantir que o botão seja criado antes de qualquer interação
+        // Executar quando o DOM estiver pronto
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', window.criarBotaoVoltar);
+            document.addEventListener('DOMContentLoaded', function() {
+                window.criarBotaoVoltar();
+                // Remover qualquer onclick inline
+                document.querySelectorAll('[onclick*="voltarParaCursos"]').forEach(function(el) {
+                    el.removeAttribute('onclick');
+                });
+            });
         } else {
             window.criarBotaoVoltar();
+            // Remover qualquer onclick inline
+            document.querySelectorAll('[onclick*="voltarParaCursos"]').forEach(function(el) {
+                el.removeAttribute('onclick');
+            });
         }
     </script>
     
@@ -813,7 +818,7 @@ body {
     </style>
 </head>
 <body>
-    <!-- NÃO HÁ NENHUM BOTÃO AQUI - TUDO É CRIADO DINAMICAMENTE -->
+    <!-- CONTEÚDO PRINCIPAL - SEM BOTÕES INLINE -->
     <div class="curso-container">
         <!-- Cabeçalho do Curso -->
         <div class="curso-header">
@@ -1687,7 +1692,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Configurar event listener para o botão
         const btnVoltar = document.getElementById('btn-voltar-extras');
         if (btnVoltar) {
-            btnVoltar.addEventListener('click', () => {
+            btnVoltar.addEventListener('click', function() {
                 window.location.href = '/CursosExtras/indexEX.html';
             });
         }
@@ -1716,9 +1721,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Remover qualquer atributo onclick que possa causar o erro
-    document.querySelectorAll('button').forEach(button => {
-        if (button.getAttribute('onclick') && button.getAttribute('onclick').includes('voltarParaCursos')) {
+    // Garantir que qualquer botão com onclick seja removido
+    document.querySelectorAll('button[onclick]').forEach(function(button) {
+        if (button.getAttribute('onclick').includes('voltarParaCursos')) {
             button.removeAttribute('onclick');
             button.addEventListener('click', window.voltarParaCursos);
         }
