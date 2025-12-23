@@ -1030,17 +1030,16 @@ function iniciarCurso(cursoId, event) {
     const curso = cursos.find(c => c.id === cursoId);
     if (!curso) return false;
     
-    // ✅ USAR ROTA DO VERCEL: /cursos
-    // ✅ PASSAR PARÂMETROS COMO QUERY STRING
-    const urlDestino = `/cursos?id=${cursoId}&usuarioId=${usuario.id}&from=extras`;
+    // ✅ SOLUÇÃO: Use o caminho CORRETO para o arquivo
+    const urlDestino = `/Cursos/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}&from=extras`;
     
-    console.log('📍 Redirecionando via rota Vercel:', urlDestino);
+    console.log('📍 Redirecionando para:', urlDestino);
     
-    // ✅ SALVA ORIGEM NO sessionStorage (Vercel-safe)
+    // Salva origem para o botão voltar
     sessionStorage.setItem('curso_origin', 'extras');
-    sessionStorage.setItem('curso_last_page', '/extras');
+    sessionStorage.setItem('curso_origin_url', window.location.href);
     
-    // ✅ REDIRECIONA
+    // Redireciona
     window.location.href = urlDestino;
     
     return false;
