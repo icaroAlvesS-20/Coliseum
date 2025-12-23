@@ -1011,47 +1011,6 @@ function obterNomeMateria(materia) {
     return nomes[materia] || materia;
 }
 
-function iniciarCurso(cursoId, event) {
-    console.log('🎯 INICIAR CURSO CHAMADO - ID:', cursoId);
-    
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-    }
-    
-    const usuario = obterUsuarioLogado();
-    
-    if (!usuario || !usuario.id || usuario.id === '1') {
-        mostrarAlerta('Faça login primeiro', 'error');
-        return false;
-    }
-    
-    const curso = cursos.find(c => c.id === cursoId);
-    if (!curso) return false;
-    
-    const urlAtual = window.location.href;
-    console.log('📍 URL atual:', urlAtual);
-    
-    // Extrai o domínio base
-    const dominio = urlAtual.split('/extras')[0];
-    console.log('📍 Domínio base:', dominio);
-    
-    // Constrói a URL correta
-    const urlDestino = `${dominio}/Cursos/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}&from=extras`;
-    
-    console.log('📍 Redirecionando para:', urlDestino);
-    
-    // ✅ Salva a origem de forma SEGURA
-    sessionStorage.setItem('curso_origin', 'extras');
-    sessionStorage.setItem('curso_from_url', urlAtual);
-    
-    // ✅ REDIRECIONA DIRETAMENTE
-    window.location.href = urlDestino;
-    
-    return false;
-}
-    
 function verDetalhes(cursoId) {
     const curso = cursos.find(c => c.id === cursoId);
     if (curso) {
@@ -1074,7 +1033,6 @@ ${curso.descricao || 'Sem descrição disponível.'}
 
 `;
         
-        // Adicionar informação de acesso
         if (usuario.curso) {
             detalhes += `\n🔐 Status de Acesso: ${temPermissao ? '✅ DISPONÍVEL' : '❌ BLOQUEADO'}`;
             if (!temPermissao) {
@@ -1125,29 +1083,24 @@ function voltarParaMenu() {
     window.location.href = '/menu.html';
 }
 
-// ==================== INICIALIZAÇÃO ====================
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Iniciando página de cursos...');
     
-    // Obter usuário de forma SIMPLES
     const usuario = obterUsuarioLogado();
     console.log('👤 Usuário logado:', usuario);
     
-    // Se o curso estiver errado, corrigir AGORA
     if (usuario.curso === 'robotica' && usuario.id !== '1') {
         console.log('🔴 CURSO INCORRETO DETECTADO! Corrigindo...');
         const cursoCorrigido = await corrigirCursoDoUsuario(usuario.id);
         
         if (cursoCorrigido) {
-            // Recarregar a página para aplicar correção
             mostrarAlerta(`✅ Curso corrigido para: ${obterNomeCategoria(cursoCorrigido)}`, 'success');
             setTimeout(() => location.reload(), 1500);
             return;
         }
     }
     
-    // Configurações básicas
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -1159,10 +1112,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     document.getElementById('course-search').addEventListener('input', mostrarCursos);
     
-    // Carregar cursos
     await carregarCursos();
     
-    // Mostrar informações
     if (usuario.nome && usuario.curso) {
         const subtitle = document.getElementById('header-subtitle');
         if (subtitle) {
@@ -1174,9 +1125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// Adicione este event listener para lidar com cliques nos botões
 document.addEventListener('click', function(event) {
-    // Verifica se clicou em um botão "Começar"
     const btn = event.target.closest('.btn-primary');
     if (btn && btn.hasAttribute('data-course-id')) {
         event.preventDefault();
@@ -1185,7 +1134,6 @@ document.addEventListener('click', function(event) {
         const courseId = parseInt(btn.getAttribute('data-course-id'));
         console.log('🎯 Botão clicado via delegation, ID:', courseId);
         
-        // Salva o referrer atual antes de redirecionar
         sessionStorage.setItem('lastCoursePage', window.location.href);
         
         // Chama iniciarCurso com o ID
@@ -1193,41 +1141,68 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Modifique ligeiramente a função iniciarCurso para usar sessionStorage
 function iniciarCurso(cursoId, event) {
-    console.log('🎯 INICIAR CURSO CHAMADO - ID:', cursoId);
+    console.log('🎯 INICIAR CURSO - ID:', cursoId);
     
+    // Para completamente o evento
     if (event) {
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
+        console.log('🛑 Evento bloqueado completamente');
     }
     
     const usuario = obterUsuarioLogado();
+    console.log('👤 Usuário para redirecionamento:', usuario);
     
     if (!usuario || !usuario.id || usuario.id === '1') {
+        console.error('❌ Usuário não logado');
         mostrarAlerta('Faça login primeiro', 'error');
         return false;
     }
     
     const curso = cursos.find(c => c.id === cursoId);
     if (!curso) {
-        console.error('❌ CURSO NÃO ENCONTRADO');
+        console.error('❌ Curso não encontrado');
         return false;
     }
     
-    // Salva de onde veio no localStorage
-    localStorage.setItem('lastPage', 'cursos-extras');
     
-    const urlBase = window.location.origin + window.location.pathname;
-    const pasta = urlBase.substring(0, urlBase.lastIndexOf('/'));
-    const urlDestino = `${pasta}/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`;
     
-    console.log('📍 Redirecionando para:', urlDestino);
+    // Método 1: URL absoluta direta
+    const dominio = 'https://coliseum-qhhdof7tu-icaroass-projects.vercel.app';
+    const urlDestino = `${dominio}/Cursos/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}&from=extras`;
     
-    // Redireciona imediatamente
-    window.location.href = urlDestino;
+    console.log('📍 URL destino calculada:', urlDestino);
     
+    // ✅ Salva múltiplas referências para o botão voltar
+    localStorage.setItem('last_course_origin', 'extras');
+    sessionStorage.setItem('course_from_extras', 'true');
+    sessionStorage.setItem('course_extras_timestamp', Date.now().toString());
+    
+    // ✅ TESTA ANTES DE REDIRECIONAR
+    console.log('🔍 Testando URL...');
+    fetch(urlDestino, { method: 'HEAD' })
+        .then(response => {
+            console.log('✅ URL testada - Status:', response.status);
+            if (response.ok) {
+                console.log('🚀 Redirecionando agora...');
+                // Força o redirecionamento
+                window.location.href = urlDestino;
+            } else {
+                console.warn('⚠️ URL retornou status não OK, tentando alternativa...');
+                // Tenta caminho alternativo
+                window.location.href = `/Cursos/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}&from=extras`;
+            }
+        })
+        .catch(error => {
+            console.error('❌ Erro ao testar URL:', error.message);
+            console.log('🔄 Tentando redirecionamento direto...');
+            // Tenta mesmo assim
+            window.location.href = urlDestino;
+        });
+    
+    // Impede qualquer outro comportamento
     return false;
 }
 
