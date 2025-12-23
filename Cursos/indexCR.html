@@ -1718,6 +1718,19 @@ class GerenciadorCursos {
     }
 }
 
+function voltarParaCursos() {
+    const referrer = document.referrer;
+    if (referrer && referrer.includes('indexEX.html')) {
+        window.history.back();
+    } else {
+        window.location.href = 'indexEX.html';
+    }
+}
+
+// Atualizar o botão voltar no HTML:
+<button class="btn-voltar" onclick="voltarParaCursos()">←</button>
+
+    
 // ✅ INICIALIZAÇÃO
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM Carregado - Iniciando sistema de cursos...');
@@ -1759,4 +1772,5 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
 
