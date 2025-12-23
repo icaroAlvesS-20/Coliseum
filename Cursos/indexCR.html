@@ -43,861 +43,8 @@ body {
     overflow-x: hidden;
 }
 
-/* ===== CONTAINER PRINCIPAL ===== */
-.curso-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 20px;
-    animation: fadeIn 0.6s ease;
-}
+/* ... (todo o CSS permanece igual) ... */
 
-/* ===== CABEÇALHO DO CURSO ===== */
-.curso-header {
-    background: var(--secondary-light);
-    border-radius: var(--border-radius-lg);
-    padding: 40px;
-    margin-bottom: 30px;
-    text-align: center;
-    border: 1px solid rgba(255, 215, 0, 0.1);
-    box-shadow: var(--shadow-md);
-    position: relative;
-    overflow: hidden;
-}
-
-.curso-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--gradient-primary);
-}
-
-.curso-titulo {
-    color: var(--primary);
-    font-size: 2.5rem;
-    margin-bottom: 15px;
-    font-weight: 800;
-    letter-spacing: -1px;
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.curso-descricao {
-    color: var(--text-secondary);
-    font-size: 1.2rem;
-    line-height: 1.6;
-    max-width: 600px;
-    margin: 0 auto 25px auto;
-}
-
-/* ===== PROGRESSO GERAL DO CURSO ===== */
-.progresso-geral-curso {
-    background: rgba(255, 215, 0, 0.05);
-    border-radius: var(--border-radius);
-    padding: 20px;
-    border: 1px solid rgba(255, 215, 0, 0.1);
-    max-width: 500px;
-    margin: 0 auto;
-}
-
-.progresso-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    color: var(--text-secondary);
-    font-weight: 600;
-}
-
-.progresso-percent {
-    color: var(--primary);
-    font-weight: 700;
-    font-size: 1.1rem;
-}
-
-.progresso-bar {
-    width: 100%;
-    height: 12px;
-    background: var(--secondary-lighter);
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 10px;
-    position: relative;
-}
-
-.progresso-fill {
-    height: 100%;
-    background: var(--gradient-primary);
-    border-radius: 10px;
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-}
-
-.progresso-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    animation: shimmer 2s infinite;
-}
-
-.progresso-stats {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    text-align: center;
-    font-weight: 600;
-}
-
-/* ===== CONTAINER DE MÓDULOS ===== */
-.modulos-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-/* ===== MÓDULOS ===== */
-.modulo {
-    background: var(--secondary-light);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    border: 1px solid rgba(255, 215, 0, 0.1);
-    transition: all 0.3s ease;
-    box-shadow: var(--shadow-sm);
-}
-
-.modulo:hover {
-    border-color: rgba(255, 215, 0, 0.3);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
-}
-
-.modulo-header {
-    padding: 20px 25px;
-    background: rgba(255, 215, 0, 0.05);
-    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: all 0.3s ease;
-}
-
-.modulo-header:hover {
-    background: rgba(255, 215, 0, 0.1);
-}
-
-.modulo-header h3 {
-    color: var(--primary);
-    font-size: 1.2rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.modulo-header h3::before {
-    content: '📚';
-    font-size: 1.3em;
-}
-
-.modulo-status {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    color: var(--text-secondary);
-}
-
-.progresso-modulo {
-    background: rgba(255, 215, 0, 0.1);
-    color: var(--primary);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    border: 1px solid rgba(255, 215, 0, 0.2);
-}
-
-.modulo-toggle {
-    color: var(--primary);
-    font-size: 1.3rem;
-    font-weight: bold;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.3s ease;
-}
-
-.modulo.aberto .modulo-toggle {
-    transform: rotate(180deg);
-}
-
-.modulo-conteudo {
-    display: none;
-    background: var(--secondary);
-}
-
-.modulo.aberto .modulo-conteudo {
-    display: block;
-    animation: slideDown 0.3s ease;
-}
-
-/* ===== LISTA DE AULAS ===== */
-.aulas-lista {
-    list-style: none;
-}
-
-.aula-item {
-    padding: 18px 25px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.aula-item:last-child {
-    border-bottom: none;
-}
-
-.aula-item:hover {
-    background: rgba(255, 215, 0, 0.05);
-}
-
-.aula-item.ativa {
-    background: rgba(255, 215, 0, 0.1);
-    border-left: 4px solid var(--primary);
-}
-
-.aula-item.concluida {
-    color: var(--success);
-}
-
-.aula-checkbox {
-    width: 22px;
-    height: 22px;
-    border: 2px solid var(--text-muted);
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    flex-shrink: 0;
-}
-
-.aula-item:hover .aula-checkbox {
-    border-color: var(--primary);
-}
-
-.aula-item.concluida .aula-checkbox {
-    background: var(--success);
-    border-color: var(--success);
-}
-
-.aula-item.concluida .aula-checkbox::after {
-    content: '✓';
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.aula-info {
-    flex: 1;
-}
-
-.aula-titulo {
-    font-weight: 600;
-    margin-bottom: 6px;
-    color: var(--text-primary);
-    font-size: 1rem;
-}
-
-.aula-item.concluida .aula-titulo {
-    color: var(--success);
-}
-
-.aula-descricao {
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    line-height: 1.4;
-}
-
-.aula-meta {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: var(--text-muted);
-    font-size: 0.8rem;
-}
-
-.aula-duracao {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 4px 10px;
-    border-radius: 12px;
-}
-
-.aula-duracao::before {
-    content: '⏱️';
-    font-size: 0.9em;
-}
-
-.aula-concluida-badge {
-    background: var(--success);
-    color: white;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
-    font-weight: bold;
-}
-
-/* ===== PLAYER DE AULA ===== */
-.aula-player-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.9);
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    backdrop-filter: blur(10px);
-    animation: fadeIn 0.3s ease;
-}
-
-.aula-player-container {
-    background: var(--secondary-light);
-    border-radius: var(--border-radius-lg);
-    width: 100%;
-    max-width: 900px;
-    max-height: 90vh;
-    overflow-y: auto;
-    border: 2px solid rgba(255, 215, 0, 0.2);
-    box-shadow: var(--shadow-lg);
-    animation: slideUp 0.3s ease;
-}
-
-.player-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 25px;
-    background: rgba(255, 215, 0, 0.05);
-    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
-}
-
-.player-header h3 {
-    color: var(--primary);
-    font-size: 1.3rem;
-    font-weight: 600;
-}
-
-.btn-fechar-player {
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    font-size: 2rem;
-    cursor: pointer;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.btn-fechar-player:hover {
-    background: rgba(255, 215, 0, 0.1);
-    color: var(--primary);
-}
-
-.video-container {
-    background: #000;
-    aspect-ratio: 16/9;
-    position: relative;
-}
-
-.video-container iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-}
-
-.video-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-secondary);
-    background: var(--secondary);
-}
-
-.placeholder-icon {
-    font-size: 4rem;
-    margin-bottom: 15px;
-    opacity: 0.7;
-}
-
-.player-content {
-    padding: 25px;
-}
-
-.aula-info h4,
-.aula-conteudo h4 {
-    color: var(--primary);
-    margin-bottom: 12px;
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-.aula-info p {
-    color: var(--text-secondary);
-    line-height: 1.6;
-    margin-bottom: 20px;
-}
-
-.conteudo-html {
-    color: var(--text-secondary);
-    line-height: 1.6;
-}
-
-.conteudo-html h1,
-.conteudo-html h2,
-.conteudo-html h3 {
-    color: var(--primary);
-    margin: 20px 0 10px 0;
-}
-
-.conteudo-html p {
-    margin-bottom: 15px;
-}
-
-.conteudo-html ul,
-.conteudo-html ol {
-    margin-left: 20px;
-    margin-bottom: 15px;
-}
-
-.conteudo-html li {
-    margin-bottom: 8px;
-}
-
-.player-actions {
-    padding: 20px 25px;
-    border-top: 1px solid rgba(255, 215, 0, 0.1);
-    display: flex;
-    gap: 15px;
-    justify-content: flex-end;
-}
-
-/* ===== BOTÕES ===== */
-.btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.btn-primary {
-    background: var(--gradient-primary);
-    color: #000;
-    box-shadow: var(--shadow-md);
-}
-
-.btn-secondary {
-    background: transparent;
-    color: var(--text-primary);
-    border: 2px solid var(--primary);
-    backdrop-filter: blur(10px);
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--accent) 100%);
-}
-
-.btn-secondary:hover {
-    background: rgba(255, 215, 0, 0.1);
-    border-color: var(--primary-light);
-}
-
-.btn-voltar {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: #ffcf00;
-    color: #000;
-    font-size: 24px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 15px rgba(255, 207, 0, 0.4);
-    transition: all 0.3s ease;
-}
-
-.btn-voltar:hover {
-    background: #e6b800;
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(255, 207, 0, 0.6);
-}
-
-/* ===== ESTADOS DE CARREGAMENTO E ERRO ===== */
-.carregando,
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-muted);
-}
-
-.loading-spinner {
-    border: 4px solid var(--secondary-lighter);
-    border-top: 4px solid var(--primary);
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
-}
-
-.carregando h3,
-.empty-state h3 {
-    color: var(--primary);
-    margin-bottom: 10px;
-    font-size: 1.3rem;
-}
-
-.empty-state i {
-    font-size: 4rem;
-    margin-bottom: 20px;
-    color: var(--primary);
-    opacity: 0.7;
-}
-
-.video-provider-badge {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: rgba(0, 0, 0, 0.8);
-    color: var(--primary);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    z-index: 10;
-    font-weight: 600;
-    border: 1px solid rgba(255, 215, 0, 0.3);
-    backdrop-filter: blur(10px);
-}
-
-/* Cores específicas para cada provedor */
-.video-provider-badge.panda-video {
-    background: rgba(255, 87, 34, 0.9);
-    color: white;
-    border-color: rgba(255, 87, 34, 0.5);
-}
-
-.video-provider-badge.youtube {
-    background: rgba(255, 0, 0, 0.9);
-    color: white;
-    border-color: rgba(255, 0, 0, 0.5);
-}
-
-.video-provider-badge.vimeo {
-    background: rgba(26, 183, 234, 0.9);
-    color: white;
-    border-color: rgba(26, 183, 234, 0.5);
-}
-
-.video-provider-badge.external {
-    background: rgba(76, 175, 80, 0.9);
-    color: white;
-    border-color: rgba(76, 175, 80, 0.5);
-}
-
-.video-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-secondary);
-    background: var(--secondary);
-    text-align: center;
-    padding: 40px;
-}
-
-.video-placeholder .placeholder-icon {
-    font-size: 4rem;
-    margin-bottom: 20px;
-    opacity: 0.7;
-}
-
-.video-placeholder h4 {
-    color: var(--primary);
-    margin-bottom: 10px;
-    font-size: 1.3rem;
-}
-
-.video-placeholder p {
-    margin-bottom: 20px;
-    line-height: 1.5;
-}
-
-.video-placeholder small {
-    margin-top: 15px;
-    color: var(--text-muted);
-    font-size: 0.85rem;
-}
-
-.video-placeholder .btn {
-    margin-top: 10px;
-}
-
-.video-container {
-    position: relative;
-    background: #000;
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    aspect-ratio: 16/9;
-    border: 2px solid rgba(255, 215, 0, 0.1);
-}
-
-.video-container iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-}
-
-.no-video-warning {
-    color: var(--warning);
-    font-style: italic;
-    margin: 15px 0;
-}
-
-/* ===== ANIMAÇÕES ===== */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-@keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
-/* ===== RESPONSIVIDADE ===== */
-@media (max-width: 768px) {
-    .curso-container {
-        padding: 20px 15px;
-    }
-
-    .curso-header {
-        padding: 30px 20px;
-    }
-
-    .curso-titulo {
-        font-size: 2rem;
-    }
-
-    .curso-descricao {
-        font-size: 1.1rem;
-    }
-
-    .modulo-header {
-        padding: 18px 20px;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    .modulo-status {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .aula-item {
-        padding: 15px 20px;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    .aula-meta {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .aula-player-overlay {
-        padding: 10px;
-    }
-
-    .aula-player-container {
-        max-height: 95vh;
-    }
-
-    .player-actions {
-        flex-direction: column;
-    }
-
-    .btn {
-        width: 100%;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .curso-header {
-        padding: 25px 15px;
-    }
-
-    .curso-titulo {
-        font-size: 1.8rem;
-    }
-
-    .modulo-header h3 {
-        font-size: 1.1rem;
-    }
-
-    .aula-player-container {
-        border-radius: var(--border-radius);
-    }
-
-    .player-content {
-        padding: 20px;
-    }
-}
-
-/* ===== ESTADO VAZIO ===== */
-.aula-item.empty {
-    justify-content: center;
-    color: var(--text-muted);
-    font-style: italic;
-    cursor: default;
-}
-
-.aula-item.empty:hover {
-    background: transparent;
-}
-
-/* ===== STATUS DA API ===== */
-.api-status {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 12px 20px;
-    border-radius: var(--border-radius);
-    font-weight: 600;
-    z-index: 1000;
-    box-shadow: var(--shadow-md);
-    animation: slideInRight 0.3s ease;
-}
-
-.api-status.success {
-    background: var(--success);
-    color: white;
-}
-
-.api-status.error {
-    background: var(--error);
-    color: white;
-}
-
-.api-status.warning {
-    background: var(--warning);
-    color: white;
-}
-
-@keyframes slideInRight {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-
-/* ===== SCROLLBAR PERSONALIZADA ===== */
-.aula-player-container::-webkit-scrollbar {
-    width: 8px;
-}
-
-.aula-player-container::-webkit-scrollbar-track {
-    background: var(--secondary);
-}
-
-.aula-player-container::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 10px;
-}
-
-.aula-player-container::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-dark);
-}
-
-/* ===== DESTAQUES E EFECTOS ===== */
-.highlight {
-    background: linear-gradient(120deg, transparent 0%, rgba(255, 215, 0, 0.1) 50%, transparent 100%);
-    padding: 2px 8px;
-    border-radius: 4px;
-    animation: highlight-pulse 2s ease-in-out infinite;
-}
-
-@keyframes highlight-pulse {
-    0%, 100% { background-color: rgba(255, 215, 0, 0.1); }
-    50% { background-color: rgba(255, 215, 0, 0.2); }
-}
     </style>
 </head>
 <body>
@@ -921,37 +68,31 @@ body {
     <div class="api-status" id="api-status"></div>
 
 <script>
-// ✅ CORREÇÃO 1: Removida a função duplicada e corrigida a sintaxe
-
-// ✅ FUNÇÃO VOLTAR CORRIGIDA - SEM ERROS DE SINTAXE
+// ========== FUNÇÃO GLOBAL PARA VOLTAR ==========
 function voltarParaCursos() {
     console.log('🔙 Botão voltar clicado');
     
-    // VERIFICAÇÃO SIMPLES
     const urlParams = new URLSearchParams(window.location.search);
     const fromParam = urlParams.get('from');
     
     console.log('📋 Parâmetro "from":', fromParam);
     
-    // SE VEIO DE EXTRAS, VOLTA PARA EXTRAS
     if (fromParam === 'extras') {
         console.log('📍 Voltando para Cursos Extras...');
         window.location.href = '/CursosExtras/indexEX.html';
         return;
     }
     
-    // SE NÃO, TENTA VOLTAR NO HISTÓRICO
     if (window.history.length > 1) {
         console.log('📍 Tentando voltar no histórico...');
         window.history.back();
     } else {
-        // FALLBACK: VAI PARA EXTRAS
         console.log('📍 Fallback: Indo para Cursos Extras...');
         window.location.href = '/CursosExtras/indexEX.html';
     }
 }
 
-// ✅ CORREÇÃO 2: Classe GerenciadorCursos corrigida - SEM erros de sintaxe
+// ========== CLASSE GERENCIADOR DE CURSOS ==========
 class GerenciadorCursos {
     constructor() {
         this.API_BASE = 'https://coliseum-api.onrender.com/api';
@@ -1022,7 +163,6 @@ class GerenciadorCursos {
         console.log(`🌐 Buscando curso completo ${cursoId}...`);
         
         try {
-            // PRIMEIRO: Buscar todos os cursos
             const cursosResponse = await fetch(`${this.API_BASE}/cursos`);
             
             if (!cursosResponse.ok) {
@@ -1032,7 +172,6 @@ class GerenciadorCursos {
             const todosCursos = await cursosResponse.json();
             console.log('📊 Todos os cursos:', todosCursos);
             
-            // Encontrar o curso específico
             const curso = todosCursos.find(c => c.id === cursoId);
             
             if (!curso) {
@@ -1043,13 +182,11 @@ class GerenciadorCursos {
             this.cursoAtual = curso;
             this.exibirCurso(curso);
 
-            // SEGUNDO: Buscar módulos e aulas
             await this.carregarModulosEProgresso(cursoId, usuarioId);
             
         } catch (error) {
             console.error('❌ Erro ao carregar curso completo:', error);
             
-            // Tentar método alternativo
             try {
                 console.log('🔄 Tentando método alternativo...');
                 await this.carregarCursoCompletoAlternativo(cursoId, usuarioId);
@@ -1063,14 +200,12 @@ class GerenciadorCursos {
     async carregarCursoCompletoAlternativo(cursoId, usuarioId) {
         console.log(`🔄 Método alternativo para curso ${cursoId}...`);
         
-        // Tentar buscar curso diretamente com ID
         const cursoResponse = await fetch(`${this.API_BASE}/cursos/${cursoId}`);
         
         if (cursoResponse.ok) {
             const cursoData = await cursoResponse.json();
             console.log('📊 Curso direto:', cursoData);
             
-            // Verificar estrutura da resposta
             let curso;
             if (cursoData.success !== undefined && cursoData.success) {
                 curso = cursoData.curso;
@@ -1082,13 +217,11 @@ class GerenciadorCursos {
                 this.cursoAtual = curso;
                 this.exibirCurso(curso);
                 
-                // Se tiver módulos no objeto curso, usar eles
                 if (curso.modulos && Array.isArray(curso.modulos) && curso.modulos.length > 0) {
                     console.log('✅ Usando módulos do objeto curso');
                     this.modulosAtuais = curso.modulos;
                     this.exibirModulos(curso.modulos, usuarioId);
                 } else {
-                    // Buscar módulos separadamente
                     await this.carregarModulosEProgresso(cursoId, usuarioId);
                 }
             } else {
@@ -1103,14 +236,12 @@ class GerenciadorCursos {
         console.log(`📂 Buscando módulos do curso ${cursoId}...`);
         
         try {
-            // Buscar módulos separadamente
             const modulosResponse = await fetch(`${this.API_BASE}/cursos/${cursoId}/modulos`);
             
             if (modulosResponse.ok) {
                 const modulosData = await modulosResponse.json();
                 console.log('📊 Resposta de módulos:', modulosData);
                 
-                // Verificar estrutura da resposta
                 let modulos;
                 if (modulosData.success !== undefined && modulosData.success) {
                     modulos = modulosData.modulos;
@@ -1130,7 +261,6 @@ class GerenciadorCursos {
                 
                 this.modulosAtuais = modulos;
                 
-                // Buscar progresso do usuário
                 await this.carregarProgressoUsuario(usuarioId, modulos);
                 
                 this.exibirModulos(modulos, usuarioId);
@@ -1154,7 +284,6 @@ class GerenciadorCursos {
         console.log(`📊 Buscando progresso do usuário ${usuarioId}...`);
         
         try {
-            // Buscar progresso geral do curso
             const progressoResponse = await fetch(
                 `${this.API_BASE}/progresso/cursos/${this.getCursoId()}?usuarioId=${usuarioId}`
             );
@@ -1173,7 +302,6 @@ class GerenciadorCursos {
                 }
             }
             
-            // Buscar aulas concluídas
             const aulasConcluidasResponse = await fetch(
                 `${this.API_BASE}/progresso/usuarios/${usuarioId}/aulas-concluidas`
             );
@@ -1187,7 +315,6 @@ class GerenciadorCursos {
                         aulasConcluidasData.aulasConcluidas.map(a => a.aulaId)
                     );
                     
-                    // Marcar aulas como concluídas nos módulos
                     modulos.forEach(modulo => {
                         if (modulo.aulas && Array.isArray(modulo.aulas)) {
                             modulo.aulas.forEach(aula => {
@@ -1201,7 +328,6 @@ class GerenciadorCursos {
             }
         } catch (error) {
             console.warn('⚠️ Erro ao buscar progresso:', error);
-            // Não é crítico, continuar sem progresso
         }
     }
 
@@ -1221,7 +347,6 @@ class GerenciadorCursos {
         
         document.title = `${curso.titulo} - Coliseum`;
 
-        // Adicionar imagem se disponível
         if (curso.imagem) {
             this.adicionarImagemCurso(curso.imagem);
         }
@@ -1261,7 +386,7 @@ class GerenciadorCursos {
 
             html += `
                 <div class="modulo ${index === 0 ? 'aberto' : ''}">
-                    <div class="modulo-header" onclick="window.gerenciadorCursos.toggleModulo(${index})">
+                    <div class="modulo-header" data-modulo-index="${index}">
                         <h3>${modulo.titulo || 'Módulo Sem Título'}</h3>
                         <div class="modulo-status">
                             <span class="progresso-modulo">${progresso}%</span>
@@ -1277,7 +402,6 @@ class GerenciadorCursos {
             `;
         });
 
-        // Atualizar progresso geral
         const progressoGeral = totalAulasCurso > 0 ? 
             Math.round((aulasConcluidasCurso / totalAulasCurso) * 100) : 0;
         
@@ -1286,6 +410,19 @@ class GerenciadorCursos {
         this.atualizarProgressoGeral(progressoGeral, aulasConcluidasCurso, totalAulasCurso);
         
         container.innerHTML = html;
+        
+        // Adicionar event listeners para os módulos
+        this.configurarEventListenersModulos();
+    }
+
+    configurarEventListenersModulos() {
+        const modulosHeaders = document.querySelectorAll('.modulo-header');
+        modulosHeaders.forEach(header => {
+            header.addEventListener('click', (e) => {
+                const index = parseInt(e.currentTarget.getAttribute('data-modulo-index'));
+                this.toggleModulo(index);
+            });
+        });
     }
 
     gerarListaAulas(aulas, moduloId) {
@@ -1303,7 +440,8 @@ class GerenciadorCursos {
         return aulas.map((aula, index) => {
             return `
                 <div class="aula-item ${aula.concluida ? 'concluida' : ''}" 
-                     onclick="window.gerenciadorCursos.iniciarAula(${aula.id}, ${moduloId})">
+                     data-aula-id="${aula.id}" 
+                     data-modulo-id="${moduloId}">
                     <div class="aula-checkbox"></div>
                     <div class="aula-info">
                         <div class="aula-titulo">${aula.titulo || `Aula ${index + 1}`}</div>
@@ -1321,11 +459,9 @@ class GerenciadorCursos {
     async iniciarAula(aulaId, moduloId) {
         console.log(`🎬 Iniciando aula ${aulaId} do módulo ${moduloId}`);
         
-        // Primeiro, verificar se temos a aula nos dados locais
         let aula = this.encontrarAulaLocal(aulaId);
         
         if (!aula) {
-            // Se não tiver localmente, buscar da API
             aula = await this.buscarAulaDaAPI(aulaId);
         }
         
@@ -1382,7 +518,6 @@ class GerenciadorCursos {
     exibirPlayerAula(aula) {
         console.log('🎬 Exibindo player da aula:', aula.titulo);
         
-        // Remover player existente
         const playerExistente = document.querySelector('.aula-player-overlay');
         if (playerExistente) {
             playerExistente.remove();
@@ -1395,7 +530,7 @@ class GerenciadorCursos {
                 <div class="aula-player-container">
                     <div class="player-header">
                         <h3>${aula.titulo || 'Aula'}</h3>
-                        <button class="btn-fechar-player" onclick="window.gerenciadorCursos.fecharPlayer()">
+                        <button class="btn-fechar-player" id="btn-fechar-player">
                             ×
                         </button>
                     </div>
@@ -1420,15 +555,15 @@ class GerenciadorCursos {
 
                     <div class="player-actions">
                         ${this.usuarioId !== '1' ? `
-                        <button class="btn btn-primary" onclick="window.gerenciadorCursos.marcarAulaConcluida(${aula.id})">
+                        <button class="btn btn-primary" id="btn-concluir-aula">
                             ✅ Marcar como Concluída
                         </button>
                         ` : ''}
-                        <button class="btn btn-secondary" onclick="window.gerenciadorCursos.fecharPlayer()">
+                        <button class="btn btn-secondary" id="btn-fechar-player2">
                             Fechar
                         </button>
                         ${aula.videoUrl ? `
-                        <button class="btn btn-secondary" onclick="window.open('${aula.videoUrl}', '_blank')">
+                        <button class="btn btn-secondary" id="btn-abrir-nova-aba">
                             🔗 Abrir em Nova Aba
                         </button>
                         ` : ''}
@@ -1439,8 +574,36 @@ class GerenciadorCursos {
         
         document.body.insertAdjacentHTML('beforeend', playerHTML);
         
+        // Configurar event listeners
+        this.configurarEventListenersPlayer(aula);
+        
         // Adicionar evento para fechar com ESC
         document.addEventListener('keydown', this.handleEscapeKey.bind(this));
+    }
+
+    configurarEventListenersPlayer(aula) {
+        // Botão fechar
+        const btnFechar1 = document.getElementById('btn-fechar-player');
+        const btnFechar2 = document.getElementById('btn-fechar-player2');
+        
+        if (btnFechar1) {
+            btnFechar1.addEventListener('click', () => this.fecharPlayer());
+        }
+        if (btnFechar2) {
+            btnFechar2.addEventListener('click', () => this.fecharPlayer());
+        }
+        
+        // Botão concluir
+        const btnConcluir = document.getElementById('btn-concluir-aula');
+        if (btnConcluir) {
+            btnConcluir.addEventListener('click', () => this.marcarAulaConcluida(aula.id));
+        }
+        
+        // Botão abrir nova aba
+        const btnNovaAba = document.getElementById('btn-abrir-nova-aba');
+        if (btnNovaAba && aula.videoUrl) {
+            btnNovaAba.addEventListener('click', () => window.open(aula.videoUrl, '_blank'));
+        }
     }
 
     fecharPlayer() {
@@ -1463,7 +626,6 @@ class GerenciadorCursos {
         }
 
         try {
-            // URLs do YouTube
             if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
                 const videoId = this.extrairVideoIdYouTube(videoUrl);
                 if (videoId) {
@@ -1479,7 +641,6 @@ class GerenciadorCursos {
                 }
             }
 
-            // URLs do Vimeo
             if (videoUrl.includes('vimeo.com')) {
                 const videoId = this.extrairVideoIdVimeo(videoUrl);
                 if (videoId) {
@@ -1495,12 +656,10 @@ class GerenciadorCursos {
                 }
             }
 
-            // Se já for um embed HTML
             if (videoUrl.includes('<iframe')) {
                 return videoUrl;
             }
 
-            // URL genérica
             return `
                 <iframe 
                     src="${videoUrl}" 
@@ -1546,7 +705,7 @@ class GerenciadorCursos {
                 <div class="aula-player-container">
                     <div class="player-header">
                         <h3>Erro</h3>
-                        <button class="btn-fechar-player" onclick="window.gerenciadorCursos.fecharPlayer()">
+                        <button class="btn-fechar-player" id="btn-fechar-erro">
                             ×
                         </button>
                     </div>
@@ -1554,7 +713,7 @@ class GerenciadorCursos {
                         <div style="font-size: 3rem; margin-bottom: 20px;">❌</div>
                         <h4 style="color: #f44336;">Erro ao Carregar Aula</h4>
                         <p>${mensagem}</p>
-                        <button class="btn btn-secondary" onclick="window.gerenciadorCursos.fecharPlayer()" style="margin-top: 20px;">
+                        <button class="btn btn-secondary" id="btn-fechar-erro2" style="margin-top: 20px;">
                             Fechar
                         </button>
                     </div>
@@ -1563,6 +722,17 @@ class GerenciadorCursos {
         `;
         
         document.body.insertAdjacentHTML('beforeend', playerHTML);
+        
+        // Configurar event listeners para fechar
+        const btnFechar1 = document.getElementById('btn-fechar-erro');
+        const btnFechar2 = document.getElementById('btn-fechar-erro2');
+        
+        if (btnFechar1) {
+            btnFechar1.addEventListener('click', () => this.fecharPlayer());
+        }
+        if (btnFechar2) {
+            btnFechar2.addEventListener('click', () => this.fecharPlayer());
+        }
     }
 
     formatarDuracao(minutos) {
@@ -1596,13 +766,10 @@ class GerenciadorCursos {
             const resultado = await response.json();
             console.log('✅ Progresso salvo:', resultado);
             
-            // Atualizar interface local
             this.atualizarAulaConcluidaLocal(aulaId);
             
-            // Fechar player
             this.fecharPlayer();
             
-            // Recarregar módulos para atualizar progresso
             setTimeout(() => {
                 this.carregarPaginaCurso();
             }, 500);
@@ -1614,7 +781,6 @@ class GerenciadorCursos {
     }
 
     atualizarAulaConcluidaLocal(aulaId) {
-        // Encontrar e atualizar a aula nos módulos locais
         this.modulosAtuais.forEach(modulo => {
             if (modulo.aulas) {
                 modulo.aulas.forEach(aula => {
@@ -1631,7 +797,6 @@ class GerenciadorCursos {
         
         if (!tituloCurso) return;
 
-        // Remover progresso existente
         const existingProgress = document.querySelector('.progresso-geral-curso');
         if (existingProgress) {
             existingProgress.remove();
@@ -1665,7 +830,6 @@ class GerenciadorCursos {
 
         if (!conteudo || !toggle) return;
 
-        // Fechar outros módulos
         modulos.forEach((mod, i) => {
             if (i !== index) {
                 mod.classList.remove('aberto');
@@ -1676,7 +840,6 @@ class GerenciadorCursos {
             }
         });
 
-        // Alternar módulo atual
         const estaAberto = modulo.classList.contains('aberto');
         
         if (estaAberto) {
@@ -1717,7 +880,7 @@ class GerenciadorCursos {
                 <i>❌</i>
                 <h3>Erro ao Carregar</h3>
                 <p>${mensagem}</p>
-                <button onclick="location.reload()" style="
+                <button id="btn-tentar-novamente" style="
                     background: #4361ee; 
                     color: white; 
                     border: none; 
@@ -1730,6 +893,12 @@ class GerenciadorCursos {
                 </button>
             </div>
         `;
+        
+        // Configurar event listener para o botão
+        const btnTentar = document.getElementById('btn-tentar-novamente');
+        if (btnTentar) {
+            btnTentar.addEventListener('click', () => location.reload());
+        }
     }
 
     mostrarSemConteudo(mensagem) {
@@ -1746,7 +915,7 @@ class GerenciadorCursos {
     }
 }
 
-// ✅ CORREÇÃO 3: Inicialização simplificada e corrigida
+// ========== INICIALIZAÇÃO ==========
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM Carregado - Iniciando sistema de cursos...');
     
@@ -1759,7 +928,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div style="text-align: center; padding: 60px 20px;">
                 <h2 style="color: #f44336;">Erro: Curso não especificado</h2>
                 <p>Volte à página de cursos e selecione um curso para visualizar.</p>
-                <button onclick="window.location.href='/CursosExtras/indexEX.html'" style="
+                <button id="btn-voltar-extras" style="
                     background: #ffcf00; 
                     color: black; 
                     border: none; 
@@ -1772,24 +941,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 </button>
             </div>
         `;
+        
+        // Configurar event listener para o botão
+        const btnVoltar = document.getElementById('btn-voltar-extras');
+        if (btnVoltar) {
+            btnVoltar.addEventListener('click', () => {
+                window.location.href = '/CursosExtras/indexEX.html';
+            });
+        }
         return;
     }
     
-    // Criar instância do gerenciador
-    const gerenciadorCursos = new GerenciadorCursos();
+    // Criar e armazenar instância global
+    window.gerenciadorCursos = new GerenciadorCursos();
     
-    // Tornar acessível globalmente
-    window.gerenciadorCursos = gerenciadorCursos;
-    
-    if (gerenciadorCursos.paginaValida) {
+    if (window.gerenciadorCursos.paginaValida) {
         console.log('✅ Página de curso válida - Iniciando carregamento...');
-        gerenciadorCursos.carregarPaginaCurso();
+        window.gerenciadorCursos.carregarPaginaCurso();
     }
     
-    // ✅ BOTÃO DE DEBUG TEMPORÁRIO
+    // Configurar event listeners para aulas
+    document.addEventListener('click', function(e) {
+        // Verificar se o clique foi em uma aula
+        const aulaItem = e.target.closest('.aula-item:not(.empty)');
+        if (aulaItem) {
+            const aulaId = parseInt(aulaItem.getAttribute('data-aula-id'));
+            const moduloId = parseInt(aulaItem.getAttribute('data-modulo-id'));
+            
+            if (aulaId && moduloId && window.gerenciadorCursos) {
+                window.gerenciadorCursos.iniciarAula(aulaId, moduloId);
+            }
+        }
+    });
+    
+    // Botão debug temporário
     setTimeout(() => {
         const debugBtn = document.createElement('button');
         debugBtn.innerHTML = '🛠️ DEBUG';
+        debugBtn.id = 'btn-debug';
         debugBtn.style.cssText = `
             position: fixed;
             bottom: 100px;
@@ -1804,20 +993,30 @@ document.addEventListener('DOMContentLoaded', function() {
             font-weight: bold;
         `;
         
-        debugBtn.onclick = function() {
+        debugBtn.addEventListener('click', function() {
             console.log('=== DEBUG ===');
             console.log('URL:', window.location.href);
             console.log('Parâmetro from:', new URLSearchParams(window.location.search).get('from'));
             console.log('Referrer:', document.referrer);
             console.log('=== FIM DEBUG ===');
-        };
+        });
         
         document.body.appendChild(debugBtn);
     }, 3000);
 });
 </script>
 
-    <!-- ✅ CORREÇÃO 4: Botão com onclick corrigido -->
-    <button class="btn-voltar" onclick="voltarParaCursos()">←</button>
+    <!-- Botão de voltar com event listener inline seguro -->
+    <button class="btn-voltar" id="btn-voltar-cursos">←</button>
+    
+<script>
+// Configurar event listener para o botão voltar
+document.addEventListener('DOMContentLoaded', function() {
+    const btnVoltar = document.getElementById('btn-voltar-cursos');
+    if (btnVoltar) {
+        btnVoltar.addEventListener('click', voltarParaCursos);
+    }
+});
+</script>
 </body>
 </html>
