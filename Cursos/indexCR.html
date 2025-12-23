@@ -1721,36 +1721,41 @@ class GerenciadorCursos {
 function voltarParaCursos() {
     console.log('🔙 Botão voltar clicado');
     
-    // Verifica se tem referência salva
-    const lastPage = localStorage.getItem('lastPage');
-    const referrer = document.referrer;
+    // ✅ VERIFICA 1: Parâmetro from na URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromParam = urlParams.get('from');
     
-    console.log('📋 LastPage:', lastPage);
-    console.log('🔗 Referrer:', referrer);
+    // ✅ VERIFICA 2: sessionStorage (Vercel-safe)
+    const origin = sessionStorage.getItem('curso_origin');
+    const lastPage = sessionStorage.getItem('curso_last_page');
     
-    // Se veio de cursos extras ou tem referência salva
-    if (lastPage === 'cursos-extras' || 
-        (referrer && referrer.includes('indexEX.html')) ||
-        (referrer && referrer.includes('extras'))) {
+    console.log('📋 fromParam:', fromParam);
+    console.log('📋 origin:', origin);
+    console.log('📋 lastPage:', lastPage);
+    
+    // ✅ DECISÃO: Se veio de extras, volta para extras
+    if (fromParam === 'extras' || origin === 'extras') {
+        console.log('📍 Voltando para cursos extras (rota /extras)...');
         
-        // Limpa a referência
-        localStorage.removeItem('lastPage');
+        // Limpa o sessionStorage
+        sessionStorage.removeItem('curso_origin');
+        sessionStorage.removeItem('curso_last_page');
         
-        // Redireciona para cursos extras
-        console.log('📍 Voltando para cursos extras...');
-        window.location.href = 'indexEX.html';
-        
-    } else if (window.history.length > 1) {
-        // Tenta voltar normalmente
-        console.log('📍 Voltando no histórico...');
+        // Usa rota do Vercel
+        window.location.href = '/extras';
+        return;
+    }
+    
+    // ✅ FALLBACK: Tenta voltar no histórico
+    if (window.history.length > 1) {
+        console.log('📍 Tentando voltar no histórico...');
         window.history.back();
     } else {
-        // Fallback: vai para cursos extras
-        console.log('📍 Fallback: indo para cursos extras...');
-        window.location.href = 'indexEX.html';
+        // ✅ ÚLTIMO FALLBACK: Vai para extras
+        console.log('📍 Fallback: Indo para cursos extras...');
+        window.location.href = '/extras';
     }
 }
-
 // ✅ INICIALIZAÇÃO
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM Carregado - Iniciando sistema de cursos...');
@@ -1792,6 +1797,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
 
 
 
