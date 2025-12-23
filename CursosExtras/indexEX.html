@@ -583,7 +583,6 @@ function obterUsuarioLogado() {
                 const usuarioObj = JSON.parse(usuarioJSON);
                 console.log('✅ Usuário do objeto:', usuarioObj);
                 
-                // Se tiver curso definido, usar este
                 if (usuarioObj.curso) {
                     return {
                         id: usuarioObj.id?.toString() || '1',
@@ -596,7 +595,6 @@ function obterUsuarioLogado() {
             }
         }
         
-        // 2. SEGUNDO: Se não tiver objeto, usar chave direta
         const cursoUsuario = localStorage.getItem('cursoUsuario') || 
                              sessionStorage.getItem('cursoUsuario');
         
@@ -612,10 +610,8 @@ function obterUsuarioLogado() {
         
         console.log('👤 Usuário das chaves:', usuario);
         
-        // 3. TERCEIRO: Se o curso for "robotica" mas não deveria ser, buscar do backend
         if (usuario.curso === 'robotica' && usuario.id && usuario.id !== '1') {
             console.log('⚠️ Curso está como robotica, verificando...');
-            // Chamar função para corrigir (implementada abaixo)
             corrigirCursoDoUsuario(usuario.id);
         }
         
@@ -640,7 +636,6 @@ async function corrigirCursoDoUsuario(usuarioId) {
                 const cursoReal = dados.usuario.curso.toLowerCase().trim();
                 console.log(`✅ Curso real no backend: ${cursoReal}`);
                 
-                // Se for diferente de "robotica", corrigir
                 if (cursoReal !== 'robotica') {
                     localStorage.setItem('cursoUsuario', cursoReal);
                     console.log(`🔄 Curso corrigido de "robotica" para "${cursoReal}"`);
@@ -667,10 +662,9 @@ async function corrigirCursoDoUsuario(usuarioId) {
 function verificarPermissao(cursoUsuario, materiaCurso) {
     console.log(`🔐 Verificando: Usuário=${cursoUsuario}, Matéria=${materiaCurso}`);
     
-    // Se não tem usuário logado, permite tudo (ou não, dependendo da regra)
     if (!cursoUsuario || cursoUsuario === 'null' || cursoUsuario === 'undefined') {
         console.log('⚠️ Usuário não logado, permitindo acesso');
-        return true; // Ou false, dependendo da sua regra
+        return true; 
     }
     
     if (!materiaCurso) {
@@ -1019,63 +1013,62 @@ function obterNomeMateria(materia) {
 }
 
 function iniciarCurso(cursoId) {
-    const usuario = obterUsuarioLogado();
-    const curso = cursos.find(c => c.id === cursoId);
-    
-    console.log('🎬 Iniciando curso:', {
-        cursoId: cursoId,
-        usuarioId: usuario.id,
-        usuarioNome: usuario.nome,
-        cursoTitulo: curso?.titulo
-    });
-    
-    if (!usuario.id || usuario.id === 'null' || usuario.id === 'undefined') {
-        console.error('❌ ERRO CRÍTICO: Usuário sem ID!');
-        console.log('📋 Storage atual:', {
-            localStorage: {
-                usuarioId: localStorage.getItem('usuarioId'),
-                userId: localStorage.getItem('userId'),
-                usuario: localStorage.getItem('usuario')
-            },
-            sessionStorage: {
-                usuarioId: sessionStorage.getItem('usuarioId'),
-                userId: sessionStorage.getItem('userId')
-            }
-        });
+    try {
+        console.log('🎬 Iniciando curso ID:', cursoId);
         
-        mostrarAlerta('❌ Erro: ID do usuário não encontrado. Faça login novamente.', 'error');
+        const usuario = obterUsuarioLogado();
+        console.log('👤 Usuário logado:', usuario);
         
-        // Redireciona para login
+        // Validar usuário
+        if (!usuario.id || usuario.id === '1' || usuario.id === 'null' || usuario.id === 'undefined') {
+            console.error('❌ Usuário não logado corretamente');
+            mostrarAlerta('❌ Faça login para acessar os cursos', 'error');
+            setTimeout(() => window.location.href = 'login.html', 1500);
+            return;
+        }
+        
+        // Encontrar curso
+        const curso = cursos.find(c => c.id === cursoId);
+        if (!curso) {
+            console.error('❌ Curso não encontrado:', cursoId);
+            mostrarAlerta('Curso não encontrado', 'error');
+            return;
+        }
+        
+        console.log('📚 Curso encontrado:', curso.titulo);
+        
+        // Verificar permissão
+        const temPermissao = verificarPermissao(usuario.curso, curso.materia);
+        if (!temPermissao) {
+            console.error('❌ Permissão negada para este curso');
+            const nomeCursoUsuario = obterNomeCategoria(usuario.curso);
+            const nomeCategoriaCurso = obterNomeCategoria(obterCursoDaMateria(curso.materia));
+            mostrarAlerta(`❌ Você é do curso ${nomeCursoUsuario} e não pode acessar cursos de ${nomeCategoriaCurso}`, 'error');
+            return;
+        }
+        
+        console.log('✅ Permissão concedida!');
+        
+        // Preparar URL - CORREÇÃO: Usar indexCR.html
+        const url = `indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`;
+        console.log('🔗 Redirecionando para:', url);
+        console.log('📍 Página atual:', window.location.pathname);
+        
+        // Mostrar mensagem
+        mostrarAlerta(`✅ Acessando: ${curso.titulo}`, 'success');
+        
+        // Redirecionar IMEDIATAMENTE
         setTimeout(() => {
-            window.location.href = '/login.html';
-        }, 2000);
-        return;
+            console.log('🚀 Executando redirecionamento...');
+            window.location.href = url;
+        }, 500);
+        
+    } catch (error) {
+        console.error('❌ Erro crítico em iniciarCurso:', error);
+        mostrarAlerta(`Erro: ${error.message}`, 'error');
     }
-    
-    if (!curso) {
-        mostrarAlerta('Curso não encontrado', 'error');
-        return;
-    }
-    
-    // Verificar permissão
-    const temPermissao = verificarPermissao(usuario.curso, curso.materia);
-    if (!temPermissao) {
-        const nomeCursoUsuario = obterNomeCategoria(usuario.curso);
-        const nomeCategoriaCurso = obterNomeCategoria(obterCursoDaMateria(curso.materia));
-        mostrarAlerta(`❌ Você é do curso ${nomeCursoUsuario} e não pode acessar cursos de ${nomeCategoriaCurso}`, 'error');
-        return;
-    }
-    
-    mostrarAlerta(`✅ Acessando curso: ${curso.titulo}`, 'success');
-    
-    console.log(`🔗 Redirecionando para: indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`);
-    
-    setTimeout(() => {
-        // ✅ CORREÇÃO: Redirecionar para indexCR.html
-        window.location.href = `indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`;
-    }, 1000);
 }
-
+    
 function verDetalhes(cursoId) {
     const curso = cursos.find(c => c.id === cursoId);
     if (curso) {
