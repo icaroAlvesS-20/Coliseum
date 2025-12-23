@@ -48,6 +48,10 @@
       "dest": "/Cursos/indexCR.html"
     },
     {
+      "src": "/Cursos/indexCR.html",
+      "dest": "/Cursos/indexCR.html"
+    },
+    {
       "src": "/login",
       "dest": "/Login/index.html"
     },
