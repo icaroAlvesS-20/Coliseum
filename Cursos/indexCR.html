@@ -722,38 +722,84 @@ body {
     </style>
     
     <script>
-        // FUNÇÕES GLOBAIS SIMPLIFICADAS
-        function voltarParaCursos() {
-            console.log('Voltando...');
-            const urlParams = new URLSearchParams(window.location.search);
-            const fromParam = urlParams.get('from');
-            
-            if (fromParam === 'extras') {
-                window.location.href = '/CursosExtras/indexEX.html';
-                return;
+        // ============================================
+        // CAPTURADOR GLOBAL DE ERROS DE JSON
+        // ============================================
+        window.addEventListener('error', function(e) {
+            if (e.message.includes('Unexpected token') || e.message.includes('JSON')) {
+                console.error('⚠️ ERRO DE SINTAXE DETECTADO:', e.message);
+                console.error('📄 Arquivo:', e.filename);
+                console.error('📍 Linha:', e.lineno, 'Coluna:', e.colno);
+                
+                if (e.error && e.error.stack) {
+                    console.error('🔍 Stack trace:', e.error.stack);
+                }
+                
+                // Tenta identificar se é da nossa API
+                if (e.filename && e.filename.includes('coliseum-api')) {
+                    console.error('🚨 ERRO PROVAVELMENTE NA RESPOSTA DA API!');
+                    console.error('💡 Verifique se a API está retornando JSON válido');
+                }
             }
+        });
+
+        // ============================================
+        // FUNÇÃO GLOBAL VOLTAR PARA CURSOS
+        // ============================================
+        function voltarParaCursos() {
+            console.log('🔙 Voltando para cursos...');
             
-            if (window.history.length > 1) {
-                window.history.back();
-            } else {
-                window.location.href = '/CursosExtras/indexEX.html';
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const fromParam = urlParams.get('from');
+                
+                if (fromParam === 'extras') {
+                    window.location.href = '/CursosExtras/indexEX.html';
+                    return;
+                }
+                
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = '/index.html';
+                }
+            } catch (error) {
+                console.error('❌ Erro ao voltar:', error);
+                window.location.href = '/index.html';
             }
         }
-        
+
         // Torna disponível globalmente
         window.voltarParaCursos = voltarParaCursos;
-        
-        // Criar botão voltar automaticamente
-        window.addEventListener('DOMContentLoaded', function() {
-            // Remover qualquer botão antigo
-            const oldBtn = document.getElementById('btn-voltar-cursos');
-            if (oldBtn) oldBtn.remove();
+
+        // ============================================
+        // CRIAÇÃO DO BOTÃO VOLTAR DINÂMICO
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM carregado - criando botão voltar');
             
-            // Criar novo botão
+            // Remove qualquer botão antigo (limpeza)
+            const oldBtn = document.getElementById('btn-voltar-cursos');
+            if (oldBtn) {
+                console.log('🗑️ Removendo botão antigo');
+                oldBtn.remove();
+            }
+            
+            // Remove qualquer botão com onclick quebrado
+            const botoesProblema = document.querySelectorAll('button[onclick*="voltarParaCursos"]');
+            botoesProblema.forEach(btn => {
+                console.log('⚠️ Removendo botão problemático');
+                btn.remove();
+            });
+            
+            // Cria novo botão
             const btn = document.createElement('button');
             btn.id = 'btn-voltar-cursos';
             btn.innerHTML = '←';
             btn.title = 'Voltar para cursos';
+            btn.setAttribute('aria-label', 'Voltar para a página de cursos');
+            
+            // Estilos inline para garantir funcionamento
             btn.style.cssText = `
                 position: fixed;
                 top: 20px;
@@ -771,10 +817,33 @@ body {
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             `;
             
-            btn.onclick = window.voltarParaCursos;
+            // Evento de hover
+            btn.addEventListener('mouseenter', function() {
+                this.style.background = '#FFD700';
+                this.style.color = '#2D2D2D';
+                this.style.transform = 'scale(1.1)';
+            });
+            
+            btn.addEventListener('mouseleave', function() {
+                this.style.background = '#2D2D2D';
+                this.style.color = '#FFD700';
+                this.style.transform = 'scale(1)';
+            });
+            
+            // Evento de clique SEGURO
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🎯 Botão voltar clicado');
+                window.voltarParaCursos();
+            });
+            
+            // Adiciona ao body
             document.body.appendChild(btn);
+            console.log('✅ Botão voltar criado com sucesso');
         });
     </script>
 </head>
@@ -797,145 +866,245 @@ body {
         </div>
     </div>
 
+    <!-- Status da API -->
     <div class="api-status" id="api-status"></div>
 
     <script>
-        // CLASSE GERENCIADOR SIMPLIFICADA
+        // ============================================
+        // CLASSE GERENCIADOR DE CURSOS
+        // ============================================
         class GerenciadorCursos {
             constructor() {
                 this.API_BASE = 'https://coliseum-api.onrender.com/api';
                 this.usuarioId = this.obterUsuarioId();
                 this.cursoAtual = null;
                 this.modulosAtuais = [];
+                this.apiStatusElement = document.getElementById('api-status');
             }
 
             obterUsuarioId() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const usuarioIdParam = urlParams.get('usuarioId');
-                
-                if (usuarioIdParam && usuarioIdParam !== 'null' && usuarioIdParam !== 'undefined') {
-                    return usuarioIdParam;
+                try {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const usuarioIdParam = urlParams.get('usuarioId');
+                    
+                    if (usuarioIdParam && usuarioIdParam !== 'null' && usuarioIdParam !== 'undefined') {
+                        console.log('👤 ID do usuário da URL:', usuarioIdParam);
+                        return usuarioIdParam;
+                    }
+                    
+                    const localId = localStorage.getItem('usuarioId') || '1';
+                    console.log('👤 ID do usuário do localStorage:', localId);
+                    return localId;
+                } catch (error) {
+                    console.error('❌ Erro ao obter ID do usuário:', error);
+                    return '1';
                 }
-                
-                return localStorage.getItem('usuarioId') || '1';
             }
 
             async carregarCurso() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const cursoId = parseInt(urlParams.get('id'));
-                const usuarioId = this.usuarioId;
+                console.log('📚 Iniciando carregamento do curso...');
                 
-                if (!cursoId) {
-                    this.mostrarErro('ID do curso não especificado');
-                    return;
-                }
-
-                this.mostrarCarregando();
-
                 try {
-                    // Buscar curso
-                    const cursosResponse = await fetch(`${this.API_BASE}/cursos`);
-                    if (!cursosResponse.ok) throw new Error('Erro ao buscar cursos');
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const cursoId = parseInt(urlParams.get('id'));
+                    const usuarioId = this.usuarioId;
                     
-                    const responseText = await cursosResponse.text();
+                    console.log('🔍 Parâmetros:', { cursoId, usuarioId });
                     
-                    // DEBUG: Verificar resposta da API
-                    console.log('Resposta da API (cursos):', responseText.substring(0, 500) + '...');
-                    
-                    try {
-                        const todosCursos = JSON.parse(responseText);
-                        const curso = Array.isArray(todosCursos) ? 
-                            todosCursos.find(c => c.id === cursoId) : 
-                            (todosCursos.cursos || []).find(c => c.id === cursoId);
-                        
-                        if (!curso) throw new Error('Curso não encontrado');
-                        
-                        this.cursoAtual = curso;
-                        this.exibirCurso(curso);
+                    if (!cursoId || isNaN(cursoId)) {
+                        this.mostrarErro('ID do curso não especificado ou inválido');
+                        return;
+                    }
 
-                        // Buscar módulos
-                        await this.carregarModulos(cursoId, usuarioId);
+                    this.mostrarCarregando();
+                    this.atualizarStatusAPI('Conectando...', 'warning');
+
+                    try {
+                        // Buscar curso
+                        console.log('🌐 Buscando cursos da API...');
+                        const cursosResponse = await fetch(`${this.API_BASE}/cursos`);
                         
-                    } catch (jsonError) {
-                        console.error('Erro ao parsear JSON de cursos:', jsonError);
-                        console.error('Texto problemático:', responseText);
-                        this.mostrarErro('Formato de dados inválido da API');
+                        if (!cursosResponse.ok) {
+                            throw new Error(`Erro HTTP ${cursosResponse.status}: ${cursosResponse.statusText}`);
+                        }
+                        
+                        // Captura a resposta como TEXTO primeiro
+                        const responseText = await cursosResponse.text();
+                        console.log('📥 Resposta da API (primeiros 500 chars):', responseText.substring(0, 500));
+                        
+                        // VERIFICAÇÃO CRÍTICA: Procura por JSON mal-formado
+                        this.verificarJSONValido(responseText, 'cursos');
+                        
+                        try {
+                            const todosCursos = JSON.parse(responseText);
+                            console.log('✅ JSON parseado com sucesso');
+                            
+                            // Encontra o curso
+                            let curso;
+                            if (Array.isArray(todosCursos)) {
+                                curso = todosCursos.find(c => c.id === cursoId);
+                            } else if (todosCursos && typeof todosCursos === 'object') {
+                                curso = (todosCursos.cursos || []).find(c => c.id === cursoId);
+                            }
+                            
+                            if (!curso) {
+                                throw new Error(`Curso com ID ${cursoId} não encontrado`);
+                            }
+                            
+                            this.cursoAtual = curso;
+                            console.log('🎓 Curso encontrado:', curso.titulo);
+                            this.exibirCurso(curso);
+                            this.atualizarStatusAPI('Conectado', 'connected');
+
+                            // Buscar módulos
+                            await this.carregarModulos(cursoId, usuarioId);
+                            
+                        } catch (jsonError) {
+                            console.error('❌ ERRO DE JSON PARSE:', jsonError);
+                            console.error('📝 Texto problemático:', responseText.substring(0, 300));
+                            this.mostrarErro('Formato de dados inválido da API. Contate o suporte.');
+                            this.atualizarStatusAPI('Erro de dados', 'disconnected');
+                        }
+                        
+                    } catch (fetchError) {
+                        console.error('❌ Erro na requisição:', fetchError);
+                        this.mostrarErro(`Erro ao buscar cursos: ${fetchError.message}`);
+                        this.atualizarStatusAPI('Desconectado', 'disconnected');
                     }
                     
                 } catch (error) {
-                    console.error('Erro:', error);
+                    console.error('❌ Erro geral:', error);
                     this.mostrarErro(error.message);
+                    this.atualizarStatusAPI('Erro', 'disconnected');
+                }
+            }
+
+            verificarJSONValido(texto, origem) {
+                console.log(`🔍 Verificando JSON da origem: ${origem}`);
+                
+                // Remove espaços em branco do início e fim
+                const textoLimpo = texto.trim();
+                
+                // Verifica se começa e termina corretamente
+                if (!textoLimpo.startsWith('{') && !textoLimpo.startsWith('[')) {
+                    console.error(`❌ JSON inválido (${origem}): Não começa com { ou [`);
+                    console.error('Primeiros 100 chars:', textoLimpo.substring(0, 100));
+                }
+                
+                // Verifica paridade de chaves/colchetes
+                const abreChaves = (textoLimpo.match(/\{/g) || []).length;
+                const fechaChaves = (textoLimpo.match(/\}/g) || []).length;
+                const abreColchetes = (textoLimpo.match(/\[/g) || []).length;
+                const fechaColchetes = (textoLimpo.match(/\]/g) || []).length;
+                
+                if (abreChaves !== fechaChaves) {
+                    console.error(`❌ JSON inválido (${origem}): Chaves não balanceadas!`);
+                    console.error(`Abre: ${abreChaves}, Fecha: ${fechaChaves}`);
+                }
+                
+                if (abreColchetes !== fechaColchetes) {
+                    console.error(`❌ JSON inválido (${origem}): Colchetes não balanceados!`);
+                    console.error(`Abre: ${abreColchetes}, Fecha: ${fechaColchetes}`);
+                }
+                
+                // Verifica vírgulas problemáticas
+                const virgulasAntesFechar = textoLimpo.match(/,\s*[\]\}]/g);
+                if (virgulasAntesFechar) {
+                    console.error(`❌ JSON inválido (${origem}): Vírgulas antes de fechar!`);
+                    console.error('Problemas encontrados:', virgulasAntesFechar);
                 }
             }
 
             async carregarModulos(cursoId, usuarioId) {
+                console.log(`📦 Buscando módulos do curso ${cursoId}...`);
+                
                 try {
                     const response = await fetch(`${this.API_BASE}/cursos/${cursoId}/modulos`);
                     
                     if (!response.ok) {
+                        console.error(`❌ Erro HTTP módulos: ${response.status}`);
                         this.mostrarSemConteudo('Não foi possível carregar os módulos');
                         return;
                     }
                     
-                    // ADICIONE ESTA VERIFICAÇÃO PARA DETECTAR JSON MAL-FORMADO
+                    // Captura como texto primeiro
                     const responseText = await response.text();
-                    console.log('Resposta bruta da API (módulos):', responseText.substring(0, 500) + '...');
+                    console.log('📥 Resposta módulos (primeiros 500 chars):', responseText.substring(0, 500));
+                    
+                    // Verifica JSON
+                    this.verificarJSONValido(responseText, 'módulos');
                     
                     try {
                         const data = JSON.parse(responseText);
+                        console.log('✅ JSON módulos parseado');
+                        
                         const modulos = Array.isArray(data) ? data : (data.modulos || []);
                         
                         if (modulos.length === 0) {
+                            console.log('📭 Nenhum módulo encontrado');
                             this.mostrarSemConteudo('Este curso ainda não possui módulos');
                             return;
                         }
                         
+                        console.log(`✅ ${modulos.length} módulos carregados`);
                         this.modulosAtuais = modulos;
                         this.exibirModulos(modulos);
                         
                     } catch (jsonError) {
-                        console.error('Erro ao parsear JSON dos módulos:', jsonError);
-                        console.error('Texto que causou erro:', responseText);
-                        this.mostrarErro('Resposta da API em formato inválido');
+                        console.error('❌ ERRO DE JSON PARSE (módulos):', jsonError);
+                        console.error('📝 Texto problemático:', responseText.substring(0, 300));
+                        this.mostrarErro('Formato inválido nos dados dos módulos');
                     }
                     
                 } catch (error) {
-                    console.error('Erro módulos:', error);
+                    console.error('❌ Erro ao carregar módulos:', error);
                     this.mostrarSemConteudo('Erro ao carregar conteúdo');
                 }
             }
 
             exibirCurso(curso) {
+                console.log('🎨 Exibindo informações do curso');
+                
                 const tituloElement = document.getElementById('curso-titulo');
                 const descElement = document.getElementById('curso-descricao');
                 
-                if (tituloElement) tituloElement.textContent = curso.titulo || 'Curso';
-                if (descElement) descElement.textContent = curso.descricao || '';
+                if (tituloElement) {
+                    tituloElement.textContent = this.escapeHtml(curso.titulo) || 'Curso';
+                }
+                if (descElement) {
+                    descElement.textContent = this.escapeHtml(curso.descricao) || '';
+                }
                 
-                document.title = `${curso.titulo} - Coliseum`;
+                document.title = `${this.escapeHtml(curso.titulo) || 'Curso'} - Coliseum`;
             }
 
             exibirModulos(modulos) {
+                console.log('🎨 Criando interface dos módulos');
+                
                 const container = document.getElementById('modulos-container');
-                if (!container) return;
+                if (!container) {
+                    console.error('❌ Container não encontrado!');
+                    return;
+                }
                 
                 let html = '';
                 
                 modulos.forEach((modulo, index) => {
                     const aulas = modulo.aulas || [];
+                    const moduloId = modulo.id || index + 1;
                     
                     html += `
-                        <div class="modulo ${index === 0 ? 'aberto' : ''}">
+                        <div class="modulo ${index === 0 ? 'aberto' : ''}" data-modulo-id="${moduloId}">
                             <div class="modulo-header" onclick="this.parentElement.classList.toggle('aberto')">
-                                <h3>${modulo.titulo || 'Módulo'}</h3>
+                                <h3>${this.escapeHtml(modulo.titulo) || 'Módulo ' + (index + 1)}</h3>
                                 <div class="modulo-status">
-                                    <span class="progresso-modulo">${aulas.length} aulas</span>
+                                    <span class="progresso-modulo">${aulas.length} aula${aulas.length !== 1 ? 's' : ''}</span>
                                     <span class="modulo-toggle">${index === 0 ? '−' : '+'}</span>
                                 </div>
                             </div>
                             <div class="modulo-conteudo" style="${index === 0 ? 'display: block;' : 'display: none;'}">
                                 <div class="aulas-lista">
-                                    ${this.gerarListaAulas(aulas, modulo.id)}
+                                    ${this.gerarListaAulas(aulas, moduloId)}
                                 </div>
                             </div>
                         </div>
@@ -945,21 +1114,31 @@ body {
                 container.innerHTML = html;
                 
                 // Configurar clique nas aulas
-                container.querySelectorAll('.aula-item:not(.empty)').forEach(item => {
+                const itensAula = container.querySelectorAll('.aula-item:not(.empty)');
+                console.log(`🖱️ Configurando ${itensAula.length} itens de aula`);
+                
+                itensAula.forEach(item => {
                     item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
                         const aulaId = parseInt(item.getAttribute('data-aula-id'));
                         const moduloId = parseInt(item.getAttribute('data-modulo-id'));
                         
-                        // VERIFICAÇÃO ADICIONAL PARA EVITAR ERROS
+                        console.log(`🎯 Clicou na aula: ID=${aulaId}, Módulo=${moduloId}`);
+                        
+                        // VERIFICAÇÃO SEGURA
                         if (isNaN(aulaId) || aulaId <= 0) {
-                            console.error('ID da aula inválido:', item.getAttribute('data-aula-id'));
-                            alert('Erro: ID da aula inválido');
+                            console.error('❌ ID da aula inválido:', item.getAttribute('data-aula-id'));
+                            alert('⚠️ ID da aula inválido. Contate o suporte.');
                             return;
                         }
                         
                         this.iniciarAula(aulaId, moduloId);
                     });
                 });
+                
+                console.log('✅ Interface dos módulos criada com sucesso');
             }
 
             gerarListaAulas(aulas, moduloId) {
@@ -967,36 +1146,65 @@ body {
                     return `<div class="aula-item empty">Nenhuma aula disponível</div>`;
                 }
 
-                return aulas.map((aula, index) => `
-                    <div class="aula-item" data-aula-id="${aula.id || 0}" data-modulo-id="${moduloId || 0}">
-                        <div class="aula-checkbox"></div>
-                        <div class="aula-info">
-                            <div class="aula-titulo">${this.escapeHtml(aula.titulo) || `Aula ${index + 1}`}</div>
-                            <div class="aula-descricao">${this.escapeHtml(aula.descricao) || ''}</div>
+                return aulas.map((aula, index) => {
+                    const aulaId = aula.id || index + 1;
+                    const titulo = this.escapeHtml(aula.titulo) || `Aula ${index + 1}`;
+                    const descricao = this.escapeHtml(aula.descricao) || '';
+                    
+                    return `
+                        <div class="aula-item" 
+                             data-aula-id="${aulaId}" 
+                             data-modulo-id="${moduloId}"
+                             title="Clique para iniciar esta aula">
+                            <div class="aula-checkbox"></div>
+                            <div class="aula-info">
+                                <div class="aula-titulo">${titulo}</div>
+                                <div class="aula-descricao">${descricao}</div>
+                            </div>
+                            <div class="aula-meta">
+                                <span class="aula-duracao">${this.formatarDuracao(aula.duracao)}</span>
+                            </div>
                         </div>
-                        <div class="aula-meta">
-                            <span class="aula-duracao">${this.formatarDuracao(aula.duracao)}</span>
-                        </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             }
 
             // FUNÇÃO PARA EVITAR INJEÇÃO HTML
             escapeHtml(text) {
-                if (!text) return '';
+                if (text === null || text === undefined) return '';
+                
                 const div = document.createElement('div');
-                div.textContent = text;
+                div.textContent = text.toString();
                 return div.innerHTML;
             }
 
             iniciarAula(aulaId, moduloId) {
-                alert(`Iniciando aula ${aulaId} do módulo ${moduloId}\n\nEsta funcionalidade completa está no seu código original.`);
-                // Use o código completo do seu método exibirPlayerAula aqui
+                console.log(`▶️ Iniciando aula ${aulaId} do módulo ${moduloId}`);
+                
+                // Busca informações da aula
+                const modulo = this.modulosAtuais.find(m => (m.id || m) === moduloId);
+                if (modulo && modulo.aulas) {
+                    const aula = modulo.aulas.find(a => (a.id || a) === aulaId);
+                    if (aula) {
+                        alert(`🎬 Iniciando: ${aula.titulo || 'Aula sem título'}\n\n📚 Módulo: ${modulo.titulo || 'Módulo'}\n⏱️ Duração: ${this.formatarDuracao(aula.duracao)}\n\nEsta funcionalidade completa está no seu código original.`);
+                        return;
+                    }
+                }
+                
+                alert(`Iniciando aula ${aulaId} do módulo ${moduloId}`);
             }
 
             formatarDuracao(minutos) {
-                if (!minutos) return '10:00';
-                return minutos < 60 ? `${minutos}:00` : `${Math.floor(minutos/60)}:${(minutos%60).toString().padStart(2,'0')}:00`;
+                if (!minutos || isNaN(minutos)) return '10:00';
+                
+                const mins = parseInt(minutos);
+                if (mins < 60) {
+                    return `${mins}:00`;
+                } else {
+                    const horas = Math.floor(mins / 60);
+                    const minutosRestantes = mins % 60;
+                    return `${horas}:${minutosRestantes.toString().padStart(2, '0')}:00`;
+                }
             }
 
             mostrarCarregando() {
@@ -1007,7 +1215,7 @@ body {
                     <div class="carregando">
                         <div class="loading-spinner"></div>
                         <h3>Carregando Conteúdo</h3>
-                        <p>Aguarde...</p>
+                        <p>Aguarde enquanto buscamos as informações do curso...</p>
                     </div>
                 `;
             }
@@ -1018,10 +1226,17 @@ body {
                 
                 container.innerHTML = `
                     <div class="empty-state">
-                        <i>❌</i>
+                        <div style="font-size: 4rem; margin-bottom: 20px;">❌</div>
                         <h3>Erro</h3>
                         <p>${this.escapeHtml(mensagem)}</p>
-                        <button onclick="location.reload()" class="btn btn-primary">Tentar Novamente</button>
+                        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                            <button onclick="location.reload()" class="btn btn-primary">
+                                <span style="margin-right: 8px;">🔄</span> Tentar Novamente
+                            </button>
+                            <button onclick="window.voltarParaCursos()" class="btn btn-secondary">
+                                <span style="margin-right: 8px;">←</span> Voltar
+                            </button>
+                        </div>
                     </div>
                 `;
             }
@@ -1032,27 +1247,75 @@ body {
                 
                 container.innerHTML = `
                     <div class="empty-state">
-                        <i>📭</i>
+                        <div style="font-size: 4rem; margin-bottom: 20px;">📭</div>
                         <h3>Sem Conteúdo</h3>
                         <p>${this.escapeHtml(mensagem)}</p>
+                        <button onclick="window.voltarParaCursos()" class="btn btn-primary" style="margin-top: 20px;">
+                            <span style="margin-right: 8px;">←</span> Voltar para Cursos
+                        </button>
                     </div>
                 `;
             }
+
+            atualizarStatusAPI(mensagem, tipo) {
+                if (!this.apiStatusElement) return;
+                
+                this.apiStatusElement.textContent = mensagem;
+                this.apiStatusElement.className = 'api-status';
+                
+                if (tipo === 'connected') {
+                    this.apiStatusElement.classList.add('connected');
+                } else if (tipo === 'disconnected') {
+                    this.apiStatusElement.classList.add('disconnected');
+                } else if (tipo === 'warning') {
+                    this.apiStatusElement.style.background = 'var(--warning)';
+                }
+                
+                this.apiStatusElement.style.opacity = '0.9';
+                
+                // Esconde após 5 segundos se for sucesso
+                if (tipo === 'connected') {
+                    setTimeout(() => {
+                        this.apiStatusElement.style.opacity = '0';
+                    }, 5000);
+                }
+            }
         }
 
-        // INICIAR TUDO
+        // ============================================
+        // INICIALIZAÇÃO
+        // ============================================
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Página de curso carregada');
+            console.log('🔗 URL atual:', window.location.href);
+            
             // Iniciar gerenciador
             window.gerenciador = new GerenciadorCursos();
             window.gerenciador.carregarCurso();
             
-            // Ignorar aviso da API (é normal em algumas situações)
+            // Ignorar avisos irrelevantes
+            const originalWarn = console.warn;
             console.warn = function() {
                 if (!arguments[0]?.includes?.('Chrome API')) {
-                    console.log.apply(console, arguments);
+                    originalWarn.apply(console, arguments);
                 }
             };
         });
+
+        // Debug helper
+        window.debugCurso = function() {
+            console.log('🔧 DEBUG INFO:');
+            console.log('URL:', window.location.href);
+            console.log('Parâmetros:', Object.fromEntries(new URLSearchParams(window.location.search)));
+            console.log('Usuário ID:', window.gerenciador?.usuarioId);
+            console.log('Curso atual:', window.gerenciador?.cursoAtual);
+            console.log('Módulos:', window.gerenciador?.modulosAtuais);
+            console.log('LocalStorage:', {
+                usuarioId: localStorage.getItem('usuarioId'),
+                cursoUsuario: localStorage.getItem('cursoUsuario'),
+                usuario: localStorage.getItem('usuario')
+            });
+        };
     </script>
 </body>
 </html>
