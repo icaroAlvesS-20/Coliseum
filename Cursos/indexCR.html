@@ -87,6 +87,13 @@
             document.body.appendChild(btnVoltar);
             console.log('✅ Botão voltar criado dinamicamente');
         };
+        
+        // Executar imediatamente para garantir que o botão seja criado antes de qualquer interação
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', window.criarBotaoVoltar);
+        } else {
+            window.criarBotaoVoltar();
+        }
     </script>
     
     <style>
@@ -806,6 +813,7 @@ body {
     </style>
 </head>
 <body>
+    <!-- NÃO HÁ NENHUM BOTÃO AQUI - TUDO É CRIADO DINAMICAMENTE -->
     <div class="curso-container">
         <!-- Cabeçalho do Curso -->
         <div class="curso-header">
@@ -1686,11 +1694,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    // Criar botão voltar IMEDIATAMENTE
-    if (window.criarBotaoVoltar) {
-        window.criarBotaoVoltar();
-    }
-    
     // Criar e armazenar instância global
     window.gerenciadorCursos = new GerenciadorCursos();
     
@@ -1713,11 +1716,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Remover qualquer botão inline existente (para prevenir o erro)
-    const buttons = document.querySelectorAll('button[onclick*="voltarParaCursos"]');
-    buttons.forEach(button => {
-        button.removeAttribute('onclick');
-        button.addEventListener('click', window.voltarParaCursos);
+    // Remover qualquer atributo onclick que possa causar o erro
+    document.querySelectorAll('button').forEach(button => {
+        if (button.getAttribute('onclick') && button.getAttribute('onclick').includes('voltarParaCursos')) {
+            button.removeAttribute('onclick');
+            button.addEventListener('click', window.voltarParaCursos);
+        }
     });
 });
 </script>
