@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curso - Coliseum</title>
+    
+    <!-- Prevenir conflitos com scripts externos -->
+    <script>
+        if (typeof EXCEPTIONS_HOSTS === 'undefined') {
+            var EXCEPTIONS_HOSTS = [];
+        }
+    </script>
+    
     <style>
 /* ===== RESET E VARIÁVEIS ===== */
 * {
@@ -742,7 +750,7 @@ body {
 
 <script>
 // ========== FUNÇÃO GLOBAL PARA VOLTAR ==========
-window.voltarParaCursos = function() {
+function voltarParaCursos() {
     console.log('🔙 Botão voltar clicado');
     
     const urlParams = new URLSearchParams(window.location.search);
@@ -764,6 +772,9 @@ window.voltarParaCursos = function() {
         window.location.href = '/CursosExtras/indexEX.html';
     }
 }
+
+// Tornar a função global
+window.voltarParaCursos = voltarParaCursos;
 
 // ========== CLASSE GERENCIADOR DE CURSOS ==========
 class GerenciadorCursos {
@@ -1725,8 +1736,12 @@ function criarBotaoVoltar() {
         btnVoltar.style.color = 'var(--primary)';
     });
     
-    // Event listener para voltar
-    btnVoltar.addEventListener('click', voltarParaCursos);
+    // Event listener para voltar - USAR A FUNÇÃO GLOBAL
+    btnVoltar.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        voltarParaCursos();
+    });
     
     // Adicionar ao body
     document.body.appendChild(btnVoltar);
