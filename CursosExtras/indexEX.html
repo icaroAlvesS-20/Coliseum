@@ -1012,72 +1012,78 @@ function obterNomeMateria(materia) {
     return nomes[materia] || materia;
 }
 
-function iniciarCurso(cursoId) {
-    try {
-        console.log('🎬 CLICK NO BOTÃO COMEÇAR - Curso ID:', cursoId);
-        
-        // PREVINE QUALQUER COMPORTAMENTO PADRÃO
+function iniciarCurso(cursoId, event) {
+    console.log('🎯 INICIAR CURSO CHAMADO - ID:', cursoId);
+    
+    // BLOQUEIA COMPLETAMENTE
+    if (event) {
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
-        
-        console.log('🛑 Evento parado:', event.type);
-        
-        const usuario = obterUsuarioLogado();
-        console.log('👤 Usuário:', usuario);
-        
-        // Validar usuário
-        if (!usuario.id || usuario.id === '1') {
-            console.error('❌ Usuário não logado corretamente');
-            mostrarAlerta('❌ Faça login para acessar os cursos', 'error');
-            setTimeout(() => window.location.href = '/login', 1500);
-            return false;
-        }
-        
-        // Encontrar curso
-        const curso = cursos.find(c => c.id === cursoId);
-        if (!curso) {
-            console.error('❌ Curso não encontrado:', cursoId);
-            mostrarAlerta('Curso não encontrado', 'error');
-            return false;
-        }
-        
-        console.log('📚 Curso encontrado:', curso.titulo);
-        
-        // Verificar permissão
-        const temPermissao = verificarPermissao(usuario.curso, curso.materia);
-        if (!temPermissao) {
-            console.error('❌ Permissão negada para este curso');
-            const nomeCursoUsuario = obterNomeCategoria(usuario.curso);
-            const nomeCategoriaCurso = obterNomeCategoria(obterCursoDaMateria(curso.materia));
-            mostrarAlerta(`❌ Você é do curso ${nomeCursoUsuario} e não pode acessar cursos de ${nomeCategoriaCurso}`, 'error');
-            return false;
-        }
-        
-        console.log('✅ Permissão concedida!');
-        
-        // ✅ CORREÇÃO DEFINITIVA - URL correta
-        // Se indexCR.html está na mesma pasta:
-        const url = `indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`;
-        
-        // Se estiver em subpasta "cursos":
-        // const url = `cursos/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`;
-        
-        console.log('🔗 URL gerada:', url);
-        
-        // Redirecionamento IMEDIATO sem setTimeout
-        console.log('🚀 Redirecionando AGORA...');
-        window.location.href = url;
-        
-        // Garante que não continue a execução
-        return false;
-        
-    } catch (error) {
-        console.error('❌ Erro crítico em iniciarCurso:', error);
-        console.error('Stack trace:', error.stack);
-        mostrarAlerta(`Erro: ${error.message}`, 'error');
+        console.log('🛑 Evento BLOQUEADO');
+    }
+    
+    // LOG DETALHADO
+    console.log('📝 Stack trace:', new Error().stack);
+    
+    // Obtém usuário
+    const usuario = obterUsuarioLogado();
+    console.log('👤 Usuário:', usuario);
+    
+    if (!usuario || !usuario.id || usuario.id === '1') {
+        console.error('❌ SEM USUÁRIO VÁLIDO');
+        mostrarAlerta('Faça login primeiro', 'error');
         return false;
     }
+    
+    // Busca curso
+    const curso = cursos.find(c => c.id === cursoId);
+    if (!curso) {
+        console.error('❌ CURSO NÃO ENCONTRADO');
+        return false;
+    }
+    
+    console.log('📚 Curso:', curso.titulo);
+    
+    // ✅ CORREÇÃO CRÍTICA: URL ABSOLUTA
+    // Use o caminho COMPLETO para evitar ambiguidades
+    const urlBase = window.location.origin + window.location.pathname;
+    const pasta = urlBase.substring(0, urlBase.lastIndexOf('/'));
+    const urlDestino = `${pasta}/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`;
+    
+    console.log('📍 URL Base:', urlBase);
+    console.log('📍 Pasta:', pasta);
+    console.log('📍 URL Destino:', urlDestino);
+    
+    // TESTA se o arquivo existe
+    fetch(urlDestino, { method: 'HEAD' })
+        .then(response => {
+            console.log('✅ Arquivo encontrado, status:', response.status);
+            
+            // ⚠️ DESATIVA QUALQUER OUTRO REDIRECIONAMENTO
+            window.onbeforeunload = null;
+            window.onunload = null;
+            
+            // REDIRECIONA COM FORÇA
+            setTimeout(() => {
+                console.log('🚀 EXECUTANDO REDIRECIONAMENTO FORÇADO');
+                window.location.replace(urlDestino); // ← replace() não deixa voltar
+            }, 100);
+        })
+        .catch(error => {
+            console.error('❌ Arquivo não encontrado:', error);
+            
+            // Tenta caminho relativo
+            const urlRelativa = `indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`;
+            console.log('🔄 Tentando URL relativa:', urlRelativa);
+            
+            setTimeout(() => {
+                window.location.replace(urlRelativa);
+            }, 100);
+        });
+    
+    // BLOQUEIA TUDO
+    return false;
 }
     
 function verDetalhes(cursoId) {
