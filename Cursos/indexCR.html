@@ -7,9 +7,86 @@
     
     <!-- Prevenir conflitos com scripts externos -->
     <script>
+        // Evitar conflito com scripts de extensões
         if (typeof EXCEPTIONS_HOSTS === 'undefined') {
             var EXCEPTIONS_HOSTS = [];
         }
+        
+        // ========== FUNÇÃO GLOBAL PARA VOLTAR ==========
+        window.voltarParaCursos = function() {
+            console.log('🔙 Botão voltar clicado');
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromParam = urlParams.get('from');
+            
+            console.log('📋 Parâmetro "from":', fromParam);
+            
+            if (fromParam === 'extras') {
+                console.log('📍 Voltando para Cursos Extras...');
+                window.location.href = '/CursosExtras/indexEX.html';
+                return;
+            }
+            
+            if (window.history.length > 1) {
+                console.log('📍 Tentando voltar no histórico...');
+                window.history.back();
+            } else {
+                console.log('📍 Fallback: Indo para Cursos Extras...');
+                window.location.href = '/CursosExtras/indexEX.html';
+            }
+        };
+        
+        // Função auxiliar para criar botão voltar
+        window.criarBotaoVoltar = function() {
+            // Remover botão existente se houver
+            const botaoExistente = document.getElementById('btn-voltar-cursos');
+            if (botaoExistente) {
+                botaoExistente.remove();
+            }
+            
+            const btnVoltar = document.createElement('button');
+            btnVoltar.id = 'btn-voltar-cursos';
+            btnVoltar.className = 'btn-voltar';
+            btnVoltar.innerHTML = '←';
+            btnVoltar.title = 'Voltar para cursos';
+            
+            // Estilos inline
+            btnVoltar.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1000;
+                background: #2D2D2D;
+                color: #FFD700;
+                border: 2px solid #FFD700;
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.3s ease;
+            `;
+            
+            // Event listeners
+            btnVoltar.addEventListener('mouseenter', () => {
+                btnVoltar.style.background = '#FFD700';
+                btnVoltar.style.color = '#1A1A1A';
+            });
+            
+            btnVoltar.addEventListener('mouseleave', () => {
+                btnVoltar.style.background = '#2D2D2D';
+                btnVoltar.style.color = '#FFD700';
+            });
+            
+            // Usar a função global
+            btnVoltar.addEventListener('click', window.voltarParaCursos);
+            
+            document.body.appendChild(btnVoltar);
+            console.log('✅ Botão voltar criado dinamicamente');
+        };
     </script>
     
     <style>
@@ -749,33 +826,6 @@ body {
     <div class="api-status" id="api-status"></div>
 
 <script>
-// ========== FUNÇÃO GLOBAL PARA VOLTAR ==========
-function voltarParaCursos() {
-    console.log('🔙 Botão voltar clicado');
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    const fromParam = urlParams.get('from');
-    
-    console.log('📋 Parâmetro "from":', fromParam);
-    
-    if (fromParam === 'extras') {
-        console.log('📍 Voltando para Cursos Extras...');
-        window.location.href = '/CursosExtras/indexEX.html';
-        return;
-    }
-    
-    if (window.history.length > 1) {
-        console.log('📍 Tentando voltar no histórico...');
-        window.history.back();
-    } else {
-        console.log('📍 Fallback: Indo para Cursos Extras...');
-        window.location.href = '/CursosExtras/indexEX.html';
-    }
-}
-
-// Tornar a função global
-window.voltarParaCursos = voltarParaCursos;
-
 // ========== CLASSE GERENCIADOR DE CURSOS ==========
 class GerenciadorCursos {
     constructor() {
@@ -1636,11 +1686,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
+    // Criar botão voltar IMEDIATAMENTE
+    if (window.criarBotaoVoltar) {
+        window.criarBotaoVoltar();
+    }
+    
     // Criar e armazenar instância global
     window.gerenciadorCursos = new GerenciadorCursos();
-    
-    // Criar botão voltar dinamicamente
-    criarBotaoVoltar();
     
     if (window.gerenciadorCursos.paginaValida) {
         console.log('✅ Página de curso válida - Iniciando carregamento...');
@@ -1661,93 +1713,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Botão debug temporário
-    setTimeout(() => {
-        const debugBtn = document.createElement('button');
-        debugBtn.innerHTML = '🛠️ DEBUG';
-        debugBtn.id = 'btn-debug';
-        debugBtn.style.cssText = `
-            position: fixed;
-            bottom: 100px;
-            right: 30px;
-            background: #4361ee;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            z-index: 1001;
-            font-weight: bold;
-        `;
-        
-        debugBtn.addEventListener('click', function() {
-            console.log('=== DEBUG ===');
-            console.log('URL:', window.location.href);
-            console.log('Parâmetro from:', new URLSearchParams(window.location.search).get('from'));
-            console.log('Referrer:', document.referrer);
-            console.log('=== FIM DEBUG ===');
-        });
-        
-        document.body.appendChild(debugBtn);
-    }, 3000);
+    // Remover qualquer botão inline existente (para prevenir o erro)
+    const buttons = document.querySelectorAll('button[onclick*="voltarParaCursos"]');
+    buttons.forEach(button => {
+        button.removeAttribute('onclick');
+        button.addEventListener('click', window.voltarParaCursos);
+    });
 });
-
-// ========== FUNÇÃO PARA CRIAR BOTÃO VOLTAR ==========
-function criarBotaoVoltar() {
-    // Verificar se o botão já existe
-    if (document.getElementById('btn-voltar-cursos')) {
-        return;
-    }
-    
-    const btnVoltar = document.createElement('button');
-    btnVoltar.id = 'btn-voltar-cursos';
-    btnVoltar.className = 'btn-voltar';
-    btnVoltar.innerHTML = '←';
-    btnVoltar.title = 'Voltar para cursos';
-    
-    // Adicionar estilos inline para garantir funcionamento
-    btnVoltar.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        z-index: 1000;
-        background: var(--secondary-light);
-        color: var(--primary);
-        border: 2px solid var(--primary);
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        font-size: 24px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-    `;
-    
-    // Event listeners para interatividade
-    btnVoltar.addEventListener('mouseenter', () => {
-        btnVoltar.style.background = 'var(--primary)';
-        btnVoltar.style.color = 'var(--secondary)';
-    });
-    
-    btnVoltar.addEventListener('mouseleave', () => {
-        btnVoltar.style.background = 'var(--secondary-light)';
-        btnVoltar.style.color = 'var(--primary)';
-    });
-    
-    // Event listener para voltar - USAR A FUNÇÃO GLOBAL
-    btnVoltar.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        voltarParaCursos();
-    });
-    
-    // Adicionar ao body
-    document.body.appendChild(btnVoltar);
-    
-    console.log('✅ Botão voltar criado dinamicamente');
-}
 </script>
 </body>
 </html>
