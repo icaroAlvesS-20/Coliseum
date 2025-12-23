@@ -921,7 +921,37 @@ body {
     <div class="api-status" id="api-status"></div>
 
 <script>
-// ✅ SISTEMA CORRIGIDO - COM VERIFICAÇÕES DE ESTRUTURA
+// ✅ CORREÇÃO 1: Removida a função duplicada e corrigida a sintaxe
+
+// ✅ FUNÇÃO VOLTAR CORRIGIDA - SEM ERROS DE SINTAXE
+function voltarParaCursos() {
+    console.log('🔙 Botão voltar clicado');
+    
+    // VERIFICAÇÃO SIMPLES
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromParam = urlParams.get('from');
+    
+    console.log('📋 Parâmetro "from":', fromParam);
+    
+    // SE VEIO DE EXTRAS, VOLTA PARA EXTRAS
+    if (fromParam === 'extras') {
+        console.log('📍 Voltando para Cursos Extras...');
+        window.location.href = '/CursosExtras/indexEX.html';
+        return;
+    }
+    
+    // SE NÃO, TENTA VOLTAR NO HISTÓRICO
+    if (window.history.length > 1) {
+        console.log('📍 Tentando voltar no histórico...');
+        window.history.back();
+    } else {
+        // FALLBACK: VAI PARA EXTRAS
+        console.log('📍 Fallback: Indo para Cursos Extras...');
+        window.location.href = '/CursosExtras/indexEX.html';
+    }
+}
+
+// ✅ CORREÇÃO 2: Classe GerenciadorCursos corrigida - SEM erros de sintaxe
 class GerenciadorCursos {
     constructor() {
         this.API_BASE = 'https://coliseum-api.onrender.com/api';
@@ -1231,7 +1261,7 @@ class GerenciadorCursos {
 
             html += `
                 <div class="modulo ${index === 0 ? 'aberto' : ''}">
-                    <div class="modulo-header" onclick="gerenciadorCursos.toggleModulo(${index})">
+                    <div class="modulo-header" onclick="window.gerenciadorCursos.toggleModulo(${index})">
                         <h3>${modulo.titulo || 'Módulo Sem Título'}</h3>
                         <div class="modulo-status">
                             <span class="progresso-modulo">${progresso}%</span>
@@ -1273,7 +1303,7 @@ class GerenciadorCursos {
         return aulas.map((aula, index) => {
             return `
                 <div class="aula-item ${aula.concluida ? 'concluida' : ''}" 
-                     onclick="gerenciadorCursos.iniciarAula(${aula.id}, ${moduloId})">
+                     onclick="window.gerenciadorCursos.iniciarAula(${aula.id}, ${moduloId})">
                     <div class="aula-checkbox"></div>
                     <div class="aula-info">
                         <div class="aula-titulo">${aula.titulo || `Aula ${index + 1}`}</div>
@@ -1365,7 +1395,7 @@ class GerenciadorCursos {
                 <div class="aula-player-container">
                     <div class="player-header">
                         <h3>${aula.titulo || 'Aula'}</h3>
-                        <button class="btn-fechar-player" onclick="gerenciadorCursos.fecharPlayer()">
+                        <button class="btn-fechar-player" onclick="window.gerenciadorCursos.fecharPlayer()">
                             ×
                         </button>
                     </div>
@@ -1390,11 +1420,11 @@ class GerenciadorCursos {
 
                     <div class="player-actions">
                         ${this.usuarioId !== '1' ? `
-                        <button class="btn btn-primary" onclick="gerenciadorCursos.marcarAulaConcluida(${aula.id})">
+                        <button class="btn btn-primary" onclick="window.gerenciadorCursos.marcarAulaConcluida(${aula.id})">
                             ✅ Marcar como Concluída
                         </button>
                         ` : ''}
-                        <button class="btn btn-secondary" onclick="gerenciadorCursos.fecharPlayer()">
+                        <button class="btn btn-secondary" onclick="window.gerenciadorCursos.fecharPlayer()">
                             Fechar
                         </button>
                         ${aula.videoUrl ? `
@@ -1516,7 +1546,7 @@ class GerenciadorCursos {
                 <div class="aula-player-container">
                     <div class="player-header">
                         <h3>Erro</h3>
-                        <button class="btn-fechar-player" onclick="gerenciadorCursos.fecharPlayer()">
+                        <button class="btn-fechar-player" onclick="window.gerenciadorCursos.fecharPlayer()">
                             ×
                         </button>
                     </div>
@@ -1524,7 +1554,7 @@ class GerenciadorCursos {
                         <div style="font-size: 3rem; margin-bottom: 20px;">❌</div>
                         <h4 style="color: #f44336;">Erro ao Carregar Aula</h4>
                         <p>${mensagem}</p>
-                        <button class="btn btn-secondary" onclick="gerenciadorCursos.fecharPlayer()" style="margin-top: 20px;">
+                        <button class="btn btn-secondary" onclick="window.gerenciadorCursos.fecharPlayer()" style="margin-top: 20px;">
                             Fechar
                         </button>
                     </div>
@@ -1716,63 +1746,7 @@ class GerenciadorCursos {
     }
 }
 
-// ✅ FUNÇÃO CORRIGIDA - SEM ERROS DE SINTAXE
-function voltarParaCursos() {
-    console.log('🔙 Botão voltar clicado');
-    
-    // VERIFICAÇÃO SIMPLES
-    const urlParams = new URLSearchParams(window.location.search);
-    const fromParam = urlParams.get('from');
-    
-    console.log('📋 Parâmetro "from":', fromParam);
-    
-    // SE VEIO DE EXTRAS, VOLTA PARA EXTRAS
-    if (fromParam === 'extras') {
-        console.log('📍 Voltando para Cursos Extras...');
-        window.location.href = '/CursosExtras/indexEX.html';
-        return;
-    }
-    
-    // SE NÃO, TENTA VOLTAR NO HISTÓRICO
-    if (window.history.length > 1) {
-        console.log('📍 Tentando voltar no histórico...');
-        window.history.back();
-    } else {
-        // FALLBACK: VAI PARA EXTRAS
-        console.log('📍 Fallback: Indo para Cursos Extras...');
-        window.location.href = '/CursosExtras/indexEX.html';
-    }
-}
-
-// ✅ FUNÇÃO CORRIGIDA - SEM ERROS DE SINTAXE
-function voltarParaCursos() {
-    console.log('🔙 Botão voltar clicado');
-    
-    // VERIFICAÇÃO SIMPLES
-    const urlParams = new URLSearchParams(window.location.search);
-    const fromParam = urlParams.get('from');
-    
-    console.log('📋 Parâmetro "from":', fromParam);
-    
-    // SE VEIO DE EXTRAS, VOLTA PARA EXTRAS
-    if (fromParam === 'extras') {
-        console.log('📍 Voltando para Cursos Extras...');
-        window.location.href = '/CursosExtras/indexEX.html';
-        return;
-    }
-    
-    // SE NÃO, TENTA VOLTAR NO HISTÓRICO
-    if (window.history.length > 1) {
-        console.log('📍 Tentando voltar no histórico...');
-        window.history.back();
-    } else {
-        // FALLBACK: VAI PARA EXTRAS
-        console.log('📍 Fallback: Indo para Cursos Extras...');
-        window.location.href = '/CursosExtras/indexEX.html';
-    }
-}
-
-// ✅ INICIALIZAÇÃO SIMPLIFICADA
+// ✅ CORREÇÃO 3: Inicialização simplificada e corrigida
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM Carregado - Iniciando sistema de cursos...');
     
@@ -1801,7 +1775,10 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
+    // Criar instância do gerenciador
     const gerenciadorCursos = new GerenciadorCursos();
+    
+    // Tornar acessível globalmente
     window.gerenciadorCursos = gerenciadorCursos;
     
     if (gerenciadorCursos.paginaValida) {
@@ -1838,18 +1815,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.appendChild(debugBtn);
     }, 3000);
 });
-    
-    const gerenciadorCursos = new GerenciadorCursos();
-    window.gerenciadorCursos = gerenciadorCursos;
-    
-    if (gerenciadorCursos.paginaValida) {
-        console.log('✅ Página de curso válida - Iniciando carregamento...');
-        gerenciadorCursos.carregarPaginaCurso();
-    }
-});
 </script>
+
+    <!-- ✅ CORREÇÃO 4: Botão com onclick corrigido -->
     <button class="btn-voltar" onclick="voltarParaCursos()">←</button>
 </body>
 </html>
-
-
