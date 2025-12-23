@@ -1031,8 +1031,21 @@ function iniciarCurso(cursoId) {
     
     if (!usuario.id || usuario.id === 'null' || usuario.id === 'undefined') {
         console.error('❌ ERRO CRÍTICO: Usuário sem ID!');
+        console.log('📋 Storage atual:', {
+            localStorage: {
+                usuarioId: localStorage.getItem('usuarioId'),
+                userId: localStorage.getItem('userId'),
+                usuario: localStorage.getItem('usuario')
+            },
+            sessionStorage: {
+                usuarioId: sessionStorage.getItem('usuarioId'),
+                userId: sessionStorage.getItem('userId')
+            }
+        });
+        
         mostrarAlerta('❌ Erro: ID do usuário não encontrado. Faça login novamente.', 'error');
         
+        // Redireciona para login
         setTimeout(() => {
             window.location.href = '/login.html';
         }, 2000);
@@ -1058,7 +1071,7 @@ function iniciarCurso(cursoId) {
     console.log(`🔗 Redirecionando para: indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`);
     
     setTimeout(() => {
-        // ✅ CORREÇÃO: Usar indexCR.html em vez de curso-detailed.html
+        // ✅ CORREÇÃO: Redirecionar para indexCR.html
         window.location.href = `indexCR.html?id=${cursoId}&usuarioId=${usuario.id}`;
     }, 1000);
 }
@@ -1261,6 +1274,5 @@ window.debugStorage = function() {
     console.log('👤 Usuário final:', usuario);
 };
 </script>
-    
 </body>
 </html>
