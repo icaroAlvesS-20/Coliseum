@@ -394,6 +394,69 @@
             flex: 1;
         }
 
+        /* CONTROLES DA AULA */
+        .aula-controles {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .aula-info-controle {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .aula-tempo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .btn-concluir {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-concluir:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-concluir:active {
+            transform: translateY(0);
+        }
+
+        .btn-concluir.concluida {
+            background: var(--gray);
+            cursor: not-allowed;
+        }
+
+        .btn-concluir.concluida:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
         /* VIDEO CONTAINER */
         .video-container {
             position: relative;
@@ -487,6 +550,28 @@
             transition: width 0.5s ease;
         }
 
+        /* NOTIFICAÇÃO DE CONCLUÍDO */
+        .notificacao-concluido {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            background: var(--success);
+            color: white;
+            padding: 15px 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.5s ease, fadeOut 0.5s ease 2.5s forwards;
+            max-width: 350px;
+        }
+
+        .notificacao-concluido i {
+            font-size: 1.2rem;
+        }
+
         /* ANIMAÇÕES */
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -517,6 +602,17 @@
             to {
                 opacity: 1;
                 transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(50px);
             }
         }
 
@@ -590,6 +686,17 @@
                 padding: 20px;
             }
 
+            .aula-controles {
+                padding: 15px 20px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn-concluir {
+                width: 100%;
+                justify-content: center;
+            }
+
             .progresso-bar {
                 bottom: 20px;
                 right: 20px;
@@ -598,6 +705,13 @@
 
             .progresso-container {
                 width: 150px;
+            }
+
+            .notificacao-concluido {
+                top: 80px;
+                right: 15px;
+                left: 15px;
+                max-width: none;
             }
         }
 
@@ -619,6 +733,11 @@
                 right: 10px;
                 left: 10px;
                 text-align: center;
+            }
+
+            .notificacao-concluido {
+                top: 70px;
+                padding: 12px 20px;
             }
         }
 
@@ -708,10 +827,32 @@
             <div class="modal-body" id="aula-conteudo">
                 <!-- Conteúdo será carregado aqui -->
             </div>
+            
+            <!-- CONTROLES DA AULA (COM BOTÃO DE CONCLUIR) -->
+            <div class="aula-controles" id="aula-controles" style="display: none;">
+                <div class="aula-info-controle">
+                    <div class="aula-tempo">
+                        <i class="fas fa-clock"></i>
+                        <span id="aula-duracao">--:--</span>
+                    </div>
+                    <div class="aula-tempo">
+                        <i class="fas fa-check-circle"></i>
+                        <span id="aula-estado">Não iniciada</span>
+                    </div>
+                </div>
+                <button class="btn-concluir" id="btn-concluir-aula" onclick="marcarAulaConcluida()">
+                    <i class="fas fa-check"></i>
+                    <span>Marcar como Concluída</span>
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
+        // VARIÁVEIS GLOBAIS
+        let aulaAtualId = null;
+        let aulaAtualConcluida = false;
+
         // FUNÇÃO VOLTAR
         function voltarParaCursos() {
             console.log('Voltando para cursos...');
@@ -735,7 +876,7 @@
                 this.totalAulas = 0;
                 this.aulasCarregadas = 0;
                 this.cursoData = null;
-                this.aulasMap = new Map(); // Mapa para rápido acesso às aulas
+                this.aulasMap = new Map();
             }
 
             obterUsuarioId() {
@@ -765,13 +906,65 @@
                 return progresso ? JSON.parse(progresso) : [];
             }
 
-            salvarProgresso(aulaId) {
+            salvarProgresso() {
+                localStorage.setItem(`progresso_${this.usuarioId}_${this.cursoId}`, 
+                                    JSON.stringify(this.aulasConcluidas));
+                this.atualizarProgressoBar();
+            }
+
+            marcarAulaConcluida(aulaId) {
                 if (!this.aulasConcluidas.includes(aulaId)) {
                     this.aulasConcluidas.push(aulaId);
-                    localStorage.setItem(`progresso_${this.usuarioId}_${this.cursoId}`, 
-                                        JSON.stringify(this.aulasConcluidas));
-                    this.atualizarProgressoBar();
+                    this.salvarProgresso();
+                    
+                    // Mostrar notificação
+                    this.mostrarNotificacaoConcluido();
+                    
+                    // Atualizar interface
+                    this.atualizarInterfaceAula(aulaId);
+                    
+                    return true;
                 }
+                return false;
+            }
+
+            desmarcarAulaConcluida(aulaId) {
+                const index = this.aulasConcluidas.indexOf(aulaId);
+                if (index > -1) {
+                    this.aulasConcluidas.splice(index, 1);
+                    this.salvarProgresso();
+                    this.atualizarInterfaceAula(aulaId, false);
+                    return true;
+                }
+                return false;
+            }
+
+            mostrarNotificacaoConcluido() {
+                // Remover notificação anterior se existir
+                const notificacaoAnterior = document.querySelector('.notificacao-concluido');
+                if (notificacaoAnterior) {
+                    notificacaoAnterior.remove();
+                }
+
+                // Criar nova notificação
+                const notificacao = document.createElement('div');
+                notificacao.className = 'notificacao-concluido';
+                notificacao.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <strong>Aula Concluída!</strong>
+                        <div style="font-size: 0.85rem; opacity: 0.9;">Progresso atualizado com sucesso</div>
+                    </div>
+                `;
+
+                document.body.appendChild(notificacao);
+
+                // Remover após animação
+                setTimeout(() => {
+                    if (notificacao.parentNode) {
+                        notificacao.remove();
+                    }
+                }, 3000);
             }
 
             calcularProgresso() {
@@ -796,7 +989,6 @@
 
                     console.log('Buscando curso completo:', this.cursoId);
                     
-                    // Buscar o curso COMPLETO com todos os módulos e aulas
                     const response = await fetch(`${this.API_BASE}/cursos/${this.cursoId}?usuarioId=${this.usuarioId}`);
                     
                     if (!response.ok) {
@@ -822,7 +1014,6 @@
             processarAulas(modulos) {
                 console.log('Processando módulos:', modulos);
                 
-                // Criar mapa de aulas para acesso rápido
                 this.aulasMap.clear();
                 this.totalAulas = 0;
                 
@@ -830,7 +1021,6 @@
                     if (modulo.aulas && Array.isArray(modulo.aulas)) {
                         modulo.aulas.forEach((aula, aulaIndex) => {
                             if (aula && aula.id) {
-                                // Adicionar referências para fácil acesso
                                 aula.moduloIndex = moduloIndex;
                                 aula.aulaIndex = aulaIndex;
                                 this.aulasMap.set(aula.id, aula);
@@ -846,12 +1036,10 @@
             }
 
             encontrarAula(aulaId) {
-                // Procurar aula no mapa
                 if (this.aulasMap.has(aulaId)) {
                     return this.aulasMap.get(aulaId);
                 }
                 
-                // Se não encontrar, procurar nos módulos do curso
                 if (this.cursoData && this.cursoData.modulos) {
                     for (const modulo of this.cursoData.modulos) {
                         if (modulo.aulas) {
@@ -879,9 +1067,7 @@
                 
                 document.title = `${curso.titulo || 'Curso'} - Coliseum`;
 
-                // Atualizar metadados
                 if (metaContainer) {
-                    // Calcular total de aulas
                     const totalAulas = curso.modulos ? 
                         curso.modulos.reduce((total, modulo) => total + (modulo.aulas?.length || 0), 0) : 0;
                     
@@ -985,29 +1171,19 @@
                 try {
                     console.log('Carregando conteúdo da aula:', aulaId);
                     
-                    // Primeiro, tentar encontrar a aula nos dados já carregados
                     let aula = this.encontrarAula(aulaId);
                     
                     if (!aula) {
-                        console.log('Aula não encontrada no cache, tentando buscar da API...');
-                        
-                        // Tentar buscar específico da aula (se a API suportar)
-                        try {
-                            const response = await fetch(`${this.API_BASE}/cursos/${this.cursoId}/aulas/${aulaId}?usuarioId=${this.usuarioId}`);
-                            if (response.ok) {
-                                const data = await response.json();
-                                if (data.success && data.aula) {
-                                    aula = data.aula;
-                                }
-                            }
-                        } catch (apiError) {
-                            console.log('API de aula específica não disponível, usando dados do curso');
-                        }
-                    }
-                    
-                    if (!aula) {
+                        console.log('Aula não encontrada no cache');
                         throw new Error('Aula não encontrada');
                     }
+                    
+                    // Guardar aula atual globalmente
+                    aulaAtualId = aulaId;
+                    aulaAtualConcluida = this.aulasConcluidas.includes(aulaId);
+                    
+                    // Atualizar controles da aula
+                    this.atualizarControlesAula(aula);
                     
                     return this.formatarConteudoAula(aula);
                     
@@ -1017,10 +1193,105 @@
                 }
             }
 
+            atualizarControlesAula(aula) {
+                const controles = document.getElementById('aula-controles');
+                const duracaoElement = document.getElementById('aula-duracao');
+                const estadoElement = document.getElementById('aula-estado');
+                const btnConcluir = document.getElementById('btn-concluir-aula');
+                
+                if (controles) {
+                    controles.style.display = 'flex';
+                }
+                
+                if (duracaoElement && aula.duracao) {
+                    duracaoElement.textContent = aula.duracao;
+                }
+                
+                if (estadoElement) {
+                    const concluida = this.aulasConcluidas.includes(aula.id);
+                    estadoElement.textContent = concluida ? 'Concluída' : 'Em andamento';
+                    estadoElement.style.color = concluida ? 'var(--success)' : 'var(--primary)';
+                }
+                
+                if (btnConcluir) {
+                    const concluida = this.aulasConcluidas.includes(aula.id);
+                    
+                    if (concluida) {
+                        btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
+                        btnConcluir.classList.add('concluida');
+                        btnConcluir.disabled = true;
+                    } else {
+                        btnConcluir.innerHTML = '<i class="fas fa-check"></i> <span>Marcar como Concluída</span>';
+                        btnConcluir.classList.remove('concluida');
+                        btnConcluir.disabled = false;
+                    }
+                }
+            }
+
+            atualizarInterfaceAula(aulaId, concluida = true) {
+                // Atualizar item na lista
+                const aulaElement = document.querySelector(`[data-aula-id="${aulaId}"]`);
+                if (aulaElement) {
+                    if (concluida) {
+                        aulaElement.classList.add('completa');
+                        const statusElement = aulaElement.querySelector('.aula-status');
+                        const iconeElement = aulaElement.querySelector('.aula-icone');
+                        
+                        if (statusElement) {
+                            statusElement.innerHTML = '<i class="fas fa-check"></i> Concluída';
+                        }
+                        if (iconeElement) {
+                            iconeElement.innerHTML = '<i class="fas fa-check-circle"></i>';
+                        }
+                    } else {
+                        aulaElement.classList.remove('completa');
+                        const statusElement = aulaElement.querySelector('.aula-status');
+                        const iconeElement = aulaElement.querySelector('.aula-icone');
+                        const aula = this.encontrarAula(aulaId);
+                        
+                        if (statusElement) {
+                            statusElement.innerHTML = 'Pendente';
+                        }
+                        if (iconeElement && aula) {
+                            iconeElement.innerHTML = aula.videoUrl ? '<i class="fas fa-play-circle"></i>' : '<i class="fas fa-book"></i>';
+                        }
+                    }
+                }
+                
+                // Atualizar botão no modal se for a aula atual
+                if (aulaId === aulaAtualId) {
+                    const btnConcluir = document.getElementById('btn-concluir-aula');
+                    const estadoElement = document.getElementById('aula-estado');
+                    
+                    if (concluida) {
+                        if (btnConcluir) {
+                            btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
+                            btnConcluir.classList.add('concluida');
+                            btnConcluir.disabled = true;
+                        }
+                        if (estadoElement) {
+                            estadoElement.textContent = 'Concluída';
+                            estadoElement.style.color = 'var(--success)';
+                        }
+                    } else {
+                        if (btnConcluir) {
+                            btnConcluir.innerHTML = '<i class="fas fa-check"></i> <span>Marcar como Concluída</span>';
+                            btnConcluir.classList.remove('concluida');
+                            btnConcluir.disabled = false;
+                        }
+                        if (estadoElement) {
+                            estadoElement.textContent = 'Em andamento';
+                            estadoElement.style.color = 'var(--primary)';
+                        }
+                    }
+                }
+                
+                this.atualizarProgressoBar();
+            }
+
             extrairYouTubeId(url) {
                 if (!url) return null;
                 
-                // Padrões de URLs do YouTube
                 const patterns = [
                     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
                     /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
@@ -1040,18 +1311,15 @@
             formatarConteudoAula(aula) {
                 let conteudo = '';
                 
-                // Atualizar título no modal
                 const tituloElement = document.getElementById('aula-titulo');
                 if (tituloElement) {
                     tituloElement.textContent = aula.titulo || `Aula ${aula.id}`;
                 }
                 
-                // Verificar se tem vídeo do YouTube
                 if (aula.videoUrl) {
                     const videoId = this.extrairYouTubeId(aula.videoUrl);
                     
                     if (videoId) {
-                        // URL segura para embed do YouTube
                         const embedUrl = `https://www.youtube.com/embed/${videoId}`;
                         
                         conteudo += `
@@ -1065,7 +1333,6 @@
                             </div>
                         `;
                     } else {
-                        // Se não for um vídeo do YouTube válido, mostrar link
                         conteudo += `
                             <div class="conteudo-aula">
                                 <h3><i class="fas fa-video"></i> Conteúdo de Vídeo</h3>
@@ -1076,7 +1343,6 @@
                     }
                 }
                 
-                // Se tiver conteúdo textual
                 if (aula.conteudo) {
                     conteudo += `
                         <div class="conteudo-aula">
@@ -1085,7 +1351,6 @@
                         </div>
                     `;
                 } else if (aula.descricao) {
-                    // Se não tiver conteúdo mas tiver descrição
                     conteudo += `
                         <div class="conteudo-aula">
                             <h3><i class="fas fa-info-circle"></i> Descrição</h3>
@@ -1094,7 +1359,6 @@
                     `;
                 }
                 
-                // Se não tiver conteúdo específico
                 if (!conteudo) {
                     conteudo = this.conteudoPadrao(aula);
                 }
@@ -1132,7 +1396,6 @@
                         </div>
                         <h3 style="color:var(--light); margin-bottom:15px;">Erro ao Carregar Conteúdo</h3>
                         <p style="color:var(--gray); margin-bottom:10px;">${this.escapeHtml(error.message)}</p>
-                        <p style="color:var(--gray); font-size:0.9rem;">ID da Aula não encontrado ou conteúdo indisponível</p>
                         <button onclick="location.reload()" style="
                             margin-top:20px; 
                             padding:12px 24px; 
@@ -1238,7 +1501,6 @@
                     throw new Error('Sistema não inicializado');
                 }
                 
-                // Mostrar loading no modal
                 const conteudoElement = document.getElementById('aula-conteudo');
                 if (conteudoElement) {
                     conteudoElement.innerHTML = `
@@ -1250,37 +1512,16 @@
                     `;
                 }
                 
-                // Abrir modal
                 const modal = document.getElementById('aula-modal');
                 if (modal) {
                     modal.style.display = 'block';
                     document.body.style.overflow = 'hidden';
                 }
                 
-                // Carregar conteúdo da aula
                 const conteudo = await gerenciador.carregarConteudoAula(aulaId);
                 
-                // Exibir conteúdo
                 if (conteudoElement) {
                     conteudoElement.innerHTML = conteudo;
-                }
-                
-                // Marcar como concluída
-                gerenciador.salvarProgresso(aulaId);
-                
-                // Atualizar visual da lista de aulas
-                const aulaElement = document.querySelector(`[data-aula-id="${aulaId}"]`);
-                if (aulaElement) {
-                    aulaElement.classList.add('completa');
-                    const statusElement = aulaElement.querySelector('.aula-status');
-                    const iconeElement = aulaElement.querySelector('.aula-icone');
-                    
-                    if (statusElement) {
-                        statusElement.innerHTML = '<i class="fas fa-check"></i> Concluída';
-                    }
-                    if (iconeElement) {
-                        iconeElement.innerHTML = '<i class="fas fa-check-circle"></i>';
-                    }
                 }
                 
             } catch (error) {
@@ -1295,6 +1536,18 @@
                         </div>
                     `;
                 }
+            }
+        };
+
+        window.marcarAulaConcluida = function() {
+            if (!aulaAtualId || !window.gerenciador) return;
+            
+            const gerenciador = window.gerenciador;
+            const concluida = gerenciador.marcarAulaConcluida(aulaAtualId);
+            
+            if (concluida) {
+                aulaAtualConcluida = true;
+                console.log(`Aula ${aulaAtualId} marcada como concluída`);
             }
         };
 
