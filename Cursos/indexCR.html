@@ -746,45 +746,25 @@ body {
         // ============================================
         class GerenciadorCursos {
             constructor() {
-                // ✅✅✅ CORREÇÃO CRÍTICA: Usar URL absoluta da API
                 this.API_BASE = 'https://coliseum-api.onrender.com/api';
                 this.usuarioId = this.obterUsuarioId();
                 this.cursoAtual = null;
                 this.modulosAtuais = [];
-                
-                console.log('🚀 GerenciadorCursos inicializado');
-                console.log('🔗 API Base:', this.API_BASE);
-                console.log('👤 Usuário ID:', this.usuarioId);
             }
 
             obterUsuarioId() {
                 try {
                     const urlParams = new URLSearchParams(window.location.search);
-                    let usuarioIdParam = urlParams.get('usuarioId');
+                    const usuarioIdParam = urlParams.get('usuarioId');
                     
-                    console.log('🔍 Parâmetros da URL:', Object.fromEntries(urlParams.entries()));
-                    
-                    // ✅ CORREÇÃO: Tratar melhor o usuárioId
                     if (usuarioIdParam && usuarioIdParam !== 'null' && usuarioIdParam !== 'undefined') {
-                        usuarioIdParam = usuarioIdParam.trim();
                         console.log('👤 ID do usuário da URL:', usuarioIdParam);
-                        
-                        // Salvar no localStorage para uso futuro
-                        localStorage.setItem('usuarioId', usuarioIdParam);
                         return usuarioIdParam;
                     }
                     
-                    // Tentar obter do localStorage
-                    const localId = localStorage.getItem('usuarioId');
-                    if (localId && localId !== 'null' && localId !== 'undefined') {
-                        console.log('👤 ID do usuário do localStorage:', localId);
-                        return localId;
-                    }
-                    
-                    // Valor padrão se nada funcionar
-                    console.log('⚠️ Usando ID padrão (1)');
-                    return '1';
-                    
+                    const localId = localStorage.getItem('usuarioId') || '1';
+                    console.log('👤 ID do usuário do localStorage:', localId);
+                    return localId;
                 } catch (error) {
                     console.error('❌ Erro ao obter ID do usuário:', error);
                     return '1';
@@ -808,23 +788,9 @@ body {
 
                     this.mostrarCarregando();
 
-                    // ✅✅✅ CORREÇÃO CRÍTICA: Configuração correta do fetch
+                    // Buscar curso da API
                     console.log('🌐 Buscando curso da API...');
-                    const apiUrl = `${this.API_BASE}/cursos/${cursoId}?usuarioId=${usuarioId}`;
-                    console.log('🔗 URL da API:', apiUrl);
-                    
-                    const response = await fetch(apiUrl, {
-                        method: 'GET',
-                        mode: 'cors',
-                        credentials: 'omit', // Não enviar cookies para evitar problemas CORS
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'usuarioId': usuarioId // Enviar no header também
-                        }
-                    });
-                    
-                    console.log('📊 Status da resposta:', response.status, response.statusText);
+                    const response = await fetch(`${this.API_BASE}/cursos/${cursoId}?usuarioId=${usuarioId}`);
                     
                     if (!response.ok) {
                         throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
@@ -853,19 +819,7 @@ body {
                 console.log(`📦 Buscando módulos do curso ${cursoId}...`);
                 
                 try {
-                    const apiUrl = `${this.API_BASE}/cursos/${cursoId}/modulos?usuarioId=${usuarioId}`;
-                    console.log('🔗 URL:', apiUrl);
-                    
-                    const response = await fetch(apiUrl, {
-                        method: 'GET',
-                        mode: 'cors',
-                        credentials: 'omit',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'usuarioId': usuarioId
-                        }
-                    });
+                    const response = await fetch(`${this.API_BASE}/cursos/${cursoId}/modulos?usuarioId=${usuarioId}`);
                     
                     if (!response.ok) {
                         throw new Error(`Erro HTTP: ${response.status}`);
@@ -1001,20 +955,8 @@ body {
                 try {
                     const usuarioId = this.usuarioId;
                     
-                    // ✅ CORREÇÃO: Configurar fetch corretamente
-                    const apiUrl = `${this.API_BASE}/aulas/${aulaId}?usuarioId=${usuarioId}`;
-                    console.log('🔗 URL:', apiUrl);
-                    
-                    const response = await fetch(apiUrl, {
-                        method: 'GET',
-                        mode: 'cors',
-                        credentials: 'omit',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'usuarioId': usuarioId
-                        }
-                    });
+                    // Buscar detalhes da aula
+                    const response = await fetch(`${this.API_BASE}/aulas/${aulaId}?usuarioId=${usuarioId}`);
                     
                     if (!response.ok) {
                         throw new Error('Erro ao carregar aula');
@@ -1031,7 +973,7 @@ body {
                     // Exibir player da aula
                     this.mostrarPlayerAula(aula);
                     
-                    // Marcar como visualizada
+                    // Marcar como visualizada (não necessariamente concluída)
                     await this.marcarAulaVisualizada(aulaId, usuarioId);
                     
                 } catch (error) {
@@ -1045,11 +987,8 @@ body {
                     // Enviar progresso para a API
                     const response = await fetch(`${this.API_BASE}/progresso/aula`, {
                         method: 'POST',
-                        mode: 'cors',
-                        credentials: 'omit',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
+                            'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
                             usuarioId: usuarioId,
@@ -1170,11 +1109,8 @@ body {
                     
                     const response = await fetch(`${this.API_BASE}/progresso/aula`, {
                         method: 'POST',
-                        mode: 'cors',
-                        credentials: 'omit',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
+                            'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
                             usuarioId: usuarioId,
@@ -1184,25 +1120,20 @@ body {
                     });
                     
                     if (response.ok) {
-                        const data = await response.json();
-                        if (data.success) {
-                            alert('✅ Aula marcada como concluída!');
-                            this.fecharPlayer();
-                            this.atualizarInterfaceAulaConcluida(aulaId);
-                            
-                            // Recarregar módulos para atualizar progresso
-                            const urlParams = new URLSearchParams(window.location.search);
-                            const cursoId = parseInt(urlParams.get('id'));
-                            await this.carregarModulos(cursoId, usuarioId);
-                        } else {
-                            throw new Error(data.error || 'Erro ao salvar progresso');
-                        }
+                        alert('✅ Aula marcada como concluída!');
+                        this.fecharPlayer();
+                        this.atualizarInterfaceAulaConcluida(aulaId);
+                        
+                        // Recarregar módulos para atualizar progresso
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const cursoId = parseInt(urlParams.get('id'));
+                        await this.carregarModulos(cursoId, usuarioId);
                     } else {
-                        throw new Error('Erro HTTP ' + response.status);
+                        throw new Error('Erro ao salvar progresso');
                     }
                 } catch (error) {
                     console.error('❌ Erro ao marcar como concluída:', error);
-                    alert('Erro ao salvar progresso: ' + error.message);
+                    alert('Erro ao salvar progresso');
                 }
             }
 
@@ -1264,7 +1195,7 @@ body {
                             <button onclick="location.reload()" class="btn btn-primary">
                                 <span style="margin-right: 8px;">🔄</span> Tentar Novamente
                             </button>
-                            <button onclick="voltarParaCursos()" class="btn btn-secondary">
+                            <button onclick="window.voltarParaCursos()" class="btn btn-secondary">
                                 <span style="margin-right: 8px;">←</span> Voltar
                             </button>
                         </div>
@@ -1281,7 +1212,7 @@ body {
                         <div style="font-size: 4rem; margin-bottom: 20px;">📭</div>
                         <h3>Sem Conteúdo</h3>
                         <p>${this.escapeHtml(mensagem)}</p>
-                        <button onclick="voltarParaCursos()" class="btn btn-primary" style="margin-top: 20px;">
+                        <button onclick="window.voltarParaCursos()" class="btn btn-primary" style="margin-top: 20px;">
                             <span style="margin-right: 8px;">←</span> Voltar para Cursos
                         </button>
                     </div>
@@ -1290,10 +1221,11 @@ body {
         }
 
         // ============================================
-        // FUNÇÕES GLOBAIS
+        // FUNÇÕES GLOBAIS - DEFINA AQUI PRIMEIRO!
         // ============================================
 
-        function voltarParaCursos() {
+        // ✅ CORREÇÃO: Definir a função global ANTES de ser usada
+        window.voltarParaCursos = function() {
             console.log('🔙 Função voltarParaCursos chamada');
             
             try {
@@ -1314,7 +1246,7 @@ body {
                 console.error('❌ Erro ao voltar:', error);
                 window.location.href = '/index.html';
             }
-        }
+        };
 
         // ============================================
         // INICIALIZAÇÃO
@@ -1323,7 +1255,6 @@ body {
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Página de curso carregada');
             console.log('🔗 URL atual:', window.location.href);
-            console.log('🔍 Query parameters:', Object.fromEntries(new URLSearchParams(window.location.search)));
             
             // Criar botão voltar
             criarBotaoVoltar();
@@ -1383,7 +1314,7 @@ body {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                voltarParaCursos();
+                window.voltarParaCursos();
             });
             
             // Adiciona ao body
