@@ -4,88 +4,766 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curso - Coliseum</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background: #1a1a1a;
-            color: white;
-            font-family: Arial, sans-serif;
+        /* RESET E VARIÁVEIS */
+        :root {
+            --primary: #ffcf00;
+            --primary-dark: #e6b800;
+            --secondary: #4361ee;
+            --dark: #1a1a1a;
+            --dark-light: #2a2a2a;
+            --dark-lighter: #333333;
+            --light: #ffffff;
+            --gray: #888888;
+            --success: #4CAF50;
+            --danger: #f44336;
+            --warning: #ff9800;
+            --info: #2196F3;
+            
+            --border-radius: 12px;
+            --border-radius-sm: 8px;
+            --border-radius-lg: 16px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.4);
+            --transition: all 0.3s ease;
+            --gradient-primary: linear-gradient(135deg, #ffcf00 0%, #ff6b00 100%);
+            --gradient-dark: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+        }
+
+        * {
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header {
-            background: #2a2a2a;
-            padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
+
+        body {
+            background: var(--dark);
+            color: var(--light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
-        h1 { color: #ffcf00; }
+
+        /* BOTÃO VOLTAR */
         .btn-voltar {
             position: fixed;
-            top: 20px;
-            left: 20px;
-            background: #2a2a2a;
-            color: #ffcf00;
-            border: 2px solid #ffcf00;
+            top: 25px;
+            left: 25px;
+            width: 60px;
+            height: 60px;
+            background: var(--dark-light);
+            color: var(--primary);
+            border: 2px solid var(--primary);
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 24px;
             cursor: pointer;
             z-index: 1000;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
         }
-        .modulo {
-            background: #2a2a2a;
-            border-radius: 10px;
-            margin-bottom: 20px;
+
+        .btn-voltar:hover {
+            background: var(--primary);
+            color: var(--dark);
+            transform: translateX(-5px);
+            box-shadow: 0 6px 25px rgba(255, 207, 0, 0.4);
+        }
+
+        /* CONTAINER PRINCIPAL */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 30px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        /* HEADER DO CURSO */
+        .curso-header {
+            background: var(--gradient-dark);
+            border-radius: var(--border-radius-lg);
+            padding: 40px;
+            margin-bottom: 40px;
+            position: relative;
             overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 207, 0, 0.1);
         }
+
+        .curso-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .curso-header h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .curso-meta {
+            display: flex;
+            gap: 25px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        .meta-item i {
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        /* MÓDULOS */
+        .modulos-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .modulo {
+            background: var(--dark-light);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: var(--transition);
+        }
+
+        .modulo:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(255, 207, 0, 0.2);
+        }
+
         .modulo-header {
-            padding: 20px;
-            background: #333;
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.3);
             cursor: pointer;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+            border-bottom: 2px solid transparent;
         }
+
+        .modulo-header:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .modulo-header h3 {
+            color: var(--light);
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modulo-header h3::before {
+            content: '📚';
+            font-size: 1.2rem;
+        }
+
+        .modulo-contador {
+            background: var(--primary);
+            color: var(--dark);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* AULAS */
+        .aulas-container {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, padding 0.3s ease;
+        }
+
+        .modulo.expanded .aulas-container {
+            padding: 20px;
+            max-height: 1000px;
+        }
+
         .aula-item {
-            padding: 15px 20px;
-            border-bottom: 1px solid #444;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: var(--border-radius-sm);
             cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-left: 4px solid transparent;
+            position: relative;
         }
+
+        .aula-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .aula-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+            border-left-color: var(--primary);
+        }
+
+        .aula-item.completa {
+            background: rgba(76, 175, 80, 0.1);
+            border-left-color: var(--success);
+        }
+
+        .aula-icone {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 207, 0, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .aula-item.completa .aula-icone {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--success);
+        }
+
+        .aula-info {
+            flex: 1;
+        }
+
+        .aula-info h4 {
+            color: var(--light);
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .aula-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .aula-status {
+            margin-left: auto;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .aula-item.completa .aula-status {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--success);
+        }
+
+        /* LOADING */
         .loading {
             text-align: center;
-            padding: 50px;
-            color: #ffcf00;
+            padding: 80px 20px;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 207, 0, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .loading p {
+            color: var(--gray);
+        }
+
+        /* MODAL DE AULA */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            animation: fadeIn 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: var(--dark-light);
+            margin: 30px auto;
+            padding: 0;
+            width: 95%;
+            max-width: 1200px;
+            max-height: 90vh;
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            background: var(--gradient-dark);
+            padding: 25px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .modal-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 30px;
+            right: 30px;
+            height: 2px;
+            background: var(--gradient-primary);
+        }
+
+        .modal-header h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 0;
+            flex: 1;
+            padding-right: 20px;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--light);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .modal-close:hover {
+            background: var(--danger);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 30px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* VIDEO CONTAINER */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            margin-bottom: 30px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* CONTEÚDO DA AULA */
+        .conteudo-aula {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            margin-top: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .conteudo-aula h3 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 207, 0, 0.2);
+        }
+
+        .conteudo-aula p, .conteudo-aula li {
+            margin-bottom: 15px;
+            color: #e0e0e0;
+        }
+
+        .conteudo-aula ul, .conteudo-aula ol {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .conteudo-aula code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: var(--primary);
+        }
+
+        /* PROGRESSO */
+        .progresso-bar {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--dark-light);
+            padding: 15px 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 207, 0, 0.2);
+            z-index: 100;
+            animation: slideInRight 0.5s ease;
+        }
+
+        .progresso-bar h4 {
+            color: var(--primary);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .progresso-container {
+            width: 200px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progresso-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* ANIMAÇÕES */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 207, 0, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 207, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 207, 0, 0); }
+        }
+
+        /* RESPONSIVO */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+
+            .curso-header {
+                padding: 25px 20px;
+            }
+
+            .curso-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .curso-meta {
+                gap: 15px;
+            }
+
+            .modulo-header {
+                padding: 20px;
+            }
+
+            .modulo-header h3 {
+                font-size: 1.1rem;
+            }
+
+            .aula-item {
+                padding: 15px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .aula-status {
+                align-self: flex-start;
+                margin-left: 0;
+            }
+
+            .btn-voltar {
+                top: 15px;
+                left: 15px;
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+
+            .modal-content {
+                margin: 10px auto;
+                width: 98%;
+                max-height: 95vh;
+            }
+
+            .modal-header {
+                padding: 20px;
+            }
+
+            .modal-header h2 {
+                font-size: 1.4rem;
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
+
+            .progresso-bar {
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 20px;
+            }
+
+            .progresso-container {
+                width: 150px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .curso-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .meta-item {
+                font-size: 0.85rem;
+            }
+
+            .modal-header h2 {
+                font-size: 1.2rem;
+            }
+
+            .progresso-bar {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                text-align: center;
+            }
+        }
+
+        /* ESTADO VAZIO */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--light);
+        }
+
+        /* BADGES */
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-primary {
+            background: rgba(255, 207, 0, 0.2);
+            color: var(--primary);
+        }
+
+        .badge-success {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--success);
+        }
+
+        /* TOOLTIPS */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            background: var(--dark-lighter);
+            color: var(--light);
+            text-align: center;
+            padding: 8px 12px;
+            border-radius: var(--border-radius-sm);
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 0.85rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* SCROLLBAR PERSONALIZADA */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
         }
     </style>
 </head>
 <body>
-    <button class="btn-voltar" onclick="voltarParaCursos()">←</button>
+    <!-- Botão Voltar -->
+    <button class="btn-voltar" onclick="voltarParaCursos()" title="Voltar para Cursos">
+        <i class="fas fa-arrow-left"></i>
+    </button>
     
+    <!-- Progresso Fixo -->
+    <div class="progresso-bar" id="progresso-bar">
+        <h4>Progresso do Curso</h4>
+        <div class="progresso-container">
+            <div class="progresso-fill" id="progresso-fill"></div>
+        </div>
+    </div>
+
+    <!-- Container Principal -->
     <div class="container">
-        <div class="header">
+        <!-- Header do Curso -->
+        <div class="curso-header">
             <h1 id="curso-titulo">Carregando...</h1>
             <p id="curso-descricao"></p>
+            <div class="curso-meta" id="curso-meta">
+                <!-- Metadados serão preenchidos via JS -->
+            </div>
         </div>
         
+        <!-- Módulos -->
         <div id="modulos-container">
             <div class="loading">
-                <div style="
-                    width: 50px;
-                    height: 50px;
-                    border: 5px solid rgba(255, 207, 0, 0.3);
-                    border-top-color: #ffcf00;
-                    border-radius: 50%;
-                    margin: 0 auto 20px;
-                    animation: spin 1s linear infinite;
-                "></div>
+                <div class="spinner"></div>
                 <h3>Carregando conteúdo do curso...</h3>
+                <p>Preparando sua experiência de aprendizado</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Aula -->
+    <div class="modal" id="aula-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="aula-titulo"></h2>
+                <button class="modal-close" onclick="fecharAula()" title="Fechar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="aula-conteudo">
+                <!-- Conteúdo será carregado aqui -->
             </div>
         </div>
     </div>
 
     <script>
-        // FUNÇÃO VOLTAR - DEFINIDA PRIMEIRO!
+        // FUNÇÃO VOLTAR
         function voltarParaCursos() {
             console.log('Voltando para cursos...');
             const urlParams = new URLSearchParams(window.location.search);
@@ -98,12 +776,15 @@
             }
         }
 
-        // GERENCIADOR
+        // GERENCIADOR PRINCIPAL
         class GerenciadorCursos {
             constructor() {
                 this.API_BASE = 'https://coliseum-api.onrender.com/api';
                 this.usuarioId = this.obterUsuarioId();
-                console.log('Usuário:', this.usuarioId);
+                this.cursoId = this.obterCursoId();
+                this.aulasConcluidas = this.carregarProgresso();
+                this.totalAulas = 0;
+                this.aulasCarregadas = 0;
             }
 
             obterUsuarioId() {
@@ -123,19 +804,48 @@
                 }
             }
 
+            obterCursoId() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('id');
+            }
+
+            carregarProgresso() {
+                const progresso = localStorage.getItem(`progresso_${this.usuarioId}_${this.cursoId}`);
+                return progresso ? JSON.parse(progresso) : [];
+            }
+
+            salvarProgresso(aulaId) {
+                if (!this.aulasConcluidas.includes(aulaId)) {
+                    this.aulasConcluidas.push(aulaId);
+                    localStorage.setItem(`progresso_${this.usuarioId}_${this.cursoId}`, 
+                                        JSON.stringify(this.aulasConcluidas));
+                    this.atualizarProgressoBar();
+                }
+            }
+
+            calcularProgresso() {
+                if (this.totalAulas === 0) return 0;
+                return Math.round((this.aulasConcluidas.length / this.totalAulas) * 100);
+            }
+
+            atualizarProgressoBar() {
+                const progresso = this.calcularProgresso();
+                const progressoFill = document.getElementById('progresso-fill');
+                if (progressoFill) {
+                    progressoFill.style.width = `${progresso}%`;
+                }
+            }
+
             async carregarCurso() {
                 try {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const cursoId = urlParams.get('id');
-                    
-                    if (!cursoId) {
+                    if (!this.cursoId) {
                         this.mostrarErro('Curso não especificado');
                         return;
                     }
 
-                    console.log('Buscando curso', cursoId);
+                    console.log('Buscando curso:', this.cursoId);
                     
-                    const response = await fetch(`${this.API_BASE}/cursos/${cursoId}?usuarioId=${this.usuarioId}`);
+                    const response = await fetch(`${this.API_BASE}/cursos/${this.cursoId}?usuarioId=${this.usuarioId}`);
                     
                     if (!response.ok) {
                         throw new Error('Erro ao carregar curso');
@@ -145,7 +855,7 @@
                     
                     if (data.success && data.curso) {
                         this.exibirCurso(data.curso);
-                        await this.carregarModulos(cursoId);
+                        await this.carregarModulosAulas();
                     } else {
                         throw new Error(data.error || 'Erro desconhecido');
                     }
@@ -156,9 +866,10 @@
                 }
             }
 
-            async carregarModulos(cursoId) {
+            async carregarModulosAulas() {
                 try {
-                    const response = await fetch(`${this.API_BASE}/cursos/${cursoId}/modulos?usuarioId=${this.usuarioId}`);
+                    // Buscar todos os módulos com suas aulas
+                    const response = await fetch(`${this.API_BASE}/cursos/${this.cursoId}/modulos?usuarioId=${this.usuarioId}&comAulas=true`);
                     
                     if (!response.ok) {
                         throw new Error('Erro ao carregar módulos');
@@ -167,11 +878,28 @@
                     const data = await response.json();
                     
                     if (data.success) {
-                        this.exibirModulos(data.modulos || []);
+                        this.exibirModulosComAulas(data.modulos || []);
                     }
                     
                 } catch (error) {
                     console.error('Erro módulos:', error);
+                    this.carregarModulosFallback();
+                }
+            }
+
+            async carregarModulosFallback() {
+                try {
+                    // Se a rota não existir, buscar o curso completo
+                    const response = await fetch(`${this.API_BASE}/cursos/${this.cursoId}?usuarioId=${this.usuarioId}&completo=true`);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success && data.curso && data.curso.modulos) {
+                            this.exibirModulosComAulas(data.curso.modulos);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro fallback:', error);
                 }
             }
 
@@ -179,27 +907,60 @@
                 document.getElementById('curso-titulo').textContent = curso.titulo;
                 document.getElementById('curso-descricao').textContent = curso.descricao || '';
                 document.title = `${curso.titulo} - Coliseum`;
+
+                // Atualizar metadados
+                const metaContainer = document.getElementById('curso-meta');
+                if (metaContainer) {
+                    metaContainer.innerHTML = `
+                        <div class="meta-item">
+                            <i class="fas fa-clock"></i>
+                            <span>${curso.duracao || '--'} horas</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-layer-group"></i>
+                            <span>${curso.modulos?.length || 0} módulos</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-graduation-cap"></i>
+                            <span>${curso.nivel || 'Todos os níveis'}</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-book"></i>
+                            <span>${curso.categoria || 'Geral'}</span>
+                        </div>
+                    `;
+                }
             }
 
-            exibirModulos(modulos) {
+            exibirModulosComAulas(modulos) {
                 const container = document.getElementById('modulos-container');
                 
-                if (modulos.length === 0) {
-                    container.innerHTML = '<div style="text-align:center;padding:50px;color:#888">Nenhum módulo encontrado</div>';
+                if (!modulos || modulos.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-graduation-cap"></i>
+                            <h3>Nenhum módulo encontrado</h3>
+                            <p>Este curso ainda não possui conteúdo disponível.</p>
+                        </div>
+                    `;
                     return;
                 }
+
+                // Calcular total de aulas
+                this.totalAulas = modulos.reduce((total, modulo) => total + (modulo.aulas?.length || 0), 0);
+                this.atualizarProgressoBar();
                 
                 let html = '';
                 
                 modulos.forEach((modulo, index) => {
                     html += `
-                        <div class="modulo">
+                        <div class="modulo" id="modulo-${index}">
                             <div class="modulo-header" onclick="toggleModulo(${index})">
                                 <h3>${this.escapeHtml(modulo.titulo)}</h3>
-                                <span>${modulo.aulas?.length || 0} aulas</span>
+                                <span class="modulo-contador">${modulo.aulas?.length || 0} aulas</span>
                             </div>
-                            <div id="modulo-${index}" style="display:none">
-                                ${this.gerarAulas(modulo.aulas || [])}
+                            <div class="aulas-container" id="modulo-aulas-${index}">
+                                ${this.gerarListaAulas(modulo.aulas || [])}
                             </div>
                         </div>
                     `;
@@ -208,18 +969,182 @@
                 container.innerHTML = html;
             }
 
-            gerarAulas(aulas) {
+            gerarListaAulas(aulas) {
                 if (aulas.length === 0) {
-                    return '<div style="padding:20px;color:#888">Nenhuma aula</div>';
+                    return '<div style="padding:20px;color:#888;text-align:center;">Nenhuma aula disponível neste módulo</div>';
+                }
+
+                this.aulasCarregadas += aulas.length;
+                
+                return aulas.map(aula => {
+                    const concluida = this.aulasConcluidas.includes(aula.id);
+                    const aulaIcon = aula.videoUrl ? 'fas fa-play-circle' : 'fas fa-book';
+                    
+                    return `
+                        <div class="aula-item ${concluida ? 'completa' : ''}" 
+                             onclick="iniciarAula(${aula.id})"
+                             data-aula-id="${aula.id}">
+                            <div class="aula-icone">
+                                <i class="${aulaIcon}"></i>
+                            </div>
+                            <div class="aula-info">
+                                <h4>${this.escapeHtml(aula.titulo)}</h4>
+                                <div class="aula-meta">
+                                    <span><i class="fas fa-clock"></i> ${aula.duracao || '10:00'} min</span>
+                                    <span><i class="fas fa-chart-bar"></i> ${aula.nivel || 'Médio'}</span>
+                                </div>
+                            </div>
+                            <div class="aula-status">
+                                ${concluida ? '<i class="fas fa-check"></i> Concluída' : 'Pendente'}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            async carregarConteudoAula(aulaId) {
+                try {
+                    console.log('Carregando conteúdo da aula', aulaId);
+                    
+                    // Tentar buscar conteúdo específico da aula
+                    const response = await fetch(`${this.API_BASE}/cursos/${this.cursoId}/aulas/${aulaId}?usuarioId=${this.usuarioId}`);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success && data.aula) {
+                            return this.formatarConteudoAula(data.aula);
+                        }
+                    }
+                    
+                    // Se não encontrar, buscar do curso completo
+                    const cursoResponse = await fetch(`${this.API_BASE}/cursos/${this.cursoId}?usuarioId=${this.usuarioId}&completo=true`);
+                    
+                    if (cursoResponse.ok) {
+                        const cursoData = await cursoResponse.json();
+                        if (cursoData.success && cursoData.curso && cursoData.curso.modulos) {
+                            // Procurar a aula em todos os módulos
+                            for (const modulo of cursoData.curso.modulos) {
+                                if (modulo.aulas) {
+                                    const aulaEncontrada = modulo.aulas.find(a => a.id == aulaId);
+                                    if (aulaEncontrada) {
+                                        return this.formatarConteudoAula(aulaEncontrada);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    return this.conteudoPadrao();
+                    
+                } catch (error) {
+                    console.error('Erro ao carregar conteúdo:', error);
+                    return this.conteudoErro(error);
+                }
+            }
+
+            formatarConteudoAula(aula) {
+                let conteudo = '';
+                
+                // Título da aula
+                document.getElementById('aula-titulo').textContent = aula.titulo;
+                
+                // Se tiver vídeo
+                if (aula.videoUrl) {
+                    let videoUrl = aula.videoUrl;
+                    
+                    // Converter URL do YouTube se necessário
+                    if (videoUrl.includes('youtube.com/watch?v=')) {
+                        const videoId = videoUrl.split('v=')[1]?.split('&')[0];
+                        if (videoId) {
+                            videoUrl = `https://www.youtube.com/embed/${videoId}`;
+                        }
+                    }
+                    
+                    conteudo += `
+                        <div class="video-container">
+                            <iframe src="${videoUrl}" 
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowfullscreen
+                                    loading="lazy">
+                            </iframe>
+                        </div>
+                    `;
                 }
                 
-                return aulas.map(aula => `
-                    <div class="aula-item" onclick="iniciarAula(${aula.id})">
-                        <strong>${this.escapeHtml(aula.titulo)}</strong>
-                        <br>
-                        <small>${aula.duracao || '10:00'} min</small>
+                // Se tiver conteúdo textual
+                if (aula.conteudo) {
+                    conteudo += `
+                        <div class="conteudo-aula">
+                            <h3><i class="fas fa-file-alt"></i> Conteúdo da Aula</h3>
+                            <div>${this.formatarTexto(aula.conteudo)}</div>
+                        </div>
+                    `;
+                }
+                
+                // Se tiver descrição
+                if (aula.descricao && !aula.conteudo) {
+                    conteudo += `
+                        <div class="conteudo-aula">
+                            <h3><i class="fas fa-info-circle"></i> Descrição</h3>
+                            <p>${this.escapeHtml(aula.descricao)}</p>
+                        </div>
+                    `;
+                }
+                
+                // Se não tiver conteúdo específico
+                if (!conteudo) {
+                    conteudo = this.conteudoPadrao();
+                }
+                
+                return conteudo;
+            }
+
+            conteudoPadrao() {
+                return `
+                    <div class="empty-state">
+                        <i class="fas fa-graduation-cap"></i>
+                        <h3>Aula em Desenvolvimento</h3>
+                        <p>Esta aula está sendo preparada com o melhor conteúdo para você.</p>
+                        <p style="margin-top: 15px; color: var(--primary);">
+                            <i class="fas fa-lightbulb"></i> Em breve terá material disponível!
+                        </p>
                     </div>
-                `).join('');
+                `;
+            }
+
+            conteudoErro(error) {
+                return `
+                    <div style="text-align:center; padding: 50px;">
+                        <div style="font-size:4rem; color:var(--danger); margin-bottom:20px;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3 style="color:var(--light); margin-bottom:15px;">Erro ao Carregar Conteúdo</h3>
+                        <p style="color:var(--gray);">${this.escapeHtml(error.message)}</p>
+                        <button onclick="recarregarAula()" style="
+                            margin-top:20px; 
+                            padding:12px 24px; 
+                            background:var(--primary); 
+                            color:var(--dark); 
+                            border:none; 
+                            border-radius:var(--border-radius-sm);
+                            cursor:pointer;
+                            font-weight:600;
+                        ">
+                            <i class="fas fa-redo"></i> Tentar Novamente
+                        </button>
+                    </div>
+                `;
+            }
+
+            formatarTexto(texto) {
+                // Converter quebras de linha para <br>
+                return this.escapeHtml(texto)
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/```(.*?)```/gs, '<pre><code>$1</code></pre>')
+                    .replace(/`(.*?)`/g, '<code>$1</code>');
             }
 
             escapeHtml(text) {
@@ -232,15 +1157,42 @@
             mostrarErro(mensagem) {
                 const container = document.getElementById('modulos-container');
                 container.innerHTML = `
-                    <div style="background:#f44336;color:white;padding:20px;border-radius:10px;text-align:center">
-                        <h3>Erro</h3>
-                        <p>${this.escapeHtml(mensagem)}</p>
-                        <button onclick="location.reload()" style="margin:10px;padding:10px 20px;background:white;border:none;border-radius:5px;cursor:pointer">
-                            Tentar Novamente
-                        </button>
-                        <button onclick="voltarParaCursos()" style="margin:10px;padding:10px 20px;background:#ffcf00;border:none;border-radius:5px;cursor:pointer">
-                            Voltar
-                        </button>
+                    <div style="background:rgba(244,67,54,0.1); border:1px solid rgba(244,67,54,0.3); border-radius:var(--border-radius); padding:30px; text-align:center;">
+                        <div style="font-size:3rem; color:var(--danger); margin-bottom:20px;">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <h3 style="color:var(--light); margin-bottom:15px;">Erro ao Carregar Curso</h3>
+                        <p style="color:var(--gray); margin-bottom:25px;">${this.escapeHtml(mensagem)}</p>
+                        <div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap;">
+                            <button onclick="location.reload()" style="
+                                padding:12px 24px; 
+                                background:var(--primary); 
+                                color:var(--dark); 
+                                border:none; 
+                                border-radius:var(--border-radius-sm);
+                                cursor:pointer;
+                                font-weight:600;
+                                display:flex;
+                                align-items:center;
+                                gap:8px;
+                            ">
+                                <i class="fas fa-redo"></i> Tentar Novamente
+                            </button>
+                            <button onclick="voltarParaCursos()" style="
+                                padding:12px 24px; 
+                                background:var(--dark-lighter); 
+                                color:var(--light); 
+                                border:1px solid rgba(255,255,255,0.1); 
+                                border-radius:var(--border-radius-sm);
+                                cursor:pointer;
+                                font-weight:600;
+                                display:flex;
+                                align-items:center;
+                                gap:8px;
+                            ">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </button>
+                        </div>
                     </div>
                 `;
             }
@@ -248,17 +1200,96 @@
 
         // FUNÇÕES GLOBAIS
         window.toggleModulo = function(index) {
-            const el = document.getElementById(`modulo-${index}`);
-            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+            const modulo = document.getElementById(`modulo-${index}`);
+            const aulasContainer = document.getElementById(`modulo-aulas-${index}`);
+            
+            if (modulo.classList.contains('expanded')) {
+                modulo.classList.remove('expanded');
+                aulasContainer.style.maxHeight = '0';
+            } else {
+                modulo.classList.add('expanded');
+                aulasContainer.style.maxHeight = aulasContainer.scrollHeight + 'px';
+            }
         };
 
-        window.iniciarAula = function(aulaId) {
-            alert(`Aula ${aulaId} iniciada!`);
+        window.iniciarAula = async function(aulaId) {
+            try {
+                console.log('Iniciando aula:', aulaId);
+                
+                // Atualizar título no modal
+                const gerenciador = window.gerenciador;
+                
+                // Mostrar loading
+                document.getElementById('aula-conteudo').innerHTML = `
+                    <div style="text-align:center; padding: 80px 20px;">
+                        <div class="spinner"></div>
+                        <h3 style="margin-top:25px; color:var(--primary);">Carregando conteúdo da aula...</h3>
+                        <p style="color:var(--gray);">Preparando a melhor experiência de aprendizado</p>
+                    </div>
+                `;
+                
+                // Abrir modal
+                document.getElementById('aula-modal').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                
+                // Carregar conteúdo da aula
+                const conteudo = await gerenciador.carregarConteudoAula(aulaId);
+                
+                // Exibir conteúdo
+                document.getElementById('aula-conteudo').innerHTML = conteudo;
+                
+                // Marcar como concluída
+                gerenciador.salvarProgresso(aulaId);
+                
+                // Atualizar visual da lista de aulas
+                const aulaElement = document.querySelector(`[data-aula-id="${aulaId}"]`);
+                if (aulaElement) {
+                    aulaElement.classList.add('completa');
+                    aulaElement.querySelector('.aula-status').innerHTML = '<i class="fas fa-check"></i> Concluída';
+                    aulaElement.querySelector('.aula-icone').innerHTML = '<i class="fas fa-check-circle"></i>';
+                }
+                
+            } catch (error) {
+                console.error('Erro ao iniciar aula:', error);
+                document.getElementById('aula-conteudo').innerHTML = `
+                    <div style="text-align:center; padding: 50px 20px; color:var(--danger);">
+                        <i class="fas fa-exclamation-triangle" style="font-size:3rem; margin-bottom:20px;"></i>
+                        <h3>Erro ao iniciar a aula</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
         };
+
+        window.fecharAula = function() {
+            document.getElementById('aula-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        };
+
+        window.recarregarAula = function() {
+            const aulaId = document.getElementById('aula-modal').dataset.currentAulaId;
+            if (aulaId) {
+                iniciarAula(aulaId);
+            }
+        };
+
+        // Fechar modal com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                fecharAula();
+            }
+        });
+
+        // Fechar modal ao clicar fora
+        document.getElementById('aula-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharAula();
+            }
+        });
 
         // INICIALIZAR
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM carregado');
+            console.log('DOM carregado - Iniciando Gerenciador de Cursos');
             window.gerenciador = new GerenciadorCursos();
             window.gerenciador.carregarCurso();
         });
