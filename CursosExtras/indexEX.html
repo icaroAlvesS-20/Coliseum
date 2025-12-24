@@ -1138,22 +1138,15 @@ document.addEventListener('click', function(event) {
         sessionStorage.setItem('lastCoursePage', window.location.href);
         
         // Chama iniciarCurso com o ID
-        iniciarCurso(courseId, event);
+        iniciarCurso(courseId);
     }
 });
 
-function iniciarCurso(cursoId, event) {
+function iniciarCurso(cursoId) {
     console.log('🎯 INICIAR CURSO - ID:', cursoId);
     
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        console.log('🛑 Evento bloqueado completamente');
-    }
-    
     const usuario = obterUsuarioLogado();
-    console.log('👤 Usuário para redirecionamento:', usuario);
+    console.log('👤 Usuário:', usuario);
     
     if (!usuario || !usuario.id || usuario.id === '1') {
         console.error('❌ Usuário não logado');
@@ -1167,32 +1160,40 @@ function iniciarCurso(cursoId, event) {
         return false;
     }
     
-    const dominio = 'https://coliseum-qhhdof7tu-icaroass-projects.vercel.app';
-    const urlDestino = `${dominio}/Cursos/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}&from=extras`;
+    const dominioAtual = window.location.origin;
+    console.log('🌐 Domínio atual:', dominioAtual);
     
-    console.log('📍 URL destino calculada:', urlDestino);
+    const urlRelativa = `/Cursos/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}&from=extras`;
+    
+    const urlCompleta = `${dominioAtual}/Cursos/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}&from=extras`;
+    
+    console.log('🔗 URL relativa:', urlRelativa);
+    console.log('🔗 URL completa:', urlCompleta);
     
     localStorage.setItem('last_course_origin', 'extras');
     sessionStorage.setItem('course_from_extras', 'true');
     sessionStorage.setItem('course_extras_timestamp', Date.now().toString());
     
-    console.log('🔍 Testando URL...');
-    fetch(urlDestino, { method: 'HEAD' })
-        .then(response => {
-            console.log('✅ URL testada - Status:', response.status);
-            if (response.ok) {
-                console.log('🚀 Redirecionando agora...');
-                window.location.href = urlDestino;
-            } else {
-                console.warn('⚠️ URL retornou status não OK, tentando alternativa...');
-                window.location.href = `/Cursos/indexCR.html?id=${cursoId}&usuarioId=${usuario.id}&from=extras`;
-            }
-        })
-        .catch(error => {
-            console.error('❌ Erro ao testar URL:', error.message);
-            console.log('🔄 Tentando redirecionamento direto...');
-            window.location.href = urlDestino;
-        });
+    console.log('🔍 Testando acesso ao arquivo...');
+    
+    const testUrl = urlCompleta;
+    
+    fetch(testUrl, { 
+        method: 'HEAD',
+        mode: 'no-cors',
+        cache: 'no-cache'
+    })
+    .then(() => {
+        console.log('✅ Arquivo existe, redirecionando...');
+        window.location.href = testUrl;
+    })
+    .catch(error => {
+        console.warn('⚠️ Não foi possível testar URL, tentando redirecionamento direto...', error.message);
+        
+        setTimeout(() => {
+            window.location.href = testUrl;
+        }, 100);
+    });
     
     return false;
 }
