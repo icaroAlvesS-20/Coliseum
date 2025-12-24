@@ -642,57 +642,6 @@
             color: var(--light);
         }
 
-        /* BADGES */
-        .badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .badge-primary {
-            background: rgba(255, 207, 0, 0.2);
-            color: var(--primary);
-        }
-
-        .badge-success {
-            background: rgba(76, 175, 80, 0.2);
-            color: var(--success);
-        }
-
-        /* TOOLTIPS */
-        .tooltip {
-            position: relative;
-            display: inline-block;
-        }
-
-        .tooltip .tooltip-text {
-            visibility: hidden;
-            background: var(--dark-lighter);
-            color: var(--light);
-            text-align: center;
-            padding: 8px 12px;
-            border-radius: var(--border-radius-sm);
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%);
-            white-space: nowrap;
-            font-size: 0.85rem;
-            opacity: 0;
-            transition: opacity 0.3s;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .tooltip:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-        }
-
         /* SCROLLBAR PERSONALIZADA */
         ::-webkit-scrollbar {
             width: 10px;
@@ -785,6 +734,8 @@
                 this.aulasConcluidas = this.carregarProgresso();
                 this.totalAulas = 0;
                 this.aulasCarregadas = 0;
+                this.cursoData = null;
+                this.aulasMap = new Map(); // Mapa para rápido acesso às aulas
             }
 
             obterUsuarioId() {
@@ -843,74 +794,97 @@
                         return;
                     }
 
-                    console.log('Buscando curso:', this.cursoId);
+                    console.log('Buscando curso completo:', this.cursoId);
                     
+                    // Buscar o curso COMPLETO com todos os módulos e aulas
                     const response = await fetch(`${this.API_BASE}/cursos/${this.cursoId}?usuarioId=${this.usuarioId}`);
                     
                     if (!response.ok) {
-                        throw new Error('Erro ao carregar curso');
+                        throw new Error(`Erro ${response.status} ao carregar curso`);
                     }
                     
                     const data = await response.json();
                     
                     if (data.success && data.curso) {
+                        this.cursoData = data.curso;
                         this.exibirCurso(data.curso);
-                        await this.carregarModulosAulas();
+                        this.processarAulas(data.curso.modulos || []);
                     } else {
                         throw new Error(data.error || 'Erro desconhecido');
                     }
                     
                 } catch (error) {
-                    console.error('Erro:', error);
+                    console.error('Erro ao carregar curso:', error);
                     this.mostrarErro(error.message);
                 }
             }
 
-            async carregarModulosAulas() {
-                try {
-                    // Buscar todos os módulos com suas aulas
-                    const response = await fetch(`${this.API_BASE}/cursos/${this.cursoId}/modulos?usuarioId=${this.usuarioId}&comAulas=true`);
-                    
-                    if (!response.ok) {
-                        throw new Error('Erro ao carregar módulos');
+            processarAulas(modulos) {
+                console.log('Processando módulos:', modulos);
+                
+                // Criar mapa de aulas para acesso rápido
+                this.aulasMap.clear();
+                this.totalAulas = 0;
+                
+                modulos.forEach((modulo, moduloIndex) => {
+                    if (modulo.aulas && Array.isArray(modulo.aulas)) {
+                        modulo.aulas.forEach((aula, aulaIndex) => {
+                            if (aula && aula.id) {
+                                // Adicionar referências para fácil acesso
+                                aula.moduloIndex = moduloIndex;
+                                aula.aulaIndex = aulaIndex;
+                                this.aulasMap.set(aula.id, aula);
+                                this.totalAulas++;
+                            }
+                        });
                     }
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        this.exibirModulosComAulas(data.modulos || []);
-                    }
-                    
-                } catch (error) {
-                    console.error('Erro módulos:', error);
-                    this.carregarModulosFallback();
-                }
+                });
+                
+                console.log(`Total de aulas mapeadas: ${this.aulasMap.size}`);
+                this.exibirModulosComAulas(modulos);
+                this.atualizarProgressoBar();
             }
 
-            async carregarModulosFallback() {
-                try {
-                    // Se a rota não existir, buscar o curso completo
-                    const response = await fetch(`${this.API_BASE}/cursos/${this.cursoId}?usuarioId=${this.usuarioId}&completo=true`);
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.success && data.curso && data.curso.modulos) {
-                            this.exibirModulosComAulas(data.curso.modulos);
+            encontrarAula(aulaId) {
+                // Procurar aula no mapa
+                if (this.aulasMap.has(aulaId)) {
+                    return this.aulasMap.get(aulaId);
+                }
+                
+                // Se não encontrar, procurar nos módulos do curso
+                if (this.cursoData && this.cursoData.modulos) {
+                    for (const modulo of this.cursoData.modulos) {
+                        if (modulo.aulas) {
+                            const aula = modulo.aulas.find(a => a.id == aulaId);
+                            if (aula) return aula;
                         }
                     }
-                } catch (error) {
-                    console.error('Erro fallback:', error);
                 }
+                
+                return null;
             }
 
             exibirCurso(curso) {
-                document.getElementById('curso-titulo').textContent = curso.titulo;
-                document.getElementById('curso-descricao').textContent = curso.descricao || '';
-                document.title = `${curso.titulo} - Coliseum`;
+                const tituloElement = document.getElementById('curso-titulo');
+                const descricaoElement = document.getElementById('curso-descricao');
+                const metaContainer = document.getElementById('curso-meta');
+                
+                if (tituloElement) {
+                    tituloElement.textContent = curso.titulo || 'Curso Sem Título';
+                }
+                
+                if (descricaoElement) {
+                    descricaoElement.textContent = curso.descricao || '';
+                }
+                
+                document.title = `${curso.titulo || 'Curso'} - Coliseum`;
 
                 // Atualizar metadados
-                const metaContainer = document.getElementById('curso-meta');
                 if (metaContainer) {
+                    // Calcular total de aulas
+                    const totalAulas = curso.modulos ? 
+                        curso.modulos.reduce((total, modulo) => total + (modulo.aulas?.length || 0), 0) : 0;
+                    
                     metaContainer.innerHTML = `
                         <div class="meta-item">
                             <i class="fas fa-clock"></i>
@@ -921,12 +895,12 @@
                             <span>${curso.modulos?.length || 0} módulos</span>
                         </div>
                         <div class="meta-item">
-                            <i class="fas fa-graduation-cap"></i>
-                            <span>${curso.nivel || 'Todos os níveis'}</span>
+                            <i class="fas fa-book"></i>
+                            <span>${totalAulas} aulas</span>
                         </div>
                         <div class="meta-item">
-                            <i class="fas fa-book"></i>
-                            <span>${curso.categoria || 'Geral'}</span>
+                            <i class="fas fa-graduation-cap"></i>
+                            <span>${curso.nivel || 'Todos os níveis'}</span>
                         </div>
                     `;
                 }
@@ -934,6 +908,11 @@
 
             exibirModulosComAulas(modulos) {
                 const container = document.getElementById('modulos-container');
+                
+                if (!container) {
+                    console.error('Container de módulos não encontrado!');
+                    return;
+                }
                 
                 if (!modulos || modulos.length === 0) {
                     container.innerHTML = `
@@ -945,19 +924,17 @@
                     `;
                     return;
                 }
-
-                // Calcular total de aulas
-                this.totalAulas = modulos.reduce((total, modulo) => total + (modulo.aulas?.length || 0), 0);
-                this.atualizarProgressoBar();
                 
                 let html = '';
                 
                 modulos.forEach((modulo, index) => {
+                    const aulasCount = modulo.aulas?.length || 0;
+                    
                     html += `
                         <div class="modulo" id="modulo-${index}">
                             <div class="modulo-header" onclick="toggleModulo(${index})">
-                                <h3>${this.escapeHtml(modulo.titulo)}</h3>
-                                <span class="modulo-contador">${modulo.aulas?.length || 0} aulas</span>
+                                <h3>${this.escapeHtml(modulo.titulo || `Módulo ${index + 1}`)}</h3>
+                                <span class="modulo-contador">${aulasCount} aula${aulasCount !== 1 ? 's' : ''}</span>
                             </div>
                             <div class="aulas-container" id="modulo-aulas-${index}">
                                 ${this.gerarListaAulas(modulo.aulas || [])}
@@ -970,13 +947,15 @@
             }
 
             gerarListaAulas(aulas) {
-                if (aulas.length === 0) {
+                if (!aulas || aulas.length === 0) {
                     return '<div style="padding:20px;color:#888;text-align:center;">Nenhuma aula disponível neste módulo</div>';
                 }
 
-                this.aulasCarregadas += aulas.length;
-                
                 return aulas.map(aula => {
+                    if (!aula || !aula.id) {
+                        return '';
+                    }
+                    
                     const concluida = this.aulasConcluidas.includes(aula.id);
                     const aulaIcon = aula.videoUrl ? 'fas fa-play-circle' : 'fas fa-book';
                     
@@ -988,10 +967,10 @@
                                 <i class="${aulaIcon}"></i>
                             </div>
                             <div class="aula-info">
-                                <h4>${this.escapeHtml(aula.titulo)}</h4>
+                                <h4>${this.escapeHtml(aula.titulo || `Aula ${aula.id}`)}</h4>
                                 <div class="aula-meta">
                                     <span><i class="fas fa-clock"></i> ${aula.duracao || '10:00'} min</span>
-                                    <span><i class="fas fa-chart-bar"></i> ${aula.nivel || 'Médio'}</span>
+                                    ${aula.nivel ? `<span><i class="fas fa-chart-bar"></i> ${aula.nivel}</span>` : ''}
                                 </div>
                             </div>
                             <div class="aula-status">
@@ -1004,37 +983,33 @@
 
             async carregarConteudoAula(aulaId) {
                 try {
-                    console.log('Carregando conteúdo da aula', aulaId);
+                    console.log('Carregando conteúdo da aula:', aulaId);
                     
-                    // Tentar buscar conteúdo específico da aula
-                    const response = await fetch(`${this.API_BASE}/cursos/${this.cursoId}/aulas/${aulaId}?usuarioId=${this.usuarioId}`);
+                    // Primeiro, tentar encontrar a aula nos dados já carregados
+                    let aula = this.encontrarAula(aulaId);
                     
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.success && data.aula) {
-                            return this.formatarConteudoAula(data.aula);
-                        }
-                    }
-                    
-                    // Se não encontrar, buscar do curso completo
-                    const cursoResponse = await fetch(`${this.API_BASE}/cursos/${this.cursoId}?usuarioId=${this.usuarioId}&completo=true`);
-                    
-                    if (cursoResponse.ok) {
-                        const cursoData = await cursoResponse.json();
-                        if (cursoData.success && cursoData.curso && cursoData.curso.modulos) {
-                            // Procurar a aula em todos os módulos
-                            for (const modulo of cursoData.curso.modulos) {
-                                if (modulo.aulas) {
-                                    const aulaEncontrada = modulo.aulas.find(a => a.id == aulaId);
-                                    if (aulaEncontrada) {
-                                        return this.formatarConteudoAula(aulaEncontrada);
-                                    }
+                    if (!aula) {
+                        console.log('Aula não encontrada no cache, tentando buscar da API...');
+                        
+                        // Tentar buscar específico da aula (se a API suportar)
+                        try {
+                            const response = await fetch(`${this.API_BASE}/cursos/${this.cursoId}/aulas/${aulaId}?usuarioId=${this.usuarioId}`);
+                            if (response.ok) {
+                                const data = await response.json();
+                                if (data.success && data.aula) {
+                                    aula = data.aula;
                                 }
                             }
+                        } catch (apiError) {
+                            console.log('API de aula específica não disponível, usando dados do curso');
                         }
                     }
                     
-                    return this.conteudoPadrao();
+                    if (!aula) {
+                        throw new Error('Aula não encontrada');
+                    }
+                    
+                    return this.formatarConteudoAula(aula);
                     
                 } catch (error) {
                     console.error('Erro ao carregar conteúdo:', error);
@@ -1042,34 +1017,63 @@
                 }
             }
 
+            extrairYouTubeId(url) {
+                if (!url) return null;
+                
+                // Padrões de URLs do YouTube
+                const patterns = [
+                    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+                    /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
+                    /youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/
+                ];
+                
+                for (const pattern of patterns) {
+                    const match = url.match(pattern);
+                    if (match && match[1]) {
+                        return match[1];
+                    }
+                }
+                
+                return null;
+            }
+
             formatarConteudoAula(aula) {
                 let conteudo = '';
                 
-                // Título da aula
-                document.getElementById('aula-titulo').textContent = aula.titulo;
+                // Atualizar título no modal
+                const tituloElement = document.getElementById('aula-titulo');
+                if (tituloElement) {
+                    tituloElement.textContent = aula.titulo || `Aula ${aula.id}`;
+                }
                 
-                // Se tiver vídeo
+                // Verificar se tem vídeo do YouTube
                 if (aula.videoUrl) {
-                    let videoUrl = aula.videoUrl;
+                    const videoId = this.extrairYouTubeId(aula.videoUrl);
                     
-                    // Converter URL do YouTube se necessário
-                    if (videoUrl.includes('youtube.com/watch?v=')) {
-                        const videoId = videoUrl.split('v=')[1]?.split('&')[0];
-                        if (videoId) {
-                            videoUrl = `https://www.youtube.com/embed/${videoId}`;
-                        }
+                    if (videoId) {
+                        // URL segura para embed do YouTube
+                        const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                        
+                        conteudo += `
+                            <div class="video-container">
+                                <iframe src="${embedUrl}" 
+                                        frameborder="0" 
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                        allowfullscreen
+                                        loading="lazy">
+                                </iframe>
+                            </div>
+                        `;
+                    } else {
+                        // Se não for um vídeo do YouTube válido, mostrar link
+                        conteudo += `
+                            <div class="conteudo-aula">
+                                <h3><i class="fas fa-video"></i> Conteúdo de Vídeo</h3>
+                                <p>Link do vídeo: <a href="${this.escapeHtml(aula.videoUrl)}" target="_blank" style="color:var(--primary);">${this.escapeHtml(aula.videoUrl)}</a></p>
+                                <small style="color:var(--gray);">Clique no link para assistir em outra aba</small>
+                            </div>
+                        `;
                     }
-                    
-                    conteudo += `
-                        <div class="video-container">
-                            <iframe src="${videoUrl}" 
-                                    frameborder="0" 
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                    allowfullscreen
-                                    loading="lazy">
-                            </iframe>
-                        </div>
-                    `;
                 }
                 
                 // Se tiver conteúdo textual
@@ -1080,10 +1084,8 @@
                             <div>${this.formatarTexto(aula.conteudo)}</div>
                         </div>
                     `;
-                }
-                
-                // Se tiver descrição
-                if (aula.descricao && !aula.conteudo) {
+                } else if (aula.descricao) {
+                    // Se não tiver conteúdo mas tiver descrição
                     conteudo += `
                         <div class="conteudo-aula">
                             <h3><i class="fas fa-info-circle"></i> Descrição</h3>
@@ -1094,21 +1096,30 @@
                 
                 // Se não tiver conteúdo específico
                 if (!conteudo) {
-                    conteudo = this.conteudoPadrao();
+                    conteudo = this.conteudoPadrao(aula);
                 }
                 
                 return conteudo;
             }
 
-            conteudoPadrao() {
+            conteudoPadrao(aula) {
                 return `
                     <div class="empty-state">
                         <i class="fas fa-graduation-cap"></i>
-                        <h3>Aula em Desenvolvimento</h3>
+                        <h3>${this.escapeHtml(aula.titulo || `Aula ${aula.id}`)}</h3>
                         <p>Esta aula está sendo preparada com o melhor conteúdo para você.</p>
-                        <p style="margin-top: 15px; color: var(--primary);">
-                            <i class="fas fa-lightbulb"></i> Em breve terá material disponível!
-                        </p>
+                        ${aula.videoUrl ? `
+                            <div style="margin-top: 20px;">
+                                <a href="${this.escapeHtml(aula.videoUrl)}" target="_blank" 
+                                   style="display:inline-flex; align-items:center; gap:10px; 
+                                          padding:12px 24px; background:var(--primary); 
+                                          color:var(--dark); border-radius:var(--border-radius-sm);
+                                          text-decoration:none; font-weight:600;">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    Assistir Vídeo Externo
+                                </a>
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             }
@@ -1120,8 +1131,9 @@
                             <i class="fas fa-exclamation-triangle"></i>
                         </div>
                         <h3 style="color:var(--light); margin-bottom:15px;">Erro ao Carregar Conteúdo</h3>
-                        <p style="color:var(--gray);">${this.escapeHtml(error.message)}</p>
-                        <button onclick="recarregarAula()" style="
+                        <p style="color:var(--gray); margin-bottom:10px;">${this.escapeHtml(error.message)}</p>
+                        <p style="color:var(--gray); font-size:0.9rem;">ID da Aula não encontrado ou conteúdo indisponível</p>
+                        <button onclick="location.reload()" style="
                             margin-top:20px; 
                             padding:12px 24px; 
                             background:var(--primary); 
@@ -1131,20 +1143,21 @@
                             cursor:pointer;
                             font-weight:600;
                         ">
-                            <i class="fas fa-redo"></i> Tentar Novamente
+                            <i class="fas fa-redo"></i> Recarregar Página
                         </button>
                     </div>
                 `;
             }
 
             formatarTexto(texto) {
-                // Converter quebras de linha para <br>
+                if (!texto) return '';
+                
                 return this.escapeHtml(texto)
                     .replace(/\n/g, '<br>')
                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                     .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/```(.*?)```/gs, '<pre><code>$1</code></pre>')
-                    .replace(/`(.*?)`/g, '<code>$1</code>');
+                    .replace(/```(.*?)```/gs, '<pre style="background:rgba(0,0,0,0.3);padding:15px;border-radius:8px;overflow:auto;"><code>$1</code></pre>')
+                    .replace(/`(.*?)`/g, '<code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;">$1</code>');
             }
 
             escapeHtml(text) {
@@ -1156,6 +1169,8 @@
 
             mostrarErro(mensagem) {
                 const container = document.getElementById('modulos-container');
+                if (!container) return;
+                
                 container.innerHTML = `
                     <div style="background:rgba(244,67,54,0.1); border:1px solid rgba(244,67,54,0.3); border-radius:var(--border-radius); padding:30px; text-align:center;">
                         <div style="font-size:3rem; color:var(--danger); margin-bottom:20px;">
@@ -1203,6 +1218,8 @@
             const modulo = document.getElementById(`modulo-${index}`);
             const aulasContainer = document.getElementById(`modulo-aulas-${index}`);
             
+            if (!modulo || !aulasContainer) return;
+            
             if (modulo.classList.contains('expanded')) {
                 modulo.classList.remove('expanded');
                 aulasContainer.style.maxHeight = '0';
@@ -1216,27 +1233,37 @@
             try {
                 console.log('Iniciando aula:', aulaId);
                 
-                // Atualizar título no modal
                 const gerenciador = window.gerenciador;
+                if (!gerenciador) {
+                    throw new Error('Sistema não inicializado');
+                }
                 
-                // Mostrar loading
-                document.getElementById('aula-conteudo').innerHTML = `
-                    <div style="text-align:center; padding: 80px 20px;">
-                        <div class="spinner"></div>
-                        <h3 style="margin-top:25px; color:var(--primary);">Carregando conteúdo da aula...</h3>
-                        <p style="color:var(--gray);">Preparando a melhor experiência de aprendizado</p>
-                    </div>
-                `;
+                // Mostrar loading no modal
+                const conteudoElement = document.getElementById('aula-conteudo');
+                if (conteudoElement) {
+                    conteudoElement.innerHTML = `
+                        <div style="text-align:center; padding: 80px 20px;">
+                            <div class="spinner"></div>
+                            <h3 style="margin-top:25px; color:var(--primary);">Carregando conteúdo da aula...</h3>
+                            <p style="color:var(--gray);">Preparando a melhor experiência de aprendizado</p>
+                        </div>
+                    `;
+                }
                 
                 // Abrir modal
-                document.getElementById('aula-modal').style.display = 'block';
-                document.body.style.overflow = 'hidden';
+                const modal = document.getElementById('aula-modal');
+                if (modal) {
+                    modal.style.display = 'block';
+                    document.body.style.overflow = 'hidden';
+                }
                 
                 // Carregar conteúdo da aula
                 const conteudo = await gerenciador.carregarConteudoAula(aulaId);
                 
                 // Exibir conteúdo
-                document.getElementById('aula-conteudo').innerHTML = conteudo;
+                if (conteudoElement) {
+                    conteudoElement.innerHTML = conteudo;
+                }
                 
                 // Marcar como concluída
                 gerenciador.salvarProgresso(aulaId);
@@ -1245,31 +1272,37 @@
                 const aulaElement = document.querySelector(`[data-aula-id="${aulaId}"]`);
                 if (aulaElement) {
                     aulaElement.classList.add('completa');
-                    aulaElement.querySelector('.aula-status').innerHTML = '<i class="fas fa-check"></i> Concluída';
-                    aulaElement.querySelector('.aula-icone').innerHTML = '<i class="fas fa-check-circle"></i>';
+                    const statusElement = aulaElement.querySelector('.aula-status');
+                    const iconeElement = aulaElement.querySelector('.aula-icone');
+                    
+                    if (statusElement) {
+                        statusElement.innerHTML = '<i class="fas fa-check"></i> Concluída';
+                    }
+                    if (iconeElement) {
+                        iconeElement.innerHTML = '<i class="fas fa-check-circle"></i>';
+                    }
                 }
                 
             } catch (error) {
                 console.error('Erro ao iniciar aula:', error);
-                document.getElementById('aula-conteudo').innerHTML = `
-                    <div style="text-align:center; padding: 50px 20px; color:var(--danger);">
-                        <i class="fas fa-exclamation-triangle" style="font-size:3rem; margin-bottom:20px;"></i>
-                        <h3>Erro ao iniciar a aula</h3>
-                        <p>${error.message}</p>
-                    </div>
-                `;
+                const conteudoElement = document.getElementById('aula-conteudo');
+                if (conteudoElement) {
+                    conteudoElement.innerHTML = `
+                        <div style="text-align:center; padding: 50px 20px; color:var(--danger);">
+                            <i class="fas fa-exclamation-triangle" style="font-size:3rem; margin-bottom:20px;"></i>
+                            <h3>Erro ao iniciar a aula</h3>
+                            <p>${error.message}</p>
+                        </div>
+                    `;
+                }
             }
         };
 
         window.fecharAula = function() {
-            document.getElementById('aula-modal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        };
-
-        window.recarregarAula = function() {
-            const aulaId = document.getElementById('aula-modal').dataset.currentAulaId;
-            if (aulaId) {
-                iniciarAula(aulaId);
+            const modal = document.getElementById('aula-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
             }
         };
 
@@ -1281,8 +1314,9 @@
         });
 
         // Fechar modal ao clicar fora
-        document.getElementById('aula-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('aula-modal');
+            if (modal && e.target === modal) {
                 fecharAula();
             }
         });
