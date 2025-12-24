@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil - Coliseum</title>
     <style>
+        /* CSS mantido igual */
         * {
             margin: 0;
             padding: 0;
@@ -437,220 +438,225 @@
 <body>
     <div class="bloco-cinza"> 
         <div class="conteudo-principal">
+            <!-- Área de Foto -->
             <div class="foto-perfil">
-                <div class="imgp" style="
-                    width: 110px; 
-                    height: 110px; 
-                    border-radius: 50%; 
-                    border: 4px solid #ffcf00; 
-                    background: #ffcf00; 
-                    display: flex; 
-                    align-items: center; 
-                    justify-content: center; 
-                    font-size: 35px;
-                    box-shadow: 0 4px 15px rgba(255, 207, 0, 0.3);
-                ">
+                <div class="imgp avatar-placeholder">
                     👤
                 </div>
             </div>
 
+            <!-- Área de Nome e Nível -->
             <div class="bloco-cinza-escuro1" id="nome-usuario-container">
-                <!-- Nome será carregado pelo JavaScript -->
+                <!-- Carregado dinamicamente -->
             </div>
 
-            <div class="bloco-cinza-escuro4" id="RA-container">
-                <!-- Informações serão carregadas pelo JavaScript -->
+            <!-- Informações Pessoais -->
+            <div class="bloco-cinza-escuro4" id="info-container">
+                <!-- Carregado dinamicamente -->
             </div>
 
+            <!-- Ranking Pessoal -->
             <div class="bloco-cinza-escuro2" id="ranking-container">
-                <!-- Ranking será carregado pelo JavaScript -->
+                <!-- Carregado dinamicamente -->
             </div>
 
+            <!-- Estatísticas -->
             <div class="bloco-cinza-escuro3" id="estatisticas-container">
-                <!-- Estatísticas serão carregadas pelo JavaScript -->
+                <!-- Carregado dinamicamente -->
             </div>
         </div>
 
-        <!-- Botão de logout fixo na parte inferior -->
-        <div style=" text-align: center;">
-            <button onclick="fazerLogout()" class="btn-logout">🚪 Sair da Conta</button>
+        <!-- Botão de Logout -->
+        <div class="logout-container">
+            <button onclick="logout()" class="btn-logout">🚪 Sair da Conta</button>
         </div>
     </div>
 
-    <button class="btn-voltar" onclick="history.back()">←</button>
+    <!-- Botão Voltar -->
+    <button class="btn-voltar" onclick="voltar()">←</button>
 
     <script>
-// 🎯 CONFIGURAÇÕES E CONSTANTES
+// ========== CONFIGURAÇÕES GLOBAIS ==========
 const CONFIG = {
     API_URL: 'https://coliseum-api.onrender.com',
     ROTAS: {
         MENU: '/menu',
         RANKING: '/ranking',
-        PERFIL: '/perfil', 
-        AMIGOS: '/amigos',
-        DESAFIOS: '/desafios',
-        PROVAS: '/provas',
-        CONFIGURACAO: '/configuracao',
-        CONTATO: '/contato',
-        NAVEGADOR: '/navegador',
+        PERFIL: '/perfil',
         LOGIN: '/login'
     }
 };
 
-// 🎯 SISTEMA DE NÍVEIS
-const SISTEMA_NIVEIS = {
-    niveis: [
-        { nome: "Novato", icone: "🌱", pontosMin: 0, cor: "#4CAF50" },
-        { nome: "Aprendiz", icone: "📚", pontosMin: 50, cor: "#2196F3" },
-        { nome: "Guerreiro", icone: "⚔️", pontosMin: 100, cor: "#FF9800" },
-        { nome: "Mestre", icone: "🎯", pontosMin: 200, cor: "#9C27B0" },
-        { nome: "Lenda", icone: "🏆", pontosMin: 500, cor: "#FFD700" },
-        { nome: "Imperador", icone: "👑", pontosMin: 1000, cor: "#FF5722" },
-        { nome: "Lendário", icone: "🐲", pontosMin: 1500, cor: "#f21707" },
-        { nome: "Oni", icone: "👺", pontosMin: 2000, cor: "#3b0101" },
-        { nome: "Imortal", icone: "☠️", pontosMin: 2500, cor: "#70418a" }
-    ],
-    
+// ========== SISTEMA DE NÍVEIS ==========
+class SistemaNiveis {
+    constructor() {
+        this.niveis = [
+            { nome: "Novato", icone: "🌱", pontosMin: 0, cor: "#4CAF50" },
+            { nome: "Aprendiz", icone: "📚", pontosMin: 50, cor: "#2196F3" },
+            { nome: "Guerreiro", icone: "⚔️", pontosMin: 100, cor: "#FF9800" },
+            { nome: "Mestre", icone: "🎯", pontosMin: 200, cor: "#9C27B0" },
+            { nome: "Lenda", icone: "🏆", pontosMin: 500, cor: "#FFD700" },
+            { nome: "Imperador", icone: "👑", pontosMin: 1000, cor: "#FF5722" },
+            { nome: "Lendário", icone: "🐲", pontosMin: 1500, cor: "#f21707" },
+            { nome: "Oni", icone: "👺", pontosMin: 2000, cor: "#3b0101" },
+            { nome: "Imortal", icone: "☠️", pontosMin: 2500, cor: "#70418a" }
+        ];
+    }
+
     calcularNivel(pontuacao) {
-        return this.niveis.reduce((nivelAtual, nivel) => 
-            pontuacao >= nivel.pontosMin ? nivel : nivelAtual, this.niveis[0]
-        );
-    },
-    
+        let nivelAtual = this.niveis[0];
+        
+        for (const nivel of this.niveis) {
+            if (pontuacao >= nivel.pontosMin) {
+                nivelAtual = nivel;
+            } else {
+                break;
+            }
+        }
+        
+        return nivelAtual;
+    }
+
     calcularProgresso(pontuacao) {
         const nivelAtual = this.calcularNivel(pontuacao);
         const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
+        
+        // Se for o último nível
+        if (nivelIndex === this.niveis.length - 1) return 100;
+        
         const proximoNivel = this.niveis[nivelIndex + 1];
+        const intervalo = proximoNivel.pontosMin - nivelAtual.pontosMin;
+        const progressoAtual = pontuacao - nivelAtual.pontosMin;
         
-        if (!proximoNivel) return 100;
-        
-        const progresso = ((pontuacao - nivelAtual.pontosMin) / 
-                          (proximoNivel.pontosMin - nivelAtual.pontosMin)) * 100;
-        
-        return Math.min(Math.max(progresso, 0), 100);
-    },
-    
+        return Math.min(Math.round((progressoAtual / intervalo) * 100), 100);
+    }
+
     calcularPontosParaProximo(pontuacao) {
         const nivelAtual = this.calcularNivel(pontuacao);
         const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
+        
+        // Se for o último nível
+        if (nivelIndex === this.niveis.length - 1) return 0;
+        
         const proximoNivel = this.niveis[nivelIndex + 1];
-        
-        return proximoNivel ? Math.max(proximoNivel.pontosMin - pontuacao, 0) : 0;
+        return Math.max(proximoNivel.pontosMin - pontuacao, 0);
     }
-};
+}
 
-// 🎯 GERENCIADOR DE ESTADO DO USUÁRIO
-const GerenciadorUsuario = {
-    chaves: {
-        USUARIO: 'usuario',
-        LOGADO: 'usuarioLogado',
-        ID: 'usuarioId',
-        NOME: 'usuarioNome',
-        PONTUACAO: 'usuarioPontuacao',
-        DESAFIOS: 'usuarioDesafios',
-        RA: 'usuarioRA',
-        SERIE: 'usuarioSerie'
-    },
+// ========== GERENCIADOR DE USUÁRIO ==========
+class GerenciadorUsuario {
+    constructor() {
+        this.CHAVES = {
+            USUARIO: 'usuario',
+            LOGADO: 'usuarioLogado',
+            ID: 'usuarioId',
+            NOME: 'usuarioNome',
+            PONTUACAO: 'usuarioPontuacao',
+            DESAFIOS: 'usuarioDesafios',
+            RA: 'usuarioRA',
+            SERIE: 'usuarioSerie'
+        };
+    }
 
-    // ✅ VERIFICAÇÃO ROBUSTA DE LOGIN
     verificarLogin() {
-        console.log('🔍 Verificando estado do login...');
-        
-        const usuario = this.obterUsuario();
-        const usuarioLogado = localStorage.getItem(this.chaves.LOGADO);
-        const usuarioId = localStorage.getItem(this.chaves.ID);
+        try {
+            const usuario = this.obterUsuario();
+            const usuarioLogado = localStorage.getItem(this.CHAVES.LOGADO);
+            const usuarioId = localStorage.getItem(this.CHAVES.ID);
 
-        console.log('📊 Dados encontrados:', {
-            temUsuario: !!usuario,
-            usuarioLogado,
-            usuarioId
-        });
+            // Verificar se há dados válidos
+            if (usuario && usuario.id) {
+                this.sincronizarDadosLocais(usuario);
+                return true;
+            }
 
-        if (usuario?.id) {
-            console.log('✅ Usuário válido encontrado');
-            this.garantirDadosIndividuais(usuario);
-            return true;
+            if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
+                localStorage.setItem(this.CHAVES.LOGADO, 'true');
+                return true;
+            }
+
+            return false;
+        } catch (error) {
+            console.error('Erro ao verificar login:', error);
+            return false;
         }
-        
-        if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
-            console.log('✅ Usuário identificado pelo ID');
-            localStorage.setItem(this.chaves.LOGADO, 'true');
-            return true;
-        }
-        
-        console.log('❌ Nenhum usuário válido encontrado');
-        return false;
-    },
+    }
 
-    // ✅ OBTER DADOS DO USUÁRIO
     obterUsuario() {
         try {
-            const usuarioJSON = localStorage.getItem(this.chaves.USUARIO);
+            const usuarioJSON = localStorage.getItem(this.CHAVES.USUARIO);
             return usuarioJSON ? JSON.parse(usuarioJSON) : null;
         } catch (error) {
-            console.error('❌ Erro ao parsear usuário:', error);
+            console.error('Erro ao obter usuário:', error);
             return null;
         }
-    },
+    }
 
-    // ✅ GARANTIR DADOS INDIVIDUAIS
-    garantirDadosIndividuais(usuario) {
+    sincronizarDadosLocais(usuario) {
         const dados = {
-            [this.chaves.ID]: usuario.id?.toString(),
-            [this.chaves.NOME]: usuario.nome || 'Jogador',
-            [this.chaves.PONTUACAO]: usuario.pontuacao?.toString() || '0',
-            [this.chaves.DESAFIOS]: usuario.desafiosCompletados?.toString() || '0',
-            [this.chaves.RA]: usuario.ra || '',
-            [this.chaves.SERIE]: usuario.serie || '',
-            [this.chaves.LOGADO]: 'true'
+            [this.CHAVES.ID]: usuario.id?.toString() || '',
+            [this.CHAVES.NOME]: usuario.nome || 'Jogador',
+            [this.CHAVES.PONTUACAO]: usuario.pontuacao?.toString() || '0',
+            [this.CHAVES.DESAFIOS]: usuario.desafiosCompletados?.toString() || '0',
+            [this.CHAVES.RA]: usuario.ra || '',
+            [this.CHAVES.SERIE]: usuario.serie || '',
+            [this.CHAVES.LOGADO]: 'true'
         };
 
         Object.entries(dados).forEach(([chave, valor]) => {
-            if (!localStorage.getItem(chave) && valor) {
+            if (valor && !localStorage.getItem(chave)) {
                 localStorage.setItem(chave, valor);
             }
         });
-    },
+    }
 
-    // ✅ ATUALIZAR DADOS
     atualizarDados(usuario) {
-        localStorage.setItem(this.chaves.USUARIO, JSON.stringify(usuario));
-        this.garantirDadosIndividuais(usuario);
-    },
+        try {
+            localStorage.setItem(this.CHAVES.USUARIO, JSON.stringify(usuario));
+            this.sincronizarDadosLocais(usuario);
+        } catch (error) {
+            console.error('Erro ao atualizar dados:', error);
+        }
+    }
 
-    // ✅ LIMPAR DADOS (LOGOUT)
     limparDados() {
-        Object.values(this.chaves).forEach(chave => {
+        Object.values(this.CHAVES).forEach(chave => {
             localStorage.removeItem(chave);
         });
-        console.log('🗑️ Todos os dados do usuário foram removidos');
     }
-};
+}
 
-// 🎯 GERENCIADOR DE INTERFACE
-const GerenciadorInterface = {
-    // ✅ ATUALIZAR INTERFACE PRINCIPAL
-    atualizar(usuario) {
+// ========== GERENCIADOR DE INTERFACE ==========
+class GerenciadorInterface {
+    constructor() {
+        this.sistemaNiveis = new SistemaNiveis();
+    }
+
+    atualizarPerfil(usuario) {
+        if (!usuario || !usuario.id) {
+            this.mostrarTelaNaoLogado();
+            return;
+        }
+
         const pontuacao = usuario.pontuacao || 0;
-        const nivelAtual = SISTEMA_NIVEIS.calcularNivel(pontuacao);
-        const progresso = SISTEMA_NIVEIS.calcularProgresso(pontuacao);
-        const pontosParaProximo = SISTEMA_NIVEIS.calcularPontosParaProximo(pontuacao);
+        const nivelAtual = this.sistemaNiveis.calcularNivel(pontuacao);
+        const progresso = this.sistemaNiveis.calcularProgresso(pontuacao);
+        const pontosParaProximo = this.sistemaNiveis.calcularPontosParaProximo(pontuacao);
 
-        this.atualizarPerfilPrincipal(usuario, nivelAtual, pontuacao);
+        this.atualizarCabecalho(usuario, nivelAtual, pontuacao);
         this.atualizarInformacoes(usuario, progresso, pontosParaProximo);
         this.atualizarRanking(usuario, nivelAtual, pontuacao);
         this.atualizarEstatisticas(usuario);
-    },
+    }
 
-    // ✅ PERFIL PRINCIPAL
-    atualizarPerfilPrincipal(usuario, nivelAtual, pontuacao) {
-        const container = document.getElementById("nome-usuario-container");
+    atualizarCabecalho(usuario, nivelAtual, pontuacao) {
+        const container = document.getElementById('nome-usuario-container');
         if (!container) return;
 
         container.innerHTML = `
-            <h2>${usuario.nome}</h2>
+            <h2>${this.escapeHTML(usuario.nome)}</h2>
             <div class="info-basica">
-                <span class="serie">${usuario.serie || 'Série não informada'} • ${pontuacao} pontos</span>
+                <span class="serie">${this.escapeHTML(usuario.serie || 'Série não informada')} • ${pontuacao} pontos</span>
                 <div class="nivel-badge" style="background: linear-gradient(135deg, ${nivelAtual.cor}, ${nivelAtual.cor}dd);">
                     <span class="nivel-icone">${nivelAtual.icone}</span>
                     <span class="nivel-nome">${nivelAtual.nome}</span>
@@ -658,20 +664,20 @@ const GerenciadorInterface = {
             </div>
             <p class="status">✅ Online - Dados em tempo real</p>
         `;
-    },
+    }
 
     atualizarInformacoes(usuario, progresso, pontosParaProximo) {
-        const container = document.getElementById("RA-container");
+        const container = document.getElementById('info-container');
         if (!container) return;
 
         container.innerHTML = `
-            <h3>Informações</h3>
-            <div style="color: white; margin-top: 15px; width: 100%;">
+            <h3>📋 Informações</h3>
+            <div class="info-content">
                 <div class="info-item">
-                    <strong>RA:</strong> ${usuario.ra || 'Não informado'}
+                    <strong>RA:</strong> ${this.escapeHTML(usuario.ra || 'Não informado')}
                 </div>
                 <div class="info-item">
-                    <strong>Série:</strong> ${usuario.serie || 'Não informada'}
+                    <strong>Série:</strong> ${this.escapeHTML(usuario.serie || 'Não informada')}
                 </div>
                 <div class="info-item">
                     <strong>Pontuação:</strong> ${usuario.pontuacao || 0} pontos
@@ -679,7 +685,7 @@ const GerenciadorInterface = {
                 
                 <div class="progresso-nivel">
                     <div class="progresso-info">
-                        <span>Progresso para o próximo nível</span>
+                        <span>Progresso do Nível</span>
                         <span class="progresso-texto">${Math.round(progresso)}%</span>
                     </div>
                     <div class="barra-progresso">
@@ -687,7 +693,7 @@ const GerenciadorInterface = {
                     </div>
                     <div class="proximo-nivel">
                         ${pontosParaProximo > 0 ? 
-                            `⏫ ${pontosParaProximo} pontos para o próximo nível` : 
+                            `⏫ ${pontosParaProximo} pontos para evoluir` : 
                             '🎉 Nível máximo alcançado!'}
                     </div>
                 </div>
@@ -701,74 +707,72 @@ const GerenciadorInterface = {
                 <p class="sync-info">🌐 Dados sincronizados com servidor</p>
             </div>
         `;
-    },
+    }
 
-    // ✅ RANKING PESSOAL
     atualizarRanking(usuario, nivelAtual, pontuacao) {
-        const container = document.getElementById("ranking-container");
+        const container = document.getElementById('ranking-container');
         if (!container) return;
 
         container.innerHTML = `
             <h3>🏆 Ranking Pessoal</h3>
-            <div style="color: white; margin-top: 15px; width: 100%;">
+            <div class="ranking-content">
                 <div class="info-item">
                     <strong>Nível Atual:</strong> ${nivelAtual.nome}
                 </div>
                 <div class="info-item">
-                    <strong>Posição no Ranking:</strong> Carregando...
+                    <strong>Posição:</strong> Carregando...
                 </div>
                 <div class="info-item">
                     <strong>Melhor Pontuação:</strong> ${pontuacao} pontos
                 </div>
-                <button class="btn-interno" onclick="carregarRankingCompleto()">
+                <button class="btn-interno" onclick="navegarParaRanking()">
                     📊 Ver Ranking Completo
                 </button>
             </div>
         `;
-    },
+    }
 
-    // ✅ ESTATÍSTICAS
     atualizarEstatisticas(usuario) {
-        const container = document.getElementById("estatisticas-container");
+        const container = document.getElementById('estatisticas-container');
         if (!container) return;
 
-        const progressoGeral = Math.min((usuario.desafiosCompletados || 0) * 10, 100);
+        const desafiosCompletos = usuario.desafiosCompletados || 0;
+        const progressoGeral = Math.min(desafiosCompletos * 10, 100);
         
         container.innerHTML = `
             <h3>📈 Estatísticas</h3>
-            <div style="color: white; margin-top: 15px; width: 100%;">
+            <div class="estatisticas-content">
                 <div class="info-item">
-                    <strong>Desafios Completos:</strong> ${usuario.desafiosCompletados || 0}
+                    <strong>Desafios Completos:</strong> ${desafiosCompletos}
                 </div>
                 <div class="info-item">
                     <strong>Taxa de Acerto:</strong> Calculando...
                 </div>
                 <div class="info-item">
-                    <strong>Tempo de Plataforma:</strong> Desde ${new Date().toLocaleDateString()}
+                    <strong>Ativo desde:</strong> ${new Date().toLocaleDateString('pt-BR')}
                 </div>
                 <div class="barra-progresso">
                     <div class="progresso-preenchido" style="width: ${progressoGeral}%"></div>
                 </div>
-                <p style="font-size: 11px; color: #ccc; text-align: center; margin-top: 8px;">
+                <p class="progresso-geral">
                     Progresso geral: ${progressoGeral}%
                 </p>
             </div>
         `;
-    },
+    }
 
-    // ✅ USUÁRIO NÃO LOGADO
-    mostrarNaoLogado() {
+    mostrarTelaNaoLogado() {
         const containers = [
-            "nome-usuario-container",
-            "RA-container", 
-            "ranking-container",
-            "estatisticas-container"
+            'nome-usuario-container',
+            'info-container',
+            'ranking-container',
+            'estatisticas-container'
         ];
 
         const template = `
-            <div style="color: white; text-align: center; padding: 20px; width: 100%;">
-                <p>🔒 Faça login para acessar</p>
-                <button class="btn-interno" onclick="fazerLogin()" style="margin-top: 15px;">
+            <div class="nao-logado">
+                <p>🔒 Faça login para acessar seu perfil</p>
+                <button class="btn-interno" onclick="navegarParaLogin()">
                     📲 Fazer Login
                 </button>
             </div>
@@ -776,126 +780,155 @@ const GerenciadorInterface = {
 
         containers.forEach(containerId => {
             const container = document.getElementById(containerId);
-            if (container) container.innerHTML = template;
+            if (container) {
+                container.innerHTML = template;
+            }
         });
     }
-};
 
-// 🎯 GERENCIADOR DE API
-const GerenciadorAPI = {
-    // ✅ CARREGAR PERFIL DO USUÁRIO
+    escapeHTML(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+}
+
+// ========== GERENCIADOR DE API ==========
+class GerenciadorAPI {
+    constructor() {
+        this.gerenciadorUsuario = new GerenciadorUsuario();
+        this.gerenciadorInterface = new GerenciadorInterface();
+    }
+
     async carregarPerfil() {
-        console.log("🚀 Iniciando carregamento do perfil...");
-        
         try {
-            if (!GerenciadorUsuario.verificarLogin()) {
-                console.log('❌ Usuário não logado');
-                GerenciadorInterface.mostrarNaoLogado();
+            // Verificar se usuário está logado
+            if (!this.gerenciadorUsuario.verificarLogin()) {
+                console.log('Usuário não logado');
+                this.gerenciadorInterface.mostrarTelaNaoLogado();
                 return;
             }
 
-            const usuarioId = localStorage.getItem(GerenciadorUsuario.chaves.ID);
-            console.log('📡 Buscando dados para usuarioId:', usuarioId);
-
-            const response = await fetch(`${CONFIG.API_URL}/api/usuario/${usuarioId}`);
+            // Tentar carregar dados online
+            const usuarioOnline = await this.carregarDadosOnline();
             
-            if (response.ok) {
-                const usuario = await response.json();
-                console.log('✅ Dados online recebidos:', usuario);
-                
-                GerenciadorUsuario.atualizarDados(usuario);
-                GerenciadorInterface.atualizar(usuario);
-                
+            if (usuarioOnline) {
+                // Usar dados online
+                this.gerenciadorUsuario.atualizarDados(usuarioOnline);
+                this.gerenciadorInterface.atualizarPerfil(usuarioOnline);
             } else {
-                console.log('📴 Usando dados locais - servidor offline');
+                // Usar dados locais
                 this.carregarDadosLocais();
             }
-            
         } catch (error) {
-            console.error('❌ Erro ao carregar perfil:', error);
+            console.error('Erro ao carregar perfil:', error);
             this.carregarDadosLocais();
         }
-    },
+    }
 
-    // ✅ CARREGAR DADOS LOCAIS
-    carregarDadosLocais() {
-        console.log('📱 Carregando dados locais...');
-        
-        let usuario = GerenciadorUsuario.obterUsuario();
-        
-        if (!usuario) {
-            usuario = {
-                nome: localStorage.getItem(GerenciadorUsuario.chaves.NOME),
-                id: localStorage.getItem(GerenciadorUsuario.chaves.ID),
-                pontuacao: parseInt(localStorage.getItem(GerenciadorUsuario.chaves.PONTUACAO)) || 0,
-                desafiosCompletados: parseInt(localStorage.getItem(GerenciadorUsuario.chaves.DESAFIOS)) || 0,
-                ra: localStorage.getItem(GerenciadorUsuario.chaves.RA) || '',
-                serie: localStorage.getItem(GerenciadorUsuario.chaves.SERIE) || ''
-            };
+    async carregarDadosOnline() {
+        try {
+            const usuarioId = localStorage.getItem('usuarioId');
+            if (!usuarioId) return null;
+
+            console.log('Buscando dados online para ID:', usuarioId);
+            
+            const response = await fetch(`${CONFIG.API_URL}/api/usuarios/${usuarioId}`);
+            
+            if (!response.ok) {
+                throw new Error(`Erro HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            if (data.success && data.usuario) {
+                console.log('Dados online recebidos com sucesso');
+                return data.usuario;
+            }
+            
+            return null;
+        } catch (error) {
+            console.log('Falha ao buscar dados online:', error.message);
+            return null;
         }
+    }
+
+    carregarDadosLocais() {
+        console.log('Carregando dados locais...');
         
-        if (!usuario.nome || !usuario.id) {
-            GerenciadorInterface.mostrarNaoLogado();
+        const usuario = this.gerenciadorUsuario.obterUsuario() || {
+            nome: localStorage.getItem('usuarioNome'),
+            id: localStorage.getItem('usuarioId'),
+            pontuacao: parseInt(localStorage.getItem('usuarioPontuacao')) || 0,
+            desafiosCompletados: parseInt(localStorage.getItem('usuarioDesafios')) || 0,
+            ra: localStorage.getItem('usuarioRA') || '',
+            serie: localStorage.getItem('usuarioSerie') || ''
+        };
+
+        if (!usuario.id || !usuario.nome) {
+            this.gerenciadorInterface.mostrarTelaNaoLogado();
             return;
         }
-        
-        GerenciadorInterface.atualizar(usuario);
-    }
-};
 
-// 🎯 FUNÇÕES GLOBAIS (para uso em onclick)
-function fazerLogin() {
+        this.gerenciadorInterface.atualizarPerfil(usuario);
+    }
+}
+
+// ========== FUNÇÕES GLOBAIS ==========
+function navegarParaLogin() {
     window.location.href = CONFIG.ROTAS.LOGIN;
 }
 
-function carregarRankingCompleto() {
+function navegarParaRanking() {
     window.location.href = CONFIG.ROTAS.RANKING;
 }
 
-// ✅ FUNÇÃO DE LOGOUT CORRIGIDA
-function fazerLogout() {
+function voltar() {
+    window.history.back();
+}
+
+function logout() {
     if (confirm('Tem certeza que deseja sair da sua conta?')) {
-        console.log('🚪 Iniciando logout...');
+        const gerenciadorUsuario = new GerenciadorUsuario();
+        gerenciadorUsuario.limparDados();
         
-        // Limpar dados do usuário
-        GerenciadorUsuario.limparDados();
+        alert('Logout realizado com sucesso!');
         
-        // Mostrar mensagem de confirmação
-        alert('✅ Logout realizado com sucesso!');
-        
-        // Redirecionar para página de login
         setTimeout(() => {
             window.location.href = CONFIG.ROTAS.LOGIN;
         }, 500);
     }
 }
 
-// 🎯 INICIALIZAÇÃO SILENCIOSA
-(function() {
-    // 🔇 SILENCIAR ERROS DE TERCEIROS
+// ========== INICIALIZAÇÃO ==========
+document.addEventListener('DOMContentLoaded', () => {
+    // Silenciar erros não críticos
     const originalError = console.error;
     console.error = (...args) => {
         if (typeof args[0] === 'string') {
-            const mensagem = args[0];
-            if (mensagem.includes('EXCEPTIONS_HOSTS') ||
-                mensagem.includes('overlay.js') ||
-                mensagem.includes('PAYWALL') ||
-                mensagem.includes('sentry') ||
-                mensagem.includes('Chrome API')) {
+            const mensagem = args[0].toLowerCase();
+            const errosIgnorados = [
+                'exceptions_hosts',
+                'overlay.js',
+                'paywall',
+                'sentry',
+                'chrome api',
+                'third-party'
+            ];
+            
+            if (errosIgnorados.some(erro => mensagem.includes(erro))) {
                 return;
             }
         }
         originalError.apply(console, args);
     };
 
-    // ✅ INICIALIZAR SISTEMA
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log("📄 Página de perfil carregada");
-        GerenciadorAPI.carregarPerfil();
-    });
+    // Inicializar sistema
+    const gerenciadorAPI = new GerenciadorAPI();
+    gerenciadorAPI.carregarPerfil();
 
-    console.log('🎯 Sistema de perfil carregado com sucesso!');
-})();
+    console.log('Sistema de perfil inicializado com sucesso!');
+});
     </script>
 </body>
 </html>
