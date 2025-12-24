@@ -742,7 +742,33 @@ body {
 
     <script>
         // ============================================
-        // CLASSE GERENCIADOR DE CURSOS - CORRIGIDA
+        // FUNÇÃO GLOBAL VOLTAR PARA CURSOS - DEFINIR PRIMEIRO!
+        // ============================================
+        function voltarParaCursos() {
+            console.log('🔙 Função voltarParaCursos chamada');
+            
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const fromParam = urlParams.get('from');
+                
+                if (fromParam === 'extras') {
+                    window.location.href = '/CursosExtras/indexEX.html';
+                    return;
+                }
+                
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = '/index.html';
+                }
+            } catch (error) {
+                console.error('❌ Erro ao voltar:', error);
+                window.location.href = '/index.html';
+            }
+        }
+
+        // ============================================
+        // CLASSE GERENCIADOR DE CURSOS
         // ============================================
         class GerenciadorCursos {
             constructor() {
@@ -973,7 +999,7 @@ body {
                     // Exibir player da aula
                     this.mostrarPlayerAula(aula);
                     
-                    // Marcar como visualizada (não necessariamente concluída)
+                    // Marcar como visualizada
                     await this.marcarAulaVisualizada(aulaId, usuarioId);
                     
                 } catch (error) {
@@ -1195,7 +1221,7 @@ body {
                             <button onclick="location.reload()" class="btn btn-primary">
                                 <span style="margin-right: 8px;">🔄</span> Tentar Novamente
                             </button>
-                            <button onclick="window.voltarParaCursos()" class="btn btn-secondary">
+                            <button onclick="voltarParaCursos()" class="btn btn-secondary">
                                 <span style="margin-right: 8px;">←</span> Voltar
                             </button>
                         </div>
@@ -1212,41 +1238,13 @@ body {
                         <div style="font-size: 4rem; margin-bottom: 20px;">📭</div>
                         <h3>Sem Conteúdo</h3>
                         <p>${this.escapeHtml(mensagem)}</p>
-                        <button onclick="window.voltarParaCursos()" class="btn btn-primary" style="margin-top: 20px;">
+                        <button onclick="voltarParaCursos()" class="btn btn-primary" style="margin-top: 20px;">
                             <span style="margin-right: 8px;">←</span> Voltar para Cursos
                         </button>
                     </div>
                 `;
             }
         }
-
-        // ============================================
-        // FUNÇÕES GLOBAIS - DEFINA AQUI PRIMEIRO!
-        // ============================================
-
-        // ✅ CORREÇÃO: Definir a função global ANTES de ser usada
-        window.voltarParaCursos = function() {
-            console.log('🔙 Função voltarParaCursos chamada');
-            
-            try {
-                const urlParams = new URLSearchParams(window.location.search);
-                const fromParam = urlParams.get('from');
-                
-                if (fromParam === 'extras') {
-                    window.location.href = '/CursosExtras/indexEX.html';
-                    return;
-                }
-                
-                if (window.history.length > 1) {
-                    window.history.back();
-                } else {
-                    window.location.href = '/index.html';
-                }
-            } catch (error) {
-                console.error('❌ Erro ao voltar:', error);
-                window.location.href = '/index.html';
-            }
-        };
 
         // ============================================
         // INICIALIZAÇÃO
@@ -1314,7 +1312,7 @@ body {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                window.voltarParaCursos();
+                voltarParaCursos();
             });
             
             // Adiciona ao body
