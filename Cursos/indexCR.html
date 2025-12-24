@@ -5,41 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curso - Coliseum</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background: linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%);
+        body {
+            background: #1a1a1a;
             color: white;
-            min-height: 100vh;
-            padding: 20px;
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
         }
         .container { max-width: 1200px; margin: 0 auto; }
-        .header { 
-            background: #2D2D2D; 
-            padding: 30px; 
-            border-radius: 15px;
+        .header {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 10px;
             margin-bottom: 30px;
-            border-left: 5px solid #FFD700;
         }
-        h1 { color: #FFD700; margin-bottom: 10px; }
-        .loading { text-align: center; padding: 50px; }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255, 215, 0, 0.3);
-            border-top-color: #FFD700;
-            border-radius: 50%;
-            margin: 0 auto 20px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        h1 { color: #ffcf00; }
         .btn-voltar {
             position: fixed;
             top: 20px;
             left: 20px;
-            background: #2D2D2D;
-            color: #FFD700;
-            border: 2px solid #FFD700;
+            background: #2a2a2a;
+            color: #ffcf00;
+            border: 2px solid #ffcf00;
             border-radius: 50%;
             width: 50px;
             height: 50px;
@@ -47,37 +34,29 @@
             cursor: pointer;
             z-index: 1000;
         }
-        .btn-voltar:hover { background: #FFD700; color: #2D2D2D; }
-        .error { 
-            background: #F44336; 
-            color: white; 
-            padding: 20px; 
-            border-radius: 10px;
-            margin: 20px 0;
-            text-align: center;
-        }
         .modulo {
-            background: #2D2D2D;
+            background: #2a2a2a;
             border-radius: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             overflow: hidden;
         }
         .modulo-header {
             padding: 20px;
-            background: #3A3A3A;
+            background: #333;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
-            align-items: center;
         }
         .aula-item {
             padding: 15px 20px;
             border-bottom: 1px solid #444;
             cursor: pointer;
-            transition: background 0.3s;
         }
-        .aula-item:hover { background: rgba(255, 215, 0, 0.1); }
-        .aula-item.concluida { background: rgba(76, 175, 80, 0.1); }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #ffcf00;
+        }
     </style>
 </head>
 <body>
@@ -85,52 +64,61 @@
     
     <div class="container">
         <div class="header">
-            <h1 id="curso-titulo">Carregando curso...</h1>
-            <p id="curso-descricao">Aguarde enquanto buscamos o conteúdo</p>
+            <h1 id="curso-titulo">Carregando...</h1>
+            <p id="curso-descricao"></p>
         </div>
         
         <div id="modulos-container">
             <div class="loading">
-                <div class="spinner"></div>
-                <h3>Carregando...</h3>
+                <div style="
+                    width: 50px;
+                    height: 50px;
+                    border: 5px solid rgba(255, 207, 0, 0.3);
+                    border-top-color: #ffcf00;
+                    border-radius: 50%;
+                    margin: 0 auto 20px;
+                    animation: spin 1s linear infinite;
+                "></div>
+                <h3>Carregando conteúdo do curso...</h3>
             </div>
         </div>
     </div>
 
     <script>
-        // FUNÇÃO VOLTAR - DEFINIDA NO INÍCIO
+        // FUNÇÃO VOLTAR - DEFINIDA PRIMEIRO!
         function voltarParaCursos() {
             console.log('Voltando para cursos...');
             const urlParams = new URLSearchParams(window.location.search);
-            const fromParam = urlParams.get('from');
+            const from = urlParams.get('from');
             
-            if (fromParam === 'extras') {
+            if (from === 'extras') {
                 window.location.href = '/CursosExtras/indexEX.html';
             } else {
                 window.history.back();
             }
         }
 
-        // GERENCIADOR DE CURSOS
+        // GERENCIADOR
         class GerenciadorCursos {
             constructor() {
                 this.API_BASE = 'https://coliseum-api.onrender.com/api';
                 this.usuarioId = this.obterUsuarioId();
-                console.log('Usuário ID:', this.usuarioId);
+                console.log('Usuário:', this.usuarioId);
             }
 
             obterUsuarioId() {
                 try {
                     const urlParams = new URLSearchParams(window.location.search);
-                    let usuarioId = urlParams.get('usuarioId');
+                    const usuarioId = urlParams.get('usuarioId');
                     
-                    if (!usuarioId || usuarioId === 'null' || usuarioId === 'undefined') {
-                        usuarioId = localStorage.getItem('usuarioId') || '1';
+                    if (usuarioId) {
+                        localStorage.setItem('usuarioId', usuarioId);
+                        return usuarioId;
                     }
                     
-                    return usuarioId;
-                } catch (error) {
-                    console.error('Erro ao obter ID:', error);
+                    return localStorage.getItem('usuarioId') || '1';
+                } catch (e) {
+                    console.error('Erro:', e);
                     return '1';
                 }
             }
@@ -138,34 +126,29 @@
             async carregarCurso() {
                 try {
                     const urlParams = new URLSearchParams(window.location.search);
-                    const cursoId = parseInt(urlParams.get('id'));
+                    const cursoId = urlParams.get('id');
                     
                     if (!cursoId) {
-                        this.mostrarErro('ID do curso não especificado');
+                        this.mostrarErro('Curso não especificado');
                         return;
                     }
 
-                    console.log('Carregando curso ID:', cursoId);
+                    console.log('Buscando curso', cursoId);
                     
-                    // Buscar curso
                     const response = await fetch(`${this.API_BASE}/cursos/${cursoId}?usuarioId=${this.usuarioId}`);
                     
                     if (!response.ok) {
-                        throw new Error(`Erro: ${response.status}`);
+                        throw new Error('Erro ao carregar curso');
                     }
                     
                     const data = await response.json();
                     
-                    if (!data.success) {
-                        throw new Error(data.error || 'Erro ao carregar curso');
+                    if (data.success && data.curso) {
+                        this.exibirCurso(data.curso);
+                        await this.carregarModulos(cursoId);
+                    } else {
+                        throw new Error(data.error || 'Erro desconhecido');
                     }
-                    
-                    // Exibir curso
-                    document.getElementById('curso-titulo').textContent = data.curso.titulo;
-                    document.getElementById('curso-descricao').textContent = data.curso.descricao || '';
-                    
-                    // Buscar módulos
-                    await this.carregarModulos(cursoId);
                     
                 } catch (error) {
                     console.error('Erro:', error);
@@ -178,28 +161,31 @@
                     const response = await fetch(`${this.API_BASE}/cursos/${cursoId}/modulos?usuarioId=${this.usuarioId}`);
                     
                     if (!response.ok) {
-                        throw new Error(`Erro: ${response.status}`);
+                        throw new Error('Erro ao carregar módulos');
                     }
                     
                     const data = await response.json();
                     
-                    if (!data.success) {
-                        throw new Error(data.error || 'Erro ao carregar módulos');
+                    if (data.success) {
+                        this.exibirModulos(data.modulos || []);
                     }
-                    
-                    this.exibirModulos(data.modulos || []);
                     
                 } catch (error) {
                     console.error('Erro módulos:', error);
-                    this.mostrarErro('Erro ao carregar módulos');
                 }
+            }
+
+            exibirCurso(curso) {
+                document.getElementById('curso-titulo').textContent = curso.titulo;
+                document.getElementById('curso-descricao').textContent = curso.descricao || '';
+                document.title = `${curso.titulo} - Coliseum`;
             }
 
             exibirModulos(modulos) {
                 const container = document.getElementById('modulos-container');
                 
                 if (modulos.length === 0) {
-                    container.innerHTML = '<div class="error">Nenhum módulo encontrado</div>';
+                    container.innerHTML = '<div style="text-align:center;padding:50px;color:#888">Nenhum módulo encontrado</div>';
                     return;
                 }
                 
@@ -210,9 +196,9 @@
                         <div class="modulo">
                             <div class="modulo-header" onclick="toggleModulo(${index})">
                                 <h3>${this.escapeHtml(modulo.titulo)}</h3>
-                                <span>${modulo.aulas?.length || 0} aulas | ${modulo.progresso || 0}%</span>
+                                <span>${modulo.aulas?.length || 0} aulas</span>
                             </div>
-                            <div id="modulo-${index}" style="display: none;">
+                            <div id="modulo-${index}" style="display:none">
                                 ${this.gerarAulas(modulo.aulas || [])}
                             </div>
                         </div>
@@ -224,16 +210,14 @@
 
             gerarAulas(aulas) {
                 if (aulas.length === 0) {
-                    return '<div class="aula-item">Nenhuma aula disponível</div>';
+                    return '<div style="padding:20px;color:#888">Nenhuma aula</div>';
                 }
                 
                 return aulas.map(aula => `
-                    <div class="aula-item ${aula.concluida ? 'concluida' : ''}" 
-                         onclick="iniciarAula(${aula.id})">
+                    <div class="aula-item" onclick="iniciarAula(${aula.id})">
                         <strong>${this.escapeHtml(aula.titulo)}</strong>
                         <br>
                         <small>${aula.duracao || '10:00'} min</small>
-                        ${aula.concluida ? ' ✓' : ''}
                     </div>
                 `).join('');
             }
@@ -248,13 +232,13 @@
             mostrarErro(mensagem) {
                 const container = document.getElementById('modulos-container');
                 container.innerHTML = `
-                    <div class="error">
+                    <div style="background:#f44336;color:white;padding:20px;border-radius:10px;text-align:center">
                         <h3>Erro</h3>
                         <p>${this.escapeHtml(mensagem)}</p>
-                        <button onclick="location.reload()" style="margin: 10px; padding: 10px 20px; background: white; border: none; border-radius: 5px; cursor: pointer;">
+                        <button onclick="location.reload()" style="margin:10px;padding:10px 20px;background:white;border:none;border-radius:5px;cursor:pointer">
                             Tentar Novamente
                         </button>
-                        <button onclick="voltarParaCursos()" style="margin: 10px; padding: 10px 20px; background: #FFD700; border: none; border-radius: 5px; cursor: pointer;">
+                        <button onclick="voltarParaCursos()" style="margin:10px;padding:10px 20px;background:#ffcf00;border:none;border-radius:5px;cursor:pointer">
                             Voltar
                         </button>
                     </div>
@@ -264,22 +248,17 @@
 
         // FUNÇÕES GLOBAIS
         window.toggleModulo = function(index) {
-            const modulo = document.getElementById(`modulo-${index}`);
-            if (modulo.style.display === 'none') {
-                modulo.style.display = 'block';
-            } else {
-                modulo.style.display = 'none';
-            }
+            const el = document.getElementById(`modulo-${index}`);
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
         };
 
-        window.iniciarAula = async function(aulaId) {
-            alert(`Iniciando aula ${aulaId}`);
-            // Aqui você pode adicionar a lógica do player de vídeo
+        window.iniciarAula = function(aulaId) {
+            alert(`Aula ${aulaId} iniciada!`);
         };
 
-        // INICIALIZAÇÃO
+        // INICIALIZAR
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Página carregada');
+            console.log('DOM carregado');
             window.gerenciador = new GerenciadorCursos();
             window.gerenciador.carregarCurso();
         });
