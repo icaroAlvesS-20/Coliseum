@@ -5,34 +5,482 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil - Coliseum</title>
     <style>
-        /* CSS mantido igual */
+        /* ========== RESET E CONFIGURAÇÕES GERAIS ========== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        :root {
+            --primary-color: #ffcf00;
+            --primary-dark: #e6b800;
+            --secondary-color: #4CAF50;
+            --danger-color: #ff4444;
+            --danger-dark: #cc0000;
+            --dark-bg: #1a1a1a;
+            --darker-bg: #121212;
+            --card-bg: #2d2d2d;
+            --card-border: #404040;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-muted: #888888;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --info: #2196F3;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --radius-full: 50%;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
-            overflow-x: hidden;
+            color: var(--text-primary);
+            line-height: 1.6;
         }
 
-        .btn-voltar {
+        /* ========== LAYOUT PRINCIPAL ========== */
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            height: 90vh;
+            min-height: 700px;
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            border-radius: var(--radius-xl);
+            position: relative;
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        }
+
+        /* ========== GRID DE CONTEÚDO ========== */
+        .content-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: minmax(200px, 1fr) 1.4fr minmax(250px, 1fr);
+            grid-template-rows: auto 1fr;
+            gap: 25px;
+            grid-template-areas: 
+                "avatar header stats"
+                "info ranking stats";
+            height: 100%;
+        }
+
+        /* ========== CARTÕES ========== */
+        .card {
+            background: linear-gradient(145deg, #383838, #282828);
+            border-radius: var(--radius-lg);
+            padding: 25px;
+            border: 1px solid var(--card-border);
+            box-shadow: 
+                inset 2px 2px 5px rgba(0, 0, 0, 0.3),
+                inset -2px -2px 5px rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 
+                inset 2px 2px 5px rgba(0, 0, 0, 0.3),
+                inset -2px -2px 5px rgba(255, 255, 255, 0.05),
+                0 12px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), transparent);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        /* ========== AVATAR ========== */
+        .avatar-section {
+            grid-area: avatar;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 20px;
+        }
+
+        .avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: var(--radius-full);
+            border: 4px solid var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: #000;
+            box-shadow: 
+                0 8px 32px rgba(255, 207, 0, 0.3),
+                0 0 0 8px rgba(255, 207, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .avatar:hover {
+            transform: scale(1.05) rotate(5deg);
+            box-shadow: 
+                0 12px 40px rgba(255, 207, 0, 0.4),
+                0 0 0 12px rgba(255, 207, 0, 0.15);
+        }
+
+        .avatar::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 70%
+            );
+            animation: shine 3s infinite linear;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        /* ========== CABEÇALHO DO PERFIL ========== */
+        .profile-header {
+            grid-area: header;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            gap: 15px;
+        }
+
+        .profile-name {
+            color: var(--primary-color);
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 0;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, var(--primary-color), #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .profile-meta {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .profile-meta .separator {
+            color: var(--text-muted);
+        }
+
+        /* ========== BADGE DE NÍVEL ========== */
+        .level-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--secondary-color), #45a049);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+            transition: var(--transition);
+        }
+
+        .level-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .level-icon {
+            font-size: 1.2rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* ========== SEÇÕES DO CONTEÚDO ========== */
+        .info-section {
+            grid-area: info;
+            overflow-y: auto;
+        }
+
+        .ranking-section {
+            grid-area: ranking;
+            overflow-y: auto;
+        }
+
+        .stats-section {
+            grid-area: stats;
+            overflow-y: auto;
+        }
+
+        /* ========== TÍTULOS DAS SEÇÕES ========== */
+        .section-title {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(255, 207, 0, 0.3);
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 60px;
+            height: 2px;
+            background: var(--primary-color);
+            border-radius: 1px;
+        }
+
+        /* ========== ITENS DE INFORMAÇÃO ========== */
+        .info-item {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .info-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+            padding-left: 10px;
+            padding-right: 10px;
+            border-radius: var(--radius-sm);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .info-value.highlight {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        /* ========== BARRA DE PROGRESSO ========== */
+        .progress-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            margin: 20px 0;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .progress-percentage {
+            color: var(--primary-color);
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.08);
+            height: 10px;
+            border-radius: 5px;
+            margin: 12px 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--primary-color), #ffaa00);
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            box-shadow: 0 0 20px rgba(255, 207, 0, 0.3);
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.2) 50%,
+                transparent 100%
+            );
+            animation: progressShine 2s infinite linear;
+        }
+
+        @keyframes progressShine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-hint {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-align: center;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* ========== BOTÕES ========== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            outline: none;
+            text-decoration: none;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: #000;
+            box-shadow: 0 4px 12px rgba(255, 207, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 207, 0, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #4a4a4a, #3a3a3a);
+            color: var(--text-primary);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #5a5a5a, #4a4a4a);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color), var(--danger-dark));
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 68, 68, 0.4);
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* ========== BOTÃO DE VOLTAR ========== */
+        .btn-back {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 30px;
+            right: 30px;
             width: 60px;
             height: 60px;
-            border-radius: 50%;
-            background: #ffcf00;
+            border-radius: var(--radius-full);
+            background: var(--primary-color);
             color: #000;
-            font-size: 24px;
+            font-size: 1.5rem;
             font-weight: bold;
             border: none;
             cursor: pointer;
@@ -40,895 +488,769 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
         }
 
-        .btn-voltar:hover {
-            background: #e6b800;
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(255, 207, 0, 0.3);
+        .btn-back:hover {
+            background: var(--primary-dark);
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: var(--shadow-lg);
         }
 
-        .bloco-cinza {
-            width: 95%;
-            max-width: 1400px;
-            height: 90vh;
-            background: linear-gradient(145deg, #5a5a5a, #474747);
-            margin: 0 auto;
-            border-radius: 20px;
-            position: relative;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            border: 1px solid #666;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Container principal - LAYOUT MAIS EQUILIBRADO */
-        .conteudo-principal {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 1fr 1.2fr 1fr;
-            grid-template-rows: auto 1fr;
-            gap: 20px;
-            grid-template-areas: 
-                "foto nome estatisticas"
-                "info ranking estatisticas";
-            height: 100%;
-        }
-
-        .bloco-cinza-escuro1 {
-            grid-area: nome;
-            height: 120px;
-            background: linear-gradient(145deg, #383838, #282828);
-            border-radius: 15px;
-            padding: 15px 20px;
-            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
-                        inset -2px -2px 5px rgba(255, 255, 255, 0.1);
-            border: 1px solid #444;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-
-        .bloco-cinza-escuro2 {
-            grid-area: ranking;
-            background: linear-gradient(145deg, #383838, #282828);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
-                        inset -2px -2px 5px rgba(255, 255, 255, 0.1);
-            border: 1px solid #444;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-
-        .bloco-cinza-escuro3 {
-            grid-area: estatisticas;
-            background: linear-gradient(145deg, #383838, #282828);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
-                        inset -2px -2px 5px rgba(255, 255, 255, 0.1);
-            border: 1px solid #444;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-
-        .bloco-cinza-escuro4 {
-            grid-area: info;
-            background: linear-gradient(145deg, #383838, #282828);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3),
-                        inset -2px -2px 5px rgba(255, 255, 255, 0.1);
-            border: 1px solid #444;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            overflow-y: auto;
-        }
-
-        .foto-perfil {
-            grid-area: foto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .imgp {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            border: 4px solid #ffcf00;
-            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.3);
-            object-fit: cover;
+        /* ========== BOTÃO DE LOGOUT ========== */
+        .logout-container {
+            margin-top: auto;
+            padding-top: 20px;
         }
 
         .btn-logout {
             width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #ff4444, #cc0000);
+            padding: 16px;
+            background: linear-gradient(135deg, var(--danger-color), var(--danger-dark));
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 700;
             cursor: pointer;
-            margin-top: 20px;
-            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
         }
 
         .btn-logout:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(255, 68, 68, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(255, 68, 68, 0.4);
         }
 
         .btn-logout:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
         }
 
-        /* Tipografia ajustada */
-        h2 {
-            color: #ffcf00;
-            font-size: 24px;
-            font-weight: bold;
-            margin: 0 0 10px 0;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            width: 100%;
-        }
-
-        h3 {
-            color: #ffcf00;
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            width: 100%;
-        }
-
-        .bloco-cinza-escuro1 p,
-        .bloco-cinza-escuro2 p,
-        .bloco-cinza-escuro3 p,
-        .bloco-cinza-escuro4 p {
-            color: #ffffff;
-            font-size: 14px;
-            line-height: 1.5;
-            margin-bottom: 8px;
-            text-align: center;
-            width: 100%;
-        }
-
-        .bloco-cinza-escuro1 strong,
-        .bloco-cinza-escuro2 strong,
-        .bloco-cinza-escuro3 strong,
-        .bloco-cinza-escuro4 strong {
-            color: #ffcf00;
-        }
-
-        /* Sistema de níveis ajustado */
-        .nivel-badge {
+        /* ========== ESTADO ONLINE ========== */
+        .online-status {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            margin: 8px 0;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
-            justify-content: center;
-        }
-
-        .nivel-icone {
-            font-size: 16px;
-        }
-
-        .progresso-nivel {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            border-left: 4px solid #ffcf00;
-            width: 100%;
-            text-align: center;
-        }
-
-        .progresso-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            font-size: 12px;
-            color: #ccc;
-            width: 100%;
-        }
-
-        .barra-progresso {
-            background: #555;
-            height: 8px;
-            border-radius: 4px;
-            margin: 10px 0;
-            overflow: hidden;
-            width: 100%;
-        }
-
-        .progresso-preenchido {
-            background: linear-gradient(90deg, #ffcf00, #ffaa00);
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.5s ease-in-out;
-            box-shadow: 0 0 10px rgba(255, 207, 0, 0.3);
-        }
-
-        .proximo-nivel {
-            font-size: 11px;
-            color: #ffcf00;
-            text-align: center;
-            margin-top: 5px;
-            font-weight: 600;
-            width: 100%;
-        }
-
-        .info-basica {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             gap: 8px;
-            margin: 8px 0;
-            width: 100%;
+            color: var(--success);
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 6px 12px;
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: var(--radius-sm);
+            margin-top: 10px;
         }
 
-        .serie {
-            color: #ccc;
-            font-size: 14px;
-            text-align: center;
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: var(--radius-full);
+            animation: pulseDot 2s infinite;
         }
 
-        .status {
-            color: #4CAF50;
-            font-size: 12px;
-            margin-top: 5px;
-            text-align: center;
+        @keyframes pulseDot {
+            0%, 100% { 
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+            }
+            50% { 
+                opacity: 0.7;
+                box-shadow: 0 0 0 8px rgba(76, 175, 80, 0);
+            }
         }
 
-        .info-item {
-            margin-bottom: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            width: 100%;
-            text-align: center;
-        }
-
-        .info-item:last-child {
-            border-bottom: none;
-        }
-
-        .sync-info {
-            color: #4CAF50;
-            font-size: 12px;
-            margin-top: 15px;
-            text-align: center;
-            width: 100%;
-        }
-
-        /* Botões internos */
-        .btn-interno {
-            background: #ffcf00;
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            margin-top: 15px;
-            width: auto;
-            min-width: 160px;
-        }
-
-        .btn-interno:hover {
-            background: #e6b800;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 207, 0, 0.4);
-        }
-
-        /* Scrollbar */
-        .bloco-cinza-escuro2::-webkit-scrollbar,
-        .bloco-cinza-escuro3::-webkit-scrollbar,
-        .bloco-cinza-escuro4::-webkit-scrollbar {
+        /* ========== SCROLLBAR PERSONALIZADA ========== */
+        .info-section::-webkit-scrollbar,
+        .ranking-section::-webkit-scrollbar,
+        .stats-section::-webkit-scrollbar {
             width: 6px;
         }
 
-        .bloco-cinza-escuro2::-webkit-scrollbar-track,
-        .bloco-cinza-escuro3::-webkit-scrollbar-track,
-        .bloco-cinza-escuro4::-webkit-scrollbar-track {
-            background: #383838;
+        .info-section::-webkit-scrollbar-track,
+        .ranking-section::-webkit-scrollbar-track,
+        .stats-section::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 3px;
         }
 
-        .bloco-cinza-escuro2::-webkit-scrollbar-thumb,
-        .bloco-cinza-escuro3::-webkit-scrollbar-thumb,
-        .bloco-cinza-escuro4::-webkit-scrollbar-thumb {
-            background: #ffcf00;
+        .info-section::-webkit-scrollbar-thumb,
+        .ranking-section::-webkit-scrollbar-thumb,
+        .stats-section::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
             border-radius: 3px;
+        }
+
+        .info-section::-webkit-scrollbar-thumb:hover,
+        .ranking-section::-webkit-scrollbar-thumb:hover,
+        .stats-section::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
         }
 
         /* ========== RESPONSIVIDADE ========== */
-        @media (max-width: 1024px) {
-            .bloco-cinza {
-                width: 98%;
+        @media (max-width: 1200px) {
+            .content-grid {
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: auto auto auto;
+                grid-template-areas: 
+                    "avatar header"
+                    "info ranking"
+                    "stats stats";
+            }
+            
+            .container {
                 height: auto;
                 min-height: 90vh;
-                padding: 20px;
-            }
-            
-            .conteudo-principal {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto auto auto auto auto;
-                grid-template-areas: 
-                    "foto"
-                    "nome"
-                    "info"
-                    "ranking"
-                    "estatisticas";
-                gap: 15px;
-            }
-            
-            .bloco-cinza-escuro1 {
-                height: auto;
-                min-height: 100px;
-            }
-            
-            .imgp {
-                width: 100px;
-                height: 100px;
             }
         }
 
         @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                border-radius: var(--radius-lg);
+                height: auto;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(5, auto);
+                grid-template-areas: 
+                    "avatar"
+                    "header"
+                    "info"
+                    "ranking"
+                    "stats";
+                gap: 20px;
+            }
+            
+            .avatar {
+                width: 120px;
+                height: 120px;
+                font-size: 40px;
+            }
+            
+            .profile-name {
+                font-size: 1.6rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .btn-back {
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 480px) {
             body {
                 padding: 10px;
             }
             
-            .bloco-cinza {
+            .container {
                 padding: 15px;
             }
             
-            .conteudo-principal {
-                gap: 12px;
+            .avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 32px;
             }
             
-            .bloco-cinza-escuro1,
-            .bloco-cinza-escuro2,
-            .bloco-cinza-escuro3,
-            .bloco-cinza-escuro4 {
-                padding: 15px;
+            .profile-name {
+                font-size: 1.4rem;
             }
             
-            .imgp {
-                width: 80px;
-                height: 80px;
+            .section-title {
+                font-size: 1.2rem;
             }
             
-            h2 {
-                font-size: 20px;
-            }
-            
-            h3 {
-                font-size: 18px;
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
             }
         }
+
+        /* ========== ESTADOS DE CARREGAMENTO ========== */
+        .skeleton {
+            background: linear-gradient(90deg, #333 25%, #444 50%, #333 75%);
+            background-size: 200% 100%;
+            animation: skeletonLoading 1.5s infinite;
+            border-radius: var(--radius-sm);
+        }
+
+        .skeleton-text {
+            height: 16px;
+            margin-bottom: 8px;
+        }
+
+        .skeleton-title {
+            height: 24px;
+            width: 60%;
+            margin-bottom: 16px;
+        }
+
+        @keyframes skeletonLoading {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        /* ========== NOTIFICAÇÕES E FEEDBACK ========== */
+        .sync-notice {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--success);
+            font-size: 0.85rem;
+            padding: 8px 12px;
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: var(--radius-sm);
+            margin-top: 15px;
+            border-left: 3px solid var(--success);
+        }
+
+        .sync-notice::before {
+            content: '✓';
+            font-weight: bold;
+        }
+
+        /* ========== ANIMAÇÕES DE ENTRADA ========== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.2s; }
+        .card:nth-child(4) { animation-delay: 0.3s; }
     </style>
 </head>
 <body>
-    <div class="bloco-cinza"> 
-        <div class="conteudo-principal">
-            <!-- Área de Foto -->
-            <div class="foto-perfil">
-                <div class="imgp avatar-placeholder">
+    <div class="container"> 
+        <div class="content-grid">
+            <!-- Avatar -->
+            <div class="avatar-section">
+                <div class="avatar">
                     👤
                 </div>
             </div>
 
-            <!-- Área de Nome e Nível -->
-            <div class="bloco-cinza-escuro1" id="nome-usuario-container">
-                <!-- Carregado dinamicamente -->
+            <!-- Cabeçalho do Perfil -->
+            <div class="card profile-header">
+                <h1 class="profile-name" id="nome-usuario">Carregando...</h1>
+                <div class="profile-meta">
+                    <span id="serie-usuario">Série não informada</span>
+                    <span class="separator">•</span>
+                    <span id="pontuacao-usuario">0 pontos</span>
+                </div>
+                <div class="level-badge" id="nivel-badge">
+                    <span class="level-icon">🌱</span>
+                    <span id="nivel-texto">Novato</span>
+                </div>
+                <div class="online-status">
+                    <span class="online-dot"></span>
+                    <span>Online - Dados em tempo real</span>
+                </div>
             </div>
 
             <!-- Informações Pessoais -->
-            <div class="bloco-cinza-escuro4" id="info-container">
-                <!-- Carregado dinamicamente -->
+            <div class="card info-section">
+                <h2 class="section-title">📋 Informações</h2>
+                <div id="info-container">
+                    <!-- Carregado dinamicamente -->
+                </div>
             </div>
 
             <!-- Ranking Pessoal -->
-            <div class="bloco-cinza-escuro2" id="ranking-container">
-                <!-- Carregado dinamicamente -->
+            <div class="card ranking-section">
+                <h2 class="section-title">🏆 Ranking</h2>
+                <div id="ranking-container">
+                    <!-- Carregado dinamicamente -->
+                </div>
             </div>
 
             <!-- Estatísticas -->
-            <div class="bloco-cinza-escuro3" id="estatisticas-container">
-                <!-- Carregado dinamicamente -->
+            <div class="card stats-section">
+                <h2 class="section-title">📈 Estatísticas</h2>
+                <div id="estatisticas-container">
+                    <!-- Carregado dinamicamente -->
+                </div>
             </div>
         </div>
 
         <!-- Botão de Logout -->
         <div class="logout-container">
-            <button onclick="logout()" class="btn-logout">🚪 Sair da Conta</button>
+            <button onclick="logout()" class="btn-logout">
+                <span>🚪</span>
+                <span>Sair da Conta</span>
+            </button>
         </div>
     </div>
 
     <!-- Botão Voltar -->
-    <button class="btn-voltar" onclick="voltar()">←</button>
+    <button class="btn-back" onclick="voltar()">←</button>
 
     <script>
-// ========== CONFIGURAÇÕES GLOBAIS ==========
-const CONFIG = {
-    API_URL: 'https://coliseum-api.onrender.com',
-    ROTAS: {
-        MENU: '/menu',
-        RANKING: '/ranking',
-        PERFIL: '/perfil',
-        LOGIN: '/login'
-    }
-};
-
-// ========== SISTEMA DE NÍVEIS ==========
-class SistemaNiveis {
-    constructor() {
-        this.niveis = [
-            { nome: "Novato", icone: "🌱", pontosMin: 0, cor: "#4CAF50" },
-            { nome: "Aprendiz", icone: "📚", pontosMin: 50, cor: "#2196F3" },
-            { nome: "Guerreiro", icone: "⚔️", pontosMin: 100, cor: "#FF9800" },
-            { nome: "Mestre", icone: "🎯", pontosMin: 200, cor: "#9C27B0" },
-            { nome: "Lenda", icone: "🏆", pontosMin: 500, cor: "#FFD700" },
-            { nome: "Imperador", icone: "👑", pontosMin: 1000, cor: "#FF5722" },
-            { nome: "Lendário", icone: "🐲", pontosMin: 1500, cor: "#f21707" },
-            { nome: "Oni", icone: "👺", pontosMin: 2000, cor: "#3b0101" },
-            { nome: "Imortal", icone: "☠️", pontosMin: 2500, cor: "#70418a" }
-        ];
-    }
-
-    calcularNivel(pontuacao) {
-        let nivelAtual = this.niveis[0];
-        
-        for (const nivel of this.niveis) {
-            if (pontuacao >= nivel.pontosMin) {
-                nivelAtual = nivel;
-            } else {
-                break;
+        // (O JavaScript permanece o mesmo da versão anterior)
+        // ========== CONFIGURAÇÕES GLOBAIS ==========
+        const CONFIG = {
+            API_URL: 'https://coliseum-api.onrender.com',
+            ROTAS: {
+                MENU: '/menu',
+                RANKING: '/ranking',
+                PERFIL: '/perfil',
+                LOGIN: '/login'
             }
-        }
-        
-        return nivelAtual;
-    }
-
-    calcularProgresso(pontuacao) {
-        const nivelAtual = this.calcularNivel(pontuacao);
-        const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
-        
-        // Se for o último nível
-        if (nivelIndex === this.niveis.length - 1) return 100;
-        
-        const proximoNivel = this.niveis[nivelIndex + 1];
-        const intervalo = proximoNivel.pontosMin - nivelAtual.pontosMin;
-        const progressoAtual = pontuacao - nivelAtual.pontosMin;
-        
-        return Math.min(Math.round((progressoAtual / intervalo) * 100), 100);
-    }
-
-    calcularPontosParaProximo(pontuacao) {
-        const nivelAtual = this.calcularNivel(pontuacao);
-        const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
-        
-        // Se for o último nível
-        if (nivelIndex === this.niveis.length - 1) return 0;
-        
-        const proximoNivel = this.niveis[nivelIndex + 1];
-        return Math.max(proximoNivel.pontosMin - pontuacao, 0);
-    }
-}
-
-// ========== GERENCIADOR DE USUÁRIO ==========
-class GerenciadorUsuario {
-    constructor() {
-        this.CHAVES = {
-            USUARIO: 'usuario',
-            LOGADO: 'usuarioLogado',
-            ID: 'usuarioId',
-            NOME: 'usuarioNome',
-            PONTUACAO: 'usuarioPontuacao',
-            DESAFIOS: 'usuarioDesafios',
-            RA: 'usuarioRA',
-            SERIE: 'usuarioSerie'
-        };
-    }
-
-    verificarLogin() {
-        try {
-            const usuario = this.obterUsuario();
-            const usuarioLogado = localStorage.getItem(this.CHAVES.LOGADO);
-            const usuarioId = localStorage.getItem(this.CHAVES.ID);
-
-            // Verificar se há dados válidos
-            if (usuario && usuario.id) {
-                this.sincronizarDadosLocais(usuario);
-                return true;
-            }
-
-            if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
-                localStorage.setItem(this.CHAVES.LOGADO, 'true');
-                return true;
-            }
-
-            return false;
-        } catch (error) {
-            console.error('Erro ao verificar login:', error);
-            return false;
-        }
-    }
-
-    obterUsuario() {
-        try {
-            const usuarioJSON = localStorage.getItem(this.CHAVES.USUARIO);
-            return usuarioJSON ? JSON.parse(usuarioJSON) : null;
-        } catch (error) {
-            console.error('Erro ao obter usuário:', error);
-            return null;
-        }
-    }
-
-    sincronizarDadosLocais(usuario) {
-        const dados = {
-            [this.CHAVES.ID]: usuario.id?.toString() || '',
-            [this.CHAVES.NOME]: usuario.nome || 'Jogador',
-            [this.CHAVES.PONTUACAO]: usuario.pontuacao?.toString() || '0',
-            [this.CHAVES.DESAFIOS]: usuario.desafiosCompletados?.toString() || '0',
-            [this.CHAVES.RA]: usuario.ra || '',
-            [this.CHAVES.SERIE]: usuario.serie || '',
-            [this.CHAVES.LOGADO]: 'true'
         };
 
-        Object.entries(dados).forEach(([chave, valor]) => {
-            if (valor && !localStorage.getItem(chave)) {
-                localStorage.setItem(chave, valor);
+        // ========== SISTEMA DE NÍVEIS ==========
+        class SistemaNiveis {
+            constructor() {
+                this.niveis = [
+                    { nome: "Novato", icone: "🌱", pontosMin: 0, cor: "#4CAF50" },
+                    { nome: "Aprendiz", icone: "📚", pontosMin: 50, cor: "#2196F3" },
+                    { nome: "Guerreiro", icone: "⚔️", pontosMin: 100, cor: "#FF9800" },
+                    { nome: "Mestre", icone: "🎯", pontosMin: 200, cor: "#9C27B0" },
+                    { nome: "Lenda", icone: "🏆", pontosMin: 500, cor: "#FFD700" },
+                    { nome: "Imperador", icone: "👑", pontosMin: 1000, cor: "#FF5722" },
+                    { nome: "Lendário", icone: "🐲", pontosMin: 1500, cor: "#f21707" },
+                    { nome: "Oni", icone: "👺", pontosMin: 2000, cor: "#3b0101" },
+                    { nome: "Imortal", icone: "☠️", pontosMin: 2500, cor: "#70418a" }
+                ];
             }
-        });
-    }
 
-    atualizarDados(usuario) {
-        try {
-            localStorage.setItem(this.CHAVES.USUARIO, JSON.stringify(usuario));
-            this.sincronizarDadosLocais(usuario);
-        } catch (error) {
-            console.error('Erro ao atualizar dados:', error);
-        }
-    }
-
-    limparDados() {
-        Object.values(this.CHAVES).forEach(chave => {
-            localStorage.removeItem(chave);
-        });
-    }
-}
-
-// ========== GERENCIADOR DE INTERFACE ==========
-class GerenciadorInterface {
-    constructor() {
-        this.sistemaNiveis = new SistemaNiveis();
-    }
-
-    atualizarPerfil(usuario) {
-        if (!usuario || !usuario.id) {
-            this.mostrarTelaNaoLogado();
-            return;
-        }
-
-        const pontuacao = usuario.pontuacao || 0;
-        const nivelAtual = this.sistemaNiveis.calcularNivel(pontuacao);
-        const progresso = this.sistemaNiveis.calcularProgresso(pontuacao);
-        const pontosParaProximo = this.sistemaNiveis.calcularPontosParaProximo(pontuacao);
-
-        this.atualizarCabecalho(usuario, nivelAtual, pontuacao);
-        this.atualizarInformacoes(usuario, progresso, pontosParaProximo);
-        this.atualizarRanking(usuario, nivelAtual, pontuacao);
-        this.atualizarEstatisticas(usuario);
-    }
-
-    atualizarCabecalho(usuario, nivelAtual, pontuacao) {
-        const container = document.getElementById('nome-usuario-container');
-        if (!container) return;
-
-        container.innerHTML = `
-            <h2>${this.escapeHTML(usuario.nome)}</h2>
-            <div class="info-basica">
-                <span class="serie">${this.escapeHTML(usuario.serie || 'Série não informada')} • ${pontuacao} pontos</span>
-                <div class="nivel-badge" style="background: linear-gradient(135deg, ${nivelAtual.cor}, ${nivelAtual.cor}dd);">
-                    <span class="nivel-icone">${nivelAtual.icone}</span>
-                    <span class="nivel-nome">${nivelAtual.nome}</span>
-                </div>
-            </div>
-            <p class="status">✅ Online - Dados em tempo real</p>
-        `;
-    }
-
-    atualizarInformacoes(usuario, progresso, pontosParaProximo) {
-        const container = document.getElementById('info-container');
-        if (!container) return;
-
-        container.innerHTML = `
-            <h3>📋 Informações</h3>
-            <div class="info-content">
-                <div class="info-item">
-                    <strong>RA:</strong> ${this.escapeHTML(usuario.ra || 'Não informado')}
-                </div>
-                <div class="info-item">
-                    <strong>Série:</strong> ${this.escapeHTML(usuario.serie || 'Não informada')}
-                </div>
-                <div class="info-item">
-                    <strong>Pontuação:</strong> ${usuario.pontuacao || 0} pontos
-                </div>
+            calcularNivel(pontuacao) {
+                let nivelAtual = this.niveis[0];
                 
-                <div class="progresso-nivel">
-                    <div class="progresso-info">
-                        <span>Progresso do Nível</span>
-                        <span class="progresso-texto">${Math.round(progresso)}%</span>
-                    </div>
-                    <div class="barra-progresso">
-                        <div class="progresso-preenchido" style="width: ${progresso}%"></div>
-                    </div>
-                    <div class="proximo-nivel">
-                        ${pontosParaProximo > 0 ? 
-                            `⏫ ${pontosParaProximo} pontos para evoluir` : 
-                            '🎉 Nível máximo alcançado!'}
-                    </div>
-                </div>
+                for (const nivel of this.niveis) {
+                    if (pontuacao >= nivel.pontosMin) {
+                        nivelAtual = nivel;
+                    } else {
+                        break;
+                    }
+                }
                 
-                <div class="info-item">
-                    <strong>Desafios:</strong> ${usuario.desafiosCompletados || 0} completos
-                </div>
-                <div class="info-item">
-                    <strong>ID:</strong> ${usuario.id || 'N/A'}
-                </div>
-                <p class="sync-info">🌐 Dados sincronizados com servidor</p>
-            </div>
-        `;
-    }
-
-    atualizarRanking(usuario, nivelAtual, pontuacao) {
-        const container = document.getElementById('ranking-container');
-        if (!container) return;
-
-        container.innerHTML = `
-            <h3>🏆 Ranking Pessoal</h3>
-            <div class="ranking-content">
-                <div class="info-item">
-                    <strong>Nível Atual:</strong> ${nivelAtual.nome}
-                </div>
-                <div class="info-item">
-                    <strong>Posição:</strong> Carregando...
-                </div>
-                <div class="info-item">
-                    <strong>Melhor Pontuação:</strong> ${pontuacao} pontos
-                </div>
-                <button class="btn-interno" onclick="navegarParaRanking()">
-                    📊 Ver Ranking Completo
-                </button>
-            </div>
-        `;
-    }
-
-    atualizarEstatisticas(usuario) {
-        const container = document.getElementById('estatisticas-container');
-        if (!container) return;
-
-        const desafiosCompletos = usuario.desafiosCompletados || 0;
-        const progressoGeral = Math.min(desafiosCompletos * 10, 100);
-        
-        container.innerHTML = `
-            <h3>📈 Estatísticas</h3>
-            <div class="estatisticas-content">
-                <div class="info-item">
-                    <strong>Desafios Completos:</strong> ${desafiosCompletos}
-                </div>
-                <div class="info-item">
-                    <strong>Taxa de Acerto:</strong> Calculando...
-                </div>
-                <div class="info-item">
-                    <strong>Ativo desde:</strong> ${new Date().toLocaleDateString('pt-BR')}
-                </div>
-                <div class="barra-progresso">
-                    <div class="progresso-preenchido" style="width: ${progressoGeral}%"></div>
-                </div>
-                <p class="progresso-geral">
-                    Progresso geral: ${progressoGeral}%
-                </p>
-            </div>
-        `;
-    }
-
-    mostrarTelaNaoLogado() {
-        const containers = [
-            'nome-usuario-container',
-            'info-container',
-            'ranking-container',
-            'estatisticas-container'
-        ];
-
-        const template = `
-            <div class="nao-logado">
-                <p>🔒 Faça login para acessar seu perfil</p>
-                <button class="btn-interno" onclick="navegarParaLogin()">
-                    📲 Fazer Login
-                </button>
-            </div>
-        `;
-
-        containers.forEach(containerId => {
-            const container = document.getElementById(containerId);
-            if (container) {
-                container.innerHTML = template;
-            }
-        });
-    }
-
-    escapeHTML(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-}
-
-// ========== GERENCIADOR DE API ==========
-class GerenciadorAPI {
-    constructor() {
-        this.gerenciadorUsuario = new GerenciadorUsuario();
-        this.gerenciadorInterface = new GerenciadorInterface();
-    }
-
-    async carregarPerfil() {
-        try {
-            // Verificar se usuário está logado
-            if (!this.gerenciadorUsuario.verificarLogin()) {
-                console.log('Usuário não logado');
-                this.gerenciadorInterface.mostrarTelaNaoLogado();
-                return;
+                return nivelAtual;
             }
 
-            // Tentar carregar dados online
-            const usuarioOnline = await this.carregarDadosOnline();
-            
-            if (usuarioOnline) {
-                // Usar dados online
-                this.gerenciadorUsuario.atualizarDados(usuarioOnline);
-                this.gerenciadorInterface.atualizarPerfil(usuarioOnline);
-            } else {
-                // Usar dados locais
-                this.carregarDadosLocais();
-            }
-        } catch (error) {
-            console.error('Erro ao carregar perfil:', error);
-            this.carregarDadosLocais();
-        }
-    }
-
-    async carregarDadosOnline() {
-        try {
-            const usuarioId = localStorage.getItem('usuarioId');
-            if (!usuarioId) return null;
-
-            console.log('Buscando dados online para ID:', usuarioId);
-            
-            const response = await fetch(`${CONFIG.API_URL}/api/usuarios/${usuarioId}`);
-            
-            if (!response.ok) {
-                throw new Error(`Erro HTTP ${response.status}`);
+            calcularProgresso(pontuacao) {
+                const nivelAtual = this.calcularNivel(pontuacao);
+                const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
+                
+                if (nivelIndex === this.niveis.length - 1) return 100;
+                
+                const proximoNivel = this.niveis[nivelIndex + 1];
+                const intervalo = proximoNivel.pontosMin - nivelAtual.pontosMin;
+                const progressoAtual = pontuacao - nivelAtual.pontosMin;
+                
+                return Math.min(Math.round((progressoAtual / intervalo) * 100), 100);
             }
 
-            const data = await response.json();
-            
-            if (data.success && data.usuario) {
-                console.log('Dados online recebidos com sucesso');
-                return data.usuario;
+            calcularPontosParaProximo(pontuacao) {
+                const nivelAtual = this.calcularNivel(pontuacao);
+                const nivelIndex = this.niveis.findIndex(n => n.nome === nivelAtual.nome);
+                
+                if (nivelIndex === this.niveis.length - 1) return 0;
+                
+                const proximoNivel = this.niveis[nivelIndex + 1];
+                return Math.max(proximoNivel.pontosMin - pontuacao, 0);
             }
-            
-            return null;
-        } catch (error) {
-            console.log('Falha ao buscar dados online:', error.message);
-            return null;
-        }
-    }
-
-    carregarDadosLocais() {
-        console.log('Carregando dados locais...');
-        
-        const usuario = this.gerenciadorUsuario.obterUsuario() || {
-            nome: localStorage.getItem('usuarioNome'),
-            id: localStorage.getItem('usuarioId'),
-            pontuacao: parseInt(localStorage.getItem('usuarioPontuacao')) || 0,
-            desafiosCompletados: parseInt(localStorage.getItem('usuarioDesafios')) || 0,
-            ra: localStorage.getItem('usuarioRA') || '',
-            serie: localStorage.getItem('usuarioSerie') || ''
-        };
-
-        if (!usuario.id || !usuario.nome) {
-            this.gerenciadorInterface.mostrarTelaNaoLogado();
-            return;
         }
 
-        this.gerenciadorInterface.atualizarPerfil(usuario);
-    }
-}
+        // ========== GERENCIADOR DE USUÁRIO ==========
+        class GerenciadorUsuario {
+            constructor() {
+                this.CHAVES = {
+                    USUARIO: 'usuario',
+                    LOGADO: 'usuarioLogado',
+                    ID: 'usuarioId',
+                    NOME: 'usuarioNome',
+                    PONTUACAO: 'usuarioPontuacao',
+                    DESAFIOS: 'usuarioDesafios',
+                    RA: 'usuarioRA',
+                    SERIE: 'usuarioSerie'
+                };
+            }
 
-// ========== FUNÇÕES GLOBAIS ==========
-function navegarParaLogin() {
-    window.location.href = CONFIG.ROTAS.LOGIN;
-}
+            verificarLogin() {
+                try {
+                    const usuario = this.obterUsuario();
+                    const usuarioLogado = localStorage.getItem(this.CHAVES.LOGADO);
+                    const usuarioId = localStorage.getItem(this.CHAVES.ID);
 
-function navegarParaRanking() {
-    window.location.href = CONFIG.ROTAS.RANKING;
-}
+                    if (usuario && usuario.id) {
+                        this.sincronizarDadosLocais(usuario);
+                        return true;
+                    }
 
-function voltar() {
-    window.history.back();
-}
+                    if (usuarioId && usuarioId !== 'null' && usuarioId !== 'undefined') {
+                        localStorage.setItem(this.CHAVES.LOGADO, 'true');
+                        return true;
+                    }
 
-function logout() {
-    if (confirm('Tem certeza que deseja sair da sua conta?')) {
-        const gerenciadorUsuario = new GerenciadorUsuario();
-        gerenciadorUsuario.limparDados();
-        
-        alert('Logout realizado com sucesso!');
-        
-        setTimeout(() => {
+                    return false;
+                } catch (error) {
+                    console.error('Erro ao verificar login:', error);
+                    return false;
+                }
+            }
+
+            obterUsuario() {
+                try {
+                    const usuarioJSON = localStorage.getItem(this.CHAVES.USUARIO);
+                    return usuarioJSON ? JSON.parse(usuarioJSON) : null;
+                } catch (error) {
+                    console.error('Erro ao obter usuário:', error);
+                    return null;
+                }
+            }
+
+            sincronizarDadosLocais(usuario) {
+                const dados = {
+                    [this.CHAVES.ID]: usuario.id?.toString() || '',
+                    [this.CHAVES.NOME]: usuario.nome || 'Jogador',
+                    [this.CHAVES.PONTUACAO]: usuario.pontuacao?.toString() || '0',
+                    [this.CHAVES.DESAFIOS]: usuario.desafiosCompletados?.toString() || '0',
+                    [this.CHAVES.RA]: usuario.ra || '',
+                    [this.CHAVES.SERIE]: usuario.serie || '',
+                    [this.CHAVES.LOGADO]: 'true'
+                };
+
+                Object.entries(dados).forEach(([chave, valor]) => {
+                    if (valor && !localStorage.getItem(chave)) {
+                        localStorage.setItem(chave, valor);
+                    }
+                });
+            }
+
+            atualizarDados(usuario) {
+                try {
+                    localStorage.setItem(this.CHAVES.USUARIO, JSON.stringify(usuario));
+                    this.sincronizarDadosLocais(usuario);
+                } catch (error) {
+                    console.error('Erro ao atualizar dados:', error);
+                }
+            }
+
+            limparDados() {
+                Object.values(this.CHAVES).forEach(chave => {
+                    localStorage.removeItem(chave);
+                });
+            }
+        }
+
+        // ========== GERENCIADOR DE INTERFACE ==========
+        class GerenciadorInterface {
+            constructor() {
+                this.sistemaNiveis = new SistemaNiveis();
+            }
+
+            atualizarPerfil(usuario) {
+                if (!usuario || !usuario.id) {
+                    this.mostrarTelaNaoLogado();
+                    return;
+                }
+
+                const pontuacao = usuario.pontuacao || 0;
+                const nivelAtual = this.sistemaNiveis.calcularNivel(pontuacao);
+                const progresso = this.sistemaNiveis.calcularProgresso(pontuacao);
+                const pontosParaProximo = this.sistemaNiveis.calcularPontosParaProximo(pontuacao);
+
+                // Atualizar cabeçalho
+                document.getElementById('nome-usuario').textContent = this.escapeHTML(usuario.nome);
+                document.getElementById('serie-usuario').textContent = this.escapeHTML(usuario.serie || 'Série não informada');
+                document.getElementById('pontuacao-usuario').textContent = `${pontuacao} pontos`;
+                
+                const nivelBadge = document.getElementById('nivel-badge');
+                nivelBadge.innerHTML = `
+                    <span class="level-icon">${nivelAtual.icone}</span>
+                    <span id="nivel-texto">${nivelAtual.nome}</span>
+                `;
+                nivelBadge.style.background = `linear-gradient(135deg, ${nivelAtual.cor}, ${nivelAtual.cor}dd)`;
+
+                this.atualizarInformacoes(usuario, progresso, pontosParaProximo);
+                this.atualizarRanking(usuario, nivelAtual, pontuacao);
+                this.atualizarEstatisticas(usuario);
+            }
+
+            atualizarInformacoes(usuario, progresso, pontosParaProximo) {
+                const container = document.getElementById('info-container');
+                if (!container) return;
+
+                container.innerHTML = `
+                    <div class="info-item">
+                        <span class="info-label">RA:</span>
+                        <span class="info-value">${this.escapeHTML(usuario.ra || 'Não informado')}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Série:</span>
+                        <span class="info-value">${this.escapeHTML(usuario.serie || 'Não informada')}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Pontuação:</span>
+                        <span class="info-value highlight">${usuario.pontuacao || 0} pontos</span>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-header">
+                            <span class="progress-label">Progresso do Nível</span>
+                            <span class="progress-percentage">${Math.round(progresso)}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progresso}%"></div>
+                        </div>
+                        <div class="progress-hint">
+                            ${pontosParaProximo > 0 ? 
+                                `⏫ ${pontosParaProximo} pontos para evoluir` : 
+                                '🎉 Nível máximo alcançado!'}
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-label">Desafios:</span>
+                        <span class="info-value">${usuario.desafiosCompletados || 0} completos</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">ID:</span>
+                        <span class="info-value">${usuario.id || 'N/A'}</span>
+                    </div>
+                    <div class="sync-notice">
+                        Dados sincronizados com servidor
+                    </div>
+                `;
+            }
+
+            atualizarRanking(usuario, nivelAtual, pontuacao) {
+                const container = document.getElementById('ranking-container');
+                if (!container) return;
+
+                container.innerHTML = `
+                    <div class="info-item">
+                        <span class="info-label">Nível Atual:</span>
+                        <span class="info-value highlight">${nivelAtual.nome}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Posição:</span>
+                        <span class="info-value">Carregando...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Melhor Pontuação:</span>
+                        <span class="info-value highlight">${pontuacao} pontos</span>
+                    </div>
+                    <button class="btn btn-primary btn-full" onclick="navegarParaRanking()">
+                        📊 Ver Ranking Completo
+                    </button>
+                `;
+            }
+
+            atualizarEstatisticas(usuario) {
+                const container = document.getElementById('estatisticas-container');
+                if (!container) return;
+
+                const desafiosCompletos = usuario.desafiosCompletados || 0;
+                const progressoGeral = Math.min(desafiosCompletos * 10, 100);
+                
+                container.innerHTML = `
+                    <div class="info-item">
+                        <span class="info-label">Desafios Completos:</span>
+                        <span class="info-value highlight">${desafiosCompletos}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Taxa de Acerto:</span>
+                        <span class="info-value">Calculando...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Ativo desde:</span>
+                        <span class="info-value">${new Date().toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div class="progress-bar" style="margin: 20px 0;">
+                        <div class="progress-fill" style="width: ${progressoGeral}%"></div>
+                    </div>
+                    <div class="progress-hint">
+                        Progresso geral: ${progressoGeral}%
+                    </div>
+                `;
+            }
+
+            mostrarTelaNaoLogado() {
+                const containers = [
+                    'info-container',
+                    'ranking-container',
+                    'estatisticas-container'
+                ];
+
+                const template = `
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                            🔒 Faça login para acessar seu perfil
+                        </p>
+                        <button class="btn btn-primary" onclick="navegarParaLogin()">
+                            📲 Fazer Login
+                        </button>
+                    </div>
+                `;
+
+                containers.forEach(containerId => {
+                    const container = document.getElementById(containerId);
+                    if (container) {
+                        container.innerHTML = template;
+                    }
+                });
+
+                document.getElementById('nome-usuario').textContent = 'Visitante';
+                document.getElementById('serie-usuario').textContent = 'Não logado';
+                document.getElementById('pontuacao-usuario').textContent = '0 pontos';
+                document.getElementById('nivel-texto').textContent = 'Novato';
+            }
+
+            escapeHTML(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // ========== GERENCIADOR DE API ==========
+        class GerenciadorAPI {
+            constructor() {
+                this.gerenciadorUsuario = new GerenciadorUsuario();
+                this.gerenciadorInterface = new GerenciadorInterface();
+            }
+
+            async carregarPerfil() {
+                try {
+                    if (!this.gerenciadorUsuario.verificarLogin()) {
+                        this.gerenciadorInterface.mostrarTelaNaoLogado();
+                        return;
+                    }
+
+                    const usuarioOnline = await this.carregarDadosOnline();
+                    
+                    if (usuarioOnline) {
+                        this.gerenciadorUsuario.atualizarDados(usuarioOnline);
+                        this.gerenciadorInterface.atualizarPerfil(usuarioOnline);
+                    } else {
+                        this.carregarDadosLocais();
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar perfil:', error);
+                    this.carregarDadosLocais();
+                }
+            }
+
+            async carregarDadosOnline() {
+                try {
+                    const usuarioId = localStorage.getItem('usuarioId');
+                    if (!usuarioId) return null;
+
+                    const response = await fetch(`${CONFIG.API_URL}/api/usuarios/${usuarioId}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`Erro HTTP ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.success && data.usuario) {
+                        return data.usuario;
+                    }
+                    
+                    return null;
+                } catch (error) {
+                    console.log('Falha ao buscar dados online:', error.message);
+                    return null;
+                }
+            }
+
+            carregarDadosLocais() {
+                const usuario = this.gerenciadorUsuario.obterUsuario() || {
+                    nome: localStorage.getItem('usuarioNome'),
+                    id: localStorage.getItem('usuarioId'),
+                    pontuacao: parseInt(localStorage.getItem('usuarioPontuacao')) || 0,
+                    desafiosCompletados: parseInt(localStorage.getItem('usuarioDesafios')) || 0,
+                    ra: localStorage.getItem('usuarioRA') || '',
+                    serie: localStorage.getItem('usuarioSerie') || ''
+                };
+
+                if (!usuario.id || !usuario.nome) {
+                    this.gerenciadorInterface.mostrarTelaNaoLogado();
+                    return;
+                }
+
+                this.gerenciadorInterface.atualizarPerfil(usuario);
+            }
+        }
+
+        // ========== FUNÇÕES GLOBAIS ==========
+        function navegarParaLogin() {
             window.location.href = CONFIG.ROTAS.LOGIN;
-        }, 500);
-    }
-}
+        }
 
-// ========== INICIALIZAÇÃO ==========
-document.addEventListener('DOMContentLoaded', () => {
-    // Silenciar erros não críticos
-    const originalError = console.error;
-    console.error = (...args) => {
-        if (typeof args[0] === 'string') {
-            const mensagem = args[0].toLowerCase();
-            const errosIgnorados = [
-                'exceptions_hosts',
-                'overlay.js',
-                'paywall',
-                'sentry',
-                'chrome api',
-                'third-party'
-            ];
-            
-            if (errosIgnorados.some(erro => mensagem.includes(erro))) {
-                return;
+        function navegarParaRanking() {
+            window.location.href = CONFIG.ROTAS.RANKING;
+        }
+
+        function voltar() {
+            window.history.back();
+        }
+
+        function logout() {
+            if (confirm('Tem certeza que deseja sair da sua conta?')) {
+                const gerenciadorUsuario = new GerenciadorUsuario();
+                gerenciadorUsuario.limparDados();
+                
+                alert('Logout realizado com sucesso!');
+                
+                setTimeout(() => {
+                    window.location.href = CONFIG.ROTAS.LOGIN;
+                }, 500);
             }
         }
-        originalError.apply(console, args);
-    };
 
-    // Inicializar sistema
-    const gerenciadorAPI = new GerenciadorAPI();
-    gerenciadorAPI.carregarPerfil();
+        // ========== INICIALIZAÇÃO ==========
+        document.addEventListener('DOMContentLoaded', () => {
+            // Silenciar erros não críticos
+            const originalError = console.error;
+            console.error = (...args) => {
+                if (typeof args[0] === 'string') {
+                    const mensagem = args[0].toLowerCase();
+                    const errosIgnorados = [
+                        'exceptions_hosts',
+                        'overlay.js',
+                        'paywall',
+                        'sentry',
+                        'chrome api',
+                        'third-party'
+                    ];
+                    
+                    if (errosIgnorados.some(erro => mensagem.includes(erro))) {
+                        return;
+                    }
+                }
+                originalError.apply(console, args);
+            };
 
-    console.log('Sistema de perfil inicializado com sucesso!');
-});
+            const gerenciadorAPI = new GerenciadorAPI();
+            gerenciadorAPI.carregarPerfil();
+        });
     </script>
 </body>
 </html>
