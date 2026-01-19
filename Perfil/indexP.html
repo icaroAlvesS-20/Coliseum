@@ -1208,34 +1208,51 @@
                 }
             }
 
-            async buscarRankingOnline() {
-                try {
-                    if (this.cacheValido()) {
-                        const cache = this.obterRankingCache();
-                        if (cache) return cache;
-                    }
+         async buscarRankingOnline() {
+    try {
+        if (this.cacheValido()) {
+            const cache = this.obterRankingCache();
+            if (cache) return cache;
+        }
 
-                    const response = await fetch(`${CONFIG.API_URL}/api/ranking`);
-                    
-                    if (!response.ok) {
-                        throw new Error(`Erro HTTP ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    
-                    if (data.success && Array.isArray(data.ranking)) {
-                        const rankingOrdenado = data.ranking.sort((a, b) => b.pontuacao - a.pontuacao);
-                        this.salvarRankingCache(rankingOrdenado);
-                        return rankingOrdenado;
-                    }
-                    
-                    return null;
-                } catch (error) {
-                    console.log('Usando ranking local:', error.message);
-                    return null;
-                }
+        console.log('🔍 Buscando ranking real do servidor...');
+        
+        const response = await fetch(`${CONFIG.API_URL}/api/ranking`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}` 
             }
+        });
+        
+        if (!response.ok) {
+            console.error(`❌ Erro ao buscar ranking: ${response.status}`);
+            throw new Error(`Erro HTTP ${response.status}`);
+        }
 
+        const data = await response.json();
+        console.log('📊 Dados do ranking recebidos:', data);
+        
+        if (data.success && Array.isArray(data.ranking)) {
+            const rankingOrdenado = data.ranking.sort((a, b) => b.pontuacao - a.pontuacao);
+            this.salvarRankingCache(rankingOrdenado);
+            return rankingOrdenado;
+        } 
+        else if (Array.isArray(data)) {
+            const rankingOrdenado = data.sort((a, b) => b.pontuacao - a.pontuacao);
+            this.salvarRankingCache(rankingOrdenado);
+            return rankingOrdenado;
+        }
+        else {
+            console.warn('⚠️ Formato do ranking desconhecido:', data);
+            return null;
+        }
+        
+    } catch (error) {
+        console.error('❌ Falha ao buscar ranking online:', error.message);
+        return null;
+    }
+}
             calcularPosicaoLocal(usuarioId, pontuacao) {
                 const rankingCache = this.obterRankingCache();
                 let ranking = rankingCache || [];
