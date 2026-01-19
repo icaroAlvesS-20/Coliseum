@@ -1139,35 +1139,51 @@
             console.log('Aulas autorizadas:', Array.from(this.aulasAutorizadas));
         }
 
-        async verificarAulaAutorizada(aulaId) {
-            // Se o bloqueio progressivo estiver desativado, todas as aulas estão autorizadas
-            if (!this.bloqueioProgressivo) {
-                return true;
+       async verificarAulaAutorizada(aulaId) {
+    try {
+        // Verificar via API
+        const response = await fetch(`${this.API_BASE}/autorizacoes/verificar?usuarioId=${this.usuarioId}&cursoId=${this.cursoId}&aulaId=${aulaId}`);
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success) {
+                return data.autorizada;
             }
-            
-            // Se a aula já foi concluída, está automaticamente autorizada
-            if (this.aulasConcluidas.includes(aulaId)) {
-                return true;
-            }
-            
-            // Verificar se a aula está na lista de autorizações específicas
-            if (this.aulasAutorizadas.has(aulaId)) {
-                return true;
-            }
-            
-            // Verificar se a aula anterior está concluída (bloqueio progressivo)
-            const aulaAnterior = this.encontrarAulaAnterior(aulaId);
-            
-            if (!aulaAnterior) {
-                // Primeira aula do curso - sempre liberada
-                return true;
-            }
-            
-            // Verificar se a aula anterior está concluída
-            const aulaAnteriorConcluida = this.aulasConcluidas.includes(aulaAnterior.id);
-            
-            return aulaAnteriorConcluida;
         }
+        
+        // Fallback: lógica local
+        return await this.verificarAulaAutorizadaLocal(aulaId);
+        
+    } catch (error) {
+        console.error('Erro ao verificar autorização via API:', error);
+        return await this.verificarAulaAutorizadaLocal(aulaId);
+    }
+}
+
+async verificarAulaAutorizadaLocal(aulaId) {
+    if (!this.bloqueioProgressivo) {
+        return true;
+    }
+    
+    if (this.aulasConcluidas.includes(aulaId)) {
+        return true;
+    }
+    
+    if (this.aulasAutorizadas.has(aulaId)) {
+        return true;
+    }
+    
+    const aulaAnterior = this.encontrarAulaAnterior(aulaId);
+    
+    if (!aulaAnterior) {
+        return true;
+    }
+    
+    const aulaAnteriorConcluida = this.aulasConcluidas.includes(aulaAnterior.id);
+    
+    return aulaAnteriorConcluida;
+}
 
         encontrarAulaAnterior(aulaId) {
             const aulaAtual = this.encontrarAula(aulaId);
@@ -1176,18 +1192,16 @@
             const { moduloIndex, aulaIndex } = aulaAtual;
             
             if (aulaIndex > 0) {
-                // Aula anterior no mesmo módulo
                 const modulo = this.cursoData.modulos[moduloIndex];
                 return modulo.aulas[aulaIndex - 1];
             } else if (moduloIndex > 0) {
-                // Última aula do módulo anterior
                 const moduloAnterior = this.cursoData.modulos[moduloIndex - 1];
                 if (moduloAnterior.aulas && moduloAnterior.aulas.length > 0) {
                     return moduloAnterior.aulas[moduloAnterior.aulas.length - 1];
                 }
             }
             
-            return null; // Primeira aula do curso
+            return null; 
         }
 
         processarAulas(modulos) {
@@ -2050,4 +2064,5 @@
 </script>
 </body>
 </html>
+
 
