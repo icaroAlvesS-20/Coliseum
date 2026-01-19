@@ -85,11 +85,13 @@
             flex: 1;
             display: grid;
             grid-template-columns: minmax(200px, 1fr) 1.4fr minmax(250px, 1fr);
+            grid-template-rows: auto 1fr auto;
             grid-template-rows: auto 1fr;
             gap: 25px;
             grid-template-areas: 
                 "avatar header stats"
-                "info ranking stats";
+                "info ranking stats"
+                "logout logout logout";
             height: 100%;
         }
 
@@ -599,7 +601,8 @@
                 grid-template-areas: 
                     "avatar header"
                     "info ranking"
-                    "stats stats";
+                    "stats stats"
+                   "logout logout";
             }
             
             .container {
@@ -623,7 +626,8 @@
                     "header"
                     "info"
                     "ranking"
-                    "stats";
+                    "stats"
+                    "logout";
                 gap: 20px;
             }
             
@@ -794,7 +798,7 @@
                     <!-- Carregado dinamicamente -->
                 </div>
             </div>
-        </div>
+       
 
         <!-- Botão de Logout -->
         <div class="logout-container">
@@ -803,6 +807,7 @@
                 <span>Sair da Conta</span>
             </button>
         </div>
+     </div>    
     </div>
 
     <!-- Botão Voltar -->
