@@ -571,7 +571,68 @@
         .notificacao-concluido i {
             font-size: 1.2rem;
         }
+/* Adicione estas regras ao seu CSS existente */
 
+/* Aulas bloqueadas */
+.aula-item.bloqueada {
+    background: rgba(255, 152, 0, 0.1) !important;
+    border-left-color: var(--warning) !important;
+    position: relative;
+}
+
+.aula-item.bloqueada .aula-icone {
+    background: rgba(255, 152, 0, 0.2);
+    color: var(--warning);
+}
+
+.aula-item.bloqueada .aula-status {
+    background: rgba(255, 152, 0, 0.2);
+    color: var(--warning);
+}
+
+.aula-item.bloqueada:hover {
+    transform: none !important;
+    border-left-color: var(--warning) !important;
+    background: rgba(255, 152, 0, 0.15) !important;
+}
+
+.aula-item.bloqueada:hover .aula-info h4 {
+    color: #888 !important;
+}
+
+/* Notificação de desbloqueio */
+.notificacao-desbloqueio {
+    position: fixed;
+    top: 100px;
+    right: 30px;
+    background: var(--info);
+    color: white;
+    padding: 15px 25px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideInRight 0.5s ease, fadeOut 0.5s ease 3s forwards;
+    max-width: 350px;
+}
+
+@media (max-width: 768px) {
+    .notificacao-desbloqueio {
+        top: 80px;
+        right: 15px;
+        left: 15px;
+        max-width: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .notificacao-desbloqueio {
+        top: 70px;
+        padding: 12px 20px;
+    }
+}
         /* ANIMAÇÕES */
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -848,556 +909,1002 @@
         </div>
     </div>
 
-    <script>
-        // VARIÁVEIS GLOBAIS
-        let aulaAtualId = null;
-        let aulaAtualConcluida = false;
+   <script>
+    // VARIÁVEIS GLOBAIS
+    let aulaAtualId = null;
+    let aulaAtualConcluida = false;
 
-        // FUNÇÃO VOLTAR
-        function voltarParaCursos() {
-            console.log('Voltando para cursos...');
-            const urlParams = new URLSearchParams(window.location.search);
-            const from = urlParams.get('from');
-            
-            if (from === 'extras') {
-                window.location.href = '/CursosExtras/indexEX.html';
-            } else {
-                window.history.back();
+    // FUNÇÃO VOLTAR
+    function voltarParaCursos() {
+        console.log('Voltando para cursos...');
+        const urlParams = new URLSearchParams(window.location.search);
+        const from = urlParams.get('from');
+        
+        if (from === 'extras') {
+            window.location.href = '/CursosExtras/indexEX.html';
+        } else {
+            window.history.back();
+        }
+    }
+
+    // GERENCIADOR PRINCIPAL COM BLOQUEIO DE AULAS
+    class GerenciadorCursos {
+        constructor() {
+            this.API_BASE = 'https://coliseum-api.onrender.com/api';
+            this.usuarioId = this.obterUsuarioId();
+            this.cursoId = this.obterCursoId();
+            this.aulasConcluidas = this.carregarProgresso();
+            this.totalAulas = 0;
+            this.aulasCarregadas = 0;
+            this.cursoData = null;
+            this.aulasMap = new Map();
+            this.autorizacoesPorUsuario = {}; // Armazenar autorizações específicas
+            this.aulasAutorizadas = new Set(); // Aulas autorizadas pelo admin
+            this.bloqueioProgressivo = true; // Por padrão, bloqueio ativo
+        }
+
+        obterUsuarioId() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const usuarioId = urlParams.get('usuarioId');
+                
+                if (usuarioId) {
+                    localStorage.setItem('usuarioId', usuarioId);
+                    return usuarioId;
+                }
+                
+                return localStorage.getItem('usuarioId') || '1';
+            } catch (e) {
+                console.error('Erro:', e);
+                return '1';
             }
         }
 
-        // GERENCIADOR PRINCIPAL
-        class GerenciadorCursos {
-            constructor() {
-                this.API_BASE = 'https://coliseum-api.onrender.com/api';
-                this.usuarioId = this.obterUsuarioId();
-                this.cursoId = this.obterCursoId();
-                this.aulasConcluidas = this.carregarProgresso();
-                this.totalAulas = 0;
-                this.aulasCarregadas = 0;
-                this.cursoData = null;
-                this.aulasMap = new Map();
+        obterCursoId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        carregarProgresso() {
+            const progresso = localStorage.getItem(`progresso_${this.usuarioId}_${this.cursoId}`);
+            return progresso ? JSON.parse(progresso) : [];
+        }
+
+        salvarProgresso() {
+            localStorage.setItem(`progresso_${this.usuarioId}_${this.cursoId}`, 
+                                JSON.stringify(this.aulasConcluidas));
+            this.atualizarProgressoBar();
+        }
+
+        marcarAulaConcluida(aulaId) {
+            if (!this.aulasConcluidas.includes(aulaId)) {
+                this.aulasConcluidas.push(aulaId);
+                this.salvarProgresso();
+                
+                // Mostrar notificação
+                this.mostrarNotificacaoConcluido();
+                
+                // Atualizar interface
+                this.atualizarInterfaceAula(aulaId);
+                
+                return true;
+            }
+            return false;
+        }
+
+        desmarcarAulaConcluida(aulaId) {
+            const index = this.aulasConcluidas.indexOf(aulaId);
+            if (index > -1) {
+                this.aulasConcluidas.splice(index, 1);
+                this.salvarProgresso();
+                this.atualizarInterfaceAula(aulaId, false);
+                return true;
+            }
+            return false;
+        }
+
+        mostrarNotificacaoConcluido() {
+            // Remover notificação anterior se existir
+            const notificacaoAnterior = document.querySelector('.notificacao-concluido');
+            if (notificacaoAnterior) {
+                notificacaoAnterior.remove();
             }
 
-            obterUsuarioId() {
-                try {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const usuarioId = urlParams.get('usuarioId');
-                    
-                    if (usuarioId) {
-                        localStorage.setItem('usuarioId', usuarioId);
-                        return usuarioId;
-                    }
-                    
-                    return localStorage.getItem('usuarioId') || '1';
-                } catch (e) {
-                    console.error('Erro:', e);
-                    return '1';
+            // Criar nova notificação
+            const notificacao = document.createElement('div');
+            notificacao.className = 'notificacao-concluido';
+            notificacao.innerHTML = `
+                <i class="fas fa-check-circle"></i>
+                <div>
+                    <strong>Aula Concluída!</strong>
+                    <div style="font-size: 0.85rem; opacity: 0.9;">Progresso atualizado com sucesso</div>
+                </div>
+            `;
+
+            document.body.appendChild(notificacao);
+
+            // Remover após animação
+            setTimeout(() => {
+                if (notificacao.parentNode) {
+                    notificacao.remove();
                 }
-            }
+            }, 3000);
+        }
 
-            obterCursoId() {
-                const urlParams = new URLSearchParams(window.location.search);
-                return urlParams.get('id');
-            }
+        calcularProgresso() {
+            if (this.totalAulas === 0) return 0;
+            return Math.round((this.aulasConcluidas.length / this.totalAulas) * 100);
+        }
 
-            carregarProgresso() {
-                const progresso = localStorage.getItem(`progresso_${this.usuarioId}_${this.cursoId}`);
-                return progresso ? JSON.parse(progresso) : [];
+        atualizarProgressoBar() {
+            const progresso = this.calcularProgresso();
+            const progressoFill = document.getElementById('progresso-fill');
+            if (progressoFill) {
+                progressoFill.style.width = `${progresso}%`;
             }
+        }
 
-            salvarProgresso() {
-                localStorage.setItem(`progresso_${this.usuarioId}_${this.cursoId}`, 
-                                    JSON.stringify(this.aulasConcluidas));
-                this.atualizarProgressoBar();
-            }
-
-            marcarAulaConcluida(aulaId) {
-                if (!this.aulasConcluidas.includes(aulaId)) {
-                    this.aulasConcluidas.push(aulaId);
-                    this.salvarProgresso();
-                    
-                    // Mostrar notificação
-                    this.mostrarNotificacaoConcluido();
-                    
-                    // Atualizar interface
-                    this.atualizarInterfaceAula(aulaId);
-                    
-                    return true;
-                }
-                return false;
-            }
-
-            desmarcarAulaConcluida(aulaId) {
-                const index = this.aulasConcluidas.indexOf(aulaId);
-                if (index > -1) {
-                    this.aulasConcluidas.splice(index, 1);
-                    this.salvarProgresso();
-                    this.atualizarInterfaceAula(aulaId, false);
-                    return true;
-                }
-                return false;
-            }
-
-            mostrarNotificacaoConcluido() {
-                // Remover notificação anterior se existir
-                const notificacaoAnterior = document.querySelector('.notificacao-concluido');
-                if (notificacaoAnterior) {
-                    notificacaoAnterior.remove();
+        async carregarCurso() {
+            try {
+                if (!this.cursoId) {
+                    this.mostrarErro('Curso não especificado');
+                    return;
                 }
 
-                // Criar nova notificação
-                const notificacao = document.createElement('div');
-                notificacao.className = 'notificacao-concluido';
-                notificacao.innerHTML = `
-                    <i class="fas fa-check-circle"></i>
-                    <div>
-                        <strong>Aula Concluída!</strong>
-                        <div style="font-size: 0.85rem; opacity: 0.9;">Progresso atualizado com sucesso</div>
-                    </div>
-                `;
-
-                document.body.appendChild(notificacao);
-
-                // Remover após animação
-                setTimeout(() => {
-                    if (notificacao.parentNode) {
-                        notificacao.remove();
-                    }
-                }, 3000);
-            }
-
-            calcularProgresso() {
-                if (this.totalAulas === 0) return 0;
-                return Math.round((this.aulasConcluidas.length / this.totalAulas) * 100);
-            }
-
-            atualizarProgressoBar() {
-                const progresso = this.calcularProgresso();
-                const progressoFill = document.getElementById('progresso-fill');
-                if (progressoFill) {
-                    progressoFill.style.width = `${progresso}%`;
+                console.log('Buscando curso completo:', this.cursoId);
+                
+                const response = await fetch(`${this.API_BASE}/cursos/${this.cursoId}?usuarioId=${this.usuarioId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status} ao carregar curso`);
                 }
+                
+                const data = await response.json();
+                
+                if (data.success && data.curso) {
+                    this.cursoData = data.curso;
+                    this.exibirCurso(data.curso);
+                    
+                    // Verificar configuração de bloqueio progressivo
+                    this.bloqueioProgressivo = data.curso.bloqueioProgressivo !== false;
+                    
+                    // Carregar autorizações do usuário para este curso
+                    await this.carregarAutorizacoesUsuario();
+                    
+                    this.processarAulas(data.curso.modulos || []);
+                } else {
+                    throw new Error(data.error || 'Erro desconhecido');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao carregar curso:', error);
+                this.mostrarErro(error.message);
             }
+        }
 
-            async carregarCurso() {
-                try {
-                    if (!this.cursoId) {
-                        this.mostrarErro('Curso não especificado');
-                        return;
-                    }
-
-                    console.log('Buscando curso completo:', this.cursoId);
-                    
-                    const response = await fetch(`${this.API_BASE}/cursos/${this.cursoId}?usuarioId=${this.usuarioId}`);
-                    
-                    if (!response.ok) {
-                        throw new Error(`Erro ${response.status} ao carregar curso`);
-                    }
-                    
+        async carregarAutorizacoesUsuario() {
+            try {
+                console.log('Carregando autorizações do usuário...');
+                
+                const response = await fetch(`${this.API_BASE}/autorizacoes/usuario/${this.usuarioId}/curso/${this.cursoId}`);
+                
+                if (response.ok) {
                     const data = await response.json();
                     
-                    if (data.success && data.curso) {
-                        this.cursoData = data.curso;
-                        this.exibirCurso(data.curso);
-                        this.processarAulas(data.curso.modulos || []);
-                    } else {
-                        throw new Error(data.error || 'Erro desconhecido');
+                    if (data.success && data.autorizacoes) {
+                        this.processarAutorizacoes(data.autorizacoes);
                     }
-                    
-                } catch (error) {
-                    console.error('Erro ao carregar curso:', error);
-                    this.mostrarErro(error.message);
+                } else {
+                    console.log('Nenhuma autorização específica encontrada');
                 }
+            } catch (error) {
+                console.error('Erro ao carregar autorizações:', error);
             }
+        }
 
-            processarAulas(modulos) {
-                console.log('Processando módulos:', modulos);
-                
-                this.aulasMap.clear();
-                this.totalAulas = 0;
-                
-                modulos.forEach((modulo, moduloIndex) => {
-                    if (modulo.aulas && Array.isArray(modulo.aulas)) {
-                        modulo.aulas.forEach((aula, aulaIndex) => {
-                            if (aula && aula.id) {
-                                aula.moduloIndex = moduloIndex;
-                                aula.aulaIndex = aulaIndex;
-                                this.aulasMap.set(aula.id, aula);
-                                this.totalAulas++;
-                            }
+        processarAutorizacoes(autorizacoes) {
+            console.log('Processando autorizações:', autorizacoes);
+            
+            this.aulasAutorizadas.clear();
+            
+            autorizacoes.forEach(autorizacao => {
+                if (autorizacao.tipo === 'liberar_todas') {
+                    // Marcar todas as aulas como autorizadas
+                    if (this.cursoData.modulos) {
+                        this.cursoData.modulos.forEach(modulo => {
+                            modulo.aulas?.forEach(aula => {
+                                if (aula && aula.id) {
+                                    this.aulasAutorizadas.add(aula.id);
+                                }
+                            });
                         });
                     }
-                });
-                
-                console.log(`Total de aulas mapeadas: ${this.aulasMap.size}`);
-                this.exibirModulosComAulas(modulos);
-                this.atualizarProgressoBar();
-            }
-
-            encontrarAula(aulaId) {
-                if (this.aulasMap.has(aulaId)) {
-                    return this.aulasMap.get(aulaId);
-                }
-                
-                if (this.cursoData && this.cursoData.modulos) {
-                    for (const modulo of this.cursoData.modulos) {
-                        if (modulo.aulas) {
-                            const aula = modulo.aulas.find(a => a.id == aulaId);
-                            if (aula) return aula;
+                } else if (autorizacao.tipo === 'liberar_modulo' && autorizacao.moduloId) {
+                    // Liberar aulas de um módulo específico
+                    const modulo = this.cursoData.modulos?.find(m => m.id == autorizacao.moduloId);
+                    modulo?.aulas?.forEach(aula => {
+                        if (aula && aula.id) {
+                            this.aulasAutorizadas.add(aula.id);
                         }
-                    }
+                    });
+                } else if (autorizacao.tipo === 'liberar_aula' && autorizacao.aulaId) {
+                    // Liberar aula específica
+                    this.aulasAutorizadas.add(parseInt(autorizacao.aulaId));
+                } else if (autorizacao.tipo === 'bloquear_progresso') {
+                    // Ativar bloqueio progressivo
+                    this.bloqueioProgressivo = true;
                 }
-                
-                return null;
+            });
+            
+            console.log('Aulas autorizadas:', Array.from(this.aulasAutorizadas));
+        }
+
+        async verificarAulaAutorizada(aulaId) {
+            // Se o bloqueio progressivo estiver desativado, todas as aulas estão autorizadas
+            if (!this.bloqueioProgressivo) {
+                return true;
             }
-
-            exibirCurso(curso) {
-                const tituloElement = document.getElementById('curso-titulo');
-                const descricaoElement = document.getElementById('curso-descricao');
-                const metaContainer = document.getElementById('curso-meta');
-                
-                if (tituloElement) {
-                    tituloElement.textContent = curso.titulo || 'Curso Sem Título';
-                }
-                
-                if (descricaoElement) {
-                    descricaoElement.textContent = curso.descricao || '';
-                }
-                
-                document.title = `${curso.titulo || 'Curso'} - Coliseum`;
-
-                if (metaContainer) {
-                    const totalAulas = curso.modulos ? 
-                        curso.modulos.reduce((total, modulo) => total + (modulo.aulas?.length || 0), 0) : 0;
-                    
-                    metaContainer.innerHTML = `
-                        <div class="meta-item">
-                            <i class="fas fa-clock"></i>
-                            <span>${curso.duracao || '--'} horas</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class="fas fa-layer-group"></i>
-                            <span>${curso.modulos?.length || 0} módulos</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class="fas fa-book"></i>
-                            <span>${totalAulas} aulas</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class="fas fa-graduation-cap"></i>
-                            <span>${curso.nivel || 'Todos os níveis'}</span>
-                        </div>
-                    `;
-                }
+            
+            // Se a aula já foi concluída, está automaticamente autorizada
+            if (this.aulasConcluidas.includes(aulaId)) {
+                return true;
             }
-
-            exibirModulosComAulas(modulos) {
-                const container = document.getElementById('modulos-container');
-                
-                if (!container) {
-                    console.error('Container de módulos não encontrado!');
-                    return;
-                }
-                
-                if (!modulos || modulos.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-graduation-cap"></i>
-                            <h3>Nenhum módulo encontrado</h3>
-                            <p>Este curso ainda não possui conteúdo disponível.</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                let html = '';
-                
-                modulos.forEach((modulo, index) => {
-                    const aulasCount = modulo.aulas?.length || 0;
-                    
-                    html += `
-                        <div class="modulo" id="modulo-${index}">
-                            <div class="modulo-header" onclick="toggleModulo(${index})">
-                                <h3>${this.escapeHtml(modulo.titulo || `Módulo ${index + 1}`)}</h3>
-                                <span class="modulo-contador">${aulasCount} aula${aulasCount !== 1 ? 's' : ''}</span>
-                            </div>
-                            <div class="aulas-container" id="modulo-aulas-${index}">
-                                ${this.gerarListaAulas(modulo.aulas || [])}
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                container.innerHTML = html;
+            
+            // Verificar se a aula está na lista de autorizações específicas
+            if (this.aulasAutorizadas.has(aulaId)) {
+                return true;
             }
-
-            gerarListaAulas(aulas) {
-                if (!aulas || aulas.length === 0) {
-                    return '<div style="padding:20px;color:#888;text-align:center;">Nenhuma aula disponível neste módulo</div>';
-                }
-
-                return aulas.map(aula => {
-                    if (!aula || !aula.id) {
-                        return '';
-                    }
-                    
-                    const concluida = this.aulasConcluidas.includes(aula.id);
-                    const aulaIcon = aula.videoUrl ? 'fas fa-play-circle' : 'fas fa-book';
-                    
-                    return `
-                        <div class="aula-item ${concluida ? 'completa' : ''}" 
-                             onclick="iniciarAula(${aula.id})"
-                             data-aula-id="${aula.id}">
-                            <div class="aula-icone">
-                                <i class="${aulaIcon}"></i>
-                            </div>
-                            <div class="aula-info">
-                                <h4>${this.escapeHtml(aula.titulo || `Aula ${aula.id}`)}</h4>
-                                <div class="aula-meta">
-                                    <span><i class="fas fa-clock"></i> ${aula.duracao || '10:00'} min</span>
-                                    ${aula.nivel ? `<span><i class="fas fa-chart-bar"></i> ${aula.nivel}</span>` : ''}
-                                </div>
-                            </div>
-                            <div class="aula-status">
-                                ${concluida ? '<i class="fas fa-check"></i> Concluída' : 'Pendente'}
-                            </div>
-                        </div>
-                    `;
-                }).join('');
+            
+            // Verificar se a aula anterior está concluída (bloqueio progressivo)
+            const aulaAnterior = this.encontrarAulaAnterior(aulaId);
+            
+            if (!aulaAnterior) {
+                // Primeira aula do curso - sempre liberada
+                return true;
             }
+            
+            // Verificar se a aula anterior está concluída
+            const aulaAnteriorConcluida = this.aulasConcluidas.includes(aulaAnterior.id);
+            
+            return aulaAnteriorConcluida;
+        }
 
-            async carregarConteudoAula(aulaId) {
-                try {
-                    console.log('Carregando conteúdo da aula:', aulaId);
-                    
-                    let aula = this.encontrarAula(aulaId);
-                    
-                    if (!aula) {
-                        console.log('Aula não encontrada no cache');
-                        throw new Error('Aula não encontrada');
-                    }
-                    
-                    // Guardar aula atual globalmente
-                    aulaAtualId = aulaId;
-                    aulaAtualConcluida = this.aulasConcluidas.includes(aulaId);
-                    
-                    // Atualizar controles da aula
-                    this.atualizarControlesAula(aula);
-                    
-                    return this.formatarConteudoAula(aula);
-                    
-                } catch (error) {
-                    console.error('Erro ao carregar conteúdo:', error);
-                    return this.conteudoErro(error);
+        encontrarAulaAnterior(aulaId) {
+            const aulaAtual = this.encontrarAula(aulaId);
+            if (!aulaAtual) return null;
+
+            const { moduloIndex, aulaIndex } = aulaAtual;
+            
+            if (aulaIndex > 0) {
+                // Aula anterior no mesmo módulo
+                const modulo = this.cursoData.modulos[moduloIndex];
+                return modulo.aulas[aulaIndex - 1];
+            } else if (moduloIndex > 0) {
+                // Última aula do módulo anterior
+                const moduloAnterior = this.cursoData.modulos[moduloIndex - 1];
+                if (moduloAnterior.aulas && moduloAnterior.aulas.length > 0) {
+                    return moduloAnterior.aulas[moduloAnterior.aulas.length - 1];
                 }
             }
+            
+            return null; // Primeira aula do curso
+        }
 
-            atualizarControlesAula(aula) {
-                const controles = document.getElementById('aula-controles');
-                const duracaoElement = document.getElementById('aula-duracao');
-                const estadoElement = document.getElementById('aula-estado');
-                const btnConcluir = document.getElementById('btn-concluir-aula');
-                
-                if (controles) {
-                    controles.style.display = 'flex';
-                }
-                
-                if (duracaoElement && aula.duracao) {
-                    duracaoElement.textContent = aula.duracao;
-                }
-                
-                if (estadoElement) {
-                    const concluida = this.aulasConcluidas.includes(aula.id);
-                    estadoElement.textContent = concluida ? 'Concluída' : 'Em andamento';
-                    estadoElement.style.color = concluida ? 'var(--success)' : 'var(--primary)';
-                }
-                
-                if (btnConcluir) {
-                    const concluida = this.aulasConcluidas.includes(aula.id);
-                    
-                    if (concluida) {
-                        btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
-                        btnConcluir.classList.add('concluida');
-                        btnConcluir.disabled = true;
-                    } else {
-                        btnConcluir.innerHTML = '<i class="fas fa-check"></i> <span>Marcar como Concluída</span>';
-                        btnConcluir.classList.remove('concluida');
-                        btnConcluir.disabled = false;
-                    }
-                }
-            }
-
-            atualizarInterfaceAula(aulaId, concluida = true) {
-                // Atualizar item na lista
-                const aulaElement = document.querySelector(`[data-aula-id="${aulaId}"]`);
-                if (aulaElement) {
-                    if (concluida) {
-                        aulaElement.classList.add('completa');
-                        const statusElement = aulaElement.querySelector('.aula-status');
-                        const iconeElement = aulaElement.querySelector('.aula-icone');
-                        
-                        if (statusElement) {
-                            statusElement.innerHTML = '<i class="fas fa-check"></i> Concluída';
+        processarAulas(modulos) {
+            console.log('Processando módulos:', modulos);
+            
+            this.aulasMap.clear();
+            this.totalAulas = 0;
+            
+            modulos.forEach((modulo, moduloIndex) => {
+                if (modulo.aulas && Array.isArray(modulo.aulas)) {
+                    modulo.aulas.forEach((aula, aulaIndex) => {
+                        if (aula && aula.id) {
+                            aula.moduloIndex = moduloIndex;
+                            aula.aulaIndex = aulaIndex;
+                            this.aulasMap.set(aula.id, aula);
+                            this.totalAulas++;
                         }
-                        if (iconeElement) {
-                            iconeElement.innerHTML = '<i class="fas fa-check-circle"></i>';
-                        }
-                    } else {
-                        aulaElement.classList.remove('completa');
-                        const statusElement = aulaElement.querySelector('.aula-status');
-                        const iconeElement = aulaElement.querySelector('.aula-icone');
-                        const aula = this.encontrarAula(aulaId);
-                        
-                        if (statusElement) {
-                            statusElement.innerHTML = 'Pendente';
-                        }
-                        if (iconeElement && aula) {
-                            iconeElement.innerHTML = aula.videoUrl ? '<i class="fas fa-play-circle"></i>' : '<i class="fas fa-book"></i>';
-                        }
-                    }
+                    });
                 }
-                
-                // Atualizar botão no modal se for a aula atual
-                if (aulaId === aulaAtualId) {
-                    const btnConcluir = document.getElementById('btn-concluir-aula');
-                    const estadoElement = document.getElementById('aula-estado');
-                    
-                    if (concluida) {
-                        if (btnConcluir) {
-                            btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
-                            btnConcluir.classList.add('concluida');
-                            btnConcluir.disabled = true;
-                        }
-                        if (estadoElement) {
-                            estadoElement.textContent = 'Concluída';
-                            estadoElement.style.color = 'var(--success)';
-                        }
-                    } else {
-                        if (btnConcluir) {
-                            btnConcluir.innerHTML = '<i class="fas fa-check"></i> <span>Marcar como Concluída</span>';
-                            btnConcluir.classList.remove('concluida');
-                            btnConcluir.disabled = false;
-                        }
-                        if (estadoElement) {
-                            estadoElement.textContent = 'Em andamento';
-                            estadoElement.style.color = 'var(--primary)';
-                        }
-                    }
-                }
-                
-                this.atualizarProgressoBar();
-            }
+            });
+            
+            console.log(`Total de aulas mapeadas: ${this.aulasMap.size}`);
+            
+            // Carregar interface das aulas (assincronamente para verificar autorizações)
+            this.exibirModulosComAulas(modulos);
+            this.atualizarProgressoBar();
+        }
 
-            extrairYouTubeId(url) {
-                if (!url) return null;
-                
-                const patterns = [
-                    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
-                    /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
-                    /youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/
-                ];
-                
-                for (const pattern of patterns) {
-                    const match = url.match(pattern);
-                    if (match && match[1]) {
-                        return match[1];
-                    }
-                }
-                
-                return null;
+        async exibirModulosComAulas(modulos) {
+            const container = document.getElementById('modulos-container');
+            
+            if (!container) {
+                console.error('Container de módulos não encontrado!');
+                return;
             }
-
-            formatarConteudoAula(aula) {
-                let conteudo = '';
-                
-                const tituloElement = document.getElementById('aula-titulo');
-                if (tituloElement) {
-                    tituloElement.textContent = aula.titulo || `Aula ${aula.id}`;
-                }
-                
-                if (aula.videoUrl) {
-                    const videoId = this.extrairYouTubeId(aula.videoUrl);
-                    
-                    if (videoId) {
-                        const embedUrl = `https://www.youtube.com/embed/${videoId}`;
-                        
-                        conteudo += `
-                            <div class="video-container">
-                                <iframe src="${embedUrl}" 
-                                        frameborder="0" 
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                        allowfullscreen
-                                        loading="lazy">
-                                </iframe>
-                            </div>
-                        `;
-                    } else {
-                        conteudo += `
-                            <div class="conteudo-aula">
-                                <h3><i class="fas fa-video"></i> Conteúdo de Vídeo</h3>
-                                <p>Link do vídeo: <a href="${this.escapeHtml(aula.videoUrl)}" target="_blank" style="color:var(--primary);">${this.escapeHtml(aula.videoUrl)}</a></p>
-                                <small style="color:var(--gray);">Clique no link para assistir em outra aba</small>
-                            </div>
-                        `;
-                    }
-                }
-                
-                if (aula.conteudo) {
-                    conteudo += `
-                        <div class="conteudo-aula">
-                            <h3><i class="fas fa-file-alt"></i> Conteúdo da Aula</h3>
-                            <div>${this.formatarTexto(aula.conteudo)}</div>
-                        </div>
-                    `;
-                } else if (aula.descricao) {
-                    conteudo += `
-                        <div class="conteudo-aula">
-                            <h3><i class="fas fa-info-circle"></i> Descrição</h3>
-                            <p>${this.escapeHtml(aula.descricao)}</p>
-                        </div>
-                    `;
-                }
-                
-                if (!conteudo) {
-                    conteudo = this.conteudoPadrao(aula);
-                }
-                
-                return conteudo;
-            }
-
-            conteudoPadrao(aula) {
-                return `
+            
+            if (!modulos || modulos.length === 0) {
+                container.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-graduation-cap"></i>
-                        <h3>${this.escapeHtml(aula.titulo || `Aula ${aula.id}`)}</h3>
-                        <p>Esta aula está sendo preparada com o melhor conteúdo para você.</p>
-                        ${aula.videoUrl ? `
-                            <div style="margin-top: 20px;">
-                                <a href="${this.escapeHtml(aula.videoUrl)}" target="_blank" 
-                                   style="display:inline-flex; align-items:center; gap:10px; 
-                                          padding:12px 24px; background:var(--primary); 
-                                          color:var(--dark); border-radius:var(--border-radius-sm);
-                                          text-decoration:none; font-weight:600;">
-                                    <i class="fas fa-external-link-alt"></i>
-                                    Assistir Vídeo Externo
-                                </a>
+                        <h3>Nenhum módulo encontrado</h3>
+                        <p>Este curso ainda não possui conteúdo disponível.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            
+            // Processar cada módulo e suas aulas
+            for (let i = 0; i < modulos.length; i++) {
+                const modulo = modulos[i];
+                const aulasCount = modulo.aulas?.length || 0;
+                
+                html += `
+                    <div class="modulo" id="modulo-${i}">
+                        <div class="modulo-header" onclick="toggleModulo(${i})">
+                            <h3>${this.escapeHtml(modulo.titulo || `Módulo ${i + 1}`)}</h3>
+                            <span class="modulo-contador">${aulasCount} aula${aulasCount !== 1 ? 's' : ''}</span>
+                        </div>
+                        <div class="aulas-container" id="modulo-aulas-${i}">
+                            ${await this.gerarListaAulas(modulo.aulas || [])}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        async gerarListaAulas(aulas) {
+            if (!aulas || aulas.length === 0) {
+                return '<div style="padding:20px;color:#888;text-align:center;">Nenhuma aula disponível neste módulo</div>';
+            }
+
+            let aulasHTML = '';
+            
+            for (let i = 0; i < aulas.length; i++) {
+                const aula = aulas[i];
+                if (!aula || !aula.id) continue;
+                
+                const concluida = this.aulasConcluidas.includes(aula.id);
+                const autorizada = await this.verificarAulaAutorizada(aula.id);
+                const aulaIcon = aula.videoUrl ? 'fas fa-play-circle' : 'fas fa-book';
+                const bloqueada = !autorizada && !concluida;
+                
+                aulasHTML += `
+                    <div class="aula-item ${concluida ? 'completa' : ''} ${bloqueada ? 'bloqueada' : ''}" 
+                         onclick="${bloqueada ? '' : `iniciarAula(${aula.id})`}"
+                         data-aula-id="${aula.id}"
+                         data-aula-autorizada="${autorizada}"
+                         style="${bloqueada ? 'cursor: not-allowed;' : ''}">
+                        <div class="aula-icone">
+                            ${bloqueada ? 
+                                '<i class="fas fa-lock" style="color: var(--warning);"></i>' : 
+                                `<i class="${aulaIcon}"></i>`
+                            }
+                        </div>
+                        <div class="aula-info">
+                            <h4 style="${bloqueada ? 'color: #888;' : ''}">
+                                ${this.escapeHtml(aula.titulo || `Aula ${aula.id}`)}
+                                ${bloqueada ? '<span style="color: var(--warning); font-size: 0.8em; margin-left: 8px;">(Bloqueada)</span>' : ''}
+                            </h4>
+                            <div class="aula-meta">
+                                <span><i class="fas fa-clock"></i> ${aula.duracao || '10:00'} min</span>
+                                ${aula.nivel ? `<span><i class="fas fa-chart-bar"></i> ${aula.nivel}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="aula-status">
+                            ${concluida ? 
+                                '<i class="fas fa-check"></i> Concluída' : 
+                                bloqueada ? 
+                                    '<i class="fas fa-lock"></i> Bloqueada' : 
+                                    'Pendente'
+                            }
+                        </div>
+                        ${bloqueada ? `
+                            <div class="aula-tooltip" style="position: absolute; top: 50%; right: 70px; transform: translateY(-50%);">
+                                <i class="fas fa-info-circle" style="color: var(--warning); cursor: help;" 
+                                   title="Esta aula está bloqueada. Conclua a aula anterior para desbloquear."></i>
                             </div>
                         ` : ''}
                     </div>
                 `;
             }
+            
+            return aulasHTML;
+        }
 
-            conteudoErro(error) {
-                return `
-                    <div style="text-align:center; padding: 50px;">
-                        <div style="font-size:4rem; color:var(--danger); margin-bottom:20px;">
-                            <i class="fas fa-exclamation-triangle"></i>
+        encontrarAula(aulaId) {
+            if (this.aulasMap.has(aulaId)) {
+                return this.aulasMap.get(aulaId);
+            }
+            
+            if (this.cursoData && this.cursoData.modulos) {
+                for (const modulo of this.cursoData.modulos) {
+                    if (modulo.aulas) {
+                        const aula = modulo.aulas.find(a => a.id == aulaId);
+                        if (aula) return aula;
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        exibirCurso(curso) {
+            const tituloElement = document.getElementById('curso-titulo');
+            const descricaoElement = document.getElementById('curso-descricao');
+            const metaContainer = document.getElementById('curso-meta');
+            
+            if (tituloElement) {
+                tituloElement.textContent = curso.titulo || 'Curso Sem Título';
+            }
+            
+            if (descricaoElement) {
+                descricaoElement.textContent = curso.descricao || '';
+            }
+            
+            document.title = `${curso.titulo || 'Curso'} - Coliseum`;
+
+            if (metaContainer) {
+                const totalAulas = curso.modulos ? 
+                    curso.modulos.reduce((total, modulo) => total + (modulo.aulas?.length || 0), 0) : 0;
+                
+                metaContainer.innerHTML = `
+                    <div class="meta-item">
+                        <i class="fas fa-clock"></i>
+                        <span>${curso.duracao || '--'} horas</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-layer-group"></i>
+                        <span>${curso.modulos?.length || 0} módulos</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-book"></i>
+                        <span>${totalAulas} aulas</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>${curso.nivel || 'Todos os níveis'}</span>
+                    </div>
+                    ${this.bloqueioProgressivo ? `
+                        <div class="meta-item">
+                            <i class="fas fa-lock"></i>
+                            <span>Progresso Sequencial</span>
                         </div>
-                        <h3 style="color:var(--light); margin-bottom:15px;">Erro ao Carregar Conteúdo</h3>
-                        <p style="color:var(--gray); margin-bottom:10px;">${this.escapeHtml(error.message)}</p>
+                    ` : ''}
+                `;
+            }
+        }
+
+        async carregarConteudoAula(aulaId) {
+            try {
+                console.log('Carregando conteúdo da aula:', aulaId);
+                
+                // Verificar se a aula está autorizada
+                const autorizada = await this.verificarAulaAutorizada(aulaId);
+                
+                if (!autorizada) {
+                    const aulaAnterior = this.encontrarAulaAnterior(aulaId);
+                    return this.conteudoAulaBloqueada(aulaId, aulaAnterior);
+                }
+                
+                let aula = this.encontrarAula(aulaId);
+                
+                if (!aula) {
+                    console.log('Aula não encontrada no cache');
+                    throw new Error('Aula não encontrada');
+                }
+                
+                // Guardar aula atual globalmente
+                aulaAtualId = aulaId;
+                aulaAtualConcluida = this.aulasConcluidas.includes(aulaId);
+                
+                // Atualizar controles da aula
+                this.atualizarControlesAula(aula);
+                
+                return this.formatarConteudoAula(aula);
+                
+            } catch (error) {
+                console.error('Erro ao carregar conteúdo:', error);
+                return this.conteudoErro(error);
+            }
+        }
+
+        conteudoAulaBloqueada(aulaId, aulaAnterior) {
+            const aula = this.encontrarAula(aulaId);
+            const cursoTitulo = this.cursoData?.titulo || 'Curso';
+            
+            return `
+                <div style="text-align: center; padding: 60px 20px;">
+                    <div style="font-size: 4rem; color: var(--warning); margin-bottom: 20px;">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3 style="color: var(--light); margin-bottom: 15px;">Aula Bloqueada</h3>
+                    <p style="color: var(--gray); margin-bottom: 10px;">
+                        <strong>"${this.escapeHtml(aula?.titulo || 'Aula')}"</strong> está bloqueada.
+                    </p>
+                    <p style="color: var(--gray); margin-bottom: 25px;">
+                        ${aulaAnterior ? 
+                            `Para acessar esta aula, você precisa concluir a aula anterior.` : 
+                            `Esta aula requer autorização especial.`}
+                    </p>
+                    
+                    ${aulaAnterior ? `
+                        <div style="margin-top: 30px; padding: 20px; background: rgba(255, 207, 0, 0.1); border-radius: var(--border-radius); max-width: 500px; margin-left: auto; margin-right: auto;">
+                            <h4 style="color: var(--primary); margin-bottom: 15px;">
+                                <i class="fas fa-arrow-left"></i> Pré-requisito Necessário
+                            </h4>
+                            <div style="text-align: left;">
+                                <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: var(--border-radius-sm);">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                        <div style="width: 40px; height: 40px; background: rgba(255, 207, 0, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-play-circle" style="color: var(--primary);"></i>
+                                        </div>
+                                        <div>
+                                            <strong style="color: var(--light);">${this.escapeHtml(aulaAnterior.titulo)}</strong>
+                                            <div style="color: var(--gray); font-size: 0.9rem;">
+                                                ${aulaAnterior.duracao || '10:00'} min
+                                            </div>
+                                        </div>
+                                    </div>
+                                    ${aulaAnterior.descricao ? `
+                                        <p style="color: #e0e0e0; font-size: 0.9rem; margin-top: 10px;">
+                                            ${this.escapeHtml(aulaAnterior.descricao)}
+                                        </p>
+                                    ` : ''}
+                                    <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            ${this.aulasConcluidas.includes(aulaAnterior.id) ? 
+                                                `<span style="color: var(--success);"><i class="fas fa-check-circle"></i> Concluída</span>` :
+                                                `<span style="color: var(--warning);"><i class="fas fa-clock"></i> Pendente</span>`
+                                            }
+                                        </div>
+                                        <button onclick="iniciarAula(${aulaAnterior.id})" style="
+                                            padding: 8px 20px;
+                                            background: var(--primary);
+                                            color: var(--dark);
+                                            border: none;
+                                            border-radius: var(--border-radius-sm);
+                                            cursor: pointer;
+                                            font-weight: 600;
+                                            display: inline-flex;
+                                            align-items: center;
+                                            gap: 8px;
+                                        ">
+                                            <i class="fas fa-play"></i>
+                                            ${this.aulasConcluidas.includes(aulaAnterior.id) ? 'Revisar Aula' : 'Concluir Aula'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ` : `
+                        <div style="margin-top: 30px; padding: 20px; background: rgba(67, 97, 238, 0.1); border-radius: var(--border-radius); max-width: 500px; margin-left: auto; margin-right: auto;">
+                            <h4 style="color: var(--secondary); margin-bottom: 10px;">
+                                <i class="fas fa-user-shield"></i> Autorização Administrativa
+                            </h4>
+                            <p style="color: var(--gray); margin-bottom: 15px;">
+                                Esta aula requer autorização especial do administrador.
+                            </p>
+                            <button onclick="voltarParaCursos()" style="
+                                padding: 10px 20px;
+                                background: var(--secondary);
+                                color: white;
+                                border: none;
+                                border-radius: var(--border-radius-sm);
+                                cursor: pointer;
+                                font-weight: 600;
+                            ">
+                                <i class="fas fa-arrow-left"></i> Voltar para Cursos
+                            </button>
+                        </div>
+                    `}
+                    
+                    <div style="margin-top: 40px; color: var(--gray); font-size: 0.9rem;">
+                        <p>Curso: <strong>${this.escapeHtml(cursoTitulo)}</strong></p>
+                        <p>Entre em contato com o administrador se precisar de acesso especial.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        atualizarControlesAula(aula) {
+            const controles = document.getElementById('aula-controles');
+            const duracaoElement = document.getElementById('aula-duracao');
+            const estadoElement = document.getElementById('aula-estado');
+            const btnConcluir = document.getElementById('btn-concluir-aula');
+            
+            if (controles) {
+                controles.style.display = 'flex';
+            }
+            
+            if (duracaoElement && aula.duracao) {
+                duracaoElement.textContent = aula.duracao;
+            }
+            
+            if (estadoElement) {
+                const concluida = this.aulasConcluidas.includes(aula.id);
+                estadoElement.textContent = concluida ? 'Concluída' : 'Em andamento';
+                estadoElement.style.color = concluida ? 'var(--success)' : 'var(--primary)';
+            }
+            
+            if (btnConcluir) {
+                const concluida = this.aulasConcluidas.includes(aula.id);
+                
+                if (concluida) {
+                    btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
+                    btnConcluir.classList.add('concluida');
+                    btnConcluir.disabled = true;
+                } else {
+                    btnConcluir.innerHTML = '<i class="fas fa-check"></i> <span>Marcar como Concluída</span>';
+                    btnConcluir.classList.remove('concluida');
+                    btnConcluir.disabled = false;
+                }
+            }
+        }
+
+        atualizarInterfaceAula(aulaId, concluida = true) {
+            // Atualizar item na lista
+            const aulaElement = document.querySelector(`[data-aula-id="${aulaId}"]`);
+            if (aulaElement) {
+                // Remover classe bloqueada se estiver sendo concluída
+                if (concluida) {
+                    aulaElement.classList.remove('bloqueada');
+                    aulaElement.classList.add('completa');
+                    
+                    const statusElement = aulaElement.querySelector('.aula-status');
+                    const iconeElement = aulaElement.querySelector('.aula-icone');
+                    
+                    if (statusElement) {
+                        statusElement.innerHTML = '<i class="fas fa-check"></i> Concluída';
+                    }
+                    if (iconeElement) {
+                        iconeElement.innerHTML = '<i class="fas fa-check-circle"></i>';
+                    }
+                    
+                    // Atualizar onclick para permitir acesso
+                    aulaElement.onclick = () => iniciarAula(aulaId);
+                    aulaElement.style.cursor = 'pointer';
+                    
+                    // Remover tooltip de bloqueio
+                    const tooltip = aulaElement.querySelector('.aula-tooltip');
+                    if (tooltip) {
+                        tooltip.remove();
+                    }
+                    
+                    // Atualizar título
+                    const tituloElement = aulaElement.querySelector('.aula-info h4');
+                    if (tituloElement) {
+                        tituloElement.style.color = '';
+                        const spanBloqueado = tituloElement.querySelector('span');
+                        if (spanBloqueado) {
+                            spanBloqueado.remove();
+                        }
+                    }
+                } else {
+                    aulaElement.classList.remove('completa');
+                    const statusElement = aulaElement.querySelector('.aula-status');
+                    const iconeElement = aulaElement.querySelector('.aula-icone');
+                    const aula = this.encontrarAula(aulaId);
+                    
+                    if (statusElement) {
+                        statusElement.innerHTML = 'Pendente';
+                    }
+                    if (iconeElement && aula) {
+                        iconeElement.innerHTML = aula.videoUrl ? '<i class="fas fa-play-circle"></i>' : '<i class="fas fa-book"></i>';
+                    }
+                }
+            }
+            
+            // Atualizar botão no modal se for a aula atual
+            if (aulaId === aulaAtualId) {
+                const btnConcluir = document.getElementById('btn-concluir-aula');
+                const estadoElement = document.getElementById('aula-estado');
+                
+                if (concluida) {
+                    if (btnConcluir) {
+                        btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
+                        btnConcluir.classList.add('concluida');
+                        btnConcluir.disabled = true;
+                    }
+                    if (estadoElement) {
+                        estadoElement.textContent = 'Concluída';
+                        estadoElement.style.color = 'var(--success)';
+                    }
+                } else {
+                    if (btnConcluir) {
+                        btnConcluir.innerHTML = '<i class="fas fa-check"></i> <span>Marcar como Concluída</span>';
+                        btnConcluir.classList.remove('concluida');
+                        btnConcluir.disabled = false;
+                    }
+                    if (estadoElement) {
+                        estadoElement.textContent = 'Em andamento';
+                        estadoElement.style.color = 'var(--primary)';
+                    }
+                }
+            }
+            
+            this.atualizarProgressoBar();
+            
+            // Verificar e atualizar aulas subsequentes que podem ter sido desbloqueadas
+            this.atualizarAulasSubsequentes(aulaId);
+        }
+
+        async atualizarAulasSubsequentes(aulaIdConcluida) {
+            // Encontrar a próxima aula
+            const aulaConcluida = this.encontrarAula(aulaIdConcluida);
+            if (!aulaConcluida) return;
+
+            const { moduloIndex, aulaIndex } = aulaConcluida;
+            const modulo = this.cursoData.modulos[moduloIndex];
+            
+            // Verificar próxima aula no mesmo módulo
+            if (modulo.aulas && aulaIndex + 1 < modulo.aulas.length) {
+                const proximaAula = modulo.aulas[aulaIndex + 1];
+                await this.verificarEDesbloquearAula(proximaAula.id);
+            } 
+            // Verificar primeira aula do próximo módulo (se esta for a última do módulo atual)
+            else if (moduloIndex + 1 < this.cursoData.modulos.length) {
+                const proximoModulo = this.cursoData.modulos[moduloIndex + 1];
+                if (proximoModulo.aulas && proximoModulo.aulas.length > 0) {
+                    const primeiraAulaProximoModulo = proximoModulo.aulas[0];
+                    await this.verificarEDesbloquearAula(primeiraAulaProximoModulo.id);
+                }
+            }
+        }
+
+        async verificarEDesbloquearAula(aulaId) {
+            const autorizada = await this.verificarAulaAutorizada(aulaId);
+            const aulaElement = document.querySelector(`[data-aula-id="${aulaId}"]`);
+            
+            if (autorizada && aulaElement && aulaElement.classList.contains('bloqueada')) {
+                // Desbloquear a aula
+                aulaElement.classList.remove('bloqueada');
+                
+                // Atualizar ícone
+                const iconeElement = aulaElement.querySelector('.aula-icone');
+                const aula = this.encontrarAula(aulaId);
+                if (iconeElement && aula) {
+                    iconeElement.innerHTML = aula.videoUrl ? '<i class="fas fa-play-circle"></i>' : '<i class="fas fa-book"></i>';
+                }
+                
+                // Atualizar status
+                const statusElement = aulaElement.querySelector('.aula-status');
+                if (statusElement) {
+                    statusElement.innerHTML = 'Pendente';
+                }
+                
+                // Atualizar título
+                const tituloElement = aulaElement.querySelector('.aula-info h4');
+                if (tituloElement) {
+                    tituloElement.style.color = '';
+                    const spanBloqueado = tituloElement.querySelector('span');
+                    if (spanBloqueado) {
+                        spanBloqueado.remove();
+                    }
+                }
+                
+                // Remover tooltip
+                const tooltip = aulaElement.querySelector('.aula-tooltip');
+                if (tooltip) {
+                    tooltip.remove();
+                }
+                
+                // Ativar clique
+                aulaElement.onclick = () => iniciarAula(aulaId);
+                aulaElement.style.cursor = 'pointer';
+                
+                // Mostrar notificação de desbloqueio (opcional)
+                this.mostrarNotificacaoDesbloqueio(aulaId);
+            }
+        }
+
+        mostrarNotificacaoDesbloqueio(aulaId) {
+            const aula = this.encontrarAula(aulaId);
+            if (!aula) return;
+
+            // Remover notificação anterior se existir
+            const notificacaoAnterior = document.querySelector('.notificacao-desbloqueio');
+            if (notificacaoAnterior) {
+                notificacaoAnterior.remove();
+            }
+
+            // Criar nova notificação
+            const notificacao = document.createElement('div');
+            notificacao.className = 'notificacao-desbloqueio';
+            notificacao.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 30px;
+                background: var(--info);
+                color: white;
+                padding: 15px 25px;
+                border-radius: var(--border-radius);
+                box-shadow: var(--shadow);
+                z-index: 1001;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                animation: slideInRight 0.5s ease, fadeOut 0.5s ease 3s forwards;
+                max-width: 350px;
+            `;
+            
+            notificacao.innerHTML = `
+                <i class="fas fa-unlock"></i>
+                <div>
+                    <strong>Nova Aula Desbloqueada!</strong>
+                    <div style="font-size: 0.85rem; opacity: 0.9;">"${this.escapeHtml(aula.titulo)}" está disponível</div>
+                </div>
+            `;
+
+            document.body.appendChild(notificacao);
+
+            // Remover após animação
+            setTimeout(() => {
+                if (notificacao.parentNode) {
+                    notificacao.remove();
+                }
+            }, 3500);
+        }
+
+        extrairYouTubeId(url) {
+            if (!url) return null;
+            
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+                /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
+                /youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match && match[1]) {
+                    return match[1];
+                }
+            }
+            
+            return null;
+        }
+
+        formatarConteudoAula(aula) {
+            let conteudo = '';
+            
+            const tituloElement = document.getElementById('aula-titulo');
+            if (tituloElement) {
+                tituloElement.textContent = aula.titulo || `Aula ${aula.id}`;
+            }
+            
+            if (aula.videoUrl) {
+                const videoId = this.extrairYouTubeId(aula.videoUrl);
+                
+                if (videoId) {
+                    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                    
+                    conteudo += `
+                        <div class="video-container">
+                            <iframe src="${embedUrl}" 
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowfullscreen
+                                    loading="lazy">
+                            </iframe>
+                        </div>
+                    `;
+                } else {
+                    conteudo += `
+                        <div class="conteudo-aula">
+                            <h3><i class="fas fa-video"></i> Conteúdo de Vídeo</h3>
+                            <p>Link do vídeo: <a href="${this.escapeHtml(aula.videoUrl)}" target="_blank" style="color:var(--primary);">${this.escapeHtml(aula.videoUrl)}</a></p>
+                            <small style="color:var(--gray);">Clique no link para assistir em outra aba</small>
+                        </div>
+                    `;
+                }
+            }
+            
+            if (aula.conteudo) {
+                conteudo += `
+                    <div class="conteudo-aula">
+                        <h3><i class="fas fa-file-alt"></i> Conteúdo da Aula</h3>
+                        <div>${this.formatarTexto(aula.conteudo)}</div>
+                    </div>
+                `;
+            } else if (aula.descricao) {
+                conteudo += `
+                    <div class="conteudo-aula">
+                        <h3><i class="fas fa-info-circle"></i> Descrição</h3>
+                        <p>${this.escapeHtml(aula.descricao)}</p>
+                    </div>
+                `;
+            }
+            
+            if (!conteudo) {
+                conteudo = this.conteudoPadrao(aula);
+            }
+            
+            return conteudo;
+        }
+
+        conteudoPadrao(aula) {
+            return `
+                <div class="empty-state">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h3>${this.escapeHtml(aula.titulo || `Aula ${aula.id}`)}</h3>
+                    <p>Esta aula está sendo preparada com o melhor conteúdo para você.</p>
+                    ${aula.videoUrl ? `
+                        <div style="margin-top: 20px;">
+                            <a href="${this.escapeHtml(aula.videoUrl)}" target="_blank" 
+                               style="display:inline-flex; align-items:center; gap:10px; 
+                                      padding:12px 24px; background:var(--primary); 
+                                      color:var(--dark); border-radius:var(--border-radius-sm);
+                                      text-decoration:none; font-weight:600;">
+                                <i class="fas fa-external-link-alt"></i>
+                                Assistir Vídeo Externo
+                            </a>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        conteudoErro(error) {
+            return `
+                <div style="text-align:center; padding: 50px;">
+                    <div style="font-size:4rem; color:var(--danger); margin-bottom:20px;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3 style="color:var(--light); margin-bottom:15px;">Erro ao Carregar Conteúdo</h3>
+                    <p style="color:var(--gray); margin-bottom:10px;">${this.escapeHtml(error.message)}</p>
+                    <button onclick="location.reload()" style="
+                        margin-top:20px; 
+                        padding:12px 24px; 
+                        background:var(--primary); 
+                        color:var(--dark); 
+                        border:none; 
+                        border-radius:var(--border-radius-sm);
+                        cursor:pointer;
+                        font-weight:600;
+                    ">
+                        <i class="fas fa-redo"></i> Recarregar Página
+                    </button>
+                </div>
+            `;
+        }
+
+        formatarTexto(texto) {
+            if (!texto) return '';
+            
+            return this.escapeHtml(texto)
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/```(.*?)```/gs, '<pre style="background:rgba(0,0,0,0.3);padding:15px;border-radius:8px;overflow:auto;"><code>$1</code></pre>')
+                .replace(/`(.*?)`/g, '<code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;">$1</code>');
+        }
+
+        escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        mostrarErro(mensagem) {
+            const container = document.getElementById('modulos-container');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div style="background:rgba(244,67,54,0.1); border:1px solid rgba(244,67,54,0.3); border-radius:var(--border-radius); padding:30px; text-align:center;">
+                    <div style="font-size:3rem; color:var(--danger); margin-bottom:20px;">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <h3 style="color:var(--light); margin-bottom:15px;">Erro ao Carregar Curso</h3>
+                    <p style="color:var(--gray); margin-bottom:25px;">${this.escapeHtml(mensagem)}</p>
+                    <div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap;">
                         <button onclick="location.reload()" style="
-                            margin-top:20px; 
                             padding:12px 24px; 
                             background:var(--primary); 
                             color:var(--dark); 
@@ -1405,181 +1912,142 @@
                             border-radius:var(--border-radius-sm);
                             cursor:pointer;
                             font-weight:600;
+                            display:flex;
+                            align-items:center;
+                            gap:8px;
                         ">
-                            <i class="fas fa-redo"></i> Recarregar Página
+                            <i class="fas fa-redo"></i> Tentar Novamente
                         </button>
+                        <button onclick="voltarParaCursos()" style="
+                            padding:12px 24px; 
+                            background:var(--dark-lighter); 
+                            color:var(--light); 
+                            border:1px solid rgba(255,255,255,0.1); 
+                            border-radius:var(--border-radius-sm);
+                            cursor:pointer;
+                            font-weight:600;
+                            display:flex;
+                            align-items:center;
+                            gap:8px;
+                        ">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // FUNÇÕES GLOBAIS
+    window.toggleModulo = function(index) {
+        const modulo = document.getElementById(`modulo-${index}`);
+        const aulasContainer = document.getElementById(`modulo-aulas-${index}`);
+        
+        if (!modulo || !aulasContainer) return;
+        
+        if (modulo.classList.contains('expanded')) {
+            modulo.classList.remove('expanded');
+            aulasContainer.style.maxHeight = '0';
+        } else {
+            modulo.classList.add('expanded');
+            aulasContainer.style.maxHeight = aulasContainer.scrollHeight + 'px';
+        }
+    };
+
+    window.iniciarAula = async function(aulaId) {
+        try {
+            console.log('Iniciando aula:', aulaId);
+            
+            const gerenciador = window.gerenciador;
+            if (!gerenciador) {
+                throw new Error('Sistema não inicializado');
+            }
+            
+            const conteudoElement = document.getElementById('aula-conteudo');
+            if (conteudoElement) {
+                conteudoElement.innerHTML = `
+                    <div style="text-align:center; padding: 80px 20px;">
+                        <div class="spinner"></div>
+                        <h3 style="margin-top:25px; color:var(--primary);">Carregando conteúdo da aula...</h3>
+                        <p style="color:var(--gray);">Preparando a melhor experiência de aprendizado</p>
                     </div>
                 `;
             }
-
-            formatarTexto(texto) {
-                if (!texto) return '';
-                
-                return this.escapeHtml(texto)
-                    .replace(/\n/g, '<br>')
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/```(.*?)```/gs, '<pre style="background:rgba(0,0,0,0.3);padding:15px;border-radius:8px;overflow:auto;"><code>$1</code></pre>')
-                    .replace(/`(.*?)`/g, '<code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;">$1</code>');
+            
+            const modal = document.getElementById('aula-modal');
+            if (modal) {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
             }
-
-            escapeHtml(text) {
-                if (!text) return '';
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
+            
+            const conteudo = await gerenciador.carregarConteudoAula(aulaId);
+            
+            if (conteudoElement) {
+                conteudoElement.innerHTML = conteudo;
             }
-
-            mostrarErro(mensagem) {
-                const container = document.getElementById('modulos-container');
-                if (!container) return;
-                
-                container.innerHTML = `
-                    <div style="background:rgba(244,67,54,0.1); border:1px solid rgba(244,67,54,0.3); border-radius:var(--border-radius); padding:30px; text-align:center;">
-                        <div style="font-size:3rem; color:var(--danger); margin-bottom:20px;">
-                            <i class="fas fa-exclamation-circle"></i>
-                        </div>
-                        <h3 style="color:var(--light); margin-bottom:15px;">Erro ao Carregar Curso</h3>
-                        <p style="color:var(--gray); margin-bottom:25px;">${this.escapeHtml(mensagem)}</p>
-                        <div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap;">
-                            <button onclick="location.reload()" style="
-                                padding:12px 24px; 
-                                background:var(--primary); 
-                                color:var(--dark); 
-                                border:none; 
-                                border-radius:var(--border-radius-sm);
-                                cursor:pointer;
-                                font-weight:600;
-                                display:flex;
-                                align-items:center;
-                                gap:8px;
-                            ">
-                                <i class="fas fa-redo"></i> Tentar Novamente
-                            </button>
-                            <button onclick="voltarParaCursos()" style="
-                                padding:12px 24px; 
-                                background:var(--dark-lighter); 
-                                color:var(--light); 
-                                border:1px solid rgba(255,255,255,0.1); 
-                                border-radius:var(--border-radius-sm);
-                                cursor:pointer;
-                                font-weight:600;
-                                display:flex;
-                                align-items:center;
-                                gap:8px;
-                            ">
-                                <i class="fas fa-arrow-left"></i> Voltar
-                            </button>
-                        </div>
+            
+        } catch (error) {
+            console.error('Erro ao iniciar aula:', error);
+            const conteudoElement = document.getElementById('aula-conteudo');
+            if (conteudoElement) {
+                conteudoElement.innerHTML = `
+                    <div style="text-align:center; padding: 50px 20px; color:var(--danger);">
+                        <i class="fas fa-exclamation-triangle" style="font-size:3rem; margin-bottom:20px;"></i>
+                        <h3>Erro ao iniciar a aula</h3>
+                        <p>${error.message}</p>
                     </div>
                 `;
             }
         }
+    };
 
-        // FUNÇÕES GLOBAIS
-        window.toggleModulo = function(index) {
-            const modulo = document.getElementById(`modulo-${index}`);
-            const aulasContainer = document.getElementById(`modulo-aulas-${index}`);
+    window.marcarAulaConcluida = function() {
+        if (!aulaAtualId || !window.gerenciador) return;
+        
+        const gerenciador = window.gerenciador;
+        const concluida = gerenciador.marcarAulaConcluida(aulaAtualId);
+        
+        if (concluida) {
+            aulaAtualConcluida = true;
+            console.log(`Aula ${aulaAtualId} marcada como concluída`);
             
-            if (!modulo || !aulasContainer) return;
-            
-            if (modulo.classList.contains('expanded')) {
-                modulo.classList.remove('expanded');
-                aulasContainer.style.maxHeight = '0';
-            } else {
-                modulo.classList.add('expanded');
-                aulasContainer.style.maxHeight = aulasContainer.scrollHeight + 'px';
-            }
-        };
-
-        window.iniciarAula = async function(aulaId) {
-            try {
-                console.log('Iniciando aula:', aulaId);
-                
-                const gerenciador = window.gerenciador;
-                if (!gerenciador) {
-                    throw new Error('Sistema não inicializado');
-                }
-                
-                const conteudoElement = document.getElementById('aula-conteudo');
-                if (conteudoElement) {
-                    conteudoElement.innerHTML = `
-                        <div style="text-align:center; padding: 80px 20px;">
-                            <div class="spinner"></div>
-                            <h3 style="margin-top:25px; color:var(--primary);">Carregando conteúdo da aula...</h3>
-                            <p style="color:var(--gray);">Preparando a melhor experiência de aprendizado</p>
-                        </div>
-                    `;
-                }
-                
-                const modal = document.getElementById('aula-modal');
-                if (modal) {
-                    modal.style.display = 'block';
-                    document.body.style.overflow = 'hidden';
-                }
-                
-                const conteudo = await gerenciador.carregarConteudoAula(aulaId);
-                
-                if (conteudoElement) {
-                    conteudoElement.innerHTML = conteudo;
-                }
-                
-            } catch (error) {
-                console.error('Erro ao iniciar aula:', error);
-                const conteudoElement = document.getElementById('aula-conteudo');
-                if (conteudoElement) {
-                    conteudoElement.innerHTML = `
-                        <div style="text-align:center; padding: 50px 20px; color:var(--danger);">
-                            <i class="fas fa-exclamation-triangle" style="font-size:3rem; margin-bottom:20px;"></i>
-                            <h3>Erro ao iniciar a aula</h3>
-                            <p>${error.message}</p>
-                        </div>
-                    `;
-                }
-            }
-        };
-
-        window.marcarAulaConcluida = function() {
-            if (!aulaAtualId || !window.gerenciador) return;
-            
-            const gerenciador = window.gerenciador;
-            const concluida = gerenciador.marcarAulaConcluida(aulaAtualId);
-            
-            if (concluida) {
-                aulaAtualConcluida = true;
-                console.log(`Aula ${aulaAtualId} marcada como concluída`);
-            }
-        };
-
-        window.fecharAula = function() {
-            const modal = document.getElementById('aula-modal');
-            if (modal) {
-                modal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            }
-        };
-
-        // Fechar modal com ESC
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
+            // Fechar modal automaticamente após 2 segundos (opcional)
+            setTimeout(() => {
                 fecharAula();
-            }
-        });
+            }, 2000);
+        }
+    };
 
-        // Fechar modal ao clicar fora
-        document.addEventListener('click', function(e) {
-            const modal = document.getElementById('aula-modal');
-            if (modal && e.target === modal) {
-                fecharAula();
-            }
-        });
+    window.fecharAula = function() {
+        const modal = document.getElementById('aula-modal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    };
 
-        // INICIALIZAR
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM carregado - Iniciando Gerenciador de Cursos');
-            window.gerenciador = new GerenciadorCursos();
-            window.gerenciador.carregarCurso();
-        });
-    </script>
+    // Fechar modal com ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            fecharAula();
+        }
+    });
+
+    // Fechar modal ao clicar fora
+    document.addEventListener('click', function(e) {
+        const modal = document.getElementById('aula-modal');
+        if (modal && e.target === modal) {
+            fecharAula();
+        }
+    });
+
+    // INICIALIZAR
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM carregado - Iniciando Gerenciador de Cursos');
+        window.gerenciador = new GerenciadorCursos();
+        window.gerenciador.carregarCurso();
+    });
+</script>
 </body>
 </html>
+
