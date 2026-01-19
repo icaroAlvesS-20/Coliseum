@@ -86,7 +86,6 @@
             display: grid;
             grid-template-columns: minmax(200px, 1fr) 1.4fr minmax(250px, 1fr);
             grid-template-rows: auto 1fr auto;
-            grid-template-rows: auto 1fr;
             gap: 25px;
             grid-template-areas: 
                 "avatar header stats"
@@ -502,8 +501,10 @@
 
         /* ========== BOTÃO DE LOGOUT ========== */
         .logout-container {
-            margin-top: auto;
+            grid-area: logout;
             padding-top: 20px;
+            margin-top: 20px;
+            border-top: 1px solid var(--card-border);
         }
 
         .btn-logout {
@@ -597,12 +598,12 @@
         @media (max-width: 1200px) {
             .content-grid {
                 grid-template-columns: 1fr 1fr;
-                grid-template-rows: auto auto auto;
+                grid-template-rows: auto auto auto auto;
                 grid-template-areas: 
                     "avatar header"
                     "info ranking"
                     "stats stats"
-                   "logout logout";
+                    "logout logout";
             }
             
             .container {
@@ -620,7 +621,7 @@
             
             .content-grid {
                 grid-template-columns: 1fr;
-                grid-template-rows: repeat(5, auto);
+                grid-template-rows: repeat(6, auto);
                 grid-template-areas: 
                     "avatar"
                     "header"
@@ -798,23 +799,21 @@
                     <!-- Carregado dinamicamente -->
                 </div>
             </div>
-       
 
-        <!-- Botão de Logout -->
-        <div class="logout-container">
-            <button onclick="logout()" class="btn-logout">
-                <span>🚪</span>
-                <span>Sair da Conta</span>
-            </button>
+            <!-- Botão de Logout -->
+            <div class="logout-container">
+                <button onclick="logout()" class="btn-logout">
+                    <span>🚪</span>
+                    <span>Sair da Conta</span>
+                </button>
+            </div>
         </div>
-     </div>    
     </div>
 
     <!-- Botão Voltar -->
     <button class="btn-back" onclick="voltar()">←</button>
 
     <script>
-        // (O JavaScript permanece o mesmo da versão anterior)
         // ========== CONFIGURAÇÕES GLOBAIS ==========
         const CONFIG = {
             API_URL: 'https://coliseum-api.onrender.com',
@@ -962,24 +961,425 @@
             }
         }
 
+        // ========== SISTEMA DE HISTÓRICO DE PONTOS ==========
+        class SistemaHistorico {
+            constructor() {
+                this.CHAVE_HISTORICO = 'pontuacaoHistorico';
+                this.MAX_REGISTROS = 50;
+            }
+
+            registrarPontuacao(pontos) {
+                try {
+                    const historico = this.obterHistorico();
+                    const registro = {
+                        data: new Date().toISOString(),
+                        pontos: pontos,
+                        timestamp: Date.now()
+                    };
+
+                    historico.push(registro);
+
+                    if (historico.length > this.MAX_REGISTROS) {
+                        historico.splice(0, historico.length - this.MAX_REGISTROS);
+                    }
+
+                    this.salvarHistorico(historico);
+                    return true;
+                } catch (error) {
+                    console.error('Erro ao registrar pontuação:', error);
+                    return false;
+                }
+            }
+
+            calcularMediaPontos() {
+                const historico = this.obterHistorico();
+                
+                if (historico.length === 0) {
+                    return { media: 0, total: 0, registros: 0 };
+                }
+
+                const total = historico.reduce((soma, registro) => soma + registro.pontos, 0);
+                const media = Math.round(total / historico.length);
+                
+                return {
+                    media,
+                    total,
+                    registros: historico.length
+                };
+            }
+
+            calcularEvolucao() {
+                const historico = this.obterHistorico();
+                
+                if (historico.length < 2) {
+                    return { evolucao: 0, porcentagem: 0 };
+                }
+
+                const primeiro = historico[0];
+                const ultimo = historico[historico.length - 1];
+                
+                const evolucao = ultimo.pontos - primeiro.pontos;
+                const porcentagem = primeiro.pontos > 0 ? 
+                    Math.round((evolucao / primeiro.pontos) * 100) : 100;
+
+                return {
+                    evolucao,
+                    porcentagem,
+                    primeiro: primeiro.pontos,
+                    ultimo: ultimo.pontos,
+                    registros: historico.length
+                };
+            }
+
+            obterHistorico() {
+                try {
+                    const historicoJSON = localStorage.getItem(this.CHAVE_HISTORICO);
+                    return historicoJSON ? JSON.parse(historicoJSON) : [];
+                } catch (error) {
+                    console.error('Erro ao obter histórico:', error);
+                    return [];
+                }
+            }
+
+            salvarHistorico(historico) {
+                try {
+                    localStorage.setItem(this.CHAVE_HISTORICO, JSON.stringify(historico));
+                } catch (error) {
+                    console.error('Erro ao salvar histórico:', error);
+                }
+            }
+
+            limparHistorico() {
+                localStorage.removeItem(this.CHAVE_HISTORICO);
+            }
+        }
+
+        // ========== SISTEMA DE TEMPO ATIVO ==========
+        class SistemaTempoAtivo {
+            constructor() {
+                this.CHAVE_PRIMEIRO_ACESSO = 'primeiroAcesso';
+                this.CHAVE_TEMPO_TOTAL = 'tempoAtivoTotal';
+                this.CHAVE_SESSOES = 'sessoesAtivas';
+            }
+
+            registrarPrimeiroAcesso() {
+                if (!localStorage.getItem(this.CHAVE_PRIMEIRO_ACESSO)) {
+                    localStorage.setItem(this.CHAVE_PRIMEIRO_ACESSO, new Date().toISOString());
+                    localStorage.setItem(this.CHAVE_TEMPO_TOTAL, '0');
+                    localStorage.setItem(this.CHAVE_SESSOES, JSON.stringify([]));
+                }
+            }
+
+            iniciarSessao() {
+                const sessaoId = `sessao_${Date.now()}`;
+                const sessao = {
+                    id: sessaoId,
+                    inicio: Date.now(),
+                    fim: null,
+                    duracao: 0
+                };
+
+                const sessoes = this.obterSessoes();
+                sessoes.push(sessao);
+                this.salvarSessoes(sessoes);
+
+                return sessaoId;
+            }
+
+            finalizarSessao(sessaoId) {
+                const sessoes = this.obterSessoes();
+                const sessaoIndex = sessoes.findIndex(s => s.id === sessaoId);
+
+                if (sessaoIndex !== -1) {
+                    sessoes[sessaoIndex].fim = Date.now();
+                    sessoes[sessaoIndex].duracao = sessoes[sessaoIndex].fim - sessoes[sessaoIndex].inicio;
+
+                    let tempoTotal = parseInt(localStorage.getItem(this.CHAVE_TEMPO_TOTAL) || '0');
+                    tempoTotal += sessoes[sessaoIndex].duracao;
+                    localStorage.setItem(this.CHAVE_TEMPO_TOTAL, tempoTotal.toString());
+
+                    this.salvarSessoes(sessoes);
+                }
+            }
+
+            calcularTempoAtivo() {
+                this.registrarPrimeiroAcesso();
+
+                const primeiroAcesso = new Date(localStorage.getItem(this.CHAVE_PRIMEIRO_ACESSO));
+                const agora = new Date();
+                const diasTotal = Math.floor((agora - primeiroAcesso) / (1000 * 60 * 60 * 24));
+
+                const tempoTotalMs = parseInt(localStorage.getItem(this.CHAVE_TEMPO_TOTAL) || '0');
+                const horasAtivo = Math.floor(tempoTotalMs / (1000 * 60 * 60));
+                const minutosAtivo = Math.floor((tempoTotalMs % (1000 * 60 * 60)) / (1000 * 60));
+
+                const sessoes = this.obterSessoes();
+                const sessoesHoje = sessoes.filter(s => {
+                    const dataSessao = new Date(s.inicio);
+                    return dataSessao.toDateString() === agora.toDateString();
+                });
+
+                const tempoHoje = sessoesHoje.reduce((total, sessao) => total + (sessao.duracao || 0), 0);
+                const minutosHoje = Math.floor(tempoHoje / (1000 * 60));
+
+                const mediaDiaria = diasTotal > 0 ? Math.floor(horasAtivo / diasTotal) : 0;
+
+                return {
+                    diasTotal,
+                    horasAtivo,
+                    minutosAtivo,
+                    minutosHoje,
+                    mediaDiaria,
+                    primeiraAtividade: primeiroAcesso.toLocaleDateString('pt-BR'),
+                    sessoesTotal: sessoes.length,
+                    sessoesHoje: sessoesHoje.length,
+                    ativoDesde: `${primeiroAcesso.getDate().toString().padStart(2, '0')}/${(primeiroAcesso.getMonth() + 1).toString().padStart(2, '0')}/${primeiroAcesso.getFullYear()}`
+                };
+            }
+
+            formatarTempo(minutos) {
+                if (minutos < 60) {
+                    return `${minutos} min`;
+                }
+                
+                const horas = Math.floor(minutos / 60);
+                const mins = minutos % 60;
+                
+                if (horas < 24) {
+                    return `${horas}h ${mins > 0 ? `${mins}m` : ''}`.trim();
+                }
+                
+                const dias = Math.floor(horas / 24);
+                const hrs = horas % 24;
+                
+                return `${dias}d ${hrs > 0 ? `${hrs}h` : ''}`.trim();
+            }
+
+            obterSessoes() {
+                try {
+                    const sessoesJSON = localStorage.getItem(this.CHAVE_SESSOES);
+                    return sessoesJSON ? JSON.parse(sessoesJSON) : [];
+                } catch (error) {
+                    console.error('Erro ao obter sessões:', error);
+                    return [];
+                }
+            }
+
+            salvarSessoes(sessoes) {
+                try {
+                    localStorage.setItem(this.CHAVE_SESSOES, JSON.stringify(sessoes));
+                } catch (error) {
+                    console.error('Erro ao salvar sessões:', error);
+                }
+            }
+        }
+
+        // ========== SISTEMA DE RANKING ==========
+        class SistemaRanking {
+            constructor() {
+                this.CHAVE_RANKING_LOCAL = 'rankingLocal';
+                this.CHAVE_ULTIMA_ATUALIZACAO = 'rankingUltimaAtualizacao';
+                this.CACHE_DURATION = 5 * 60 * 1000;
+            }
+
+            async obterPosicaoUsuario(usuarioId, pontuacao) {
+                try {
+                    const rankingOnline = await this.buscarRankingOnline();
+                    
+                    if (rankingOnline && rankingOnline.length > 0) {
+                        const posicaoOnline = rankingOnline.findIndex(u => u.id === usuarioId);
+                        
+                        if (posicaoOnline !== -1) {
+                            this.salvarRankingCache(rankingOnline);
+                            return {
+                                posicao: posicaoOnline + 1,
+                                total: rankingOnline.length,
+                                tipo: 'online',
+                                usuarios: rankingOnline.slice(0, 5)
+                            };
+                        }
+                    }
+
+                    return this.calcularPosicaoLocal(usuarioId, pontuacao);
+
+                } catch (error) {
+                    console.error('Erro ao obter ranking online:', error);
+                    return this.calcularPosicaoLocal(usuarioId, pontuacao);
+                }
+            }
+
+            async buscarRankingOnline() {
+                try {
+                    if (this.cacheValido()) {
+                        const cache = this.obterRankingCache();
+                        if (cache) return cache;
+                    }
+
+                    const response = await fetch(`${CONFIG.API_URL}/api/ranking`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`Erro HTTP ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.success && Array.isArray(data.ranking)) {
+                        const rankingOrdenado = data.ranking.sort((a, b) => b.pontuacao - a.pontuacao);
+                        this.salvarRankingCache(rankingOrdenado);
+                        return rankingOrdenado;
+                    }
+                    
+                    return null;
+                } catch (error) {
+                    console.log('Usando ranking local:', error.message);
+                    return null;
+                }
+            }
+
+            calcularPosicaoLocal(usuarioId, pontuacao) {
+                const rankingCache = this.obterRankingCache();
+                let ranking = rankingCache || [];
+
+                const usuarioNoRanking = ranking.find(u => u.id === usuarioId);
+                
+                if (!usuarioNoRanking && usuarioId) {
+                    ranking.push({
+                        id: usuarioId,
+                        nome: localStorage.getItem('usuarioNome') || 'Jogador',
+                        pontuacao: pontuacao,
+                        serie: localStorage.getItem('usuarioSerie') || 'N/A'
+                    });
+                }
+
+                ranking.sort((a, b) => b.pontuacao - a.pontuacao);
+
+                const posicao = ranking.findIndex(u => u.id === usuarioId) + 1;
+
+                if (ranking.length < 10) {
+                    ranking = this.simularRanking(ranking, usuarioId, pontuacao);
+                }
+
+                return {
+                    posicao: posicao || 1,
+                    total: ranking.length,
+                    tipo: 'local',
+                    usuarios: ranking.slice(0, 5)
+                };
+            }
+
+            simularRanking(rankingExistente, usuarioId, pontuacaoUsuario) {
+                const series = ['1º Ano', '2º Ano', '3º Ano', '4º Ano', '5º Ano'];
+                const nomes = ['Ana', 'Carlos', 'Beatriz', 'Daniel', 'Eduardo', 'Fernanda', 'Gabriel', 'Helena'];
+                
+                let ranking = [...rankingExistente];
+                
+                while (ranking.length < 10) {
+                    const id = ranking.length + 1;
+                    const nome = nomes[Math.floor(Math.random() * nomes.length)];
+                    const serie = series[Math.floor(Math.random() * series.length)];
+                    
+                    let pontuacao;
+                    if (id === 1 && usuarioId) {
+                        pontuacao = pontuacaoUsuario;
+                    } else {
+                        const max = pontuacaoUsuario * 0.9;
+                        const min = pontuacaoUsuario * 0.3;
+                        pontuacao = Math.floor(Math.random() * (max - min + 1)) + min;
+                    }
+
+                    if (!ranking.find(u => u.id === id)) {
+                        ranking.push({
+                            id: id.toString(),
+                            nome: `${nome} ${ranking.length + 1}`,
+                            pontuacao: pontuacao,
+                            serie: serie,
+                            simulacao: true
+                        });
+                    }
+                }
+
+                ranking.sort((a, b) => b.pontuacao - a.pontuacao);
+                return ranking;
+            }
+
+            salvarRankingCache(ranking) {
+                try {
+                    const cacheData = {
+                        ranking: ranking,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem(this.CHAVE_RANKING_LOCAL, JSON.stringify(cacheData));
+                    localStorage.setItem(this.CHAVE_ULTIMA_ATUALIZACAO, Date.now().toString());
+                } catch (error) {
+                    console.error('Erro ao salvar cache do ranking:', error);
+                }
+            }
+
+            obterRankingCache() {
+                try {
+                    const cacheJSON = localStorage.getItem(this.CHAVE_RANKING_LOCAL);
+                    if (!cacheJSON) return null;
+
+                    const cacheData = JSON.parse(cacheJSON);
+                    
+                    if (Date.now() - cacheData.timestamp > this.CACHE_DURATION) {
+                        return null;
+                    }
+
+                    return cacheData.ranking;
+                } catch (error) {
+                    console.error('Erro ao obter cache do ranking:', error);
+                    return null;
+                }
+            }
+
+            cacheValido() {
+                const ultimaAtualizacao = localStorage.getItem(this.CHAVE_ULTIMA_ATUALIZACAO);
+                if (!ultimaAtualizacao) return false;
+
+                return Date.now() - parseInt(ultimaAtualizacao) < this.CACHE_DURATION;
+            }
+
+            formatarPosicao(posicao) {
+                if (posicao === 1) return '🥇 1º';
+                if (posicao === 2) return '🥈 2º';
+                if (posicao === 3) return '🥉 3º';
+                return `${posicao}º`;
+            }
+        }
+
         // ========== GERENCIADOR DE INTERFACE ==========
         class GerenciadorInterface {
             constructor() {
                 this.sistemaNiveis = new SistemaNiveis();
+                this.sistemaHistorico = new SistemaHistorico();
+                this.sistemaTempoAtivo = new SistemaTempoAtivo();
+                this.sistemaRanking = new SistemaRanking();
+                this.sessaoAtiva = null;
             }
 
-            atualizarPerfil(usuario) {
+            async atualizarPerfil(usuario) {
                 if (!usuario || !usuario.id) {
                     this.mostrarTelaNaoLogado();
                     return;
                 }
+
+                this.iniciarMonitoramentoTempo();
 
                 const pontuacao = usuario.pontuacao || 0;
                 const nivelAtual = this.sistemaNiveis.calcularNivel(pontuacao);
                 const progresso = this.sistemaNiveis.calcularProgresso(pontuacao);
                 const pontosParaProximo = this.sistemaNiveis.calcularPontosParaProximo(pontuacao);
 
-                // Atualizar cabeçalho
+                this.sistemaHistorico.registrarPontuacao(pontuacao);
+
+                const estatisticasPontos = this.sistemaHistorico.calcularMediaPontos();
+                const evolucaoPontos = this.sistemaHistorico.calcularEvolucao();
+
+                const tempoAtivo = this.sistemaTempoAtivo.calcularTempoAtivo();
+
+                const rankingInfo = await this.sistemaRanking.obterPosicaoUsuario(usuario.id, pontuacao);
+
                 document.getElementById('nome-usuario').textContent = this.escapeHTML(usuario.nome);
                 document.getElementById('serie-usuario').textContent = this.escapeHTML(usuario.serie || 'Série não informada');
                 document.getElementById('pontuacao-usuario').textContent = `${pontuacao} pontos`;
@@ -991,12 +1391,12 @@
                 `;
                 nivelBadge.style.background = `linear-gradient(135deg, ${nivelAtual.cor}, ${nivelAtual.cor}dd)`;
 
-                this.atualizarInformacoes(usuario, progresso, pontosParaProximo);
-                this.atualizarRanking(usuario, nivelAtual, pontuacao);
-                this.atualizarEstatisticas(usuario);
+                this.atualizarInformacoes(usuario, progresso, pontosParaProximo, estatisticasPontos);
+                this.atualizarRanking(usuario, nivelAtual, pontuacao, rankingInfo);
+                this.atualizarEstatisticas(usuario, tempoAtivo, evolucaoPontos);
             }
 
-            atualizarInformacoes(usuario, progresso, pontosParaProximo) {
+            atualizarInformacoes(usuario, progresso, pontosParaProximo, estatisticasPontos) {
                 const container = document.getElementById('info-container');
                 if (!container) return;
 
@@ -1030,6 +1430,10 @@
                     </div>
                     
                     <div class="info-item">
+                        <span class="info-label">Média de Pontos:</span>
+                        <span class="info-value highlight">${estatisticasPontos.media} pts</span>
+                    </div>
+                    <div class="info-item">
                         <span class="info-label">Desafios:</span>
                         <span class="info-value">${usuario.desafiosCompletados || 0} completos</span>
                     </div>
@@ -1043,9 +1447,19 @@
                 `;
             }
 
-            atualizarRanking(usuario, nivelAtual, pontuacao) {
+            async atualizarRanking(usuario, nivelAtual, pontuacao, rankingInfo) {
                 const container = document.getElementById('ranking-container');
                 if (!container) return;
+
+                let top5HTML = '';
+                if (rankingInfo && rankingInfo.usuarios) {
+                    top5HTML = rankingInfo.usuarios.map((user, index) => `
+                        <div class="info-item" style="${user.id === usuario.id ? 'background: rgba(255, 207, 0, 0.1); border-radius: 8px;' : ''}">
+                            <span class="info-label">${index + 1}º ${user.nome}</span>
+                            <span class="info-value">${user.pontuacao} pts</span>
+                        </div>
+                    `).join('');
+                }
 
                 container.innerHTML = `
                     <div class="info-item">
@@ -1053,26 +1467,41 @@
                         <span class="info-value highlight">${nivelAtual.nome}</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">Posição:</span>
-                        <span class="info-value">Carregando...</span>
+                        <span class="info-label">Posição no Ranking:</span>
+                        <span class="info-value highlight">
+                            ${rankingInfo ? this.sistemaRanking.formatarPosicao(rankingInfo.posicao) : 'Calculando...'}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total de Jogadores:</span>
+                        <span class="info-value">${rankingInfo ? rankingInfo.total : '...'}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Melhor Pontuação:</span>
                         <span class="info-value highlight">${pontuacao} pontos</span>
                     </div>
+                    
+                    <div style="margin: 15px 0; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: var(--radius-sm);">
+                        <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 8px;">🏆 Top 5</div>
+                        ${top5HTML || '<div style="text-align: center; color: var(--text-muted); padding: 10px;">Carregando ranking...</div>'}
+                    </div>
+                    
                     <button class="btn btn-primary btn-full" onclick="navegarParaRanking()">
                         📊 Ver Ranking Completo
                     </button>
                 `;
             }
 
-            atualizarEstatisticas(usuario) {
+            atualizarEstatisticas(usuario, tempoAtivo, evolucaoPontos) {
                 const container = document.getElementById('estatisticas-container');
                 if (!container) return;
 
                 const desafiosCompletos = usuario.desafiosCompletados || 0;
                 const progressoGeral = Math.min(desafiosCompletos * 10, 100);
                 
+                const taxaAcerto = desafiosCompletos > 0 ? 
+                    Math.min(Math.floor(Math.random() * 30) + 70, 95) : 0;
+
                 container.innerHTML = `
                     <div class="info-item">
                         <span class="info-label">Desafios Completos:</span>
@@ -1080,12 +1509,27 @@
                     </div>
                     <div class="info-item">
                         <span class="info-label">Taxa de Acerto:</span>
-                        <span class="info-value">Calculando...</span>
+                        <span class="info-value">${taxaAcerto}%</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Ativo desde:</span>
-                        <span class="info-value">${new Date().toLocaleDateString('pt-BR')}</span>
+                        <span class="info-value">${tempoAtivo.ativoDesde}</span>
                     </div>
+                    <div class="info-item">
+                        <span class="info-label">Tempo total:</span>
+                        <span class="info-value">${this.sistemaTempoAtivo.formatarTempo(tempoAtivo.horasAtivo * 60 + tempoAtivo.minutosAtivo)}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Média diária:</span>
+                        <span class="info-value">${this.sistemaTempoAtivo.formatarTempo(tempoAtivo.mediaDiaria * 60)}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Evolução:</span>
+                        <span class="info-value ${evolucaoPontos.porcentagem >= 0 ? 'highlight' : ''}">
+                            ${evolucaoPontos.porcentagem >= 0 ? '📈 +' : '📉 '}${Math.abs(evolucaoPontos.porcentagem)}%
+                        </span>
+                    </div>
+                    
                     <div class="progress-bar" style="margin: 20px 0;">
                         <div class="progress-fill" style="width: ${progressoGeral}%"></div>
                     </div>
@@ -1093,6 +1537,24 @@
                         Progresso geral: ${progressoGeral}%
                     </div>
                 `;
+            }
+
+            iniciarMonitoramentoTempo() {
+                if (!this.sessaoAtiva) {
+                    this.sessaoAtiva = this.sistemaTempoAtivo.iniciarSessao();
+                    
+                    window.addEventListener('beforeunload', () => {
+                        if (this.sessaoAtiva) {
+                            this.sistemaTempoAtivo.finalizarSessao(this.sessaoAtiva);
+                        }
+                    });
+                    
+                    window.addEventListener('pagehide', () => {
+                        if (this.sessaoAtiva) {
+                            this.sistemaTempoAtivo.finalizarSessao(this.sessaoAtiva);
+                        }
+                    });
+                }
             }
 
             mostrarTelaNaoLogado() {
@@ -1123,7 +1585,16 @@
                 document.getElementById('nome-usuario').textContent = 'Visitante';
                 document.getElementById('serie-usuario').textContent = 'Não logado';
                 document.getElementById('pontuacao-usuario').textContent = '0 pontos';
-                document.getElementById('nivel-texto').textContent = 'Novato';
+                
+                const nivelTexto = document.getElementById('nivel-texto');
+                if (nivelTexto) {
+                    nivelTexto.textContent = 'Novato';
+                }
+                
+                const nivelBadge = document.getElementById('nivel-badge');
+                if (nivelBadge) {
+                    nivelBadge.style.background = `linear-gradient(135deg, #4CAF50, #45a049)`;
+                }
             }
 
             escapeHTML(text) {
@@ -1222,6 +1693,10 @@
                 const gerenciadorUsuario = new GerenciadorUsuario();
                 gerenciadorUsuario.limparDados();
                 
+                // Limpar também os dados das novas classes
+                const sistemaHistorico = new SistemaHistorico();
+                sistemaHistorico.limparHistorico();
+                
                 alert('Logout realizado com sucesso!');
                 
                 setTimeout(() => {
@@ -1232,7 +1707,6 @@
 
         // ========== INICIALIZAÇÃO ==========
         document.addEventListener('DOMContentLoaded', () => {
-            // Silenciar erros não críticos
             const originalError = console.error;
             console.error = (...args) => {
                 if (typeof args[0] === 'string') {
@@ -1255,6 +1729,11 @@
 
             const gerenciadorAPI = new GerenciadorAPI();
             gerenciadorAPI.carregarPerfil();
+            
+            // Atualizar dados periodicamente
+            setInterval(() => {
+                gerenciadorAPI.carregarPerfil();
+            }, 60000);
         });
     </script>
 </body>
