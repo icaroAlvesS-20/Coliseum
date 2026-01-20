@@ -1164,53 +1164,41 @@ async carregarCurso() {
 
 async verificarAulaAutorizada(aulaId) {
     try {
-        console.log(`🔓 Verificando autorização para aula ${aulaId}`);
+        console.log(`🔒 Verificando autorização para aula ${aulaId} - MODO: BLOQUEIO TOTAL`);
+        
+        const response = await fetch(
+            `${this.API_BASE}/autorizacoes/verificar?` + 
+            `usuarioId=${this.usuarioId}&cursoId=${this.cursoId}&aulaId=${aulaId}`
+        );
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('📋 Resposta da API de autorização:', data);
+            
+            if (data.success && data.autorizada) {
+                console.log('✅ Aula autorizada pelo admin');
+                return true;
+            }
+        }
+        
+        if (this.aulasAutorizadas.has(aulaId)) {
+            console.log('✅ Aula autorizada por autorização em massa');
+            return true;
+        }
         
         if (this.aulasConcluidas.includes(aulaId)) {
-            console.log('✅ Aula já concluída - autorizada');
+            console.log('✅ Aula já concluída - permitindo acesso para revisão');
             return true;
         }
         
-        try {
-            const response = await fetch(
-                `${this.API_BASE}/autorizacoes/verificar-aula?` + 
-                `usuarioId=${this.usuarioId}&cursoId=${this.cursoId}&aulaId=${aulaId}`
-            );
-            
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.autorizada) {
-                    console.log('✅ Aula autorizada pelo admin');
-                    return true;
-                }
-            }
-        } catch (apiError) {
-            console.warn('⚠️ Erro na API de autorização:', apiError.message);
-        }
-
-        const aulaAnterior = this.encontrarAulaAnterior(aulaId);
-        
-        if (!aulaAnterior) {
-            console.log('✅ Primeira aula do curso - autorizada');
-            return true;
-        }
-        
-        const aulaAnteriorConcluida = this.aulasConcluidas.includes(aulaAnterior.id);
-        
-        if (aulaAnteriorConcluida || !this.bloqueioProgressivo) {
-            console.log(`✅ Aula autorizada (anterior ${aulaAnteriorConcluida ? 'concluída' : 'sem bloqueio'})`);
-            return true;
-        }
-        
-        console.log(`⏳ Aula ${aulaId} aguardando conclusão da anterior`);
+        console.log('❌ Aula NÃO autorizada - acesso bloqueado');
         return false;
         
     } catch (error) {
-        console.error('❌ Erro na verificação:', error);
-        return true;
+        console.error('❌ Erro na verificação de autorização:', error);
+        return false;
     }
 }
-
 async carregarAutorizacoesEspecificas() {
     try {
         console.log('Carregando autorizações específicas do usuário...');
@@ -1224,7 +1212,6 @@ async carregarAutorizacoesEspecificas() {
             console.log('Autorizações específicas:', data);
             
             if (data.success && data.autorizacoes) {
-                // Processar autorizações
                 this.processarAutorizacoes(data.autorizacoes);
                 return true;
             }
@@ -2115,6 +2102,7 @@ async carregarAutorizacoesEspecificas() {
 </script>
 </body>
 </html>
+
 
 
 
