@@ -2065,33 +2065,7 @@ async carregarAutorizacoesEspecificas() {
         }
     };
 
-  // Substituir a função marcarAulaConcluida existente
-window.marcarAulaConcluida = async function() {
-    if (!aulaAtualId || !window.gerenciador) return;
-    
-    const gerenciador = window.gerenciador;
-    
-    // Verificar se a aula está autorizada
-    const autorizada = await gerenciador.verificarAulaAutorizada(aulaAtualId);
-    
-    if (autorizada) {
-        // Se já estiver autorizada, marcar como concluída normalmente
-        const concluida = gerenciador.marcarAulaConcluida(aulaAtualId);
-        
-        if (concluida) {
-            aulaAtualConcluida = true;
-            console.log(`Aula ${aulaAtualId} marcada como concluída`);
-            
-            // Fechar modal automaticamente após 2 segundos
-            setTimeout(() => {
-                fecharAula();
-            }, 2000);
-        }
-    } else {
-        // Se não estiver autorizada, mostrar modal de solicitação
-        mostrarModalSolicitacaoAutorizacao(aulaAtualId);
-    }
-};
+
 
 // Nova função para mostrar modal de solicitação
 function mostrarModalSolicitacaoAutorizacao(aulaId) {
@@ -2320,4 +2294,5 @@ function showGlobalLoading(show) {
 </script>
 </body>
 </html>
+
 
