@@ -909,11 +909,11 @@
         </div>
     </div>
 
-   <script>
+<script>
     // VARIÁVEIS GLOBAIS
     let aulaAtualId = null;
     let aulaAtualConcluida = false;
-    let gerenciador = null; // Inicializar como null
+    let gerenciador = null;
 
     // FUNÇÃO VOLTAR
     function voltarParaCursos() {
@@ -1192,11 +1192,21 @@
             try {
                 console.log('Verificando autorização para aula', aulaId);
                 
+                // AULAS SEMPRE AUTORIZADAS:
+                // 1. Aulas já concluídas
                 if (this.aulasConcluidas.includes(aulaId)) {
                     console.log('Aula já concluída - acesso permitido para revisão');
                     return true;
                 }
                 
+                // 2. Primeira aula de cada módulo SEMPRE disponível
+                const aula = this.encontrarAula(aulaId);
+                if (aula && aula.aulaIndex === 0) {
+                    console.log('Primeira aula do módulo - acesso liberado automaticamente');
+                    return true;
+                }
+                
+                // 3. Verificar autorizações administrativas
                 const response = await fetch(
                     this.API_BASE + '/autorizacoes/verificar/' + this.usuarioId + '/' + this.cursoId + '/' + aulaId
                 );
@@ -1211,6 +1221,18 @@
                 if (data.success && data.autorizada) {
                     console.log('Aula autorizada pelo sistema');
                     return true;
+                }
+                
+                // 4. Verificar se a aula anterior foi concluída (para aulas não primeiras)
+                if (aula && aula.aulaIndex > 0) {
+                    const modulo = this.cursoData.modulos?.[aula.moduloIndex];
+                    if (modulo && modulo.aulas && modulo.aulas[aula.aulaIndex - 1]) {
+                        const aulaAnteriorId = modulo.aulas[aula.aulaIndex - 1].id;
+                        if (this.aulasConcluidas.includes(aulaAnteriorId)) {
+                            console.log('Aula anterior concluída - acesso liberado');
+                            return true;
+                        }
+                    }
                 }
                 
                 console.log('Aula NÃO autorizada');
@@ -1253,6 +1275,7 @@
                         if (aula && aula.id) {
                             aula.moduloIndex = moduloIndex;
                             aula.aulaIndex = aulaIndex;
+                            aula.primeiraDoModulo = (aulaIndex === 0); // Marcar se é primeira
                             this.aulasMap.set(aula.id, aula);
                             this.totalAulas++;
                         }
@@ -1261,6 +1284,8 @@
             });
             
             console.log(`Total de aulas mapeadas: ${this.aulasMap.size}`);
+            console.log('Primeiras aulas de cada módulo:', 
+                Array.from(this.aulasMap.values()).filter(a => a.aulaIndex === 0).map(a => a.id));
             
             this.exibirModulosComAulas(modulos);
             this.atualizarProgressoBar();
@@ -1319,7 +1344,16 @@
                 if (!aula || !aula.id) continue;
                 
                 const concluida = this.aulasConcluidas.includes(aula.id);
-                const autorizada = await this.verificarAulaAutorizada(aula.id);
+                const primeiraAula = (i === 0); // Primeira aula do módulo
+                
+                // Primeira aula sempre autorizada
+                let autorizada = primeiraAula;
+                if (!primeiraAula) {
+                    autorizada = await this.verificarAulaAutorizada(aula.id);
+                } else {
+                    console.log(`Aula ${aula.id} é primeira do módulo - sempre autorizada`);
+                }
+                
                 const aulaIcon = aula.videoUrl ? 'fas fa-play-circle' : 'fas fa-book';
                 const bloqueada = !autorizada && !concluida;
                 
@@ -1328,6 +1362,7 @@
                          onclick="${bloqueada ? '' : `iniciarAula(${aula.id})`}"
                          data-aula-id="${aula.id}"
                          data-aula-autorizada="${autorizada}"
+                         data-primeira-aula="${primeiraAula}"
                          style="${bloqueada ? 'cursor: not-allowed;' : ''}">
                         <div class="aula-icone">
                             ${bloqueada ? 
@@ -1338,7 +1373,12 @@
                         <div class="aula-info">
                             <h4 style="${bloqueada ? 'color: #888;' : ''}">
                                 ${this.escapeHtml(aula.titulo || `Aula ${aula.id}`)}
-                                ${bloqueada ? '<span style="color: var(--warning); font-size: 0.8em; margin-left: 8px;">(Bloqueada)</span>' : ''}
+                                ${primeiraAula && !concluida ? 
+                                    '<span style="color: var(--success); font-size: 0.8em; margin-left: 8px;">(Início)</span>' : 
+                                    ''}
+                                ${bloqueada ? 
+                                    '<span style="color: var(--warning); font-size: 0.8em; margin-left: 8px;">(Bloqueada)</span>' : 
+                                    ''}
                             </h4>
                             <div class="aula-meta">
                                 <span><i class="fas fa-clock"></i> ${aula.duracao || '10:00'} min</span>
@@ -1350,10 +1390,12 @@
                                 '<i class="fas fa-check"></i> Concluída' : 
                                 bloqueada ? 
                                     '<i class="fas fa-lock"></i> Bloqueada' : 
-                                    'Pendente'
+                                    primeiraAula ? 
+                                        '<i class="fas fa-play-circle"></i> Disponível' : 
+                                        'Pendente'
                             }
                         </div>
-                        ${bloqueada ? `
+                        ${bloqueada && !primeiraAula ? `
                             <div class="aula-tooltip" style="position: absolute; top: 50%; right: 70px; transform: translateY(-50%);">
                                 <i class="fas fa-info-circle" style="color: var(--warning); cursor: help;" 
                                    title="Esta aula está bloqueada. Conclua a aula anterior para desbloquear."></i>
@@ -1463,6 +1505,38 @@
         conteudoAulaBloqueada(aulaId, aulaAnterior) {
             const aula = this.encontrarAula(aulaId);
             const cursoTitulo = this.cursoData?.titulo || 'Curso';
+            const primeiraAula = aula && aula.aulaIndex === 0;
+            
+            // Se for primeira aula, não deve estar bloqueada
+            if (primeiraAula) {
+                return `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h3 style="color: var(--light); margin-bottom: 15px;">Bem-vindo à Aula Inicial!</h3>
+                        <p style="color: var(--gray); margin-bottom: 10px;">
+                            <strong>"${this.escapeHtml(aula?.titulo || 'Aula')}"</strong> está disponível.
+                        </p>
+                        <p style="color: var(--gray); margin-bottom: 25px;">
+                            Esta é a primeira aula do módulo. Clique no botão abaixo para começar.
+                        </p>
+                        <button onclick="iniciarAula(${aulaId})" style="
+                            padding: 12px 30px;
+                            background: var(--primary);
+                            color: var(--dark);
+                            border: none;
+                            border-radius: var(--border-radius-sm);
+                            cursor: pointer;
+                            font-weight: 600;
+                            font-size: 1.1rem;
+                            margin-top: 20px;
+                        ">
+                            <i class="fas fa-play"></i> Iniciar Aula
+                        </button>
+                    </div>
+                `;
+            }
             
             return `
                 <div style="text-align: center; padding: 60px 20px;">
@@ -1574,8 +1648,18 @@
             
             if (estadoElement) {
                 const concluida = this.aulasConcluidas.includes(aula.id);
-                estadoElement.textContent = concluida ? 'Concluída' : 'Em andamento';
-                estadoElement.style.color = concluida ? 'var(--success)' : 'var(--primary)';
+                const primeiraAula = aula.aulaIndex === 0;
+                
+                if (concluida) {
+                    estadoElement.textContent = 'Concluída';
+                    estadoElement.style.color = 'var(--success)';
+                } else if (primeiraAula) {
+                    estadoElement.textContent = 'Disponível para início';
+                    estadoElement.style.color = 'var(--primary)';
+                } else {
+                    estadoElement.textContent = 'Em andamento';
+                    estadoElement.style.color = 'var(--primary)';
+                }
             }
             
             if (btnConcluir) {
@@ -1621,10 +1705,10 @@
                     const tituloElement = aulaElement.querySelector('.aula-info h4');
                     if (tituloElement) {
                         tituloElement.style.color = '';
-                        const spanBloqueado = tituloElement.querySelector('span');
-                        if (spanBloqueado) {
-                            spanBloqueado.remove();
-                        }
+                        const spanInicio = tituloElement.querySelector('span[style*="color: var(--success)"]');
+                        const spanBloqueado = tituloElement.querySelector('span[style*="color: var(--warning)"]');
+                        if (spanInicio) spanInicio.remove();
+                        if (spanBloqueado) spanBloqueado.remove();
                     }
                 } else {
                     aulaElement.classList.remove('completa');
@@ -1633,7 +1717,9 @@
                     const aula = this.encontrarAula(aulaId);
                     
                     if (statusElement) {
-                        statusElement.innerHTML = 'Pendente';
+                        const primeiraAula = aula && aula.aulaIndex === 0;
+                        statusElement.innerHTML = primeiraAula ? 
+                            '<i class="fas fa-play-circle"></i> Disponível' : 'Pendente';
                     }
                     if (iconeElement && aula) {
                         iconeElement.innerHTML = aula.videoUrl ? '<i class="fas fa-play-circle"></i>' : '<i class="fas fa-book"></i>';
@@ -1662,8 +1748,10 @@
                         btnConcluir.disabled = false;
                     }
                     if (estadoElement) {
-                        estadoElement.textContent = 'Em andamento';
-                        estadoElement.style.color = 'var(--primary)';
+                        const aula = this.encontrarAula(aulaId);
+                        const primeiraAula = aula && aula.aulaIndex === 0;
+                        estadoElement.textContent = primeiraAula ? 'Disponível para início' : 'Em andamento';
+                        estadoElement.style.color = primeiraAula ? 'var(--primary)' : 'var(--primary)';
                     }
                 }
             }
@@ -1706,15 +1794,24 @@
                 
                 const statusElement = aulaElement.querySelector('.aula-status');
                 if (statusElement) {
-                    statusElement.innerHTML = 'Pendente';
+                    const primeiraAula = aula && aula.aulaIndex === 0;
+                    statusElement.innerHTML = primeiraAula ? 
+                        '<i class="fas fa-play-circle"></i> Disponível' : 'Pendente';
                 }
                 
                 const tituloElement = aulaElement.querySelector('.aula-info h4');
                 if (tituloElement) {
                     tituloElement.style.color = '';
-                    const spanBloqueado = tituloElement.querySelector('span');
+                    const spanBloqueado = tituloElement.querySelector('span[style*="color: var(--warning)"]');
                     if (spanBloqueado) {
                         spanBloqueado.remove();
+                    }
+                    // Adicionar "Início" se for primeira aula
+                    if (aula && aula.aulaIndex === 0) {
+                        const spanInicio = document.createElement('span');
+                        spanInicio.style.cssText = 'color: var(--success); font-size: 0.8em; margin-left: 8px;';
+                        spanInicio.textContent = '(Início)';
+                        tituloElement.appendChild(spanInicio);
                     }
                 }
                 
@@ -1836,11 +1933,15 @@
         }
 
         conteudoPadrao(aula) {
+            const primeiraAula = aula.aulaIndex === 0;
+            
             return `
                 <div class="empty-state">
                     <i class="fas fa-graduation-cap"></i>
                     <h3>${this.escapeHtml(aula.titulo || `Aula ${aula.id}`)}</h3>
-                    <p>Esta aula está sendo preparada com o melhor conteúdo para você.</p>
+                    <p>${primeiraAula ? 
+                        'Esta é a primeira aula do módulo. Bem-vindo!' : 
+                        'Esta aula está sendo preparada com o melhor conteúdo para você.'}</p>
                     ${aula.videoUrl ? `
                         <div style="margin-top: 20px;">
                             <a href="${this.escapeHtml(aula.videoUrl)}" target="_blank" 
@@ -1851,6 +1952,16 @@
                                 <i class="fas fa-external-link-alt"></i>
                                 Assistir Vídeo Externo
                             </a>
+                        </div>
+                    ` : ''}
+                    ${primeiraAula ? `
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(255, 207, 0, 0.1); border-radius: var(--border-radius-sm); max-width: 500px; margin: 0 auto;">
+                            <h4 style="color: var(--primary); margin-bottom: 10px;">
+                                <i class="fas fa-lightbulb"></i> Dica Importante
+                            </h4>
+                            <p style="color: #e0e0e0; font-size: 0.9rem; margin-bottom: 0;">
+                                Esta é a aula inicial do módulo. Conclua esta aula para desbloquear as próximas aulas.
+                            </p>
                         </div>
                     ` : ''}
                 </div>
@@ -2237,6 +2348,7 @@
         window.gerenciador = new GerenciadorCursos();
         window.gerenciador.carregarCurso();
     });
+    
 </script>
 </body>
 </html>
