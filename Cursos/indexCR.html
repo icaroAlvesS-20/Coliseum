@@ -1178,29 +1178,31 @@ async carregarCurso() {
     }
 };
 
+// NOVO: Função de verificação de autorização
 async verificarAulaAutorizada(aulaId) {
     try {
         console.log(`🔍 Verificando autorização para aula ${aulaId}`);
         
+        // Verificar se já está concluída (permite revisão)
         if (this.aulasConcluidas.includes(aulaId)) {
             console.log('✅ Aula já concluída - acesso permitido para revisão');
             return true;
         }
         
+        // Verificar autorização no servidor
         const response = await fetch(
-            `${this.API_BASE}/autorizacoes/verificar?` + 
-            `usuarioId=${this.usuarioId}&cursoId=${this.cursoId}&aulaId=${aulaId}`
+            `${this.API_BASE}/autorizacoes/verificar/${this.usuarioId}/${this.cursoId}/${aulaId}`
         );
         
         if (!response.ok) {
-            console.log('⚠️ API de autorização indisponível');
+            console.log('⚠️ Erro na verificação de autorização');
             return false;
         }
         
         const data = await response.json();
         
         if (data.success && data.autorizada) {
-            console.log('✅ Aula autorizada pelo admin');
+            console.log('✅ Aula autorizada pelo sistema');
             return true;
         }
         
@@ -2322,5 +2324,6 @@ function showGlobalLoading(show) {
 </script>
 </body>
 </html>
+
 
 
