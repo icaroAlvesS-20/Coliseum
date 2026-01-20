@@ -2053,22 +2053,228 @@ async carregarAutorizacoesEspecificas() {
         }
     };
 
-    window.marcarAulaConcluida = function() {
-        if (!aulaAtualId || !window.gerenciador) return;
-        
-        const gerenciador = window.gerenciador;
+  // Substituir a função marcarAulaConcluida existente
+window.marcarAulaConcluida = async function() {
+    if (!aulaAtualId || !window.gerenciador) return;
+    
+    const gerenciador = window.gerenciador;
+    
+    // Verificar se a aula está autorizada
+    const autorizada = await gerenciador.verificarAulaAutorizada(aulaAtualId);
+    
+    if (autorizada) {
+        // Se já estiver autorizada, marcar como concluída normalmente
         const concluida = gerenciador.marcarAulaConcluida(aulaAtualId);
         
         if (concluida) {
             aulaAtualConcluida = true;
             console.log(`Aula ${aulaAtualId} marcada como concluída`);
             
-            // Fechar modal automaticamente após 2 segundos (opcional)
+            // Fechar modal automaticamente após 2 segundos
             setTimeout(() => {
                 fecharAula();
             }, 2000);
         }
-    };
+    } else {
+        // Se não estiver autorizada, mostrar modal de solicitação
+        mostrarModalSolicitacaoAutorizacao(aulaAtualId);
+    }
+};
+
+// Nova função para mostrar modal de solicitação
+function mostrarModalSolicitacaoAutorizacao(aulaId) {
+    const gerenciador = window.gerenciador;
+    const aula = gerenciador.encontrarAula(aulaId);
+    const cursoData = gerenciador.cursoData;
+    
+    if (!aula || !cursoData) return;
+    
+    // Criar modal de solicitação
+    const modalHTML = `
+        <div class="modal" id="solicitacao-modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3>Solicitar Autorização</h3>
+                    <button class="modal-close" onclick="fecharModalSolicitacao()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div style="text-align: center; padding: 20px 0;">
+                        <div style="font-size: 3rem; color: var(--warning); margin-bottom: 15px;">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h3 style="color: var(--light); margin-bottom: 10px;">
+                            Aula Bloqueada
+                        </h3>
+                        <p style="color: var(--gray); margin-bottom: 20px;">
+                            Para continuar no curso "${cursoData.titulo}", você precisa de autorização do administrador.
+                        </p>
+                        
+                        <div style="background: rgba(255, 207, 0, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left;">
+                            <h4 style="color: var(--primary); margin-bottom: 10px;">
+                                <i class="fas fa-graduation-cap"></i> ${aula.titulo}
+                            </h4>
+                            <div style="color: #ccc; font-size: 0.9rem;">
+                                <div><i class="fas fa-clock"></i> ${aula.duracao || '15'} minutos</div>
+                                ${aula.descricao ? `<div style="margin-top: 5px;">${aula.descricao}</div>` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="color: var(--light); margin-bottom: 8px; display: block;">
+                                <i class="fas fa-comment"></i> Motivo da Solicitação
+                            </label>
+                            <textarea id="motivo-solicitacao" class="form-control" 
+                                      rows="3" 
+                                      placeholder="Explique por que você precisa acessar esta aula..."
+                                      style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #555; color: white; padding: 10px; border-radius: 8px;"></textarea>
+                        </div>
+                        
+                        <div style="margin-top: 25px; display: flex; gap: 10px; justify-content: center;">
+                            <button onclick="fecharModalSolicitacao()" 
+                                    style="padding: 12px 24px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #555; border-radius: 8px; cursor: pointer;">
+                                Cancelar
+                            </button>
+                            <button onclick="enviarSolicitacaoAutorizacao(${aulaId})" 
+                                    style="padding: 12px 24px; background: var(--warning); color: black; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                                <i class="fas fa-paper-plane"></i> Enviar Solicitação
+                            </button>
+                        </div>
+                        
+                        <div style="margin-top: 20px; color: #888; font-size: 0.85rem;">
+                            <i class="fas fa-info-circle"></i> O administrador será notificado e você receberá uma resposta em breve.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Adicionar modal ao documento
+    if (!document.getElementById('solicitacao-modal')) {
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+    
+    // Mostrar modal
+    document.getElementById('solicitacao-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+// Função para enviar solicitação
+async function enviarSolicitacaoAutorizacao(aulaId) {
+    const gerenciador = window.gerenciador;
+    const motivo = document.getElementById('motivo-solicitacao').value.trim();
+    
+    if (!motivo) {
+        alert('Por favor, explique o motivo da sua solicitação.');
+        return;
+    }
+    
+    try {
+        showGlobalLoading(true);
+        
+        const response = await fetch(`${gerenciador.API_BASE}/solicitacoes-autorizacao`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                usuarioId: gerenciador.usuarioId,
+                cursoId: gerenciador.cursoId,
+                aulaId: aulaId,
+                motivo: motivo
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success) {
+                // Mostrar notificação de sucesso
+                mostrarNotificacaoSolicitacaoEnviada();
+                
+                // Fechar modais
+                fecharModalSolicitacao();
+                fecharAula();
+            } else {
+                throw new Error(data.error || 'Erro ao enviar solicitação');
+            }
+        } else {
+            throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao enviar solicitação:', error);
+        alert('❌ Erro ao enviar solicitação. Tente novamente.');
+    } finally {
+        showGlobalLoading(false);
+    }
+}
+
+// Funções auxiliares
+function fecharModalSolicitacao() {
+    const modal = document.getElementById('solicitacao-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.remove();
+    }
+    document.body.style.overflow = 'auto';
+}
+
+function mostrarNotificacaoSolicitacaoEnviada() {
+    // Remover notificação anterior se existir
+    const notificacaoAnterior = document.querySelector('.notificacao-solicitacao');
+    if (notificacaoAnterior) {
+        notificacaoAnterior.remove();
+    }
+
+    // Criar nova notificação
+    const notificacao = document.createElement('div');
+    notificacao.className = 'notificacao-concluido';
+    notificacao.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 30px;
+        background: var(--info);
+        color: white;
+        padding: 15px 25px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        z-index: 1001;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: slideInRight 0.5s ease, fadeOut 0.5s ease 3s forwards;
+        max-width: 350px;
+    `;
+    
+    notificacao.innerHTML = `
+        <i class="fas fa-paper-plane"></i>
+        <div>
+            <strong>Solicitação Enviada!</strong>
+            <div style="font-size: 0.85rem; opacity: 0.9;">Aguardando aprovação do administrador</div>
+        </div>
+    `;
+
+    document.body.appendChild(notificacao);
+
+    // Remover após animação
+    setTimeout(() => {
+        if (notificacao.parentNode) {
+            notificacao.remove();
+        }
+    }, 3500);
+}
+
+// Função auxiliar para mostrar loading
+function showGlobalLoading(show) {
+    // Você pode implementar um spinner global ou usar um existente
+    const body = document.body;
+    if (show) {
+        body.style.cursor = 'wait';
+    } else {
+        body.style.cursor = 'default';
+    }
+}
 
     window.fecharAula = function() {
         const modal = document.getElementById('aula-modal');
@@ -2102,8 +2308,3 @@ async carregarAutorizacoesEspecificas() {
 </script>
 </body>
 </html>
-
-
-
-
-
