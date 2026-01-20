@@ -913,6 +913,7 @@
     // VARIÁVEIS GLOBAIS
     let aulaAtualId = null;
     let aulaAtualConcluida = false;
+    let gerenciador = null; // Inicializar como null
 
     // FUNÇÃO VOLTAR
     function voltarParaCursos() {
@@ -921,9 +922,46 @@
         const from = urlParams.get('from');
         
         if (from === 'extras') {
-            window.location.href = '/CursosExtras/indexEX.html';
+            window.location.href = 'CursosExtras/indexEX.html';
         } else {
             window.history.back();
+        }
+    }
+
+    // FUNÇÕES AUXILIARES PARA MODAL DE SOLICITAÇÃO
+    function fecharModalSolicitacao() {
+        const modal = document.getElementById('solicitacao-modal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            setTimeout(() => {
+                if (modal.parentNode) modal.remove();
+            }, 300);
+        }
+    }
+
+    function mostrarNotificacaoSolicitacaoEnviada() {
+        const notificacao = document.createElement('div');
+        notificacao.className = 'notificacao-solicitacao';
+        notificacao.innerHTML = `
+            <i class="fas fa-paper-plane"></i>
+            <div>
+                <strong>Solicitação Enviada!</strong>
+                <div style="font-size: 0.85rem; opacity: 0.9;">Aguardando aprovação do administrador</div>
+            </div>
+        `;
+        document.body.appendChild(notificacao);
+        
+        setTimeout(() => {
+            if (notificacao.parentNode) notificacao.remove();
+        }, 3500);
+    }
+
+    function showGlobalLoading(show) {
+        if (show) {
+            document.body.style.cursor = 'wait';
+        } else {
+            document.body.style.cursor = 'default';
         }
     }
 
@@ -938,8 +976,8 @@
             this.aulasCarregadas = 0;
             this.cursoData = null;
             this.aulasMap = new Map();
-            this.aulasAutorizadas = new Set(); // Aulas autorizadas pelo admin
-            this.bloqueioProgressivo = true; // Por padrão, bloqueio ativo
+            this.aulasAutorizadas = new Set();
+            this.bloqueioProgressivo = true;
         }
 
         obterUsuarioId() {
@@ -980,10 +1018,7 @@
                 this.aulasConcluidas.push(aulaId);
                 this.salvarProgresso();
                 
-                // Mostrar notificação
                 this.mostrarNotificacaoConcluido();
-                
-                // Atualizar interface
                 this.atualizarInterfaceAula(aulaId);
                 
                 return true;
@@ -1003,13 +1038,11 @@
         }
 
         mostrarNotificacaoConcluido() {
-            // Remover notificação anterior se existir
             const notificacaoAnterior = document.querySelector('.notificacao-concluido');
             if (notificacaoAnterior) {
                 notificacaoAnterior.remove();
             }
 
-            // Criar nova notificação
             const notificacao = document.createElement('div');
             notificacao.className = 'notificacao-concluido';
             notificacao.innerHTML = `
@@ -1022,7 +1055,6 @@
 
             document.body.appendChild(notificacao);
 
-            // Remover após animação
             setTimeout(() => {
                 if (notificacao.parentNode) {
                     notificacao.remove();
@@ -1043,43 +1075,42 @@
             }
         }
         
-  async carregarCurso() {
-    try {
-        if (!this.cursoId) {
-            this.mostrarErro('Curso não especificado');
-            return;
-        }
+        async carregarCurso() {
+            try {
+                if (!this.cursoId) {
+                    this.mostrarErro('Curso não especificado');
+                    return;
+                }
 
-        console.log('Buscando curso completo:', this.cursoId);
-        
-        // 1. Carregar curso
-        const response = await fetch(`${this.API_BASE}/cursos/${this.cursoId}`);
-        
-        if (!response.ok) {
-            throw new Error(`Erro ${response.status} ao carregar curso`);
+                console.log('Buscando curso completo:', this.cursoId);
+                
+                const response = await fetch(`${this.API_BASE}/cursos/${this.cursoId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status} ao carregar curso`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.curso) {
+                    this.cursoData = data.curso;
+                    this.exibirCurso(data.curso);
+                    
+                    this.bloqueioProgressivo = data.curso.bloqueioProgressivo !== false;
+                    
+                    await this.carregarAutorizacoesEspecificas();
+                    
+                    this.processarAulas(data.curso.modulos || []);
+                } else {
+                    throw new Error(data.error || 'Erro desconhecido');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao carregar curso:', error);
+                this.mostrarErro(error.message);
+            }
         }
         
-        const data = await response.json();
-        
-        if (data.success && data.curso) {
-            this.cursoData = data.curso;
-            this.exibirCurso(data.curso);
-            
-            this.bloqueioProgressivo = data.curso.bloqueioProgressivo !== false;
-            
-            await this.carregarAutorizacoesEspecificas();
-            
-            this.processarAulas(data.curso.modulos || []);
-        } else {
-            throw new Error(data.error || 'Erro desconhecido');
-        }
-        
-    } catch (error) {
-        console.error('Erro ao carregar curso:', error);
-        this.mostrarErro(error.message);
-    }
-}
-    
         async carregarAutorizacoesUsuario() {
             try {
                 console.log('Carregando autorizações do usuário...');
@@ -1133,106 +1164,63 @@
             console.log('Aulas autorizadas:', Array.from(this.aulasAutorizadas));
         }
 
-      window.marcarAulaConcluida = async function() {
-    if (!aulaAtualId || !window.gerenciador) return;
-    
-    const gerenciador = window.gerenciador;
-    
-    try {
-        const autorizada = await gerenciador.verificarAulaAutorizada(aulaAtualId);
-        
-        if (!autorizada) {
-            mostrarModalSolicitacaoAutorizacao(aulaAtualId);
-            return;
-        }
-        
-        const concluida = gerenciador.marcarAulaConcluida(aulaAtualId);
-        
-        if (concluida) {
-            aulaAtualConcluida = true;
-            console.log(`✅ Aula ${aulaAtualId} marcada como concluída`);
-            
+        async carregarAutorizacoesEspecificas() {
             try {
-                await fetch(`${gerenciador.API_BASE}/progresso/aula`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        usuarioId: gerenciador.usuarioId,
-                        aulaId: aulaAtualId,
-                        concluida: true
-                    })
-                });
+                console.log('Carregando autorizações específicas do usuário...');
+                
+                const response = await fetch(
+                    `${this.API_BASE}/autorizacoes/usuario/${this.usuarioId}/curso/${this.cursoId}`
+                );
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Autorizações específicas:', data);
+                    
+                    if (data.success && data.autorizacoes) {
+                        this.processarAutorizacoes(data.autorizacoes);
+                        return true;
+                    }
+                }
+                return false;
             } catch (error) {
-                console.warn('⚠️ Não foi possível sincronizar progresso:', error);
+                console.error('Erro ao carregar autorizações específicas:', error);
+                return false;
             }
-            
-            setTimeout(() => {
-                fecharAula();
-            }, 2000);
         }
-        
-    } catch (error) {
-        console.error('❌ Erro ao marcar aula como concluída:', error);
-        alert('❌ Erro ao salvar progresso. Tente novamente.');
-    }
-};
 
-async verificarAulaAutorizada(aulaId) {
-    try {
-        console.log('Verificando autorização para aula', aulaId);
-        
-        if (this.aulasConcluidas.includes(aulaId)) {
-            console.log('Aula já concluída - acesso permitido para revisão');
-            return true;
-        }
-        
-        const response = await fetch(
-            this.API_BASE + '/autorizacoes/verificar/' + this.usuarioId + '/' + this.cursoId + '/' + aulaId
-        );
-        
-        if (!response.ok) {
-            console.log('Erro na verificação de autorização');
-            return false;
-        }
-        
-        const data = await response.json();
-        
-        if (data.success && data.autorizada) {
-            console.log('Aula autorizada pelo sistema');
-            return true;
-        }
-        
-        console.log('Aula NÃO autorizada');
-        return false;
-        
-    } catch (error) {
-        console.error('Erro na verificação:', error);
-        return false;
-    }
-}
-async carregarAutorizacoesEspecificas() {
-    try {
-        console.log('Carregando autorizações específicas do usuário...');
-        
-        const response = await fetch(
-            `${this.API_BASE}/autorizacoes/usuario/${this.usuarioId}/curso/${this.cursoId}`
-        );
-        
-        if (response.ok) {
-            const data = await response.json();
-            console.log('Autorizações específicas:', data);
-            
-            if (data.success && data.autorizacoes) {
-                this.processarAutorizacoes(data.autorizacoes);
-                return true;
+        async verificarAulaAutorizada(aulaId) {
+            try {
+                console.log('Verificando autorização para aula', aulaId);
+                
+                if (this.aulasConcluidas.includes(aulaId)) {
+                    console.log('Aula já concluída - acesso permitido para revisão');
+                    return true;
+                }
+                
+                const response = await fetch(
+                    this.API_BASE + '/autorizacoes/verificar/' + this.usuarioId + '/' + this.cursoId + '/' + aulaId
+                );
+                
+                if (!response.ok) {
+                    console.log('Erro na verificação de autorização');
+                    return false;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.autorizada) {
+                    console.log('Aula autorizada pelo sistema');
+                    return true;
+                }
+                
+                console.log('Aula NÃO autorizada');
+                return false;
+                
+            } catch (error) {
+                console.error('Erro na verificação:', error);
+                return false;
             }
         }
-        return false;
-    } catch (error) {
-        console.error('Erro ao carregar autorizações específicas:', error);
-        return false;
-    }
-}
         
         encontrarAulaAnterior(aulaId) {
             const aulaAtual = this.encontrarAula(aulaId);
@@ -1274,7 +1262,6 @@ async carregarAutorizacoesEspecificas() {
             
             console.log(`Total de aulas mapeadas: ${this.aulasMap.size}`);
             
-            // Carregar interface das aulas (assincronamente para verificar autorizações)
             this.exibirModulosComAulas(modulos);
             this.atualizarProgressoBar();
         }
@@ -1300,7 +1287,6 @@ async carregarAutorizacoesEspecificas() {
             
             let html = '';
             
-            // Processar cada módulo e suas aulas
             for (let i = 0; i < modulos.length; i++) {
                 const modulo = modulos[i];
                 const aulasCount = modulo.aulas?.length || 0;
@@ -1447,7 +1433,6 @@ async carregarAutorizacoesEspecificas() {
             try {
                 console.log('Carregando conteúdo da aula:', aulaId);
                 
-                // Verificar se a aula está autorizada
                 const autorizada = await this.verificarAulaAutorizada(aulaId);
                 
                 if (!autorizada) {
@@ -1462,11 +1447,9 @@ async carregarAutorizacoesEspecificas() {
                     throw new Error('Aula não encontrada');
                 }
                 
-                // Guardar aula atual globalmente
                 aulaAtualId = aulaId;
                 aulaAtualConcluida = this.aulasConcluidas.includes(aulaId);
                 
-                // Atualizar controles da aula
                 this.atualizarControlesAula(aula);
                 
                 return this.formatarConteudoAula(aula);
@@ -1553,7 +1536,7 @@ async carregarAutorizacoesEspecificas() {
                             <p style="color: var(--gray); margin-bottom: 15px;">
                                 Esta aula requer autorização especial do administrador.
                             </p>
-                            <button onclick="voltarParaCursos()" style="
+                            <button onclick="mostrarModalSolicitacaoAutorizacao(${aulaId})" style="
                                 padding: 10px 20px;
                                 background: var(--secondary);
                                 color: white;
@@ -1562,7 +1545,7 @@ async carregarAutorizacoesEspecificas() {
                                 cursor: pointer;
                                 font-weight: 600;
                             ">
-                                <i class="fas fa-arrow-left"></i> Voltar para Cursos
+                                <i class="fas fa-envelope"></i> Solicitar Autorização
                             </button>
                         </div>
                     `}
@@ -1611,10 +1594,8 @@ async carregarAutorizacoesEspecificas() {
         }
 
         atualizarInterfaceAula(aulaId, concluida = true) {
-            // Atualizar item na lista
             const aulaElement = document.querySelector(`[data-aula-id="${aulaId}"]`);
             if (aulaElement) {
-                // Remover classe bloqueada se estiver sendo concluída
                 if (concluida) {
                     aulaElement.classList.remove('bloqueada');
                     aulaElement.classList.add('completa');
@@ -1629,17 +1610,14 @@ async carregarAutorizacoesEspecificas() {
                         iconeElement.innerHTML = '<i class="fas fa-check-circle"></i>';
                     }
                     
-                    // Atualizar onclick para permitir acesso
                     aulaElement.onclick = () => iniciarAula(aulaId);
                     aulaElement.style.cursor = 'pointer';
                     
-                    // Remover tooltip de bloqueio
                     const tooltip = aulaElement.querySelector('.aula-tooltip');
                     if (tooltip) {
                         tooltip.remove();
                     }
                     
-                    // Atualizar título
                     const tituloElement = aulaElement.querySelector('.aula-info h4');
                     if (tituloElement) {
                         tituloElement.style.color = '';
@@ -1663,7 +1641,6 @@ async carregarAutorizacoesEspecificas() {
                 }
             }
             
-            // Atualizar botão no modal se for a aula atual
             if (aulaId === aulaAtualId) {
                 const btnConcluir = document.getElementById('btn-concluir-aula');
                 const estadoElement = document.getElementById('aula-estado');
@@ -1692,26 +1669,20 @@ async carregarAutorizacoesEspecificas() {
             }
             
             this.atualizarProgressoBar();
-            
-            // Verificar e atualizar aulas subsequentes que podem ter sido desbloqueadas
             this.atualizarAulasSubsequentes(aulaId);
         }
 
         async atualizarAulasSubsequentes(aulaIdConcluida) {
-            // Encontrar a próxima aula
             const aulaConcluida = this.encontrarAula(aulaIdConcluida);
             if (!aulaConcluida) return;
 
             const { moduloIndex, aulaIndex } = aulaConcluida;
             const modulo = this.cursoData.modulos[moduloIndex];
             
-            // Verificar próxima aula no mesmo módulo
             if (modulo.aulas && aulaIndex + 1 < modulo.aulas.length) {
                 const proximaAula = modulo.aulas[aulaIndex + 1];
                 await this.verificarEDesbloquearAula(proximaAula.id);
-            } 
-            // Verificar primeira aula do próximo módulo (se esta for a última do módulo atual)
-            else if (moduloIndex + 1 < this.cursoData.modulos.length) {
+            } else if (moduloIndex + 1 < this.cursoData.modulos.length) {
                 const proximoModulo = this.cursoData.modulos[moduloIndex + 1];
                 if (proximoModulo.aulas && proximoModulo.aulas.length > 0) {
                     const primeiraAulaProximoModulo = proximoModulo.aulas[0];
@@ -1725,23 +1696,19 @@ async carregarAutorizacoesEspecificas() {
             const aulaElement = document.querySelector(`[data-aula-id="${aulaId}"]`);
             
             if (autorizada && aulaElement && aulaElement.classList.contains('bloqueada')) {
-                // Desbloquear a aula
                 aulaElement.classList.remove('bloqueada');
                 
-                // Atualizar ícone
                 const iconeElement = aulaElement.querySelector('.aula-icone');
                 const aula = this.encontrarAula(aulaId);
                 if (iconeElement && aula) {
                     iconeElement.innerHTML = aula.videoUrl ? '<i class="fas fa-play-circle"></i>' : '<i class="fas fa-book"></i>';
                 }
                 
-                // Atualizar status
                 const statusElement = aulaElement.querySelector('.aula-status');
                 if (statusElement) {
                     statusElement.innerHTML = 'Pendente';
                 }
                 
-                // Atualizar título
                 const tituloElement = aulaElement.querySelector('.aula-info h4');
                 if (tituloElement) {
                     tituloElement.style.color = '';
@@ -1751,17 +1718,14 @@ async carregarAutorizacoesEspecificas() {
                     }
                 }
                 
-                // Remover tooltip
                 const tooltip = aulaElement.querySelector('.aula-tooltip');
                 if (tooltip) {
                     tooltip.remove();
                 }
                 
-                // Ativar clique
                 aulaElement.onclick = () => iniciarAula(aulaId);
                 aulaElement.style.cursor = 'pointer';
                 
-                // Mostrar notificação de desbloqueio (opcional)
                 this.mostrarNotificacaoDesbloqueio(aulaId);
             }
         }
@@ -1770,32 +1734,13 @@ async carregarAutorizacoesEspecificas() {
             const aula = this.encontrarAula(aulaId);
             if (!aula) return;
 
-            // Remover notificação anterior se existir
             const notificacaoAnterior = document.querySelector('.notificacao-desbloqueio');
             if (notificacaoAnterior) {
                 notificacaoAnterior.remove();
             }
 
-            // Criar nova notificação
             const notificacao = document.createElement('div');
             notificacao.className = 'notificacao-desbloqueio';
-            notificacao.style.cssText = `
-                position: fixed;
-                top: 100px;
-                right: 30px;
-                background: var(--info);
-                color: white;
-                padding: 15px 25px;
-                border-radius: var(--border-radius);
-                box-shadow: var(--shadow);
-                z-index: 1001;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                animation: slideInRight 0.5s ease, fadeOut 0.5s ease 3s forwards;
-                max-width: 350px;
-            `;
-            
             notificacao.innerHTML = `
                 <i class="fas fa-unlock"></i>
                 <div>
@@ -1806,7 +1751,6 @@ async carregarAutorizacoesEspecificas() {
 
             document.body.appendChild(notificacao);
 
-            // Remover após animação
             setTimeout(() => {
                 if (notificacao.parentNode) {
                     notificacao.remove();
@@ -2000,8 +1944,7 @@ async carregarAutorizacoesEspecificas() {
             `;
         }
     };
-    
-       
+
     // FUNÇÕES GLOBAIS
     window.toggleModulo = function(index) {
         const modulo = document.getElementById(`modulo-${index}`);
@@ -2065,202 +2008,198 @@ async carregarAutorizacoesEspecificas() {
         }
     };
 
-
-
-// Nova função para mostrar modal de solicitação
-function mostrarModalSolicitacaoAutorizacao(aulaId) {
-    const gerenciador = window.gerenciador;
-    const aula = gerenciador.encontrarAula(aulaId);
-    const cursoData = gerenciador.cursoData;
-    
-    if (!aula || !cursoData) return;
-    
-    // Criar modal de solicitação
-    const modalHTML = `
-        <div class="modal" id="solicitacao-modal">
-            <div class="modal-content" style="max-width: 500px;">
-                <div class="modal-header">
-                    <h3>Solicitar Autorização</h3>
-                    <button class="modal-close" onclick="fecharModalSolicitacao()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div style="text-align: center; padding: 20px 0;">
-                        <div style="font-size: 3rem; color: var(--warning); margin-bottom: 15px;">
-                            <i class="fas fa-user-shield"></i>
-                        </div>
-                        <h3 style="color: var(--light); margin-bottom: 10px;">
-                            Aula Bloqueada
-                        </h3>
-                        <p style="color: var(--gray); margin-bottom: 20px;">
-                            Para continuar no curso "${cursoData.titulo}", você precisa de autorização do administrador.
-                        </p>
-                        
-                        <div style="background: rgba(255, 207, 0, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left;">
-                            <h4 style="color: var(--primary); margin-bottom: 10px;">
-                                <i class="fas fa-graduation-cap"></i> ${aula.titulo}
-                            </h4>
-                            <div style="color: #ccc; font-size: 0.9rem;">
-                                <div><i class="fas fa-clock"></i> ${aula.duracao || '15'} minutos</div>
-                                ${aula.descricao ? `<div style="margin-top: 5px;">${aula.descricao}</div>` : ''}
+    // MODAL DE SOLICITAÇÃO DE AUTORIZAÇÃO
+    function mostrarModalSolicitacaoAutorizacao(aulaId) {
+        const gerenciador = window.gerenciador;
+        const aula = gerenciador.encontrarAula(aulaId);
+        const cursoData = gerenciador.cursoData;
+        
+        if (!aula || !cursoData) return;
+        
+        // Fechar modal de aula atual se estiver aberto
+        fecharAula();
+        
+        // Criar modal de solicitação
+        const modalHTML = `
+            <div class="modal" id="solicitacao-modal">
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-user-shield"></i> Solicitar Autorização</h2>
+                        <button class="modal-close" onclick="fecharModalSolicitacao()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="text-align: center; padding: 10px 0;">
+                            <div style="font-size: 3rem; color: var(--warning); margin-bottom: 15px;">
+                                <i class="fas fa-lock"></i>
                             </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label style="color: var(--light); margin-bottom: 8px; display: block;">
-                                <i class="fas fa-comment"></i> Motivo da Solicitação
-                            </label>
-                            <textarea id="motivo-solicitacao" class="form-control" 
-                                      rows="3" 
-                                      placeholder="Explique por que você precisa acessar esta aula..."
-                                      style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #555; color: white; padding: 10px; border-radius: 8px;"></textarea>
-                        </div>
-                        
-                        <div style="margin-top: 25px; display: flex; gap: 10px; justify-content: center;">
-                            <button onclick="fecharModalSolicitacao()" 
-                                    style="padding: 12px 24px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #555; border-radius: 8px; cursor: pointer;">
-                                Cancelar
-                            </button>
-                            <button onclick="enviarSolicitacaoAutorizacao(${aulaId})" 
-                                    style="padding: 12px 24px; background: var(--warning); color: black; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                                <i class="fas fa-paper-plane"></i> Enviar Solicitação
-                            </button>
-                        </div>
-                        
-                        <div style="margin-top: 20px; color: #888; font-size: 0.85rem;">
-                            <i class="fas fa-info-circle"></i> O administrador será notificado e você receberá uma resposta em breve.
+                            <h3 style="color: var(--light); margin-bottom: 10px;">
+                                Aula Bloqueada
+                            </h3>
+                            <p style="color: var(--gray); margin-bottom: 20px;">
+                                Para acessar esta aula, você precisa de autorização do administrador.
+                            </p>
+                            
+                            <div style="background: rgba(255, 207, 0, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left;">
+                                <h4 style="color: var(--primary); margin-bottom: 10px;">
+                                    <i class="fas fa-graduation-cap"></i> ${aula.titulo}
+                                </h4>
+                                <div style="color: #ccc; font-size: 0.9rem;">
+                                    <div><i class="fas fa-clock"></i> ${aula.duracao || '15'} minutos</div>
+                                    ${aula.descricao ? `<div style="margin-top: 5px;">${aula.descricao}</div>` : ''}
+                                </div>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label style="color: var(--light); margin-bottom: 8px; display: block;">
+                                    <i class="fas fa-comment"></i> Motivo da Solicitação
+                                </label>
+                                <textarea id="motivo-solicitacao" 
+                                          rows="4" 
+                                          placeholder="Explique por que você precisa acessar esta aula..."
+                                          style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #555; color: white; padding: 12px; border-radius: 8px; font-family: inherit;"></textarea>
+                            </div>
+                            
+                            <div style="margin-top: 25px; display: flex; gap: 10px; justify-content: center;">
+                                <button onclick="fecharModalSolicitacao()" 
+                                        style="padding: 12px 24px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #555; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                    Cancelar
+                                </button>
+                                <button onclick="enviarSolicitacaoAutorizacao(${aulaId})" 
+                                        style="padding: 12px 24px; background: var(--warning); color: black; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-paper-plane"></i> Enviar Solicitação
+                                </button>
+                            </div>
+                            
+                            <div style="margin-top: 20px; color: #888; font-size: 0.85rem; text-align: center;">
+                                <i class="fas fa-info-circle"></i> O administrador será notificado e você receberá uma resposta em breve.
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    `;
-    
-    // Adicionar modal ao documento
-    if (!document.getElementById('solicitacao-modal')) {
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        `;
+        
+        // Adicionar modal ao documento
+        if (!document.getElementById('solicitacao-modal')) {
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+        
+        // Mostrar modal
+        document.getElementById('solicitacao-modal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
     }
-    
-    // Mostrar modal
-    document.getElementById('solicitacao-modal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
 
-// Função para enviar solicitação
-async function enviarSolicitacaoAutorizacao(aulaId) {
-    const gerenciador = window.gerenciador;
-    const motivo = document.getElementById('motivo-solicitacao').value.trim();
-    
-    if (!motivo) {
-        alert('Por favor, explique o motivo da sua solicitação.');
-        return;
-    }
-    
-    try {
-        showGlobalLoading(true);
+    // FUNÇÃO PARA ENVIAR SOLICITAÇÃO
+    async function enviarSolicitacaoAutorizacao(aulaId) {
+        const gerenciador = window.gerenciador;
+        const motivo = document.getElementById('motivo-solicitacao').value.trim();
         
-        const response = await fetch(`${gerenciador.API_BASE}/solicitacoes-autorizacao`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                usuarioId: gerenciador.usuarioId,
-                cursoId: gerenciador.cursoId,
-                aulaId: aulaId,
-                motivo: motivo
-            })
-        });
+        if (!motivo) {
+            alert('Por favor, explique o motivo da sua solicitação.');
+            return;
+        }
         
-        if (response.ok) {
-            const data = await response.json();
+        try {
+            showGlobalLoading(true);
             
-            if (data.success) {
-                // Mostrar notificação de sucesso
-                mostrarNotificacaoSolicitacaoEnviada();
+            const response = await fetch(`${gerenciador.API_BASE}/solicitacoes-autorizacao`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    usuarioId: gerenciador.usuarioId,
+                    cursoId: gerenciador.cursoId,
+                    aulaId: aulaId,
+                    motivo: motivo
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
                 
-                // Fechar modais
-                fecharModalSolicitacao();
-                fecharAula();
+                if (data.success) {
+                    mostrarNotificacaoSolicitacaoEnviada();
+                    fecharModalSolicitacao();
+                } else {
+                    throw new Error(data.error || 'Erro ao enviar solicitação');
+                }
             } else {
-                throw new Error(data.error || 'Erro ao enviar solicitação');
+                throw new Error(`Erro ${response.status}: ${response.statusText}`);
             }
-        } else {
-            throw new Error(`Erro ${response.status}: ${response.statusText}`);
+            
+        } catch (error) {
+            console.error('❌ Erro ao enviar solicitação:', error);
+            alert('❌ Erro ao enviar solicitação. Tente novamente.');
+        } finally {
+            showGlobalLoading(false);
         }
-        
-    } catch (error) {
-        console.error('❌ Erro ao enviar solicitação:', error);
-        alert('❌ Erro ao enviar solicitação. Tente novamente.');
-    } finally {
-        showGlobalLoading(false);
-    }
-}
-
-// Funções auxiliares
-function fecharModalSolicitacao() {
-    const modal = document.getElementById('solicitacao-modal');
-    if (modal) {
-        modal.style.display = 'none';
-        modal.remove();
-    }
-    document.body.style.overflow = 'auto';
-}
-
-function mostrarNotificacaoSolicitacaoEnviada() {
-    // Remover notificação anterior se existir
-    const notificacaoAnterior = document.querySelector('.notificacao-solicitacao');
-    if (notificacaoAnterior) {
-        notificacaoAnterior.remove();
     }
 
-    // Criar nova notificação
-    const notificacao = document.createElement('div');
-    notificacao.className = 'notificacao-concluido';
-    notificacao.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 30px;
-        background: var(--info);
-        color: white;
-        padding: 15px 25px;
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        z-index: 1001;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        animation: slideInRight 0.5s ease, fadeOut 0.5s ease 3s forwards;
-        max-width: 350px;
-    `;
-    
-    notificacao.innerHTML = `
-        <i class="fas fa-paper-plane"></i>
-        <div>
-            <strong>Solicitação Enviada!</strong>
-            <div style="font-size: 0.85rem; opacity: 0.9;">Aguardando aprovação do administrador</div>
-        </div>
-    `;
-
-    document.body.appendChild(notificacao);
-
-    // Remover após animação
-    setTimeout(() => {
-        if (notificacao.parentNode) {
-            notificacao.remove();
+    // FUNÇÃO PARA MARCAR AULA COMO CONCLUÍDA
+    window.marcarAulaConcluida = async function() {
+        try {
+            if (!aulaAtualId) {
+                console.error('Nenhuma aula selecionada');
+                return;
+            }
+            
+            const gerenciador = window.gerenciador;
+            if (!gerenciador) {
+                console.error('Gerenciador não inicializado');
+                return;
+            }
+            
+            const autorizada = await gerenciador.verificarAulaAutorizada(aulaAtualId);
+            
+            if (!autorizada) {
+                mostrarModalSolicitacaoAutorizacao(aulaAtualId);
+                return;
+            }
+            
+            const concluida = gerenciador.marcarAulaConcluida(aulaAtualId);
+            
+            if (concluida) {
+                aulaAtualConcluida = true;
+                console.log(`✅ Aula ${aulaAtualId} marcada como concluída`);
+                
+                try {
+                    await fetch(`${gerenciador.API_BASE}/progresso/aula`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            usuarioId: gerenciador.usuarioId,
+                            aulaId: aulaAtualId,
+                            concluida: true
+                        })
+                    });
+                } catch (error) {
+                    console.warn('⚠️ Não foi possível sincronizar progresso:', error);
+                }
+                
+                // Atualizar o botão imediatamente
+                const btnConcluir = document.getElementById('btn-concluir-aula');
+                if (btnConcluir) {
+                    btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
+                    btnConcluir.classList.add('concluida');
+                    btnConcluir.disabled = true;
+                }
+                
+                // Atualizar estado na interface
+                const estadoElement = document.getElementById('aula-estado');
+                if (estadoElement) {
+                    estadoElement.textContent = 'Concluída';
+                    estadoElement.style.color = 'var(--success)';
+                }
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao marcar aula como concluída:', error);
+            alert('❌ Erro ao salvar progresso. Tente novamente.');
         }
-    }, 3500);
-}
-
-// Função auxiliar para mostrar loading
-function showGlobalLoading(show) {
-    // Você pode implementar um spinner global ou usar um existente
-    const body = document.body;
-    if (show) {
-        body.style.cursor = 'wait';
-    } else {
-        body.style.cursor = 'default';
-    }
-}
+    };
 
     window.fecharAula = function() {
         const modal = document.getElementById('aula-modal');
@@ -2270,18 +2209,25 @@ function showGlobalLoading(show) {
         }
     };
 
-    // Fechar modal com ESC
+    // FECHAR MODAL COM ESC
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             fecharAula();
+            fecharModalSolicitacao();
         }
     });
 
-    // Fechar modal ao clicar fora
+    // FECHAR MODAL AO CLICAR FORA
     document.addEventListener('click', function(e) {
-        const modal = document.getElementById('aula-modal');
-        if (modal && e.target === modal) {
+        const modalAula = document.getElementById('aula-modal');
+        const modalSolicitacao = document.getElementById('solicitacao-modal');
+        
+        if (modalAula && e.target === modalAula) {
             fecharAula();
+        }
+        
+        if (modalSolicitacao && e.target === modalSolicitacao) {
+            fecharModalSolicitacao();
         }
     });
 
@@ -2294,5 +2240,3 @@ function showGlobalLoading(show) {
 </script>
 </body>
 </html>
-
-
