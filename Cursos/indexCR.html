@@ -1163,42 +1163,41 @@ async carregarCurso() {
 
 
 async verificarAulaAutorizada(aulaId) {
-    try {
-        console.log(`🔒 Verificando autorização para aula ${aulaId} - MODO: BLOQUEIO TOTAL`);
-        
-        const response = await fetch(
-            `${this.API_BASE}/autorizacoes/verificar?` + 
-            `usuarioId=${this.usuarioId}&cursoId=${this.cursoId}&aulaId=${aulaId}`
-        );
-        
-        if (response.ok) {
-            const data = await response.json();
-            console.log('📋 Resposta da API de autorização:', data);
-            
-            if (data.success && data.autorizada) {
-                console.log('✅ Aula autorizada pelo admin');
-                return true;
-            }
-        }
-        
-        if (this.aulasAutorizadas.has(aulaId)) {
-            console.log('✅ Aula autorizada por autorização em massa');
-            return true;
-        }
-        
-        if (this.aulasConcluidas.includes(aulaId)) {
-            console.log('✅ Aula já concluída - permitindo acesso para revisão');
-            return true;
-        }
-        
-        console.log('❌ Aula NÃO autorizada - acesso bloqueado');
-        return false;
-        
-    } catch (error) {
-        console.error('❌ Erro na verificação de autorização:', error);
-        return false;
+  try {
+    console.log(`🔍 Verificando autorização para aula ${aulaId}`);
+    
+    // Se a aula já foi concluída, permitir acesso (para revisão)
+    if (this.aulasConcluidas.includes(aulaId)) {
+      console.log('✅ Aula já concluída - acesso permitido para revisão');
+      return true;
     }
+    
+    // Verificar via API
+    const response = await fetch(
+      `${this.API_BASE}/autorizacoes/verificar?` + 
+      `usuarioId=${this.usuarioId}&cursoId=${this.cursoId}&aulaId=${aulaId}`
+    );
+    
+    if (!response.ok) {
+      console.log('⚠️ API de autorização indisponível, usando verificação local');
+      return this.verificarAulaAutorizadaLocal(aulaId);
+    }
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      console.log(`📊 Resultado: ${data.autorizada ? 'AUTORIZADA' : 'NÃO AUTORIZADA'}`);
+      return data.autorizada;
+    }
+    
+    return false;
+    
+  } catch (error) {
+    console.error('❌ Erro na verificação:', error);
+    return false;
+  }
 }
+        
 async carregarAutorizacoesEspecificas() {
     try {
         console.log('Carregando autorizações específicas do usuário...');
@@ -2308,3 +2307,4 @@ function showGlobalLoading(show) {
 </script>
 </body>
 </html>
+
