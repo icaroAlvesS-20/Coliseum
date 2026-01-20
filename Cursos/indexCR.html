@@ -1042,9 +1042,8 @@
                 progressoFill.style.width = `${progresso}%`;
             }
         }
-    }
-
-async carregarCurso() {
+        
+  async carregarCurso() {
     try {
         if (!this.cursoId) {
             this.mostrarErro('Curso não especificado');
@@ -1080,6 +1079,9 @@ async carregarCurso() {
         this.mostrarErro(error.message);
     }
 }
+    }
+
+
         async carregarAutorizacoesUsuario() {
             try {
                 console.log('Carregando autorizações do usuário...');
@@ -2319,6 +2321,7 @@ function showGlobalLoading(show) {
 </script>
 </body>
 </html>
+
 
 
 
