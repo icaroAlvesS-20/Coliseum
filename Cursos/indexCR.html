@@ -1046,32 +1046,28 @@
             return false;
         }
 
-        verificarAulaAutorizada(aulaId) {
-            console.log('Verificando autorização para aula', aulaId);
-            
-            // AULAS SEMPRE AUTORIZADAS:
-            // 1. Aulas já concluídas (para revisão)
-            if (this.aulasConcluidas.includes(aulaId)) {
-                console.log('Aula já concluída - acesso permitido para revisão');
-                return true;
-            }
-            
-            // 2. Primeira aula de cada módulo SEMPRE disponível (início)
-            const aula = this.encontrarAula(aulaId);
-            if (aula && aula.aulaIndex === 0) {
-                console.log('Primeira aula do módulo - acesso liberado automaticamente');
-                return true;
-            }
-            
-            // 3. Verificar se foi autorizada pelo ADM
-            if (this.aulasAutorizadas.has(aulaId)) {
-                console.log('Aula autorizada pelo ADM');
-                return true;
-            }
-            
-            console.log('Aula NÃO autorizada');
-            return false;
-        }
+       verificarAulaAutorizada(aulaId) {
+    console.log('Verificando autorização para aula', aulaId);
+    
+    if (this.aulasConcluidas.includes(aulaId)) {
+        console.log('✅ Aula já concluída - acesso permitido para revisão');
+        return true;
+    }
+    
+    const aula = this.encontrarAula(aulaId);
+    if (aula && aula.aulaIndex === 0) {
+        console.log('✅ Primeira aula do módulo - acesso liberado automaticamente');
+        return true;
+    }
+    
+    if (this.aulasAutorizadas.has(aulaId)) {
+        console.log('✅ Aula autorizada pelo ADM');
+        return true;
+    }
+    
+    console.log('❌ Aula NÃO autorizada');
+    return false;
+}
 
         desmarcarAulaConcluida(aulaId) {
             const index = this.aulasConcluidas.indexOf(aulaId);
@@ -2383,72 +2379,127 @@
         }
     }
 
-    // FUNÇÃO PARA MARCAR AULA COMO CONCLUÍDA
     window.marcarAulaConcluida = async function() {
-        try {
-            if (!aulaAtualId) {
-                console.error('Nenhuma aula selecionada');
-                return;
-            }
-            
-            const gerenciador = window.gerenciador;
-            if (!gerenciador) {
-                console.error('Gerenciador não inicializado');
-                return;
-            }
-            
+    try {
+        if (!aulaAtualId) {
+            console.error('Nenhuma aula selecionada');
+            return;
+        }
+        
+        const gerenciador = window.gerenciador;
+        if (!gerenciador) {
+            console.error('Gerenciador não inicializado');
+            return;
+        }
+        
+        // Verificar se já está concluída
+        if (gerenciador.aulasConcluidas.includes(aulaAtualId)) {
+            console.log('Aula já está concluída');
+            return;
+        }
+        
+        // Verificar se está autorizada (exceto primeira aula)
+        const aula = gerenciador.encontrarAula(aulaAtualId);
+        const isPrimeiraAula = aula && aula.aulaIndex === 0;
+        
+        if (!isPrimeiraAula) {
             const autorizada = gerenciador.verificarAulaAutorizada(aulaAtualId);
             
             if (!autorizada) {
+                console.log('❌ Aula não autorizada!');
                 mostrarModalSolicitacaoAutorizacao(aulaAtualId);
                 return;
             }
+        }
+        
+        // 1. Marcar como concluída localmente
+        const concluida = gerenciador.marcarAulaConcluida(aulaAtualId);
+        
+        if (concluida) {
+            aulaAtualConcluida = true;
+            console.log(`✅ Aula ${aulaAtualId} marcada como concluída`);
             
-            const concluida = gerenciador.marcarAulaConcluida(aulaAtualId);
-            
-            if (concluida) {
-                aulaAtualConcluida = true;
-                console.log(`✅ Aula ${aulaAtualId} marcada como concluída`);
+            // 2. Enviar solicitação automática para próxima aula
+            try {
+                console.log('🤖 Enviando solicitação automática para próxima aula...');
                 
-                try {
-                    await fetch(`${gerenciador.API_BASE}/progresso/aula`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            usuarioId: gerenciador.usuarioId,
-                            aulaId: aulaAtualId,
-                            concluida: true
-                        })
-                    });
-                } catch (error) {
-                    console.warn('⚠️ Não foi possível sincronizar progresso:', error);
+                const response = await fetch(`${gerenciador.API_BASE}/solicitacoes/automatica`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        usuarioId: gerenciador.usuarioId,
+                        cursoId: gerenciador.cursoId,
+                        aulaConcluidaId: aulaAtualId
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        if (data.proximaAula) {
+                            console.log(`📤 Solicitação enviada para próxima aula: ${data.proximaAula.titulo}`);
+                            
+                            // Mostrar notificação
+                            mostrarNotificacaoSolicitacaoAutomatica(data.proximaAula);
+                            
+                            // Se já tem autorização, desbloquear automaticamente
+                            if (data.autorizacao) {
+                                console.log('🎉 Já tem autorização! Desbloqueando...');
+                                gerenciador.adicionarAutorizacao(data.proximaAula.id);
+                                gerenciador.mostrarNotificacaoDesbloqueio(data.proximaAula.id);
+                            }
+                        } else {
+                            console.log('📭 Não há próxima aula para solicitar');
+                        }
+                    }
+                } else {
+                    console.warn('⚠️ Não foi possível enviar solicitação automática');
                 }
                 
-                // Verificar e enviar solicitação para próxima aula AUTOMATICAMENTE
-                await enviarSolicitacaoParaProximaAula(aulaAtualId);
-                
-                // Atualizar o botão imediatamente
-                const btnConcluir = document.getElementById('btn-concluir-aula');
-                if (btnConcluir) {
-                    btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
-                    btnConcluir.classList.add('concluida');
-                    btnConcluir.disabled = true;
-                }
-                
-                // Atualizar estado na interface
-                const estadoElement = document.getElementById('aula-estado');
-                if (estadoElement) {
-                    estadoElement.textContent = 'Concluída';
-                    estadoElement.style.color = 'var(--success)';
-                }
+            } catch (apiError) {
+                console.error('❌ Erro na solicitação automática:', apiError);
             }
             
-        } catch (error) {
-            console.error('❌ Erro ao marcar aula como concluída:', error);
-            alert('❌ Erro ao salvar progresso. Tente novamente.');
+            // 3. Sincronizar com backend (opcional)
+            try {
+                await fetch(`${gerenciador.API_BASE}/progresso/aula`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        usuarioId: gerenciador.usuarioId,
+                        aulaId: aulaAtualId,
+                        concluida: true
+                    })
+                });
+            } catch (error) {
+                console.warn('⚠️ Não foi possível sincronizar progresso:', error);
+            }
+            
+            // 4. Atualizar interface
+            const btnConcluir = document.getElementById('btn-concluir-aula');
+            if (btnConcluir) {
+                btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
+                btnConcluir.classList.add('concluida');
+                btnConcluir.disabled = true;
+            }
+            
+            const estadoElement = document.getElementById('aula-estado');
+            if (estadoElement) {
+                estadoElement.textContent = 'Concluída';
+                estadoElement.style.color = 'var(--success)';
+            }
         }
-    };
-
+        
+    } catch (error) {
+        console.error('❌ Erro ao marcar aula como concluída:', error);
+        alert('❌ Erro ao salvar progresso. Tente novamente.');
+    }
+};
+    
     window.fecharAula = function() {
         const modal = document.getElementById('aula-modal');
         if (modal) {
@@ -2488,3 +2539,4 @@
 </script>
 </body>
 </html>
+
