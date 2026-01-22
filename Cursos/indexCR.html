@@ -1760,65 +1760,6 @@
             this.atualizarAulasSubsequentes(aulaId);
         }
 
-async function enviarSolicitacaoParaAdm(aulaId, tipoSolicitacao) {
-    try {
-        const gerenciador = window.gerenciador;
-        const aula = gerenciador.encontrarAula(aulaId);
-        
-        if (!aula) return;
-        
-        const dadosSolicitacao = {
-            usuarioId: gerenciador.usuarioId,
-            cursoId: gerenciador.cursoId,
-            aulaId: aulaId,
-            tipo: tipoSolicitacao, 
-            data: new Date().toISOString(),
-            aulaTitulo: aula.titulo,
-            cursoTitulo: gerenciador.cursoData?.titulo || 'Curso'
-        };
-        
-        const response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(dadosSolicitacao)
-        });
-        
-        if (response.ok) {
-            console.log(`✅ Solicitação enviada ao admin: ${tipoSolicitacao}`);
-            
-            mostrarNotificacaoSolicitacaoAdm();
-            return true;
-        } else {
-            console.warn('⚠️ Não foi possível enviar solicitação ao admin');
-            return false;
-        }
-        
-    } catch (error) {
-        console.error('❌ Erro ao enviar solicitação ao admin:', error);
-        return false;
-    }
-}
-
-function mostrarNotificacaoSolicitacaoAdm() {
-    const notificacao = document.createElement('div');
-    notificacao.className = 'notificacao-solicitacao';
-    notificacao.innerHTML = `
-        <i class="fas fa-user-shield"></i>
-        <div>
-            <strong>Solicitação enviada ao administrador!</strong>
-            <div style="font-size: 0.85rem; opacity: 0.9;">Conclusão registrada e em análise</div>
-        </div>
-    `;
-    
-    document.body.appendChild(notificacao);
-    
-    setTimeout(() => {
-        if (notificacao.parentNode) notificacao.remove();
-    }, 3500);
-}
-
         async atualizarAulasSubsequentes(aulaIdConcluida) {
             const aulaConcluida = this.encontrarAula(aulaIdConcluida);
             if (!aulaConcluida) return;
@@ -2113,7 +2054,67 @@ function mostrarNotificacaoSolicitacaoAdm() {
                 </div>
             `;
         }
-    };
+    }
+
+    // FUNÇÃO PARA ENVIAR SOLICITAÇÃO PARA ADMINISTRADOR
+    async function enviarSolicitacaoParaAdm(aulaId, tipoSolicitacao) {
+        try {
+            const gerenciador = window.gerenciador;
+            const aula = gerenciador.encontrarAula(aulaId);
+            
+            if (!aula) return;
+            
+            const dadosSolicitacao = {
+                usuarioId: gerenciador.usuarioId,
+                cursoId: gerenciador.cursoId,
+                aulaId: aulaId,
+                tipo: tipoSolicitacao, 
+                data: new Date().toISOString(),
+                aulaTitulo: aula.titulo,
+                cursoTitulo: gerenciador.cursoData?.titulo || 'Curso'
+            };
+            
+            const response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dadosSolicitacao)
+            });
+            
+            if (response.ok) {
+                console.log(`✅ Solicitação enviada ao admin: ${tipoSolicitacao}`);
+                
+                mostrarNotificacaoSolicitacaoAdm();
+                return true;
+            } else {
+                console.warn('⚠️ Não foi possível enviar solicitação ao admin');
+                return false;
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao enviar solicitação ao admin:', error);
+            return false;
+        }
+    }
+
+    function mostrarNotificacaoSolicitacaoAdm() {
+        const notificacao = document.createElement('div');
+        notificacao.className = 'notificacao-solicitacao';
+        notificacao.innerHTML = `
+            <i class="fas fa-user-shield"></i>
+            <div>
+                <strong>Solicitação enviada ao administrador!</strong>
+                <div style="font-size: 0.85rem; opacity: 0.9;">Conclusão registrada e em análise</div>
+            </div>
+        `;
+        
+        document.body.appendChild(notificacao);
+        
+        setTimeout(() => {
+            if (notificacao.parentNode) notificacao.remove();
+        }, 3500);
+    }
 
     // FUNÇÕES GLOBAIS
     window.toggleModulo = function(index) {
@@ -2261,7 +2262,7 @@ function mostrarNotificacaoSolicitacaoAdm() {
         document.body.style.overflow = 'hidden';
     }
 
-    // FUNÇÃO PARA ENVIAR SOLICITAÇÃO
+    // FUNÇÃO PARA ENVIAR SOLICITAÇÃO DE AUTORIZAÇÃO
     async function enviarSolicitacaoAutorizacao(aulaId) {
         const gerenciador = window.gerenciador;
         const motivo = document.getElementById('motivo-solicitacao').value.trim();
@@ -2411,4 +2412,5 @@ function mostrarNotificacaoSolicitacaoAdm() {
 </script>
 </body>
 </html>
+
 
