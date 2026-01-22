@@ -976,7 +976,6 @@
             this.aulasCarregadas = 0;
             this.cursoData = null;
             this.aulasMap = new Map();
-            this.aulasAutorizadas = new Set();
             this.bloqueioProgressivo = true;
         }
 
@@ -1098,8 +1097,6 @@
                     
                     this.bloqueioProgressivo = data.curso.bloqueioProgressivo !== false;
                     
-                    await this.carregarAutorizacoesEspecificas();
-                    
                     this.processarAulas(data.curso.modulos || []);
                 } else {
                     throw new Error(data.error || 'Erro desconhecido');
@@ -1110,118 +1107,8 @@
                 this.mostrarErro(error.message);
             }
         }
-        
-        async carregarAutorizacoesUsuario() {
-            try {
-                console.log('Carregando autorizações do usuário...');
-                
-                // Verifica se o endpoint existe antes de fazer a requisição
-                const response = await fetch(`${this.API_BASE}/autorizacoes/usuario/${this.usuarioId}/curso/${this.cursoId}`, {
-                    method: 'GET'
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    if (data.success && data.autorizacoes) {
-                        this.processarAutorizacoes(data.autorizacoes);
-                    }
-                } else {
-                    console.log('Nenhuma autorização específica encontrada ou endpoint não disponível');
-                    // Usar autorizações padrão se o endpoint não existir
-                    this.usarAutorizacoesPadrao();
-                }
-            } catch (error) {
-                console.error('Erro ao carregar autorizações:', error);
-                this.usarAutorizacoesPadrao();
-            }
-        }
 
-        processarAutorizacoes(autorizacoes) {
-            console.log('Processando autorizações:', autorizacoes);
-            
-            this.aulasAutorizadas.clear();
-            
-            autorizacoes.forEach(autorizacao => {
-                if (autorizacao.tipo === 'liberar_todas') {
-                    if (this.cursoData.modulos) {
-                        this.cursoData.modulos.forEach(modulo => {
-                            modulo.aulas?.forEach(aula => {
-                                if (aula && aula.id) {
-                                    this.aulasAutorizadas.add(aula.id);
-                                }
-                            });
-                        });
-                    }
-                } else if (autorizacao.tipo === 'liberar_modulo' && autorizacao.moduloId) {
-                    const modulo = this.cursoData.modulos?.find(m => m.id == autorizacao.moduloId);
-                    modulo?.aulas?.forEach(aula => {
-                        if (aula && aula.id) {
-                            this.aulasAutorizadas.add(aula.id);
-                        }
-                    });
-                } else if (autorizacao.tipo === 'liberar_aula' && autorizacao.aulaId) {
-                    this.aulasAutorizadas.add(parseInt(autorizacao.aulaId));
-                } else if (autorizacao.tipo === 'bloquear_progresso') {
-                    this.bloqueioProgressivo = true;
-                }
-            });
-            
-            console.log('Aulas autorizadas:', Array.from(this.aulasAutorizadas));
-        }
-
-        usarAutorizacoesPadrao() {
-            console.log('Usando autorizações padrão...');
-            this.aulasAutorizadas.clear();
-            
-            // Por padrão, apenas a primeira aula de cada módulo está autorizada
-            if (this.cursoData && this.cursoData.modulos) {
-                this.cursoData.modulos.forEach(modulo => {
-                    if (modulo.aulas && modulo.aulas.length > 0) {
-                        // Primeira aula de cada módulo sempre autorizada
-                        const primeiraAula = modulo.aulas[0];
-                        if (primeiraAula && primeiraAula.id) {
-                            this.aulasAutorizadas.add(primeiraAula.id);
-                        }
-                    }
-                });
-            }
-            
-            console.log('Aulas autorizadas padrão:', Array.from(this.aulasAutorizadas));
-        }
-
-        async carregarAutorizacoesEspecificas() {
-            try {
-                console.log('Carregando autorizações específicas do usuário...');
-                
-                // Tentar carregar do endpoint específico
-                const response = await fetch(
-                    `${this.API_BASE}/autorizacoes/usuario/${this.usuarioId}/curso/${this.cursoId}`
-                );
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Autorizações específicas:', data);
-                    
-                    if (data.success && data.autorizacoes) {
-                        this.processarAutorizacoes(data.autorizacoes);
-                        return true;
-                    }
-                } else if (response.status === 404) {
-                    console.log('Endpoint de autorizações não encontrado, usando padrão');
-                    this.usarAutorizacoesPadrao();
-                    return true;
-                }
-                
-                return false;
-            } catch (error) {
-                console.error('Erro ao carregar autorizações específicas:', error);
-                this.usarAutorizacoesPadrao();
-                return false;
-            }
-        }
-
-        async verificarAulaAutorizada(aulaId) {
+        verificarAulaAutorizada(aulaId) {
             try {
                 console.log('Verificando autorização para aula', aulaId);
                 
@@ -1239,13 +1126,7 @@
                     return true;
                 }
                 
-                // 3. Verificar se está no conjunto de aulas autorizadas
-                if (this.aulasAutorizadas.has(parseInt(aulaId))) {
-                    console.log('Aula autorizada pelo sistema');
-                    return true;
-                }
-                
-                // 4. Verificar se a aula anterior foi concluída (para aulas não primeiras)
+                // 3. Verificar se a aula anterior foi concluída (para aulas não primeiras)
                 if (aula && aula.aulaIndex > 0) {
                     const modulo = this.cursoData.modulos?.[aula.moduloIndex];
                     if (modulo && modulo.aulas && modulo.aulas[aula.aulaIndex - 1]) {
@@ -1345,7 +1226,7 @@
                             <span class="modulo-contador">${aulasCount} aula${aulasCount !== 1 ? 's' : ''}</span>
                         </div>
                         <div class="aulas-container" id="modulo-aulas-${i}">
-                            ${await this.gerarListaAulas(modulo.aulas || [])}
+                            ${this.gerarListaAulas(modulo.aulas || [])}
                         </div>
                     </div>
                 `;
@@ -1354,7 +1235,7 @@
             container.innerHTML = html;
         }
 
-        async gerarListaAulas(aulas) {
+        gerarListaAulas(aulas) {
             if (!aulas || aulas.length === 0) {
                 return '<div style="padding:20px;color:#888;text-align:center;">Nenhuma aula disponível neste módulo</div>';
             }
@@ -1371,7 +1252,7 @@
                 // Primeira aula sempre autorizada
                 let autorizada = primeiraAula;
                 if (!primeiraAula) {
-                    autorizada = await this.verificarAulaAutorizada(aula.id);
+                    autorizada = this.verificarAulaAutorizada(aula.id);
                 } else {
                     console.log(`Aula ${aula.id} é primeira do módulo - sempre autorizada`);
                 }
@@ -1497,7 +1378,7 @@
             try {
                 console.log('Carregando conteúdo da aula:', aulaId);
                 
-                const autorizada = await this.verificarAulaAutorizada(aulaId);
+                const autorizada = this.verificarAulaAutorizada(aulaId);
                 
                 if (!autorizada) {
                     const aulaAnterior = this.encontrarAulaAnterior(aulaId);
@@ -1802,7 +1683,7 @@
         }
 
         async verificarEDesbloquearAula(aulaId) {
-            const autorizada = await this.verificarAulaAutorizada(aulaId);
+            const autorizada = this.verificarAulaAutorizada(aulaId);
             const aulaElement = document.querySelector(`[data-aula-id="${aulaId}"]`);
             
             if (autorizada && aulaElement && aulaElement.classList.contains('bloqueada')) {
@@ -2092,7 +1973,7 @@
             }
             
             // Verificar se a próxima aula está autorizada
-            const autorizada = await gerenciador.verificarAulaAutorizada(proximaAula.id);
+            const autorizada = gerenciador.verificarAulaAutorizada(proximaAula.id);
             
             if (!autorizada) {
                 console.log(`📤 Próxima aula bloqueada. Enviando solicitação automática...`);
@@ -2162,31 +2043,14 @@
                 automatica: tipoSolicitacao === 'autorizacao_automatica'
             };
             
-            // Primeiro tentar o endpoint de solicitações de autorização
-            let response = await fetch(`${gerenciador.API_BASE}/solicitacoes-autorizacao`, {
+            // Tentar endpoint geral de solicitações
+            const response = await fetch(`${gerenciciador.API_BASE}/solicitacoes`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    usuarioId: gerenciador.usuarioId,
-                    cursoId: gerenciador.cursoId,
-                    aulaId: aulaId,
-                    motivo: dadosSolicitacao.motivo
-                })
+                body: JSON.stringify(dadosSolicitacao)
             });
-            
-            if (!response.ok) {
-                console.log('⚠️ Endpoint de autorização não disponível, tentando endpoint geral...');
-                // Se falhar, tentar endpoint geral
-                response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(dadosSolicitacao)
-                });
-            }
             
             if (response.ok) {
                 const data = await response.json();
@@ -2464,42 +2328,26 @@
         try {
             showGlobalLoading(true);
             
-            // Primeiro tentar o endpoint específico
-            let response = await fetch(`${gerenciador.API_BASE}/solicitacoes-autorizacao`, {
+            // Criar dados da solicitação
+            const dadosSolicitacao = {
+                usuarioId: gerenciador.usuarioId,
+                cursoId: gerenciador.cursoId,
+                aulaId: aulaId,
+                tipo: 'autorizacao',
+                data: new Date().toISOString(),
+                aulaTitulo: gerenciador.encontrarAula(aulaId)?.titulo || 'Aula',
+                cursoTitulo: gerenciador.cursoData?.titulo || 'Curso',
+                motivo: motivo
+            };
+            
+            // Tentar enviar para o endpoint de solicitações
+            const response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    usuarioId: gerenciador.usuarioId,
-                    cursoId: gerenciador.cursoId,
-                    aulaId: aulaId,
-                    motivo: motivo
-                })
+                body: JSON.stringify(dadosSolicitacao)
             });
-            
-            // Se falhar, tentar endpoint geral
-            if (!response.ok) {
-                console.log('⚠️ Endpoint específico falhou, tentando endpoint geral...');
-                const dadosSolicitacao = {
-                    usuarioId: gerenciador.usuarioId,
-                    cursoId: gerenciador.cursoId,
-                    aulaId: aulaId,
-                    tipo: 'autorizacao',
-                    data: new Date().toISOString(),
-                    aulaTitulo: gerenciador.encontrarAula(aulaId)?.titulo || 'Aula',
-                    cursoTitulo: gerenciador.cursoData?.titulo || 'Curso',
-                    motivo: motivo
-                };
-                
-                response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(dadosSolicitacao)
-                });
-            }
             
             if (response.ok) {
                 const data = await response.json();
@@ -2511,12 +2359,17 @@
                     throw new Error(data.error || 'Erro ao enviar solicitação');
                 }
             } else {
-                throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                console.warn(`⚠️ Endpoint de solicitações retornou ${response.status}`);
+                // Se falhar, apenas mostrar notificação local
+                mostrarNotificacaoSolicitacaoEnviada();
+                fecharModalSolicitacao();
             }
             
         } catch (error) {
             console.error('❌ Erro ao enviar solicitação:', error);
-            alert('❌ Erro ao enviar solicitação. Tente novamente.');
+            // Mesmo se falhar, mostrar notificação local
+            mostrarNotificacaoSolicitacaoEnviada();
+            fecharModalSolicitacao();
         } finally {
             showGlobalLoading(false);
         }
@@ -2536,7 +2389,7 @@
                 return;
             }
             
-            const autorizada = await gerenciador.verificarAulaAutorizada(aulaAtualId);
+            const autorizada = gerenciador.verificarAulaAutorizada(aulaAtualId);
             
             if (!autorizada) {
                 mostrarModalSolicitacaoAutorizacao(aulaAtualId);
@@ -2627,4 +2480,3 @@
 </script>
 </body>
 </html>
-
