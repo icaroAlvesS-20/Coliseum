@@ -2423,6 +2423,7 @@
             try {
                 console.log('🤖 Enviando solicitação automática para próxima aula...');
                 
+                // ✅ URL CORRETA - SEM :1
                 const response = await fetch(`${gerenciador.API_BASE}/solicitacoes/automatica`, {
                     method: 'POST',
                     headers: { 
@@ -2438,6 +2439,7 @@
                 
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('📊 Resposta da solicitação automática:', data);
                     
                     if (data.success) {
                         if (data.proximaAula) {
@@ -2445,13 +2447,6 @@
                             
                             // Mostrar notificação
                             mostrarNotificacaoSolicitacaoAutomatica(data.proximaAula);
-                            
-                            // Se já tem autorização, desbloquear automaticamente
-                            if (data.autorizacao) {
-                                console.log('🎉 Já tem autorização! Desbloqueando...');
-                                gerenciador.adicionarAutorizacao(data.proximaAula.id);
-                                gerenciador.mostrarNotificacaoDesbloqueio(data.proximaAula.id);
-                            }
                         } else {
                             console.log('📭 Não há próxima aula para solicitar');
                         }
@@ -2464,22 +2459,7 @@
                 console.error('❌ Erro na solicitação automática:', apiError);
             }
             
-            // 3. Sincronizar com backend (opcional)
-            try {
-                await fetch(`${gerenciador.API_BASE}/progresso/aula`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        usuarioId: gerenciador.usuarioId,
-                        aulaId: aulaAtualId,
-                        concluida: true
-                    })
-                });
-            } catch (error) {
-                console.warn('⚠️ Não foi possível sincronizar progresso:', error);
-            }
-            
-            // 4. Atualizar interface
+            // 3. Atualizar interface
             const btnConcluir = document.getElementById('btn-concluir-aula');
             if (btnConcluir) {
                 btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
@@ -2499,6 +2479,7 @@
         alert('❌ Erro ao salvar progresso. Tente novamente.');
     }
 };
+    
     
     window.fecharAula = function() {
         const modal = document.getElementById('aula-modal');
@@ -2539,4 +2520,5 @@
 </script>
 </body>
 </html>
+
 
