@@ -1025,217 +1025,7 @@
             }
             return false;
         }
-    window.marcarAulaConcluida = async function() {
-    try {
-        if (!aulaAtualId) {
-            console.error('Nenhuma aula selecionada');
-            return;
-        }
-        
-        const gerenciador = window.gerenciador;
-        if (!gerenciador) {
-            console.error('Gerenciador não inicializado');
-            return;
-        }
-        
-        // Marcar aula como concluída
-        const concluida = gerenciador.marcarAulaConcluida(aulaAtualId);
-        
-        if (concluida) {
-            aulaAtualConcluida = true;
-            console.log(`✅ Aula ${aulaAtualId} marcada como concluída`);
-            
-            // ✅ NOVO: VERIFICAR PRÓXIMA AULA E ENVIAR SOLICITAÇÃO AUTOMÁTICA
-            await verificarEEnviarSolicitacaoProximaAula(aulaAtualId);
-            
-            // Restante do código existente...
-            try {
-                await fetch(`${gerenciador.API_BASE}/progresso/aula`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        usuarioId: gerenciador.usuarioId,
-                        aulaId: aulaAtualId,
-                        concluida: true
-                    })
-                });
-            } catch (error) {
-                console.warn('⚠️ Não foi possível sincronizar progresso:', error);
-            }
-            
-            // Atualizar interface
-            const btnConcluir = document.getElementById('btn-concluir-aula');
-            if (btnConcluir) {
-                btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
-                btnConcluir.classList.add('concluida');
-                btnConcluir.disabled = true;
-            }
-            
-            const estadoElement = document.getElementById('aula-estado');
-            if (estadoElement) {
-                estadoElement.textContent = 'Concluída';
-                estadoElement.style.color = 'var(--success)';
-            }
-        }
-        
-    } catch (error) {
-        console.error('❌ Erro ao marcar aula como concluída:', error);
-        alert('❌ Erro ao salvar progresso. Tente novamente.');
-    }
-};
 
-async function verificarEEnviarSolicitacaoProximaAula(aulaIdConcluida) {
-    try {
-        const gerenciador = window.gerenciador;
-        
-        // Encontrar a próxima aula
-        const proximaAula = encontrarProximaAula(aulaIdConcluida);
-        
-        if (!proximaAula) {
-            console.log('ℹ️ Não há próxima aula ou é a última');
-            return;
-        }
-        
-        // Verificar se a próxima aula está autorizada
-        const autorizada = await gerenciador.verificarAulaAutorizada(proximaAula.id);
-        
-        if (!autorizada) {
-            console.log(`📤 Próxima aula bloqueada. Enviando solicitação automática...`);
-            
-            // Criar motivo automático
-            const motivo = `Aluno completou a aula anterior e precisa continuar o progresso.`;
-            
-            // Enviar solicitação para o administrador
-            const solicitacaoEnviada = await enviarSolicitacaoParaAdm(
-                proximaAula.id,
-                'autorizacao_automatica',
-                motivo
-            );
-            
-            if (solicitacaoEnviada) {
-                mostrarNotificacaoSolicitacaoAutomatica(proximaAula);
-            }
-        }
-        
-    } catch (error) {
-        console.error('❌ Erro ao verificar próxima aula:', error);
-    }
-}
-
-function encontrarProximaAula(aulaIdAtual) {
-    const gerenciador = window.gerenciador;
-    const aulaAtual = gerenciador.encontrarAula(aulaIdAtual);
-    
-    if (!aulaAtual) return null;
-    
-    const { moduloIndex, aulaIndex } = aulaAtual;
-    const curso = gerenciador.cursoData;
-    
-    // Verificar se há próxima aula no mesmo módulo
-    if (curso.modulos[moduloIndex].aulas && 
-        aulaIndex + 1 < curso.modulos[moduloIndex].aulas.length) {
-        return curso.modulos[moduloIndex].aulas[aulaIndex + 1];
-    }
-    
-    // Verificar próximo módulo
-    else if (moduloIndex + 1 < curso.modulos.length) {
-        const proximoModulo = curso.modulos[moduloIndex + 1];
-        if (proximoModulo.aulas && proximoModulo.aulas.length > 0) {
-            return proximoModulo.aulas[0];
-        }
-    }
-    
-    return null; // Não há próxima aula
-}
-
-async function enviarSolicitacaoParaAdm(aulaId, tipoSolicitacao = 'autorizacao_automatica', motivo = '') {
-    try {
-        const gerenciador = window.gerenciador;
-        const aula = gerenciador.encontrarAula(aulaId);
-        
-        if (!aula) return false;
-        
-        const dadosSolicitacao = {
-            usuarioId: gerenciador.usuarioId,
-            cursoId: gerenciador.cursoId,
-            aulaId: aulaId,
-            tipo: tipoSolicitacao,
-            data: new Date().toISOString(),
-            aulaTitulo: aula.titulo,
-            cursoTitulo: gerenciador.cursoData?.titulo || 'Curso',
-            motivo: motivo || `Aluno completou aula anterior e aguarda autorização para continuar.`,
-            automatica: tipoSolicitacao === 'autorizacao_automatica'
-        };
-        
-        const response = await fetch(`${gerenciador.API_BASE}/solicitacoes-autorizacao`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                usuarioId: gerenciador.usuarioId,
-                cursoId: gerenciador.cursoId,
-                aulaId: aulaId,
-                motivo: dadosSolicitacao.motivo
-            })
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            console.log(`✅ Solicitação automática enviada: ${tipoSolicitacao}`);
-            return true;
-        } else {
-            console.warn('⚠️ Não foi possível enviar solicitação automática');
-            return false;
-        }
-        
-    } catch (error) {
-        console.error('❌ Erro ao enviar solicitação automática:', error);
-        return false;
-    }
-}
-
-function mostrarNotificacaoSolicitacaoAutomatica(aula) {
-    const notificacao = document.createElement('div');
-    notificacao.className = 'notificacao-automatica';
-    notificacao.style.cssText = `
-        position: fixed;
-        bottom: 30px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: var(--info);
-        color: white;
-        padding: 15px 25px;
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        z-index: 1001;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        max-width: 400px;
-        text-align: center;
-        animation: slideUp 0.5s ease;
-    `;
-    
-    notificacao.innerHTML = `
-        <i class="fas fa-robot"></i>
-        <div>
-            <strong>Solicitação enviada automaticamente!</strong>
-            <div style="font-size: 0.85rem; opacity: 0.9;">
-                Aguarde autorização para: "${aula.titulo}"
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(notificacao);
-    
-    setTimeout(() => {
-        if (notificacao.parentNode) {
-            notificacao.style.animation = 'slideDown 0.5s ease forwards';
-            setTimeout(() => notificacao.remove(), 500);
-        }
-    }, 5000);
-}
         desmarcarAulaConcluida(aulaId) {
             const index = this.aulasConcluidas.indexOf(aulaId);
             if (index > -1) {
@@ -2266,8 +2056,162 @@ function mostrarNotificacaoSolicitacaoAutomatica(aula) {
         }
     }
 
+    // FUNÇÕES AUXILIARES PARA SOLICITAÇÃO AUTOMÁTICA
+    async function verificarEEnviarSolicitacaoProximaAula(aulaIdConcluida) {
+        try {
+            const gerenciador = window.gerenciador;
+            
+            // Encontrar a próxima aula
+            const proximaAula = encontrarProximaAula(aulaIdConcluida);
+            
+            if (!proximaAula) {
+                console.log('ℹ️ Não há próxima aula ou é a última');
+                return;
+            }
+            
+            // Verificar se a próxima aula está autorizada
+            const autorizada = await gerenciador.verificarAulaAutorizada(proximaAula.id);
+            
+            if (!autorizada) {
+                console.log(`📤 Próxima aula bloqueada. Enviando solicitação automática...`);
+                
+                // Criar motivo automático
+                const motivo = `Aluno completou a aula anterior e precisa continuar o progresso.`;
+                
+                // Enviar solicitação para o administrador
+                const solicitacaoEnviada = await enviarSolicitacaoParaAdm(
+                    proximaAula.id,
+                    'autorizacao_automatica',
+                    motivo
+                );
+                
+                if (solicitacaoEnviada) {
+                    mostrarNotificacaoSolicitacaoAutomatica(proximaAula);
+                }
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao verificar próxima aula:', error);
+        }
+    }
+
+    function encontrarProximaAula(aulaIdAtual) {
+        const gerenciador = window.gerenciador;
+        const aulaAtual = gerenciador.encontrarAula(aulaIdAtual);
+        
+        if (!aulaAtual) return null;
+        
+        const { moduloIndex, aulaIndex } = aulaAtual;
+        const curso = gerenciador.cursoData;
+        
+        // Verificar se há próxima aula no mesmo módulo
+        if (curso.modulos[moduloIndex].aulas && 
+            aulaIndex + 1 < curso.modulos[moduloIndex].aulas.length) {
+            return curso.modulos[moduloIndex].aulas[aulaIndex + 1];
+        }
+        
+        // Verificar próximo módulo
+        else if (moduloIndex + 1 < curso.modulos.length) {
+            const proximoModulo = curso.modulos[moduloIndex + 1];
+            if (proximoModulo.aulas && proximoModulo.aulas.length > 0) {
+                return proximoModulo.aulas[0];
+            }
+        }
+        
+        return null; // Não há próxima aula
+    }
+
+    async function enviarSolicitacaoParaAdm(aulaId, tipoSolicitacao = 'autorizacao_automatica', motivo = '') {
+        try {
+            const gerenciador = window.gerenciador;
+            const aula = gerenciador.encontrarAula(aulaId);
+            
+            if (!aula) return false;
+            
+            const dadosSolicitacao = {
+                usuarioId: gerenciador.usuarioId,
+                cursoId: gerenciador.cursoId,
+                aulaId: aulaId,
+                tipo: tipoSolicitacao,
+                data: new Date().toISOString(),
+                aulaTitulo: aula.titulo,
+                cursoTitulo: gerenciador.cursoData?.titulo || 'Curso',
+                motivo: motivo || `Aluno completou aula anterior e aguarda autorização para continuar.`,
+                automatica: tipoSolicitacao === 'autorizacao_automatica'
+            };
+            
+            const response = await fetch(`${gerenciador.API_BASE}/solicitacoes-autorizacao`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    usuarioId: gerenciador.usuarioId,
+                    cursoId: gerenciador.cursoId,
+                    aulaId: aulaId,
+                    motivo: dadosSolicitacao.motivo
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`✅ Solicitação automática enviada: ${tipoSolicitacao}`);
+                return true;
+            } else {
+                console.warn('⚠️ Não foi possível enviar solicitação automática');
+                return false;
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao enviar solicitação automática:', error);
+            return false;
+        }
+    }
+
+    function mostrarNotificacaoSolicitacaoAutomatica(aula) {
+        const notificacao = document.createElement('div');
+        notificacao.className = 'notificacao-automatica';
+        notificacao.style.cssText = `
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--info);
+            color: white;
+            padding: 15px 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 400px;
+            text-align: center;
+            animation: slideUp 0.5s ease;
+        `;
+        
+        notificacao.innerHTML = `
+            <i class="fas fa-robot"></i>
+            <div>
+                <strong>Solicitação enviada automaticamente!</strong>
+                <div style="font-size: 0.85rem; opacity: 0.9;">
+                    Aguarde autorização para: "${aula.titulo}"
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(notificacao);
+        
+        setTimeout(() => {
+            if (notificacao.parentNode) {
+                notificacao.style.animation = 'slideDown 0.5s ease forwards';
+                setTimeout(() => notificacao.remove(), 500);
+            }
+        }, 5000);
+    }
+
     // FUNÇÃO PARA ENVIAR SOLICITAÇÃO PARA ADMINISTRADOR
-    async function enviarSolicitacaoParaAdm(aulaId, tipoSolicitacao) {
+    async function enviarSolicitacaoParaAdmLegado(aulaId, tipoSolicitacao) {
         try {
             const gerenciador = window.gerenciador;
             const aula = gerenciador.encontrarAula(aulaId);
@@ -2560,6 +2504,9 @@ function mostrarNotificacaoSolicitacaoAutomatica(aula) {
                     console.warn('⚠️ Não foi possível sincronizar progresso:', error);
                 }
                 
+                // Verificar e enviar solicitação para próxima aula
+                await verificarEEnviarSolicitacaoProximaAula(aulaAtualId);
+                
                 // Atualizar o botão imediatamente
                 const btnConcluir = document.getElementById('btn-concluir-aula');
                 if (btnConcluir) {
@@ -2618,10 +2565,6 @@ function mostrarNotificacaoSolicitacaoAutomatica(aula) {
         window.gerenciador = new GerenciadorCursos();
         window.gerenciador.carregarCurso();
     });
-    
 </script>
 </body>
 </html>
-
-
-
