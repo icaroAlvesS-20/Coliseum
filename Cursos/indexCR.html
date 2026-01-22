@@ -1149,6 +1149,9 @@
                     const autorizacoesSalvas = this.carregarAutorizacoes();
                     this.aulasAutorizadas = new Set(autorizacoesSalvas);
                     
+                    // Tentar carregar autorizações da API
+                    await this.carregarAutorizacoesDaAPI();
+                    
                     this.processarAulas(data.curso.modulos || []);
                 } else {
                     throw new Error(data.error || 'Erro desconhecido');
@@ -1157,6 +1160,35 @@
             } catch (error) {
                 console.error('Erro ao carregar curso:', error);
                 this.mostrarErro(error.message);
+            }
+        }
+
+        async carregarAutorizacoesDaAPI() {
+            try {
+                console.log('Carregando autorizações da API...');
+                
+                // Tentar carregar autorizações do usuário para este curso
+                const response = await fetch(`${this.API_BASE}/autorizacoes/${this.usuarioId}/${this.cursoId}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Autorizações da API:', data);
+                    
+                    if (data.success && data.autorizacoes) {
+                        // Processar autorizações da API
+                        data.autorizacoes.forEach(auth => {
+                            if (auth.aulaId) {
+                                this.aulasAutorizadas.add(parseInt(auth.aulaId));
+                            }
+                        });
+                        this.salvarAutorizacoes();
+                        console.log('Autorizações carregadas da API:', Array.from(this.aulasAutorizadas));
+                    }
+                } else {
+                    console.log('Nenhuma autorização encontrada na API');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar autorizações da API:', error);
             }
         }
         
@@ -1990,24 +2022,38 @@
             
             console.log('📤 Enviando solicitação para ADM:', dadosSolicitacao);
             
-            // Tentar enviar para o endpoint de solicitações
-            const response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
-                method: 'POST',
+            // PRIMEIRO TENTAR: Endpoint específico para criar solicitações
+            let endpoint = `${gerenciador.API_BASE}/solicitacoes`;
+            let method = 'POST';
+            let body = dadosSolicitacao;
+            
+            // Verificar se o endpoint aceita o formato correto
+            console.log(`Tentando endpoint: ${endpoint}`);
+            
+            const response = await fetch(endpoint, {
+                method: method,
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
-                body: JSON.stringify(dadosSolicitacao)
+                body: JSON.stringify(body)
             });
+            
+            console.log('Resposta da API:', response.status, response.statusText);
             
             if (response.ok) {
                 const data = await response.json();
-                console.log(`✅ Solicitação automática enviada: ${tipoSolicitacao}`, data);
+                console.log(`✅ Solicitação enviada com sucesso:`, data);
                 return true;
+            } else if (response.status === 404) {
+                console.log('⚠️ Endpoint /solicitacoes não encontrado, tentando fallback...');
+                // Tentar endpoint alternativo
+                return await enviarSolicitacaoFallback(dadosSolicitacao);
             } else {
-                console.warn(`⚠️ Não foi possível enviar solicitação automática: ${response.status}`);
+                console.warn(`⚠️ Erro ao enviar solicitação: ${response.status}`);
                 // Mesmo se falhar, registrar localmente
                 registrarSolicitacaoLocal(dadosSolicitacao);
-                return true;
+                return true; // Retornar true para continuar o fluxo
             }
             
         } catch (error) {
@@ -2026,17 +2072,51 @@
                     motivo: motivo
                 });
             }
+            return true; // Retornar true para continuar o fluxo
+        }
+    }
+
+    async function enviarSolicitacaoFallback(dadosSolicitacao) {
+        try {
+            // Tentar endpoint alternativo
+            const endpoint = `${dadosSolicitacao.API_BASE || 'https://coliseum-api.onrender.com/api'}/solicitacoes/criar`;
+            console.log(`Tentando endpoint fallback: ${endpoint}`);
+            
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dadosSolicitacao)
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`✅ Solicitação enviada via fallback:`, data);
+                return true;
+            } else {
+                console.warn(`⚠️ Fallback também falhou: ${response.status}`);
+                registrarSolicitacaoLocal(dadosSolicitacao);
+                return true;
+            }
+        } catch (error) {
+            console.error('❌ Erro no fallback:', error);
+            registrarSolicitacaoLocal(dadosSolicitacao);
             return true;
         }
     }
 
     function registrarSolicitacaoLocal(dadosSolicitacao) {
         try {
-            // Armazenar solicitação localmente
+            // Armazenar solicitação localmente para sincronização posterior
             const solicitacoes = JSON.parse(localStorage.getItem('solicitacoes_pendentes') || '[]');
-            solicitacoes.push(dadosSolicitacao);
+            solicitacoes.push({
+                ...dadosSolicitacao,
+                local: true,
+                timestamp: new Date().getTime()
+            });
             localStorage.setItem('solicitacoes_pendentes', JSON.stringify(solicitacoes));
-            console.log('📝 Solicitação registrada localmente:', dadosSolicitacao);
+            console.log('📝 Solicitação registrada localmente para sincronização posterior');
             return true;
         } catch (error) {
             console.error('Erro ao registrar solicitação local:', error);
