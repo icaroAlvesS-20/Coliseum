@@ -2046,23 +2046,19 @@
             // Se der erro, tentar endpoint alternativo
             try {
                 console.log('🔄 Tentando endpoint alternativo...');
-                const altResponse = await fetch(`${gerenciador.API_BASE}/solicitacoes-autorizacao`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        usuarioId: gerenciador.usuarioId,
-                        cursoId: gerenciador.cursoId,
-                        aulaId: aulaId,
-                        motivo: motivo || 'Solicitação via fallback'
-                    })
-                });
-                
-                if (altResponse.ok) {
-                    console.log('✅ Solicitação enviada via fallback');
-                    return true;
-                }
+               // Use o endpoint correto
+                const response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
+                            method: 'POST',
+                            headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                            },
+                    body: JSON.stringify(dadosSolicitacao)
+            });
+    if (retryResponse.ok) {  // ✅ Corrigido: 'retryResponse' em vez de 'altResponse'
+        console.log('✅ Solicitação enviada na segunda tentativa');
+        return true;
+    }
             } catch (fallbackError) {
                 console.log('Fallback também falhou:', fallbackError);
             }
@@ -2400,7 +2396,7 @@
                     if (proximaAula) {
                         console.log(`📤 Enviando solicitação automática para: ${proximaAula.titulo}`);
                         
-                        const response = await fetch(`${gerenciador.API_BASE}/solicitacoes/automatica/simplificado`, {
+                        const response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -2408,7 +2404,10 @@
                             body: JSON.stringify({
                                 usuarioId: gerenciador.usuarioId,
                                 cursoId: gerenciador.cursoId,
-                                aulaConcluidaId: aulaAtualId
+                                aulaId: aulaAtualId,  
+                                tipo: 'autorizacao_automatica',
+                                automatica: true,
+                                motivo: `Aluno completou a aula e aguarda autorização para continuar.`
                             })
                         });
                         
@@ -2488,6 +2487,7 @@
 </script>
 </body>
 </html>
+
 
 
 
