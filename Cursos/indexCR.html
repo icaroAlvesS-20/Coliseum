@@ -1167,33 +1167,33 @@
         }
 
         async carregarAutorizacoesDaAPI() {
-            try {
-                console.log('Carregando autorizações da API...');
-                
-                // Tentar carregar autorizações do usuário para este curso
-                const response = await fetch(`${this.API_BASE}/autorizacoes/${this.usuarioId}/${this.cursoId}`);
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Autorizações da API:', data);
-                    
-                    if (data.success && data.autorizacoes) {
-                        // Processar autorizações da API
-                        data.autorizacoes.forEach(auth => {
-                            if (auth.aulaId) {
-                                this.aulasAutorizadas.add(parseInt(auth.aulaId));
-                            }
-                        });
-                        this.salvarAutorizacoes();
-                        console.log('Autorizações carregadas da API:', Array.from(this.aulasAutorizadas));
+    try {
+        console.log('Carregando autorizações da API...');
+        
+        const response = await fetch(
+            `${this.API_BASE}/autorizacoes/curso/${this.cursoId}/usuario/${this.usuarioId}`
+        );
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Autorizações da API:', data);
+            
+            if (data.success && data.autorizacoes) {
+                data.autorizacoes.forEach(auth => {
+                    if (auth.aulaId) {
+                        this.aulasAutorizadas.add(parseInt(auth.aulaId));
                     }
-                } else {
-                    console.log('Nenhuma autorização encontrada na API');
-                }
-            } catch (error) {
-                console.error('Erro ao carregar autorizações da API:', error);
+                });
+                this.salvarAutorizacoes();
+                console.log('Autorizações carregadas da API:', Array.from(this.aulasAutorizadas));
             }
+        } else {
+            console.log('Nenhuma autorização encontrada na API');
         }
+    } catch (error) {
+        console.error('Erro ao carregar autorizações da API:', error);
+    }
+}
         
         encontrarAulaAnterior(aulaId) {
             const aulaAtual = this.encontrarAula(aulaId);
@@ -2146,52 +2146,64 @@
         }
     };
 
-    window.iniciarAula = async function(aulaId) {
-        try {
-            console.log('Iniciando aula:', aulaId);
-            
-            const gerenciador = window.gerenciador;
-            if (!gerenciador) {
-                throw new Error('Sistema não inicializado');
-            }
-            
-            const conteudoElement = document.getElementById('aula-conteudo');
-            if (conteudoElement) {
-                conteudoElement.innerHTML = `
-                    <div style="text-align:center; padding: 80px 20px;">
-                        <div class="spinner"></div>
-                        <h3 style="margin-top:25px; color:var(--primary);">Carregando conteúdo da aula...</h3>
-                        <p style="color:var(--gray);">Preparando a melhor experiência de aprendizado</p>
-                    </div>
-                `;
-            }
-            
-            const modal = document.getElementById('aula-modal');
-            if (modal) {
-                modal.style.display = 'block';
-                document.body.style.overflow = 'hidden';
-            }
-            
-            const conteudo = await gerenciador.carregarConteudoAula(aulaId);
-            
-            if (conteudoElement) {
-                conteudoElement.innerHTML = conteudo;
-            }
-            
-        } catch (error) {
-            console.error('Erro ao iniciar aula:', error);
-            const conteudoElement = document.getElementById('aula-conteudo');
-            if (conteudoElement) {
-                conteudoElement.innerHTML = `
-                    <div style="text-align:center; padding: 50px 20px; color:var(--danger);">
-                        <i class="fas fa-exclamation-triangle" style="font-size:3rem; margin-bottom:20px;"></i>
-                        <h3>Erro ao iniciar a aula</h3>
-                        <p>${error.message}</p>
-                    </div>
-                `;
+   window.iniciarAula = async function(aulaId) {
+    try {
+        console.log('=== INICIANDO AULA ===');
+        console.log('Aula ID:', aulaId);
+        
+        const gerenciador = window.gerenciador;
+        if (!gerenciador) {
+            throw new Error('Sistema não inicializado');
+        }
+        
+        const autorizada = gerenciador.verificarAulaAutorizada(aulaId);
+        console.log('Aula autorizada?', autorizada);
+        
+        if (!autorizada) {
+            const aula = gerenciador.encontrarAula(aulaId);
+            if (aula && aula.aulaIndex !== 0) {
+                mostrarModalSolicitacaoAutorizacao(aulaId);
+                return;
             }
         }
-    };
+        
+        const conteudoElement = document.getElementById('aula-conteudo');
+        if (conteudoElement) {
+            conteudoElement.innerHTML = `
+                <div style="text-align:center; padding: 80px 20px;">
+                    <div class="spinner"></div>
+                    <h3 style="margin-top:25px; color:var(--primary);">Carregando conteúdo da aula...</h3>
+                    <p style="color:var(--gray);">Preparando a melhor experiência de aprendizado</p>
+                </div>
+            `;
+        }
+        
+        const modal = document.getElementById('aula-modal');
+        if (modal) {
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        const conteudo = await gerenciador.carregarConteudoAula(aulaId);
+        
+        if (conteudoElement) {
+            conteudoElement.innerHTML = conteudo;
+        }
+        
+    } catch (error) {
+        console.error('Erro ao iniciar aula:', error);
+        const conteudoElement = document.getElementById('aula-conteudo');
+        if (conteudoElement) {
+            conteudoElement.innerHTML = `
+                <div style="text-align:center; padding: 50px 20px; color:var(--danger);">
+                    <i class="fas fa-exclamation-triangle" style="font-size:3rem; margin-bottom:20px;"></i>
+                    <h3>Erro ao iniciar a aula</h3>
+                    <p>${error.message}</p>
+                </div>
+            `;
+        }
+    }
+};
 
     // MODAL DE SOLICITAÇÃO DE AUTORIZAÇÃO
     function mostrarModalSolicitacaoAutorizacao(aulaId) {
@@ -2546,6 +2558,7 @@ function mostrarNotificacaoSolicitacaoEnviada(proximaAula) {
 </script>
 </body>
 </html>
+
 
 
 
