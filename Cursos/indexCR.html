@@ -1046,7 +1046,7 @@
             return false;
         }
 
-       verificarAulaAutorizada(aulaId) {
+   verificarAulaAutorizada(aulaId) {
     console.log('Verificando autorização para aula', aulaId);
     
     if (this.aulasConcluidas.includes(aulaId)) {
@@ -1055,6 +1055,7 @@
     }
     
     const aula = this.encontrarAula(aulaId);
+    
     if (aula && aula.aulaIndex === 0) {
         console.log('✅ Primeira aula do módulo - acesso liberado automaticamente');
         return true;
@@ -1063,6 +1064,12 @@
     if (this.aulasAutorizadas.has(aulaId)) {
         console.log('✅ Aula autorizada pelo ADM');
         return true;
+    }
+    
+    const aulaAnterior = this.encontrarAulaAnterior(aulaId);
+    if (aulaAnterior && this.aulasConcluidas.includes(aulaAnterior.id)) {
+        console.log('⚠️ Aula anterior concluída, mas ainda não autorizada pelo ADM');
+        return false; 
     }
     
     console.log('❌ Aula NÃO autorizada');
@@ -1997,110 +2004,53 @@
         return null; // Não há próxima aula
     }
 
-    async function enviarSolicitacaoParaAdm(aulaId, tipoSolicitacao = 'autorizacao_automatica', motivo = '') {
-        try {
-            const gerenciador = window.gerenciador;
-            const aula = gerenciador.encontrarAula(aulaId);
-            
-            if (!aula) return false;
-            
-            const dadosSolicitacao = {
-                usuarioId: gerenciador.usuarioId,
-                cursoId: gerenciador.cursoId,
-                aulaId: aulaId,
-                tipo: tipoSolicitacao,
-                data: new Date().toISOString(),
-                aulaTitulo: aula.titulo,
-                cursoTitulo: gerenciador.cursoData?.titulo || 'Curso',
-                motivo: motivo || `Aluno completou aula anterior e aguarda autorização para continuar.`,
-                automatica: tipoSolicitacao === 'autorizacao_automatica'
-            };
-            
-            console.log('📤 Enviando solicitação para ADM:', dadosSolicitacao);
-            
-            // PRIMEIRO TENTAR: Endpoint específico para criar solicitações
-            let endpoint = `${gerenciador.API_BASE}/solicitacoes`;
-            let method = 'POST';
-            let body = dadosSolicitacao;
-            
-            // Verificar se o endpoint aceita o formato correto
-            console.log(`Tentando endpoint: ${endpoint}`);
-            
-            const response = await fetch(endpoint, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(body)
-            });
-            
-            console.log('Resposta da API:', response.status, response.statusText);
-            
-            if (response.ok) {
-                const data = await response.json();
-                console.log(`✅ Solicitação enviada com sucesso:`, data);
-                return true;
-            } else if (response.status === 404) {
-                console.log('⚠️ Endpoint /solicitacoes não encontrado, tentando fallback...');
-                // Tentar endpoint alternativo
-                return await enviarSolicitacaoFallback(dadosSolicitacao);
-            } else {
-                console.warn(`⚠️ Erro ao enviar solicitação: ${response.status}`);
-                // Mesmo se falhar, registrar localmente
-                registrarSolicitacaoLocal(dadosSolicitacao);
-                return true; // Retornar true para continuar o fluxo
-            }
-            
-        } catch (error) {
-            console.error('❌ Erro ao enviar solicitação automática:', error);
-            // Mesmo se falhar, registrar localmente
-            const gerenciador = window.gerenciador;
-            const aula = gerenciador.encontrarAula(aulaId);
-            if (aula) {
-                registrarSolicitacaoLocal({
-                    usuarioId: gerenciador.usuarioId,
-                    cursoId: gerenciador.cursoId,
-                    aulaId: aulaId,
-                    tipo: tipoSolicitacao,
-                    data: new Date().toISOString(),
-                    aulaTitulo: aula.titulo,
-                    motivo: motivo
-                });
-            }
-            return true; // Retornar true para continuar o fluxo
-        }
-    }
-
-    async function enviarSolicitacaoFallback(dadosSolicitacao) {
-        try {
-            // Tentar endpoint alternativo
-            const endpoint = `${dadosSolicitacao.API_BASE || 'https://coliseum-api.onrender.com/api'}/solicitacoes/criar`;
-            console.log(`Tentando endpoint fallback: ${endpoint}`);
-            
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(dadosSolicitacao)
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                console.log(`✅ Solicitação enviada via fallback:`, data);
-                return true;
-            } else {
-                console.warn(`⚠️ Fallback também falhou: ${response.status}`);
-                registrarSolicitacaoLocal(dadosSolicitacao);
-                return true;
-            }
-        } catch (error) {
-            console.error('❌ Erro no fallback:', error);
+   async function enviarSolicitacaoParaAdm(aulaId, tipoSolicitacao = 'autorizacao_automatica', motivo = '') {
+    try {
+        const gerenciador = window.gerenciador;
+        const aula = gerenciador.encontrarAula(aulaId);
+        
+        if (!aula) return false;
+        
+        const dadosSolicitacao = {
+            usuarioId: gerenciador.usuarioId,
+            cursoId: gerenciador.cursoId,
+            aulaId: aulaId,
+            tipo: tipoSolicitacao,
+            data: new Date().toISOString(),
+            aulaTitulo: aula.titulo,
+            cursoTitulo: gerenciador.cursoData?.titulo || 'Curso',
+            motivo: motivo || `Aluno completou aula anterior e aguarda autorização para continuar.`,
+            automatica: tipoSolicitacao === 'autorizacao_automatica'
+        };
+        
+        console.log('📤 Enviando solicitação para ADM:', dadosSolicitacao);
+        
+        const response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(dadosSolicitacao)
+        });
+        
+        console.log('Resposta da API:', response.status, response.statusText);
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log(`✅ Solicitação enviada com sucesso:`, data);
+            return true;
+        } else {
+            console.warn(`⚠️ Erro ao enviar solicitação: ${response.status}`);
             registrarSolicitacaoLocal(dadosSolicitacao);
             return true;
         }
+        
+    } catch (error) {
+        console.error('❌ Erro ao enviar solicitação automática:', error);
+        return false;
     }
+}
 
     function registrarSolicitacaoLocal(dadosSolicitacao) {
         try {
@@ -2379,7 +2329,7 @@
         }
     }
 
-    window.marcarAulaConcluida = async function() {
+   window.marcarAulaConcluida = async function() {
     try {
         if (!aulaAtualId) {
             console.error('Nenhuma aula selecionada');
@@ -2412,54 +2362,38 @@
             }
         }
         
-        // 1. Marcar como concluída localmente
+        // Marcar como concluída localmente
         const concluida = gerenciador.marcarAulaConcluida(aulaAtualId);
         
         if (concluida) {
             aulaAtualConcluida = true;
             console.log(`✅ Aula ${aulaAtualId} marcada como concluída`);
             
-            // 2. Enviar solicitação automática para próxima aula
+            // Enviar solicitação automática para próxima aula
             try {
                 console.log('🤖 Enviando solicitação automática para próxima aula...');
                 
-                // ✅ URL CORRETA - SEM :1
-                const response = await fetch(`${gerenciador.API_BASE}/solicitacoes/automatica`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        usuarioId: gerenciador.usuarioId,
-                        cursoId: gerenciador.cursoId,
-                        aulaConcluidaId: aulaAtualId
-                    })
-                });
+                // Encontrar próxima aula
+                const proximaAula = encontrarProximaAula(aulaAtualId);
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('📊 Resposta da solicitação automática:', data);
+                if (proximaAula) {
+                    console.log(`📤 Solicitação para próxima aula: ${proximaAula.titulo}`);
                     
-                    if (data.success) {
-                        if (data.proximaAula) {
-                            console.log(`📤 Solicitação enviada para próxima aula: ${data.proximaAula.titulo}`);
-                            
-                            // Mostrar notificação
-                            mostrarNotificacaoSolicitacaoAutomatica(data.proximaAula);
-                        } else {
-                            console.log('📭 Não há próxima aula para solicitar');
-                        }
-                    }
-                } else {
-                    console.warn('⚠️ Não foi possível enviar solicitação automática');
+                    // Enviar solicitação para administrador
+                    await enviarSolicitacaoParaAdm(
+                        proximaAula.id,
+                        'autorizacao_automatica',
+                        `Aluno completou a aula "${aula?.titulo || 'anterior'}" e aguarda autorização para continuar.`
+                    );
+                    
+                    mostrarNotificacaoSolicitacaoAutomatica(proximaAula);
                 }
                 
             } catch (apiError) {
                 console.error('❌ Erro na solicitação automática:', apiError);
             }
             
-            // 3. Atualizar interface
+            // Atualizar interface
             const btnConcluir = document.getElementById('btn-concluir-aula');
             if (btnConcluir) {
                 btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
@@ -2520,5 +2454,6 @@
 </script>
 </body>
 </html>
+
 
 
