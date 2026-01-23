@@ -2275,7 +2275,131 @@
         document.getElementById('solicitacao-modal').style.display = 'block';
         document.body.style.overflow = 'hidden';
     }
+// ✅ FUNÇÃO CORRIGIDA PARA ENVIAR SOLICITAÇÃO AUTOMÁTICA
+async function enviarSolicitacaoAutomaticaParaProximaAula(aulaConcluidaId, proximaAulaId, motivo) {
+    console.log('🚀 Enviando solicitação automática para próxima aula');
+    
+    try {
+        const gerenciador = window.gerenciador;
+        if (!gerenciador) {
+            console.error('❌ Gerenciador não disponível');
+            return false;
+        }
 
+        const aulaConcluida = gerenciador.encontrarAula(aulaConcluidaId);
+        const proximaAula = gerenciador.encontrarAula(proximaAulaId);
+        
+        if (!aulaConcluida || !proximaAula) {
+            console.error('❌ Aulas não encontradas');
+            return false;
+        }
+
+        const payload = {
+            usuarioId: parseInt(gerenciador.usuarioId) || 1,
+            cursoId: parseInt(gerenciador.cursoId) || 1,
+            aulaConcluidaId: parseInt(aulaConcluidaId),
+            aulaId: parseInt(proximaAulaId), // ← PRÓXIMA aula, não a atual
+            motivo: motivo || `Aluno completou "${aulaConcluida.titulo}" e aguarda autorização para "${proximaAula.titulo}".`,
+            tipo: 'automatica',
+            automatica: true
+        };
+
+        console.log('📦 Payload para solicitação automática:', payload);
+
+        // Tentar endpoint principal primeiro
+        let response = await fetch(`${gerenciador.API_BASE}/solicitacoes/automatica`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        console.log('📡 Status do endpoint /automatica:', response.status);
+
+        // Se endpoint automático falhar, tentar endpoint geral
+        if (!response.ok) {
+            console.log('🔄 Tentando endpoint geral de solicitações...');
+            
+            response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    usuarioId: payload.usuarioId,
+                    cursoId: payload.cursoId,
+                    aulaId: payload.aulaId,
+                    tipo: 'automatica',
+                    automatica: true,
+                    motivo: payload.motivo
+                })
+            });
+        }
+
+        console.log('📡 Status final:', response.status, response.statusText);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Erro do servidor:', errorText);
+            return false;
+        }
+
+        const result = await response.json();
+        console.log('✅ Solicitação enviada com sucesso:', result);
+        return true;
+
+    } catch (error) {
+        console.error('💥 Erro fatal ao enviar solicitação:', error);
+        return false;
+    }
+}
+
+function mostrarNotificacaoSolicitacaoEnviada(proximaAula) {
+    const notificacaoAnterior = document.querySelector('.notificacao-solicitacao-enviada');
+    if (notificacaoAnterior) {
+        notificacaoAnterior.remove();
+    }
+
+    const notificacao = document.createElement('div');
+    notificacao.className = 'notificacao-solicitacao-enviada';
+    notificacao.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: var(--info);
+        color: white;
+        padding: 15px 25px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        z-index: 1001;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        max-width: 400px;
+        animation: slideInRight 0.5s ease;
+    `;
+    
+    notificacao.innerHTML = `
+        <i class="fas fa-paper-plane"></i>
+        <div>
+            <strong>Solicitação Enviada!</strong>
+            <div style="font-size: 0.85rem; opacity: 0.9;">
+                Próxima aula: "${proximaAula.titulo}"<br>
+                Aguarde autorização do administrador.
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notificacao);
+    
+    setTimeout(() => {
+        if (notificacao.parentNode) {
+            notificacao.style.animation = 'fadeOut 0.5s ease forwards';
+            setTimeout(() => notificacao.remove(), 500);
+        }
+    }, 5000);
+}
     // FUNÇÃO PARA ENVIAR SOLICITAÇÃO DE AUTORIZAÇÃO MANUAL
     async function enviarSolicitacaoAutorizacaoManual(aulaId) {
         const gerenciador = window.gerenciador;
@@ -2303,7 +2427,7 @@
         }
     }
 
-  window.marcarAulaConcluida = async function() {
+ window.marcarAulaConcluida = async function() {
     try {
         if (!aulaAtualId) {
             console.error('Nenhuma aula selecionada');
@@ -2335,32 +2459,34 @@
             }
         }
         
+        // Marcar aula como concluída
         const concluida = gerenciador.marcarAulaConcluida(aulaAtualId);
         
         if (concluida) {
             aulaAtualConcluida = true;
             console.log(`✅ Aula ${aulaAtualId} marcada como concluída`);
             
-setTimeout(async () => {
-    try {
-        console.log('🤖 Enviando solicitação automática...');
-        
-        const enviada = await enviarSolicitacaoParaAdm(
-            aulaAtualId, 
-            'autorizacao_automatica',
-            `Aluno completou a aula e está pronto para continuar.`
-        );
-        
-        if (enviada) {
-            console.log('✅ Solicitação automática enviada com sucesso');
-        } else {
-            console.log('⚠️ Solicitação automática falhou, mas aula foi marcada como concluída');
-        }
-    } catch (error) {
-        console.error('❌ Erro na solicitação automática:', error);
-    }
-}, 1000);
+            // ✅ CORREÇÃO AQUI: Encontrar próxima aula e enviar solicitação
+            const proximaAula = encontrarProximaAula(aulaAtualId);
             
+            if (proximaAula) {
+                console.log(`📤 Enviando solicitação para próxima aula: ${proximaAula.id}`);
+                
+                // Enviar solicitação automática para a PRÓXIMA aula
+                const solicitacaoEnviada = await enviarSolicitacaoAutomaticaParaProximaAula(
+                    aulaAtualId, 
+                    proximaAula.id,
+                    `Aluno completou "${aula?.titulo || 'aula anterior'}" e está pronto para continuar.`
+                );
+                
+                if (solicitacaoEnviada) {
+                    mostrarNotificacaoSolicitacaoEnviada(proximaAula);
+                }
+            } else {
+                console.log('ℹ️ Não há próxima aula disponível');
+            }
+            
+            // Atualizar UI
             const btnConcluir = document.getElementById('btn-concluir-aula');
             if (btnConcluir) {
                 btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
@@ -2420,6 +2546,7 @@ setTimeout(async () => {
 </script>
 </body>
 </html>
+
 
 
 
