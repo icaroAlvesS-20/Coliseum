@@ -2287,7 +2287,7 @@
         document.getElementById('solicitacao-modal').style.display = 'block';
         document.body.style.overflow = 'hidden';
     }
-// ✅ FUNÇÃO CORRIGIDA PARA ENVIAR SOLICITAÇÃO AUTOMÁTICA
+    
 async function enviarSolicitacaoAutomaticaParaProximaAula(aulaConcluidaId, proximaAulaId, motivo) {
     console.log('🚀 Enviando solicitação automática para próxima aula');
     
@@ -2298,28 +2298,16 @@ async function enviarSolicitacaoAutomaticaParaProximaAula(aulaConcluidaId, proxi
             return false;
         }
 
-        const aulaConcluida = gerenciador.encontrarAula(aulaConcluidaId);
-        const proximaAula = gerenciador.encontrarAula(proximaAulaId);
-        
-        if (!aulaConcluida || !proximaAula) {
-            console.error('❌ Aulas não encontradas');
-            return false;
-        }
-
         const payload = {
             usuarioId: parseInt(gerenciador.usuarioId) || 1,
             cursoId: parseInt(gerenciador.cursoId) || 1,
             aulaConcluidaId: parseInt(aulaConcluidaId),
-            aulaId: parseInt(proximaAulaId), // ← PRÓXIMA aula, não a atual
-            motivo: motivo || `Aluno completou "${aulaConcluida.titulo}" e aguarda autorização para "${proximaAula.titulo}".`,
-            tipo: 'automatica',
-            automatica: true
+            aulaId: parseInt(proximaAulaId)
         };
 
         console.log('📦 Payload para solicitação automática:', payload);
 
-        // Tentar endpoint principal primeiro
-        let response = await fetch(`${gerenciador.API_BASE}/solicitacoes/automatica`, {
+        const response = await fetch(`${gerenciador.API_BASE}/solicitacoes/automatica`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -2327,29 +2315,7 @@ async function enviarSolicitacaoAutomaticaParaProximaAula(aulaConcluidaId, proxi
             body: JSON.stringify(payload)
         });
 
-        console.log('📡 Status do endpoint /automatica:', response.status);
-
-        // Se endpoint automático falhar, tentar endpoint geral
-        if (!response.ok) {
-            console.log('🔄 Tentando endpoint geral de solicitações...');
-            
-            response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    usuarioId: payload.usuarioId,
-                    cursoId: payload.cursoId,
-                    aulaId: payload.aulaId,
-                    tipo: 'automatica',
-                    automatica: true,
-                    motivo: payload.motivo
-                })
-            });
-        }
-
-        console.log('📡 Status final:', response.status, response.statusText);
+        console.log('📡 Status:', response.status, response.statusText);
 
         if (!response.ok) {
             const errorText = await response.text();
@@ -2558,6 +2524,7 @@ function mostrarNotificacaoSolicitacaoEnviada(proximaAula) {
 </script>
 </body>
 </html>
+
 
 
 
