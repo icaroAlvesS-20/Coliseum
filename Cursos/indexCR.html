@@ -2301,13 +2301,16 @@ async function enviarSolicitacaoAutomaticaParaProximaAula(aulaConcluidaId, proxi
         const payload = {
             usuarioId: parseInt(gerenciador.usuarioId) || 1,
             cursoId: parseInt(gerenciador.cursoId) || 1,
-            aulaConcluidaId: parseInt(aulaConcluidaId),
-            aulaId: parseInt(proximaAulaId)
+            aulaId: parseInt(proximaAulaId),
+            tipo: 'automatica',
+            motivo: motivo || `Aluno completou aula anterior (ID: ${aulaConcluidaId}) e está pronto para continuar.`,
+            automatica: true
         };
 
         console.log('📦 Payload para solicitação automática:', payload);
 
-        const response = await fetch(`${gerenciador.API_BASE}/solicitacoes/automatica`, {
+        // Usar a rota principal de solicitações que já funciona
+        const response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -2332,7 +2335,7 @@ async function enviarSolicitacaoAutomaticaParaProximaAula(aulaConcluidaId, proxi
         return false;
     }
 }
-
+    
 function mostrarNotificacaoSolicitacaoEnviada(proximaAula) {
     const notificacaoAnterior = document.querySelector('.notificacao-solicitacao-enviada');
     if (notificacaoAnterior) {
@@ -2524,6 +2527,7 @@ function mostrarNotificacaoSolicitacaoEnviada(proximaAula) {
 </script>
 </body>
 </html>
+
 
 
 
