@@ -2004,72 +2004,68 @@
         return null; // Não há próxima aula
     }
 
-  async function enviarSolicitacaoParaAdm(aulaId, tipoSolicitacao = 'autorizacao_automatica', motivo = '') {
+ async function enviarSolicitacaoParaAdm(aulaId, tipoSolicitacao = 'autorizacao_automatica', motivo = '') {
+    console.log('🚀 INICIANDO envio de solicitação');
+    
     try {
         const gerenciador = window.gerenciador;
+        if (!gerenciador) {
+            console.error('❌ Gerenciador não disponível');
+            return false;
+        }
+
         const aula = gerenciador.encontrarAula(aulaId);
-        
-        if (!aula) return false;
-        
-        const dadosSolicitacao = {
-            usuarioId: gerenciador.usuarioId,
-            cursoId: gerenciador.cursoId,
-            aulaId: aulaId,
-            tipo: tipoSolicitacao,
-            motivo: motivo || `Aluno completou aula anterior e aguarda autorização para continuar.`,
-            automatica: tipoSolicitacao === 'autorizacao_automatica',
-            aulaTitulo: aula.titulo,
-            cursoTitulo: gerenciador.cursoData?.titulo || 'Curso'
+        if (!aula) {
+            console.error('❌ Aula não encontrada:', aulaId);
+            return false;
+        }
+
+        const payload = {
+            usuarioId: parseInt(gerenciador.usuarioId) || 1,
+            cursoId: parseInt(gerenciador.cursoId) || 1,
+            aulaId: parseInt(aulaId),
+            tipo: tipoSolicitacao === 'autorizacao_automatica' ? 'automatica' : 'manual',
+            motivo: motivo || `Aluno ${gerenciador.usuarioId} completou aula anterior.`,
+            automatica: tipoSolicitacao === 'autorizacao_automatica'
         };
-        
-        console.log('📤 Enviando solicitação via endpoint corrigido:', dadosSolicitacao);
-        
-        // Usar o endpoint correto que agora existe
+
+        console.log('📦 Enviando payload:', payload);
+
         const response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify(dadosSolicitacao)
+            body: JSON.stringify(payload)
         });
-        
-        console.log('Resposta da API:', response.status, response.statusText);
-        
-        if (response.ok) {
-            const data = await response.json();
-            console.log(`✅ Solicitação enviada com sucesso:`, data);
-            return true;
-        } else {
-            console.warn(`⚠️ Erro ao enviar solicitação: ${response.status}`);
+
+        console.log('📡 Status:', response.status, response.statusText);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Erro do servidor:', errorText);
             
-            // Se der erro, tentar endpoint alternativo
-            try {
-                console.log('🔄 Tentando endpoint alternativo...');
-               // Use o endpoint correto
-                const response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
-                            method: 'POST',
-                            headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                            },
-                    body: JSON.stringify(dadosSolicitacao)
+            console.log('🔄 Tentando endpoint alternativo...');
+            const altResponse = await fetch(`${gerenciador.API_BASE}/solicitacoes-autorizacao`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
             });
-    if (retryResponse.ok) {  // ✅ Corrigido: 'retryResponse' em vez de 'altResponse'
-        console.log('✅ Solicitação enviada na segunda tentativa');
-        return true;
-    }
-            } catch (fallbackError) {
-                console.log('Fallback também falhou:', fallbackError);
+            
+            if (altResponse.ok) {
+                console.log('✅ Sucesso no endpoint alternativo');
+                return true;
             }
             
-            // Registrar localmente se tudo falhar
-            registrarSolicitacaoLocal(dadosSolicitacao);
-            return true;
+            return false;
         }
-        
+
+        const result = await response.json();
+        console.log('✅ Sucesso:', result);
+        return true;
+
     } catch (error) {
-        console.error('❌ Erro geral ao enviar solicitação:', error);
+        console.error('💥 Erro fatal:', error);
         return false;
     }
 }
@@ -2132,50 +2128,6 @@
                 setTimeout(() => notificacao.remove(), 500);
             }
         }, 5000);
-    }
-
-    // FUNÇÃO PARA SIMULAR AUTORIZAÇÃO DO ADM (para teste)
-    function simularAutorizacaoADM(aulaId) {
-        const gerenciador = window.gerenciador;
-        if (gerenciador && aulaId) {
-            gerenciador.adicionarAutorizacao(aulaId);
-            gerenciador.mostrarNotificacaoDesbloqueio(aulaId);
-            
-            // Atualizar interface
-            const aulaElement = document.querySelector(`[data-aula-id="${aulaId}"]`);
-            if (aulaElement && aulaElement.classList.contains('bloqueada')) {
-                aulaElement.classList.remove('bloqueada');
-                aulaElement.onclick = () => iniciarAula(aulaId);
-                aulaElement.style.cursor = 'pointer';
-                
-                const statusElement = aulaElement.querySelector('.aula-status');
-                if (statusElement) {
-                    statusElement.innerHTML = '<i class="fas fa-user-shield"></i> Autorizada';
-                }
-                
-                const iconeElement = aulaElement.querySelector('.aula-icone');
-                const aula = gerenciador.encontrarAula(aulaId);
-                if (iconeElement && aula) {
-                    iconeElement.innerHTML = aula.videoUrl ? '<i class="fas fa-play-circle"></i>' : '<i class="fas fa-book"></i>';
-                }
-                
-                const tituloElement = aulaElement.querySelector('.aula-info h4');
-                if (tituloElement) {
-                    tituloElement.style.color = '';
-                    const spanBloqueado = tituloElement.querySelector('span[style*="color: var(--warning)"]');
-                    if (spanBloqueado) {
-                        spanBloqueado.remove();
-                    }
-                }
-                
-                const tooltip = aulaElement.querySelector('.aula-tooltip');
-                if (tooltip) {
-                    tooltip.remove();
-                }
-            }
-            
-            console.log(`✅ Aula ${aulaId} autorizada pelo ADM (simulação)`);
-        }
     }
 
     // FUNÇÕES GLOBAIS
@@ -2389,166 +2341,25 @@
             aulaAtualConcluida = true;
             console.log(`✅ Aula ${aulaAtualId} marcada como concluída`);
             
-            // AGUARDAR UM POUCO ANTES DE ENVIAR A SOLICITAÇÃO
-            setTimeout(async () => {
-                try {
-                    const proximaAula = encontrarProximaAula(aulaAtualId);
-                    
-                    if (proximaAula) {
-                        console.log(`📤 Enviando solicitação automática para: ${proximaAula.titulo}`);
-                        
-                        // TENTAR O ENDPOINT PRINCIPAL COM DEPURAÇÃO
-                        const payload = {
-                            usuarioId: parseInt(gerenciador.usuarioId),
-                            cursoId: parseInt(gerenciador.cursoId),
-                            aulaId: parseInt(aulaAtualId),
-                            tipo: 'autorizacao_automatica',
-                            automatica: true,
-                            motivo: `Aluno completou a aula "${aula?.titulo || 'anterior'}" e aguarda autorização para continuar.`,
-                            aulaTitulo: aula?.titulo || `Aula ${aulaAtualId}`,
-                            cursoTitulo: gerenciador.cursoData?.titulo || 'Curso'
-                        };
-                        
-                        console.log('📦 Payload enviado:', payload);
-                        
-                        // TENTATIVA 1: Endpoint principal com tratamento de erro detalhado
-                        let response = null;
-                        let errorMessage = '';
-                        
-                        try {
-                            response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'
-                                },
-                                body: JSON.stringify(payload)
-                            });
-                            
-                            console.log('📡 Resposta do endpoint /solicitacoes:', {
-                                status: response.status,
-                                statusText: response.statusText,
-                                ok: response.ok
-                            });
-                            
-                            if (!response.ok) {
-                                const errorText = await response.text();
-                                errorMessage = `Status ${response.status}: ${errorText}`;
-                                console.error('❌ Erro na resposta:', errorMessage);
-                            }
-                        } catch (fetchError) {
-                            errorMessage = `Erro de fetch: ${fetchError.message}`;
-                            console.error('❌ Erro na requisição:', fetchError);
-                        }
-                        
-                        // SE O PRIMEIRO ENDPOINT FALHAR, TENTAR O ALTERNATIVO
-                        if (!response || !response.ok) {
-                            console.log('🔄 Tentando endpoint alternativo /solicitacoes/automatica...');
-                            
-                            try {
-                                const altPayload = {
-                                    usuarioId: parseInt(gerenciador.usuarioId),
-                                    cursoId: parseInt(gerenciador.cursoId),
-                                    aulaConcluidaId: parseInt(aulaAtualId)
-                                };
-                                
-                                response = await fetch(`${gerenciador.API_BASE}/solicitacoes/automatica`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify(altPayload)
-                                });
-                                
-                                console.log('📡 Resposta do endpoint /solicitacoes/automatica:', {
-                                    status: response.status,
-                                    statusText: response.statusText,
-                                    ok: response.ok
-                                });
-                                
-                                if (!response.ok) {
-                                    const errorText = await response.text();
-                                    errorMessage = `Status ${response.status}: ${errorText}`;
-                                    console.error('❌ Erro na resposta alternativa:', errorMessage);
-                                }
-                            } catch (altError) {
-                                errorMessage = `Erro no endpoint alternativo: ${altError.message}`;
-                                console.error('❌ Erro na requisição alternativa:', altError);
-                            }
-                        }
-                        
-                        // SE AMBOS FALHAREM, TENTAR O TERCEIRO ENDPOINT
-                        if (!response || !response.ok) {
-                            console.log('🔄 Tentando terceiro endpoint /solicitacoes-autorizacao...');
-                            
-                            try {
-                                const thirdPayload = {
-                                    usuarioId: parseInt(gerenciador.usuarioId),
-                                    cursoId: parseInt(gerenciador.cursoId),
-                                    aulaId: parseInt(aulaAtualId),
-                                    motivo: `Solicitação automática: Aluno completou aula e aguarda autorização.`
-                                };
-                                
-                                response = await fetch(`${gerenciador.API_BASE}/solicitacoes-autorizacao`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify(thirdPayload)
-                                });
-                                
-                                console.log('📡 Resposta do endpoint /solicitacoes-autorizacao:', {
-                                    status: response.status,
-                                    statusText: response.statusText,
-                                    ok: response.ok
-                                });
-                            } catch (thirdError) {
-                                console.error('❌ Erro no terceiro endpoint:', thirdError);
-                            }
-                        }
-                        
-                        // VERIFICAR RESULTADO FINAL
-                        if (response && response.ok) {
-                            try {
-                                const data = await response.json();
-                                console.log('✅ Solicitação enviada com sucesso:', data);
-                                
-                                // Mostrar notificação se houver dados da próxima aula
-                                if (data.proximaAula) {
-                                    mostrarNotificacaoSolicitacaoAutomatica(data.proximaAula);
-                                } else if (data.data?.proximaAula) {
-                                    mostrarNotificacaoSolicitacaoAutomatica(data.data.proximaAula);
-                                } else if (proximaAula) {
-                                    mostrarNotificacaoSolicitacaoAutomatica(proximaAula);
-                                }
-                                
-                            } catch (jsonError) {
-                                console.log('✅ Solicitação enviada (sem JSON válido)');
-                            }
-                        } else {
-                            console.log('⚠️ Não foi possível enviar solicitação automática');
-                            console.log('Último erro:', errorMessage);
-                            
-                            // Registrar localmente para tentar depois
-                            const solicitacaoLocal = {
-                                usuarioId: gerenciador.usuarioId,
-                                cursoId: gerenciador.cursoId,
-                                aulaId: aulaAtualId,
-                                timestamp: new Date().getTime(),
-                                proximaAula: proximaAula
-                            };
-                            
-                            const solicitacoesPendentes = JSON.parse(localStorage.getItem('solicitacoes_pendentes') || '[]');
-                            solicitacoesPendentes.push(solicitacaoLocal);
-                            localStorage.setItem('solicitacoes_pendentes', JSON.stringify(solicitacoesPendentes));
-                            
-                            console.log('📝 Solicitação salva localmente para envio posterior');
-                        }
-                    }
-                } catch (apiError) {
-                    console.error('❌ Erro na solicitação automática:', apiError);
-                }
-            }, 1500); // Aumentei para 1.5 segundos para dar tempo
+setTimeout(async () => {
+    try {
+        console.log('🤖 Enviando solicitação automática...');
+        
+        const enviada = await enviarSolicitacaoParaAdm(
+            aulaAtualId, 
+            'autorizacao_automatica',
+            `Aluno completou a aula e está pronto para continuar.`
+        );
+        
+        if (enviada) {
+            console.log('✅ Solicitação automática enviada com sucesso');
+        } else {
+            console.log('⚠️ Solicitação automática falhou, mas aula foi marcada como concluída');
+        }
+    } catch (error) {
+        console.error('❌ Erro na solicitação automática:', error);
+    }
+}, 1000);
             
             const btnConcluir = document.getElementById('btn-concluir-aula');
             if (btnConcluir) {
@@ -2609,6 +2420,7 @@
 </script>
 </body>
 </html>
+
 
 
 
