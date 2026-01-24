@@ -600,7 +600,7 @@
     color: #888 !important;
 }
 
-/* Notificação de desbloqueio */
+
 .notificacao-desbloqueio {
     position: fixed;
     top: 100px;
@@ -617,68 +617,49 @@
     animation: slideInRight 0.5s ease, fadeOut 0.5s ease 3s forwards;
     max-width: 350px;
 }
-/* BOTÃO DE SOLICITAÇÃO DE AULA */
-/* BOTÃO DE SOLICITAÇÃO DE AULA */
-.aula-solicitacao-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.btn-solicitar {
     padding: 8px 15px;
-    background: rgba(67, 97, 238, 0.2);
-    color: var(--secondary);
-    border: 1px solid rgba(67, 97, 238, 0.4);
+    background: var(--secondary);
+    color: white;
+    border: none;
     border-radius: var(--border-radius-sm);
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
     transition: var(--transition);
     margin-right: 15px;
-    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.aula-solicitacao-btn:hover {
-    background: rgba(67, 97, 238, 0.3);
-    border-color: var(--secondary);
+.btn-solicitar:hover {
+    background: #3a56d4;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
 }
 
-.aula-solicitacao-btn:active {
+.btn-solicitar:active {
     transform: translateY(0);
 }
 
-.aula-solicitacao-btn i {
-    font-size: 0.9rem;
-}
-
-/* Ajustar para mobile */
 @media (max-width: 768px) {
-    .aula-solicitacao-btn {
+    .btn-solicitar {
         padding: 6px 12px;
         font-size: 0.8rem;
-        gap: 5px;
-        margin-right: 10px;
     }
 }
 
 @media (max-width: 480px) {
-    .aula-solicitacao-btn {
+    .btn-solicitar {
         padding: 8px;
         border-radius: 50%;
         width: 36px;
         height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
     
-    .aula-solicitacao-btn span {
+    .btn-solicitar span {
         display: none;
-    }
-    
-    .aula-solicitacao-btn i {
-        margin: 0;
-        font-size: 1rem;
     }
 }
         
@@ -1363,7 +1344,7 @@
                 const aulaIcon = aula.videoUrl ? 'fas fa-play-circle' : 'fas fa-book';
                 const bloqueada = !autorizada && !concluida;
 
-                const mostrarBotaoSolicitacao = !concluida && !autorizada && !primeiraAula;
+                const mostrarBotao = !concluida && !autorizada && !primeiraAula;
 
                 
                 aulasHTML += `
@@ -1394,12 +1375,12 @@
                                 ${aula.nivel ? `<span><i class="fas fa-chart-bar"></i> ${aula.nivel}</span>` : ''}
                             </div>
                         </div>
- ${mostrarBotaoSolicitacao ? `
-                    <div class="aula-solicitacao-btn" onclick="event.stopPropagation(); enviarSolicitacaoSimples(${aula.id})" 
-                         title="Solicitar autorização para esta aula">
+                        
+                ${mostrarBotao ? `
+                    <button class="btn-solicitar" onclick="event.stopPropagation();enviarSolicitacaoParaAdm(${aula.id})">
                         <i class="fas fa-paper-plane"></i>
-                        <span>Solicitar</span>
-                    </div>
+                        Solicitar
+                    </button>
                 ` : ''}
                 
                 <div class="aula-status">
@@ -2739,5 +2720,6 @@ window.marcarAulaConcluida = async function() {
 </script>
 </body>
 </html>
+
 
 
