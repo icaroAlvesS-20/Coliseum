@@ -617,7 +617,102 @@
     animation: slideInRight 0.5s ease, fadeOut 0.5s ease 3s forwards;
     max-width: 350px;
 }
+/* BOTÃO DE SOLICITAÇÃO DE AULA */
+.aula-solicitacao-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 15px;
+    background: rgba(255, 207, 0, 0.2);
+    color: var(--primary);
+    border: 1px solid rgba(255, 207, 0, 0.4);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-right: 15px;
+    white-space: nowrap;
+    order: 2; /* Posiciona antes do status */
+}
 
+.aula-solicitacao-btn:hover {
+    background: rgba(255, 207, 0, 0.3);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 207, 0, 0.2);
+}
+
+.aula-solicitacao-btn:active {
+    transform: translateY(0);
+}
+
+.aula-solicitacao-btn i {
+    font-size: 0.9rem;
+}
+
+/* Reordenar elementos da aula-item */
+.aula-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    margin-bottom: 15px;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    border-left: 4px solid transparent;
+}
+
+/* Definir ordem dos elementos */
+.aula-icone {
+    order: 1;
+}
+
+.aula-info {
+    order: 2;
+    flex: 1;
+}
+
+.aula-solicitacao-btn {
+    order: 3;
+}
+
+.aula-status {
+    order: 4;
+    margin-left: auto;
+}
+
+@media (max-width: 768px) {
+    .aula-solicitacao-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        gap: 5px;
+        margin-right: 10px;
+    }
+    
+    .aula-solicitacao-btn span {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .aula-solicitacao-btn {
+        padding: 8px;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .aula-solicitacao-btn i {
+        margin: 0;
+        font-size: 1rem;
+    }
+}
 @media (max-width: 768px) {
     .notificacao-desbloqueio {
         top: 80px;
@@ -1298,6 +1393,9 @@
                 const autorizada = this.verificarAulaAutorizada(aula.id);
                 const aulaIcon = aula.videoUrl ? 'fas fa-play-circle' : 'fas fa-book';
                 const bloqueada = !autorizada && !concluida;
+
+                const mostrarBotaoSolicitacao = !concluida && !autorizada && !primeiraAula;
+
                 
                 aulasHTML += `
                     <div class="aula-item ${concluida ? 'completa' : ''} ${bloqueada ? 'bloqueada' : ''}" 
@@ -1327,28 +1425,37 @@
                                 ${aula.nivel ? `<span><i class="fas fa-chart-bar"></i> ${aula.nivel}</span>` : ''}
                             </div>
                         </div>
-                        <div class="aula-status">
-                            ${concluida ? 
-                                '<i class="fas fa-check"></i> Concluída' : 
-                                bloqueada ? 
-                                    '<i class="fas fa-lock"></i> Bloqueada' : 
-                                    primeiraAula ? 
-                                        '<i class="fas fa-play-circle"></i> Disponível' : 
-                                        '<i class="fas fa-user-shield"></i> Autorizada'
-                            }
-                        </div>
-                        ${bloqueada && !primeiraAula ? `
-                            <div class="aula-tooltip" style="position: absolute; top: 50%; right: 70px; transform: translateY(-50%);">
-                                <i class="fas fa-info-circle" style="color: var(--warning); cursor: help;" 
-                                   title="Esta aula está bloqueada. Aguarde autorização do administrador."></i>
-                            </div>
-                        ` : ''}
+                ${mostrarBotaoSolicitacao ? `
+                    <div class="aula-solicitacao-btn" onclick="event.stopPropagation(); mostrarModalSolicitacaoAutorizacao(${aula.id})" 
+                         title="Solicitar autorização para esta aula">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Solicitar</span>
                     </div>
-                `;
-            }
-            
-            return aulasHTML;
-        }
+                ` : ''}
+                
+                <div class="aula-status">
+                    ${concluida ? 
+                        '<i class="fas fa-check"></i> Concluída' : 
+                        bloqueada ? 
+                            '<i class="fas fa-lock"></i> Bloqueada' : 
+                            primeiraAula ? 
+                                '<i class="fas fa-play-circle"></i> Disponível' : 
+                                '<i class="fas fa-user-shield"></i> Autorizada'
+                    }
+                </div>
+                
+                ${bloqueada && !primeiraAula ? `
+                    <div class="aula-tooltip" style="position: absolute; top: 50%; right: 70px; transform: translateY(-50%);">
+                        <i class="fas fa-info-circle" style="color: var(--warning); cursor: help;" 
+                           title="Esta aula está bloqueada. Aguarde autorização do administrador."></i>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    return aulasHTML;
+}
 
         encontrarAula(aulaId) {
             if (this.aulasMap.has(aulaId)) {
@@ -2671,3 +2778,4 @@ window.marcarAulaConcluida = async function() {
 </script>
 </body>
 </html>
+
