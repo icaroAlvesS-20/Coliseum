@@ -5,52 +5,285 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styleC.css">
     <script src="scriptC.js"></script>
-    <title>Sobre</title>
+    <title>Sobre - Coliseum</title>
     <style>
         * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-body {
-    background: linear-gradient(135deg, #000000 0%, #000000 100%);
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
-h1 {
-    font-size: 30px;
-    color: yellow;
-}
-.btn-voltar {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: #ffcf00;
-    color: #000;
-    font-size: 30px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    z-index: 1000;
-}
-.btn-voltar:hover {
-    background: #e6b800;
-    transform: scale(1.1);
-}
+        body {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            color: #ffcf00;
+            text-align: center;
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px rgba(255, 207, 0, 0.3);
+        }
+        
+        .sobre-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: center;
+            margin-bottom: 60px;
+        }
+        
+        .card {
+            background: rgba(30, 30, 30, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            width: 100%;
+            max-width: 550px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+        }
+        
+        .card h2 {
+            color: #ffcf00;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ffcf00;
+        }
+        
+        .card p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #e0e0e0;
+            font-size: 1.1rem;
+        }
+        
+        .info-box {
+            background: rgba(255, 207, 0, 0.1);
+            border-left: 4px solid #ffcf00;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .info-box p {
+            margin: 0;
+            color: #ffcf00;
+            font-weight: 600;
+        }
+        
+        .detalhes-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .detalhe-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .detalhe-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 207, 0, 0.1);
+        }
+        
+        .detalhe-item h3 {
+            color: #ffcf00;
+            margin-bottom: 10px;
+        }
+        
+        .detalhe-item p {
+            font-size: 0.95rem;
+        }
+        
+        .feature-list {
+            margin-left: 20px;
+            color: #e0e0e0;
+            margin-top: 15px;
+        }
+        
+        .feature-list li {
+            margin-bottom: 10px;
+            padding-left: 10px;
+            position: relative;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            color: #ffcf00;
+            font-weight: bold;
+            position: absolute;
+            left: -15px;
+        }
+        
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 25px;
+        }
+        
+        .impact-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+        
+        .impact-item h3 {
+            color: #ffcf00;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .impact-item p {
+            font-size: 1rem;
+            color: #e0e0e0;
+        }
+        
+        .btn-voltar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #ffcf00;
+            color: #000;
+            font-size: 30px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-voltar:hover {
+            background: #e6b800;
+            transform: scale(1.1);
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .sobre-content {
+                gap: 20px;
+            }
+            
+            .impact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
-    <H1>Em Construção</H1>
-
+    <div class="container">
+        <h1>O que é o Coliseum?</h1>
+        
+        <div class="sobre-content">
+            <div class="card">
+                <h2>Introdução</h2>
+                <p>O Coliseum é uma plataforma inovadora para aprendizado e desenvolvimento profissional, oferecendo diversos cursos em múltiplas áreas do conhecimento.</p>
+                
+                <div class="info-box">
+                    <p>Diferente de outras plataformas, o Coliseum é um sistema privado personalizado para cada instituição, dando mais liberdade e controle aos administradores.</p>
+                </div>
+                
+                <p>Nosso objetivo é proporcionar mais liberdade tanto para o administrador quanto para o usuário final, criando um ecossistema de aprendizado flexível e adaptável.</p>
+                
+                <div class="detalhes-container">
+                    <div class="detalhe-item">
+                        <h3>Para que utilizar?</h3>
+                        <p>Para instituições que desejam oferecer treinamento personalizado com controle total sobre conteúdo e usuários.</p>
+                    </div>
+                    
+                    <div class="detalhe-item">
+                        <h3>Privacidade Garantida</h3>
+                        <p>Cada instituição possui seu próprio ambiente isolado, garantindo segurança e privacidade dos dados.</p>
+                    </div>
+                    
+                    <div class="detalhe-item">
+                        <h3>Total Adaptabilidade</h3>
+                        <p>Sistema completamente personalizável para atender às necessidades específicas de cada organização.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Recursos e Funcionalidades</h2>
+                <p>O Coliseum oferece uma gama completa de recursos para facilitar o aprendizado e a gestão educacional.</p>
+                
+                <p>Com uma interface intuitiva e ferramentas poderosas, a plataforma atende tanto administradores quanto estudantes de forma eficiente.</p>
+                
+                <h3 style="color: #ffcf00; margin-top: 25px;">Principais Características</h3>
+                <p>Uma plataforma completa para gestão de aprendizado com foco em personalização e controle.</p>
+                
+                <ul class="feature-list">
+                    <li>Sistema privado por instituição</li>
+                    <li>Painel administrativo completo</li>
+                    <li>Gestão de usuários e permissões</li>
+                    <li>Criação e organização de cursos</li>
+                    <li>Relatórios e análises de desempenho</li>
+                    <li>Interface responsiva e moderna</li>
+                    <li>Suporte a múltiplos formatos de conteúdo</li>
+                    <li>Sistema de avaliações e certificados</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card" style="max-width: 100%;">
+            <h2>Impacto e Resultados</h2>
+            <p>O Coliseum tem transformado a forma como instituições gerenciam e oferecem educação, proporcionando resultados significativos.</p>
+            
+            <div class="impact-grid">
+                <div class="impact-item">
+                    <h3>Para Instituições</h3>
+                    <p>Redução de custos com plataformas externas, maior controle sobre o conteúdo educacional, e capacidade de personalizar completamente a experiência de aprendizado.</p>
+                </div>
+                
+                <div class="impact-item">
+                    <h3>Para Administradores</h3>
+                    <p>Ferramentas poderosas de gestão, relatórios detalhados, e flexibilidade para adaptar a plataforma às necessidades específicas da organização.</p>
+                </div>
+                
+                <div class="impact-item">
+                    <h3>Para Usuários</h3>
+                    <p>Experiência de aprendizado personalizada, acesso a conteúdo relevante, e flexibilidade para estudar no próprio ritmo.</p>
+                </div>
+                
+                <div class="impact-item">
+                    <h3>Plataforma do Futuro</h3>
+                    <p>Continuamos a inovar com novos recursos, integrações e melhorias para manter o Coliseum na vanguarda da tecnologia educacional.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <button class="btn-voltar" onclick="history.back()">←</button>
-
 </body>
 </html>
