@@ -642,7 +642,18 @@
 .btn-solicitar:active {
     transform: translateY(0);
 }
-
+@media (max-width: 768px) {
+    video {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+    }
+    
+    .video-container {
+        margin: 0 -15px; 
+        width: calc(100% + 30px);
+    }
+}
 @media (max-width: 768px) {
     .btn-solicitar {
         padding: 6px 12px;
@@ -2720,6 +2731,7 @@ window.marcarAulaConcluida = async function() {
 </script>
 </body>
 </html>
+
 
 
 
