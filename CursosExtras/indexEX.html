@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -33,7 +34,6 @@
             border: 2px solid #444;
             margin-bottom: 30px;
             text-align: center;
-            position: relative;
         }
 
         h2 {
@@ -45,110 +45,6 @@
         .header p {
             color: #ccc;
             font-size: 1.1rem;
-        }
-
-        /* NOVO BOTÃO DE CONCLUSÃO AUTOMÁTICA */
-        .btn-auto-complete {
-            position: absolute;
-            top: 20px;
-            right: 25px;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            z-index: 10;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-        }
-
-        .btn-auto-complete:hover {
-            background: linear-gradient(135deg, #45a049, #3d8b40);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
-        }
-
-        .btn-auto-complete:active {
-            transform: translateY(0);
-        }
-
-        .btn-auto-complete i {
-            font-size: 18px;
-        }
-
-        /* Modal de confirmação */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: #323232;
-            border-radius: 15px;
-            padding: 30px;
-            max-width: 500px;
-            width: 90%;
-            border: 2px solid #ffcf00;
-            text-align: center;
-        }
-
-        .modal-content h3 {
-            color: #ffcf00;
-            margin-bottom: 15px;
-            font-size: 24px;
-        }
-
-        .modal-content p {
-            color: #ccc;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-
-        .modal-actions button {
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s ease;
-        }
-
-        .modal-actions .btn-confirm {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-        }
-
-        .modal-actions .btn-cancel {
-            background: #555;
-            color: white;
-        }
-
-        .modal-actions button:hover {
-            transform: translateY(-2px);
         }
 
         .conteudo-principal {
@@ -483,12 +379,6 @@
             border-left-color: #FF9800;
         }
 
-        /* Novo: loader do botão */
-        .btn-loading {
-            pointer-events: none;
-            opacity: 0.7;
-        }
-
         @media (max-width: 768px) {
             .courses-grid {
                 grid-template-columns: 1fr;
@@ -506,13 +396,6 @@
                 padding: 10px 15px;
                 font-size: 0.9rem;
             }
-
-            .btn-auto-complete {
-                position: static;
-                margin-top: 15px;
-                width: 100%;
-                justify-content: center;
-            }
         }
     </style>
 </head>
@@ -521,36 +404,6 @@
     <div class="header">
         <h2>Cursos Extras</h2>
         <p id="header-subtitle">Aprenda com cursos complementares para reforçar seus estudos</p>
-        
-        <!-- NOVO BOTÃO DE CONCLUSÃO AUTOMÁTICA -->
-        <button class="btn-auto-complete" onclick="abrirModalConclusao()">
-            <i class="fas fa-check-double"></i>
-            Concluir Todas as Aulas Automaticamente
-        </button>
-    </div>
-
-    <!-- Modal de Confirmação -->
-    <div class="modal-overlay" id="modalConfirmacao">
-        <div class="modal-content">
-            <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ffcf00; margin-bottom: 15px;"></i>
-            <h3>Confirmar Conclusão em Massa</h3>
-            <p>
-                Esta ação irá <strong>marcar todas as aulas</strong> de todos os cursos disponíveis como <strong style="color: #4CAF50;">concluídas</strong>.
-                O aluno não precisará assistir às aulas para progredir.
-            </p>
-            <p style="color: #ff9800; font-size: 0.9rem;">
-                <i class="fas fa-info-circle"></i> 
-                Esta ação afetará todos os cursos e módulos visíveis.
-            </p>
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="fecharModalConclusao()">
-                    <i class="fas fa-times"></i> Cancelar
-                </button>
-                <button class="btn-confirm" onclick="concluirTodasAulas()" id="btnConfirmarConclusao">
-                    <i class="fas fa-check"></i> Sim, Concluir Tudo
-                </button>
-            </div>
-        </div>
     </div>
 
     <div class="conteudo-principal">
@@ -645,125 +498,6 @@ const POLITICAS_ACESSO = {
     'games': ['games'],
     'programacao': ['programacao']
 };
-
-// ==================== NOVAS FUNÇÕES DE CONCLUSÃO AUTOMÁTICA ====================
-
-function abrirModalConclusao() {
-    const modal = document.getElementById('modalConfirmacao');
-    if (modal) {
-        modal.classList.add('active');
-    }
-}
-
-function fecharModalConclusao() {
-    const modal = document.getElementById('modalConfirmacao');
-    if (modal) {
-        modal.classList.remove('active');
-    }
-}
-
-async function concluirTodasAulas() {
-    const btnConfirmar = document.getElementById('btnConfirmarConclusao');
-    const textoOriginal = btnConfirmar.innerHTML;
-    
-    // Desabilitar botão e mostrar loading
-    btnConfirmar.disabled = true;
-    btnConfirmar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
-    btnConfirmar.classList.add('btn-loading');
-    
-    try {
-        const usuario = obterUsuarioLogado();
-        
-        if (!usuario || !usuario.id || usuario.id === '1') {
-            throw new Error('Usuário não autenticado');
-        }
-        
-        console.log('🔄 Iniciando conclusão em massa para usuário:', usuario.id);
-        
-        let totalConcluidas = 0;
-        let erros = [];
-        
-        // Percorrer todos os cursos disponíveis
-        for (const curso of cursos) {
-            console.log(`📚 Processando curso: ${curso.titulo} (ID: ${curso.id})`);
-            
-            if (!curso.modulos || curso.modulos.length === 0) {
-                console.log('   ⚠️ Curso sem módulos, pulando...');
-                continue;
-            }
-            
-            // Percorrer todos os módulos
-            for (const modulo of curso.modulos) {
-                if (!modulo.aulas || modulo.aulas.length === 0) {
-                    continue;
-                }
-                
-                // Percorrer todas as aulas
-                for (const aula of modulo.aulas) {
-                    try {
-                        console.log(`   📝 Concluindo aula: ${aula.titulo || 'Sem título'} (ID: ${aula.id})`);
-                        
-                        const response = await fetch(`${API_BASE_URL}/progresso`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                usuarioId: parseInt(usuario.id),
-                                cursoId: curso.id,
-                                moduloId: modulo.id,
-                                aulaId: aula.id,
-                                concluida: true,
-                                dataConclusao: new Date().toISOString()
-                            })
-                        });
-                        
-                        if (response.ok) {
-                            totalConcluidas++;
-                            console.log(`   ✅ Aula ${aula.id} concluída com sucesso`);
-                        } else {
-                            const erro = await response.text();
-                            console.warn(`   ⚠️ Erro ao concluir aula ${aula.id}:`, erro);
-                            erros.push(`Aula ${aula.id} do curso ${curso.titulo}`);
-                        }
-                        
-                        // Pequena pausa para não sobrecarregar a API
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                        
-                    } catch (error) {
-                        console.error(`   ❌ Erro na aula ${aula.id}:`, error);
-                        erros.push(`Aula ${aula.id} do curso ${curso.titulo}: ${error.message}`);
-                    }
-                }
-            }
-        }
-        
-        // Fechar modal
-        fecharModalConclusao();
-        
-        // Mostrar resultado
-        if (erros.length === 0) {
-            mostrarAlerta(`✅ Todas as ${totalConcluidas} aulas foram concluídas com sucesso!`, 'success');
-        } else {
-            mostrarAlerta(
-                `⚠️ ${totalConcluidas} aulas concluídas, ${erros.length} erros encontrados. Verifique o console para detalhes.`,
-                'warning'
-            );
-        }
-        
-        console.log(`📊 Resultado final: ${totalConcluidas} aulas concluídas, ${erros.length} erros`);
-        
-    } catch (error) {
-        console.error('❌ Erro na conclusão em massa:', error);
-        mostrarAlerta(`❌ Erro: ${error.message}`, 'error');
-        fecharModalConclusao();
-    } finally {
-        // Restaurar botão
-        btnConfirmar.disabled = false;
-        btnConfirmar.innerHTML = textoOriginal;
-        btnConfirmar.classList.remove('btn-loading');
-    }
-}
 
 // ==================== CORREÇÃO DE EMERGÊNCIA ====================
 (function corrigirStorageImediatamente() {
@@ -1336,6 +1070,7 @@ function mostrarAlerta(mensagem, tipo = 'error') {
     if (!container) return;
     
     const alert = document.createElement('div');
+    // CORREÇÃO AQUI: removido o 'error' no final
     alert.className = `alert ${tipo === 'success' ? 'alert-success' : tipo === 'warning' ? 'alert-warning' : ''}`;
     alert.innerHTML = `
         <span>${mensagem}</span>
@@ -1343,7 +1078,7 @@ function mostrarAlerta(mensagem, tipo = 'error') {
     `;
     
     container.appendChild(alert);
-    setTimeout(() => alert.remove(), 8000);
+    setTimeout(() => alert.remove(), 5000);
 }
 
 function voltarParaMenu() {
@@ -1463,14 +1198,6 @@ function iniciarCurso(cursoId) {
     
     return false;
 }
-
-// Fechar modal ao clicar fora
-document.addEventListener('click', function(event) {
-    const modal = document.getElementById('modalConfirmacao');
-    if (event.target === modal) {
-        fecharModalConclusao();
-    }
-});
     
 window.testarUsuario = function() {
     const usuario = obterUsuarioLogado();
