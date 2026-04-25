@@ -201,7 +201,7 @@
 
         .modulo.expanded .aulas-container {
             padding: 20px;
-            max-height: 1000px;
+            max-height: 2000px;
         }
 
         .aula-item {
@@ -216,6 +216,7 @@
             gap: 15px;
             border-left: 4px solid transparent;
             position: relative;
+            flex-wrap: wrap;
         }
 
         .aula-item:last-child {
@@ -253,6 +254,7 @@
 
         .aula-info {
             flex: 1;
+            min-width: 200px;
         }
 
         .aula-info h4 {
@@ -269,18 +271,119 @@
             color: var(--gray);
         }
 
+        .aula-status-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
         .aula-status {
-            margin-left: auto;
             padding: 5px 12px;
             border-radius: 15px;
             font-size: 0.8rem;
             font-weight: 600;
             background: rgba(255, 255, 255, 0.05);
+            white-space: nowrap;
         }
 
         .aula-item.completa .aula-status {
             background: rgba(76, 175, 80, 0.2);
             color: var(--success);
+        }
+
+        /* BOTÃO DE CONCLUSÃO RÁPIDA */
+        .btn-concluir-rapido {
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-concluir-rapido:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-concluir-rapido:active {
+            transform: translateY(0);
+        }
+
+        .btn-concluir-rapido.concluido {
+            background: #666;
+            cursor: default;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .btn-concluir-rapido.concluido:hover {
+            transform: none;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+
+        /* Aulas bloqueadas */
+        .aula-item.bloqueada {
+            background: rgba(255, 152, 0, 0.1) !important;
+            border-left-color: var(--warning) !important;
+            position: relative;
+        }
+
+        .aula-item.bloqueada .aula-icone {
+            background: rgba(255, 152, 0, 0.2);
+            color: var(--warning);
+        }
+
+        .aula-item.bloqueada .aula-status {
+            background: rgba(255, 152, 0, 0.2);
+            color: var(--warning);
+        }
+
+        .aula-item.bloqueada:hover {
+            transform: none !important;
+            border-left-color: var(--warning) !important;
+            background: rgba(255, 152, 0, 0.15) !important;
+        }
+
+        .aula-item.bloqueada:hover .aula-info h4 {
+            color: #888 !important;
+        }
+
+        .btn-solicitar {
+            padding: 6px 14px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-solicitar:hover {
+            background: #3a56d4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.4);
+        }
+
+        .btn-solicitar:active {
+            transform: translateY(0);
         }
 
         /* LOADING */
@@ -571,124 +674,57 @@
         .notificacao-concluido i {
             font-size: 1.2rem;
         }
-/* Adicione estas regras ao seu CSS existente */
 
-/* Aulas bloqueadas */
-.aula-item.bloqueada {
-    background: rgba(255, 152, 0, 0.1) !important;
-    border-left-color: var(--warning) !important;
-    position: relative;
-}
+        .notificacao-desbloqueio {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            background: var(--info);
+            color: white;
+            padding: 15px 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.5s ease, fadeOut 0.5s ease 3s forwards;
+            max-width: 350px;
+        }
 
-.aula-item.bloqueada .aula-icone {
-    background: rgba(255, 152, 0, 0.2);
-    color: var(--warning);
-}
+        .notificacao-solicitacao {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            background: linear-gradient(135deg, #4361ee 0%, #3a56d4 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            max-width: 400px;
+            animation: slideInRight 0.5s ease;
+        }
 
-.aula-item.bloqueada .aula-status {
-    background: rgba(255, 152, 0, 0.2);
-    color: var(--warning);
-}
+        .notificacao-custom {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            max-width: 400px;
+            animation: slideInRight 0.5s ease;
+        }
 
-.aula-item.bloqueada:hover {
-    transform: none !important;
-    border-left-color: var(--warning) !important;
-    background: rgba(255, 152, 0, 0.15) !important;
-}
-
-.aula-item.bloqueada:hover .aula-info h4 {
-    color: #888 !important;
-}
-
-
-.notificacao-desbloqueio {
-    position: fixed;
-    top: 100px;
-    right: 30px;
-    background: var(--info);
-    color: white;
-    padding: 15px 25px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    z-index: 1001;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    animation: slideInRight 0.5s ease, fadeOut 0.5s ease 3s forwards;
-    max-width: 350px;
-}
-.btn-solicitar {
-    padding: 8px 15px;
-    background: var(--secondary);
-    color: white;
-    border: none;
-    border-radius: var(--border-radius-sm);
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    margin-right: 15px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.btn-solicitar:hover {
-    background: #3a56d4;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
-}
-
-.btn-solicitar:active {
-    transform: translateY(0);
-}
-@media (max-width: 768px) {
-    video {
-        width: 100%;
-        max-width: 100%;
-        height: auto;
-    }
-    
-    .video-container {
-        margin: 0 -15px; 
-        width: calc(100% + 30px);
-    }
-}
-@media (max-width: 768px) {
-    .btn-solicitar {
-        padding: 6px 12px;
-        font-size: 0.8rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .btn-solicitar {
-        padding: 8px;
-        border-radius: 50%;
-        width: 36px;
-        height: 36px;
-    }
-    
-    .btn-solicitar span {
-        display: none;
-    }
-}
-        
-@media (max-width: 768px) {
-    .notificacao-desbloqueio {
-        top: 80px;
-        right: 15px;
-        left: 15px;
-        max-width: none;
-    }
-}
-
-@media (max-width: 480px) {
-    .notificacao-desbloqueio {
-        top: 70px;
-        padding: 12px 20px;
-    }
-}
         /* ANIMAÇÕES */
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -723,6 +759,17 @@
         }
 
         @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+        }
+
+        @keyframes fadeOutRight {
             from {
                 opacity: 1;
                 transform: translateX(0);
@@ -772,9 +819,15 @@
                 gap: 10px;
             }
 
-            .aula-status {
-                align-self: flex-start;
-                margin-left: 0;
+            .aula-status-container {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .btn-concluir-rapido,
+            .btn-solicitar {
+                padding: 5px 10px;
+                font-size: 0.75rem;
             }
 
             .btn-voltar {
@@ -824,11 +877,25 @@
                 width: 150px;
             }
 
-            .notificacao-concluido {
+            .notificacao-concluido,
+            .notificacao-desbloqueio,
+            .notificacao-solicitacao,
+            .notificacao-custom {
                 top: 80px;
                 right: 15px;
                 left: 15px;
                 max-width: none;
+            }
+
+            video {
+                width: 100%;
+                max-width: 100%;
+                height: auto;
+            }
+            
+            .video-container {
+                margin: 0 -15px; 
+                width: calc(100% + 30px);
             }
         }
 
@@ -852,9 +919,18 @@
                 text-align: center;
             }
 
-            .notificacao-concluido {
+            .notificacao-concluido,
+            .notificacao-desbloqueio,
+            .notificacao-solicitacao,
+            .notificacao-custom {
                 top: 70px;
                 padding: 12px 20px;
+            }
+
+            .btn-concluir-rapido,
+            .btn-solicitar {
+                padding: 5px 8px;
+                font-size: 0.7rem;
             }
         }
 
@@ -996,21 +1072,42 @@
         }
     }
 
-    function mostrarNotificacaoSolicitacaoEnviada() {
+    function mostrarNotificacaoSolicitacaoEnviada(proximaAula) {
+        const notificacoesAntigas = document.querySelectorAll('.notificacao-solicitacao');
+        notificacoesAntigas.forEach(notif => {
+            if (notif.parentNode) notif.remove();
+        });
+
         const notificacao = document.createElement('div');
         notificacao.className = 'notificacao-solicitacao';
-        notificacao.innerHTML = `
-            <i class="fas fa-paper-plane"></i>
-            <div>
-                <strong>Solicitação Enviada!</strong>
-                <div style="font-size: 0.85rem; opacity: 0.9;">Aguardando aprovação do administrador</div>
-            </div>
-        `;
+        
+        if (proximaAula) {
+            notificacao.innerHTML = `
+                <i class="fas fa-robot"></i>
+                <div>
+                    <strong>Solicitação Automática Enviada!</strong>
+                    <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 5px;">
+                        Próxima aula: <strong>"${proximaAula.titulo}"</strong>
+                    </div>
+                </div>
+            `;
+        } else {
+            notificacao.innerHTML = `
+                <i class="fas fa-check-circle"></i>
+                <div>
+                    <strong>Solicitação Enviada com Sucesso!</strong>
+                </div>
+            `;
+        }
+        
         document.body.appendChild(notificacao);
         
         setTimeout(() => {
-            if (notificacao.parentNode) notificacao.remove();
-        }, 3500);
+            if (notificacao.parentNode) {
+                notificacao.style.animation = 'fadeOutRight 0.5s ease forwards';
+                setTimeout(() => notificacao.remove(), 500);
+            }
+        }, 5000);
     }
 
     function showGlobalLoading(show) {
@@ -1020,6 +1117,111 @@
             document.body.style.cursor = 'default';
         }
     }
+
+    function mostrarNotificacao(mensagem, tipo = 'info', duracao = 4000) {
+        const cores = {
+            'success': '#4CAF50',
+            'error': '#F44336',
+            'warning': '#FF9800',
+            'info': '#2196F3'
+        };
+        
+        const icones = {
+            'success': 'fas fa-check-circle',
+            'error': 'fas fa-times-circle',
+            'warning': 'fas fa-exclamation-triangle',
+            'info': 'fas fa-info-circle'
+        };
+        
+        const notificacoesAntigas = document.querySelectorAll('.notificacao-custom');
+        notificacoesAntigas.forEach(notif => {
+            if (notif.parentNode) notif.remove();
+        });
+        
+        const notificacao = document.createElement('div');
+        notificacao.className = 'notificacao-custom';
+        notificacao.style.background = cores[tipo] || '#2196F3';
+        
+        notificacao.innerHTML = `
+            <i class="${icones[tipo] || 'fas fa-info-circle'}"></i>
+            <div>
+                <strong>${mensagem}</strong>
+            </div>
+        `;
+        
+        document.body.appendChild(notificacao);
+        
+        setTimeout(() => {
+            if (notificacao.parentNode) {
+                notificacao.style.animation = 'fadeOutRight 0.5s ease forwards';
+                setTimeout(() => notificacao.remove(), 500);
+            }
+        }, duracao);
+    }
+
+    // NOVA FUNÇÃO: Concluir aula rapidamente sem abrir o modal
+    window.concluirAulaRapidamente = async function(aulaId) {
+        console.log('⚡ Concluindo aula rapidamente:', aulaId);
+        
+        try {
+            const gerenciador = window.gerenciador;
+            if (!gerenciador) {
+                mostrarNotificacao('Sistema não inicializado', 'error');
+                return;
+            }
+            
+            // Verificar se já está concluída
+            if (gerenciador.aulasConcluidas.includes(aulaId)) {
+                mostrarNotificacao('Esta aula já está concluída', 'info');
+                return;
+            }
+            
+            const aula = gerenciador.encontrarAula(aulaId);
+            if (!aula) {
+                mostrarNotificacao('Aula não encontrada', 'error');
+                return;
+            }
+            
+            // Marcar aula como concluída
+            const concluida = gerenciador.marcarAulaConcluida(aulaId);
+            
+            if (concluida) {
+                console.log(`✅ Aula "${aula.titulo}" concluída rapidamente`);
+                
+                // Atualizar botão imediatamente
+                const btnRapido = document.querySelector(`.aula-item[data-aula-id="${aulaId}"] .btn-concluir-rapido`);
+                if (btnRapido) {
+                    btnRapido.innerHTML = '<i class="fas fa-check-double"></i> <span>Concluído</span>';
+                    btnRapido.classList.add('concluido');
+                    btnRapido.disabled = true;
+                    btnRapido.onclick = null;
+                }
+                
+                // Atualizar status da aula
+                gerenciador.atualizarInterfaceAula(aulaId, true);
+                
+                // Enviar solicitação automática para próxima aula
+                const solicitacaoEnviada = await enviarSolicitacaoAutomaticaParaProximaAula(aulaId);
+                
+                if (solicitacaoEnviada) {
+                    console.log('✅ Solicitação automática enviada');
+                }
+                
+                mostrarNotificacao(
+                    `✅ Aula "${aula.titulo}" concluída com sucesso!`,
+                    'success',
+                    3000
+                );
+                
+            } else {
+                mostrarNotificacao('Falha ao salvar progresso', 'error');
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao concluir aula rapidamente:', error);
+            mostrarNotificacao(`Erro: ${error.message}`, 'error');
+        }
+    };
 
     // GERENCIADOR PRINCIPAL COM BLOQUEIO DE AULAS
     class GerenciadorCursos {
@@ -1032,7 +1234,7 @@
             this.aulasCarregadas = 0;
             this.cursoData = null;
             this.aulasMap = new Map();
-            this.aulasAutorizadas = new Set(); // Armazena aulas autorizadas pelo ADM
+            this.aulasAutorizadas = new Set();
             this.bloqueioProgressivo = true;
         }
 
@@ -1102,44 +1304,27 @@
             return false;
         }
 
-   verificarAulaAutorizada(aulaId) {
-    console.log('Verificando autorização para aula', aulaId);
-    
-    if (this.aulasConcluidas.includes(aulaId)) {
-        console.log('✅ Aula já concluída - acesso permitido para revisão');
-        return true;
-    }
-    
-    const aula = this.encontrarAula(aulaId);
-    
-    if (aula && aula.aulaIndex === 0) {
-        console.log('✅ Primeira aula do módulo - acesso liberado automaticamente');
-        return true;
-    }
-    
-    if (this.aulasAutorizadas.has(aulaId)) {
-        console.log('✅ Aula autorizada pelo ADM');
-        return true;
-    }
-    
-    const aulaAnterior = this.encontrarAulaAnterior(aulaId);
-    if (aulaAnterior && this.aulasConcluidas.includes(aulaAnterior.id)) {
-        console.log('⚠️ Aula anterior concluída, mas ainda não autorizada pelo ADM');
-        return false; 
-    }
-    
-    console.log('❌ Aula NÃO autorizada');
-    return false;
-}
-
-        desmarcarAulaConcluida(aulaId) {
-            const index = this.aulasConcluidas.indexOf(aulaId);
-            if (index > -1) {
-                this.aulasConcluidas.splice(index, 1);
-                this.salvarProgresso();
-                this.atualizarInterfaceAula(aulaId, false);
+        verificarAulaAutorizada(aulaId) {
+            console.log('Verificando autorização para aula', aulaId);
+            
+            if (this.aulasConcluidas.includes(aulaId)) {
+                console.log('✅ Aula já concluída - acesso permitido para revisão');
                 return true;
             }
+            
+            const aula = this.encontrarAula(aulaId);
+            
+            if (aula && aula.aulaIndex === 0) {
+                console.log('✅ Primeira aula do módulo - acesso liberado automaticamente');
+                return true;
+            }
+            
+            if (this.aulasAutorizadas.has(aulaId)) {
+                console.log('✅ Aula autorizada pelo ADM');
+                return true;
+            }
+            
+            console.log('❌ Aula NÃO autorizada');
             return false;
         }
 
@@ -1204,11 +1389,9 @@
                     
                     this.bloqueioProgressivo = data.curso.bloqueioProgressivo !== false;
                     
-                    // Carregar autorizações salvas
                     const autorizacoesSalvas = this.carregarAutorizacoes();
                     this.aulasAutorizadas = new Set(autorizacoesSalvas);
                     
-                    // Tentar carregar autorizações da API
                     await this.carregarAutorizacoesDaAPI();
                     
                     this.processarAulas(data.curso.modulos || []);
@@ -1223,33 +1406,33 @@
         }
 
         async carregarAutorizacoesDaAPI() {
-    try {
-        console.log('Carregando autorizações da API...');
-        
-        const response = await fetch(
-            `${this.API_BASE}/autorizacoes/curso/${this.cursoId}/usuario/${this.usuarioId}`
-        );
-        
-        if (response.ok) {
-            const data = await response.json();
-            console.log('Autorizações da API:', data);
-            
-            if (data.success && data.autorizacoes) {
-                data.autorizacoes.forEach(auth => {
-                    if (auth.aulaId) {
-                        this.aulasAutorizadas.add(parseInt(auth.aulaId));
+            try {
+                console.log('Carregando autorizações da API...');
+                
+                const response = await fetch(
+                    `${this.API_BASE}/autorizacoes/curso/${this.cursoId}/usuario/${this.usuarioId}`
+                );
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Autorizações da API:', data);
+                    
+                    if (data.success && data.autorizacoes) {
+                        data.autorizacoes.forEach(auth => {
+                            if (auth.aulaId) {
+                                this.aulasAutorizadas.add(parseInt(auth.aulaId));
+                            }
+                        });
+                        this.salvarAutorizacoes();
+                        console.log('Autorizações carregadas da API:', Array.from(this.aulasAutorizadas));
                     }
-                });
-                this.salvarAutorizacoes();
-                console.log('Autorizações carregadas da API:', Array.from(this.aulasAutorizadas));
+                } else {
+                    console.log('Nenhuma autorização encontrada na API');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar autorizações da API:', error);
             }
-        } else {
-            console.log('Nenhuma autorização encontrada na API');
         }
-    } catch (error) {
-        console.error('Erro ao carregar autorizações da API:', error);
-    }
-}
         
         encontrarAulaAnterior(aulaId) {
             const aulaAtual = this.encontrarAula(aulaId);
@@ -1355,8 +1538,8 @@
                 const aulaIcon = aula.videoUrl ? 'fas fa-play-circle' : 'fas fa-book';
                 const bloqueada = !autorizada && !concluida;
 
-                const mostrarBotao = !concluida && !autorizada && !primeiraAula;
-
+                const mostrarBotaoSolicitar = !concluida && !autorizada && !primeiraAula;
+                const mostrarConcluirRapido = !concluida && (primeiraAula || autorizada);
                 
                 aulasHTML += `
                     <div class="aula-item ${concluida ? 'completa' : ''} ${bloqueada ? 'bloqueada' : ''}" 
@@ -1387,29 +1570,41 @@
                             </div>
                         </div>
                         
-                ${mostrarBotao ? `
-                    <button class="btn-solicitar" onclick="event.stopPropagation();enviarSolicitacaoParaAdm(${aula.id})">
-                        <i class="fas fa-paper-plane"></i>
-                        Solicitar
-                    </button>
-                ` : ''}
-                
-                <div class="aula-status">
-                    ${concluida ? 
-                        '<i class="fas fa-check"></i> Concluída' : 
-                        bloqueada ? 
-                            '<i class="fas fa-lock"></i> Bloqueada' : 
-                            primeiraAula ? 
-                                '<i class="fas fa-play-circle"></i> Disponível' : 
-                                '<i class="fas fa-user-shield"></i> Autorizada'
-                    }
-                </div>
-            </div>
-        `;
-    }
-    
-    return aulasHTML;
-}
+                        <div class="aula-status-container">
+                            ${mostrarConcluirRapido ? `
+                                <button class="btn-concluir-rapido" 
+                                        onclick="event.stopPropagation(); concluirAulaRapidamente(${aula.id})"
+                                        title="Concluir esta aula sem abrir">
+                                    <i class="fas fa-check"></i>
+                                    <span>Concluir</span>
+                                </button>
+                            ` : ''}
+                            
+                            ${mostrarBotaoSolicitar ? `
+                                <button class="btn-solicitar" onclick="event.stopPropagation();enviarSolicitacaoParaAdm(${aula.id})">
+                                    <i class="fas fa-paper-plane"></i>
+                                    <span>Solicitar</span>
+                                </button>
+                            ` : ''}
+                            
+                            <div class="aula-status">
+                                ${concluida ? 
+                                    '<i class="fas fa-check"></i> Concluída' : 
+                                    bloqueada ? 
+                                        '<i class="fas fa-lock"></i> Bloqueada' : 
+                                        primeiraAula ? 
+                                            '<i class="fas fa-play-circle"></i> Disponível' : 
+                                            '<i class="fas fa-user-shield"></i> Autorizada'
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            return aulasHTML;
+        }
+
         encontrarAula(aulaId) {
             if (this.aulasMap.has(aulaId)) {
                 return this.aulasMap.get(aulaId);
@@ -1507,7 +1702,6 @@
             const cursoTitulo = this.cursoData?.titulo || 'Curso';
             const primeiraAula = aula && aula.aulaIndex === 0;
             
-            // Se for primeira aula, não deve estar bloqueada
             if (primeiraAula) {
                 return `
                     <div style="text-align: center; padding: 60px 20px;">
@@ -1690,83 +1884,29 @@
                         iconeElement.innerHTML = '<i class="fas fa-check-circle"></i>';
                     }
                     
+                    // Remover botão de concluir rápido
+                    const btnRapido = aulaElement.querySelector('.btn-concluir-rapido');
+                    if (btnRapido) {
+                        btnRapido.innerHTML = '<i class="fas fa-check-double"></i> <span>Concluído</span>';
+                        btnRapido.classList.add('concluido');
+                        btnRapido.disabled = true;
+                        btnRapido.onclick = null;
+                    }
+                    
                     aulaElement.onclick = () => iniciarAula(aulaId);
                     aulaElement.style.cursor = 'pointer';
-                    
-                    const tooltip = aulaElement.querySelector('.aula-tooltip');
-                    if (tooltip) {
-                        tooltip.remove();
-                    }
                     
                     const tituloElement = aulaElement.querySelector('.aula-info h4');
                     if (tituloElement) {
                         tituloElement.style.color = '';
-                        const spanInicio = tituloElement.querySelector('span[style*="color: var(--success)"]');
-                        const spanBloqueado = tituloElement.querySelector('span[style*="color: var(--warning)"]');
-                        if (spanInicio) spanInicio.remove();
-                        if (spanBloqueado) spanBloqueado.remove();
                     }
                 } else {
                     aulaElement.classList.remove('completa');
-                    const statusElement = aulaElement.querySelector('.aula-status');
-                    const iconeElement = aulaElement.querySelector('.aula-icone');
-                    const aula = this.encontrarAula(aulaId);
-                    
-                    if (statusElement) {
-                        const primeiraAula = aula && aula.aulaIndex === 0;
-                        const autorizada = this.verificarAulaAutorizada(aulaId);
-                        
-                        if (primeiraAula) {
-                            statusElement.innerHTML = '<i class="fas fa-play-circle"></i> Disponível';
-                        } else if (autorizada) {
-                            statusElement.innerHTML = '<i class="fas fa-user-shield"></i> Autorizada';
-                        } else {
-                            statusElement.innerHTML = '<i class="fas fa-lock"></i> Bloqueada';
-                        }
-                    }
-                    if (iconeElement && aula) {
-                        iconeElement.innerHTML = aula.videoUrl ? '<i class="fas fa-play-circle"></i>' : '<i class="fas fa-book"></i>';
-                    }
                 }
             }
             
             if (aulaId === aulaAtualId) {
-                const btnConcluir = document.getElementById('btn-concluir-aula');
-                const estadoElement = document.getElementById('aula-estado');
-                
-                if (concluida) {
-                    if (btnConcluir) {
-                        btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
-                        btnConcluir.classList.add('concluida');
-                        btnConcluir.disabled = true;
-                    }
-                    if (estadoElement) {
-                        estadoElement.textContent = 'Concluída';
-                        estadoElement.style.color = 'var(--success)';
-                    }
-                } else {
-                    if (btnConcluir) {
-                        btnConcluir.innerHTML = '<i class="fas fa-check"></i> <span>Marcar como Concluída</span>';
-                        btnConcluir.classList.remove('concluida');
-                        btnConcluir.disabled = false;
-                    }
-                    if (estadoElement) {
-                        const aula = this.encontrarAula(aulaId);
-                        const primeiraAula = aula && aula.aulaIndex === 0;
-                        const autorizada = this.verificarAulaAutorizada(aulaId);
-                        
-                        if (primeiraAula) {
-                            estadoElement.textContent = 'Disponível para início';
-                            estadoElement.style.color = 'var(--primary)';
-                        } else if (autorizada) {
-                            estadoElement.textContent = 'Autorizada pelo ADM';
-                            estadoElement.style.color = 'var(--info)';
-                        } else {
-                            estadoElement.textContent = 'Aguardando autorização';
-                            estadoElement.style.color = 'var(--warning)';
-                        }
-                    }
-                }
+                this.atualizarControlesAula(this.encontrarAula(aulaId));
             }
             
             this.atualizarProgressoBar();
@@ -2004,351 +2144,192 @@
         }
     }
 
-    // FUNÇÕES AUXILIARES PARA SOLICITAÇÃO AUTOMÁTICA
-    async function enviarSolicitacaoParaProximaAula(aulaIdConcluida) {
-        try {
-            const gerenciador = window.gerenciador;
-            
-            // Encontrar a próxima aula
-            const proximaAula = encontrarProximaAula(aulaIdConcluida);
-            
-            if (!proximaAula) {
-                console.log('ℹ️ Não há próxima aula ou é a última');
-                return;
-            }
-            
-            console.log(`📤 Aula concluída. Enviando solicitação para próxima aula: ${proximaAula.id} - ${proximaAula.titulo}`);
-            
-            // Criar motivo automático
-            const motivo = `Aluno completou a aula "${gerenciador.encontrarAula(aulaIdConcluida)?.titulo || 'anterior'}" e aguarda autorização para continuar.`;
-            
-            // Enviar solicitação para o administrador
-            const solicitacaoEnviada = await enviarSolicitacaoParaAdm(
-                proximaAula.id,
-                'autorizacao_automatica',
-                motivo
-            );
-            
-            if (solicitacaoEnviada) {
-                mostrarNotificacaoSolicitacaoAutomatica(proximaAula);
-            }
-            
-        } catch (error) {
-            console.error('❌ Erro ao enviar solicitação para próxima aula:', error);
+    // FUNÇÕES GLOBAIS ADICIONAIS
+    function encontrarProximaAula(aulaIdAtual) {
+        const gerenciador = window.gerenciador;
+        const aulaAtual = gerenciador.encontrarAula(aulaIdAtual);
+        
+        if (!aulaAtual) {
+            console.error('❌ Aula atual não encontrada:', aulaIdAtual);
+            return null;
         }
-    }
-
-   function encontrarProximaAula(aulaIdAtual) {
-    const gerenciador = window.gerenciador;
-    const aulaAtual = gerenciador.encontrarAula(aulaIdAtual);
-    
-    if (!aulaAtual) {
-        console.error('❌ Aula atual não encontrada:', aulaIdAtual);
-        return null;
-    }
-    
-    const { moduloIndex, aulaIndex } = aulaAtual;
-    const curso = gerenciador.cursoData;
-    
-    if (!curso || !curso.modulos) {
-        console.error('❌ Dados do curso não disponíveis');
-        return null;
-    }
-    
-    console.log(`🔍 Procurando próxima aula - Módulo ${moduloIndex + 1}, Aula ${aulaIndex + 1}`);
-    
-    if (curso.modulos[moduloIndex]?.aulas && 
-        aulaIndex + 1 < curso.modulos[moduloIndex].aulas.length) {
-        const proximaAula = curso.modulos[moduloIndex].aulas[aulaIndex + 1];
-        console.log(`✅ Próxima aula no mesmo módulo: ${proximaAula.titulo}`);
-        return proximaAula;
-    }
-    
-    else if (moduloIndex + 1 < curso.modulos.length) {
-        const proximoModulo = curso.modulos[moduloIndex + 1];
-        if (proximoModulo?.aulas && proximoModulo.aulas.length > 0) {
-            const proximaAula = proximoModulo.aulas[0];
-            console.log(`✅ Próxima aula no próximo módulo: ${proximaAula.titulo}`);
+        
+        const { moduloIndex, aulaIndex } = aulaAtual;
+        const curso = gerenciador.cursoData;
+        
+        if (!curso || !curso.modulos) {
+            console.error('❌ Dados do curso não disponíveis');
+            return null;
+        }
+        
+        console.log(`🔍 Procurando próxima aula - Módulo ${moduloIndex + 1}, Aula ${aulaIndex + 1}`);
+        
+        if (curso.modulos[moduloIndex]?.aulas && 
+            aulaIndex + 1 < curso.modulos[moduloIndex].aulas.length) {
+            const proximaAula = curso.modulos[moduloIndex].aulas[aulaIndex + 1];
+            console.log(`✅ Próxima aula no mesmo módulo: ${proximaAula.titulo}`);
             return proximaAula;
         }
+        else if (moduloIndex + 1 < curso.modulos.length) {
+            const proximoModulo = curso.modulos[moduloIndex + 1];
+            if (proximoModulo?.aulas && proximoModulo.aulas.length > 0) {
+                const proximaAula = proximoModulo.aulas[0];
+                console.log(`✅ Próxima aula no próximo módulo: ${proximaAula.titulo}`);
+                return proximaAula;
+            }
+        }
+        
+        console.log('📭 Não há próxima aula disponível');
+        return null;
     }
-    
-    console.log('📭 Não há próxima aula disponível');
-    return null;
-}
 
- async function enviarSolicitacaoParaAdm(aulaId, tipoSolicitacao = 'autorizacao_automatica', motivo = '') {
-    console.log('🚀 INICIANDO envio de solicitação');
-    
-    try {
-        const gerenciador = window.gerenciador;
-        if (!gerenciador) {
-            console.error('❌ Gerenciador não disponível');
-            return false;
-        }
+    async function enviarSolicitacaoParaAdm(aulaId, tipoSolicitacao = 'autorizacao_automatica', motivo = '') {
+        console.log('🚀 INICIANDO envio de solicitação');
+        
+        try {
+            const gerenciador = window.gerenciador;
+            if (!gerenciador) {
+                console.error('❌ Gerenciador não disponível');
+                return false;
+            }
 
-        const aula = gerenciador.encontrarAula(aulaId);
-        if (!aula) {
-            console.error('❌ Aula não encontrada:', aulaId);
-            return false;
-        }
+            const aula = gerenciador.encontrarAula(aulaId);
+            if (!aula) {
+                console.error('❌ Aula não encontrada:', aulaId);
+                return false;
+            }
 
-        const payload = {
-            usuarioId: parseInt(gerenciador.usuarioId) || 1,
-            cursoId: parseInt(gerenciador.cursoId) || 1,
-            aulaId: parseInt(aulaId),
-            tipo: tipoSolicitacao === 'autorizacao_automatica' ? 'automatica' : 'manual',
-            motivo: motivo || `Aluno ${gerenciador.usuarioId} completou aula anterior.`,
-            automatica: tipoSolicitacao === 'autorizacao_automatica'
-        };
+            const payload = {
+                usuarioId: parseInt(gerenciador.usuarioId) || 1,
+                cursoId: parseInt(gerenciador.cursoId) || 1,
+                aulaId: parseInt(aulaId),
+                tipo: tipoSolicitacao === 'autorizacao_automatica' ? 'automatica' : 'manual',
+                motivo: motivo || `Aluno ${gerenciador.usuarioId} completou aula anterior.`,
+                automatica: tipoSolicitacao === 'autorizacao_automatica'
+            };
 
-        console.log('📦 Enviando payload:', payload);
+            console.log('📦 Enviando payload:', payload);
 
-        const response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-
-        console.log('📡 Status:', response.status, response.statusText);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ Erro do servidor:', errorText);
-            
-            console.log('🔄 Tentando endpoint alternativo...');
-            const altResponse = await fetch(`${gerenciador.API_BASE}/solicitacoes-autorizacao`, {
+            const response = await fetch(`${gerenciador.API_BASE}/solicitacoes`, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(payload)
             });
-            
-            if (altResponse.ok) {
-                console.log('✅ Sucesso no endpoint alternativo');
-                return true;
+
+            console.log('📡 Status:', response.status, response.statusText);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Erro do servidor:', errorText);
+                
+                console.log('🔄 Tentando endpoint alternativo...');
+                const altResponse = await fetch(`${gerenciador.API_BASE}/solicitacoes-autorizacao`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                
+                if (altResponse.ok) {
+                    console.log('✅ Sucesso no endpoint alternativo');
+                    return true;
+                }
+                
+                return false;
             }
-            
-            return false;
-        }
 
-        const result = await response.json();
-        console.log('✅ Sucesso:', result);
-        return true;
-
-    } catch (error) {
-        console.error('💥 Erro fatal:', error);
-        return false;
-    }
-}
-
-    function registrarSolicitacaoLocal(dadosSolicitacao) {
-        try {
-            // Armazenar solicitação localmente para sincronização posterior
-            const solicitacoes = JSON.parse(localStorage.getItem('solicitacoes_pendentes') || '[]');
-            solicitacoes.push({
-                ...dadosSolicitacao,
-                local: true,
-                timestamp: new Date().getTime()
-            });
-            localStorage.setItem('solicitacoes_pendentes', JSON.stringify(solicitacoes));
-            console.log('📝 Solicitação registrada localmente para sincronização posterior');
+            const result = await response.json();
+            console.log('✅ Sucesso:', result);
             return true;
+
         } catch (error) {
-            console.error('Erro ao registrar solicitação local:', error);
+            console.error('💥 Erro fatal:', error);
             return false;
         }
     }
 
-function mostrarNotificacao(mensagem, tipo = 'info', duracao = 4000) {
-    const cores = {
-        'success': '#4CAF50',
-        'error': '#F44336',
-        'warning': '#FF9800',
-        'info': '#2196F3'
-    };
-    
-    const icones = {
-        'success': 'fas fa-check-circle',
-        'error': 'fas fa-times-circle',
-        'warning': 'fas fa-exclamation-triangle',
-        'info': 'fas fa-info-circle'
-    };
-    
-    const notificacoesAntigas = document.querySelectorAll('.notificacao-custom');
-    notificacoesAntigas.forEach(notif => {
-        if (notif.parentNode) notif.remove();
-    });
-    
-    const notificacao = document.createElement('div');
-    notificacao.className = 'notificacao-custom';
-    notificacao.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 30px;
-        background: ${cores[tipo] || '#2196F3'};
-        color: white;
-        padding: 15px 25px;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        z-index: 1001;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        max-width: 400px;
-        animation: slideInRight 0.5s ease;
-    `;
-    
-    notificacao.innerHTML = `
-        <i class="${icones[tipo] || 'fas fa-info-circle'}"></i>
-        <div>
-            <strong>${mensagem}</strong>
-        </div>
-    `;
-    
-    document.body.appendChild(notificacao);
-    
-    setTimeout(() => {
-        if (notificacao.parentNode) {
-            notificacao.style.animation = 'fadeOutRight 0.5s ease forwards';
-            setTimeout(() => notificacao.remove(), 500);
-        }
-    }, duracao);
-}
-
-function atualizarUIConclusaoAula() {
-    const btnConcluir = document.getElementById('btn-concluir-aula');
-    if (btnConcluir) {
-        btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
-        btnConcluir.classList.add('concluida');
-        btnConcluir.disabled = true;
-    }
-    
-    const estadoElement = document.getElementById('aula-estado');
-    if (estadoElement) {
-        estadoElement.textContent = 'Concluída';
-        estadoElement.style.color = '#4CAF50';
-    }
-}
-    function mostrarNotificacaoSolicitacaoAutomatica(aula) {
-        const notificacao = document.createElement('div');
-        notificacao.className = 'notificacao-automatica';
-        notificacao.style.cssText = `
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--info);
-            color: white;
-            padding: 15px 25px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            z-index: 1001;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            max-width: 400px;
-            text-align: center;
-            animation: slideUp 0.5s ease;
-        `;
+    async function enviarSolicitacaoAutomaticaParaProximaAula(aulaConcluidaId) {
+        console.log('🚀 Enviando solicitação automática...');
+        console.log(`📊 Aula concluída ID: ${aulaConcluidaId}`);
         
-        notificacao.innerHTML = `
-            <i class="fas fa-robot"></i>
-            <div>
-                <strong>Solicitação enviada automaticamente!</strong>
-                <div style="font-size: 0.85rem; opacity: 0.9;">
-                    Aguarde autorização do administrador para: "${aula.titulo}"
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(notificacao);
-        
-        setTimeout(() => {
-            if (notificacao.parentNode) {
-                notificacao.style.animation = 'slideDown 0.5s ease forwards';
-                setTimeout(() => notificacao.remove(), 500);
+        try {
+            const gerenciador = window.gerenciador;
+            if (!gerenciador) {
+                console.error('❌ Gerenciador não disponível');
+                mostrarNotificacao('Erro: Sistema não inicializado', 'error');
+                return false;
             }
-        }, 5000);
-    }
 
-    // FUNÇÕES GLOBAIS
-    window.toggleModulo = function(index) {
-        const modulo = document.getElementById(`modulo-${index}`);
-        const aulasContainer = document.getElementById(`modulo-aulas-${index}`);
-        
-        if (!modulo || !aulasContainer) return;
-        
-        if (modulo.classList.contains('expanded')) {
-            modulo.classList.remove('expanded');
-            aulasContainer.style.maxHeight = '0';
-        } else {
-            modulo.classList.add('expanded');
-            aulasContainer.style.maxHeight = aulasContainer.scrollHeight + 'px';
-        }
-    };
+            const payload = {
+                usuarioId: parseInt(gerenciador.usuarioId) || 1,
+                cursoId: parseInt(gerenciador.cursoId) || 1,
+                aulaConcluidaId: parseInt(aulaConcluidaId)
+            };
 
-   window.iniciarAula = async function(aulaId) {
-    try {
-        console.log('=== INICIANDO AULA ===');
-        console.log('Aula ID:', aulaId);
-        
-        const gerenciador = window.gerenciador;
-        if (!gerenciador) {
-            throw new Error('Sistema não inicializado');
-        }
-        
-        const autorizada = gerenciador.verificarAulaAutorizada(aulaId);
-        console.log('Aula autorizada?', autorizada);
-        
-        if (!autorizada) {
-            const aula = gerenciador.encontrarAula(aulaId);
-            if (aula && aula.aulaIndex !== 0) {
-                mostrarModalSolicitacaoAutorizacao(aulaId);
-                return;
+            console.log('📦 Payload sendo enviado:', JSON.stringify(payload));
+
+            const response = await fetch(`${gerenciador.API_BASE}/solicitacoes/automatica`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            console.log('📡 Status:', response.status, response.statusText);
+
+            if (!response.ok) {
+                let errorText = 'Erro desconhecido';
+                try {
+                    errorText = await response.text();
+                    console.error('❌ Resposta de erro:', errorText);
+                    
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        console.error('📄 Erro detalhado (JSON):', errorData);
+                        
+                        if (errorData.error?.includes('já existe')) {
+                            console.log('⚠️ Solicitação já existe - OK');
+                            mostrarNotificacao('Solicitação já registrada anteriormente', 'info');
+                            return true;
+                        }
+                    } catch (e) {
+                        console.error('Resposta não é JSON:', errorText);
+                    }
+                } catch (textError) {
+                    console.error('Não foi possível ler resposta:', textError);
+                }
+                
+                mostrarNotificacao(`Erro ${response.status}: ${errorText.substring(0, 50)}`, 'error');
+                return false;
             }
-        }
-        
-        const conteudoElement = document.getElementById('aula-conteudo');
-        if (conteudoElement) {
-            conteudoElement.innerHTML = `
-                <div style="text-align:center; padding: 80px 20px;">
-                    <div class="spinner"></div>
-                    <h3 style="margin-top:25px; color:var(--primary);">Carregando conteúdo da aula...</h3>
-                    <p style="color:var(--gray);">Preparando a melhor experiência de aprendizado</p>
-                </div>
-            `;
-        }
-        
-        const modal = document.getElementById('aula-modal');
-        if (modal) {
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        }
-        
-        const conteudo = await gerenciador.carregarConteudoAula(aulaId);
-        
-        if (conteudoElement) {
-            conteudoElement.innerHTML = conteudo;
-        }
-        
-    } catch (error) {
-        console.error('Erro ao iniciar aula:', error);
-        const conteudoElement = document.getElementById('aula-conteudo');
-        if (conteudoElement) {
-            conteudoElement.innerHTML = `
-                <div style="text-align:center; padding: 50px 20px; color:var(--danger);">
-                    <i class="fas fa-exclamation-triangle" style="font-size:3rem; margin-bottom:20px;"></i>
-                    <h3>Erro ao iniciar a aula</h3>
-                    <p>${error.message}</p>
-                </div>
-            `;
+
+            const result = await response.json();
+            console.log('✅ Resposta do servidor:', result);
+            
+            if (result.success) {
+                if (result.proximaAula) {
+                    mostrarNotificacaoSolicitacaoEnviada(result.proximaAula);
+                } else if (result.message) {
+                    mostrarNotificacao(result.message, 'success');
+                } else {
+                    mostrarNotificacao('Solicitação enviada com sucesso!', 'success');
+                }
+                return true;
+            } else {
+                mostrarNotificacao(result.error || 'Erro ao processar solicitação', 'error');
+                return false;
+            }
+
+        } catch (error) {
+            console.error('💥 Erro fatal:', error);
+            mostrarNotificacao(`Erro de conexão: ${error.message}`, 'error');
+            return false;
         }
     }
-};
 
-    // MODAL DE SOLICITAÇÃO DE AUTORIZAÇÃO
     function mostrarModalSolicitacaoAutorizacao(aulaId) {
         const gerenciador = window.gerenciador;
         const aula = gerenciador.encontrarAula(aulaId);
@@ -2356,10 +2337,8 @@ function atualizarUIConclusaoAula() {
         
         if (!aula || !cursoData) return;
         
-        // Fechar modal de aula atual se estiver aberto
         fecharAula();
         
-        // Criar modal de solicitação
         const modalHTML = `
             <div class="modal" id="solicitacao-modal">
                 <div class="modal-content" style="max-width: 500px;">
@@ -2421,146 +2400,14 @@ function atualizarUIConclusaoAula() {
             </div>
         `;
         
-        // Adicionar modal ao documento
         if (!document.getElementById('solicitacao-modal')) {
             document.body.insertAdjacentHTML('beforeend', modalHTML);
         }
         
-        // Mostrar modal
         document.getElementById('solicitacao-modal').style.display = 'block';
         document.body.style.overflow = 'hidden';
     }
-    
-async function enviarSolicitacaoAutomaticaParaProximaAula(aulaConcluidaId) {
-    console.log('🚀 Enviando solicitação automática...');
-    console.log(`📊 Aula concluída ID: ${aulaConcluidaId}`);
-    
-    try {
-        const gerenciador = window.gerenciador;
-        if (!gerenciador) {
-            console.error('❌ Gerenciador não disponível');
-            mostrarNotificacao('Erro: Sistema não inicializado', 'error');
-            return false;
-        }
 
-        // ⚠️ PAYLOAD CORRETO para seu backend
-        const payload = {
-            usuarioId: parseInt(gerenciador.usuarioId) || 1,
-            cursoId: parseInt(gerenciador.cursoId) || 1,
-            aulaConcluidaId: parseInt(aulaConcluidaId)
-            // ⚠️ NÃO enviar aulaId, proximaAulaId, etc.
-        };
-
-        console.log('📦 Payload sendo enviado:', JSON.stringify(payload));
-
-        const response = await fetch(`${gerenciador.API_BASE}/solicitacoes/automatica`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-
-        console.log('📡 Status:', response.status, response.statusText);
-        console.log('📡 URL:', `${gerenciador.API_BASE}/solicitacoes/automatica`);
-
-        if (!response.ok) {
-            let errorText = 'Erro desconhecido';
-            try {
-                errorText = await response.text();
-                console.error('❌ Resposta de erro:', errorText);
-                
-                // Tentar parsear como JSON
-                try {
-                    const errorData = JSON.parse(errorText);
-                    console.error('📄 Erro detalhado (JSON):', errorData);
-                    
-                    if (errorData.error?.includes('já existe')) {
-                        console.log('⚠️ Solicitação já existe - OK');
-                        mostrarNotificacao('Solicitação já registrada anteriormente', 'info');
-                        return true;
-                    }
-                } catch (e) {
-                    console.error('Resposta não é JSON:', errorText);
-                }
-            } catch (textError) {
-                console.error('Não foi possível ler resposta:', textError);
-            }
-            
-            mostrarNotificacao(`Erro ${response.status}: ${errorText.substring(0, 50)}`, 'error');
-            return false;
-        }
-
-        const result = await response.json();
-        console.log('✅ Resposta do servidor:', result);
-        
-        if (result.success) {
-            if (result.proximaAula) {
-                mostrarNotificacaoSolicitacaoEnviada(result.proximaAula);
-            } else if (result.message) {
-                mostrarNotificacao(result.message, 'success');
-            } else {
-                mostrarNotificacao('Solicitação enviada com sucesso!', 'success');
-            }
-            return true;
-        } else {
-            mostrarNotificacao(result.error || 'Erro ao processar solicitação', 'error');
-            return false;
-        }
-
-    } catch (error) {
-        console.error('💥 Erro fatal:', error);
-        mostrarNotificacao(`Erro de conexão: ${error.message}`, 'error');
-        return false;
-    }
-}
-    
-function mostrarNotificacaoSolicitacaoEnviada(proximaAula) {
-    const notificacoesAntigas = document.querySelectorAll('.notificacao-solicitacao');
-    notificacoesAntigas.forEach(notif => {
-        if (notif.parentNode) notif.remove();
-    });
-
-    const notificacao = document.createElement('div');
-    notificacao.className = 'notificacao-solicitacao';
-    notificacao.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 30px;
-        background: linear-gradient(135deg, #4361ee 0%, #3a56d4 100%);
-        color: white;
-        padding: 15px 25px;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        z-index: 1001;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        max-width: 400px;
-        animation: slideInRight 0.5s ease;
-    `;
-    
-    notificacao.innerHTML = `
-        <i class="fas fa-robot"></i>
-        <div>
-            <strong>Solicitação Automática Enviada!</strong>
-            <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 5px;">
-                Próxima aula: <strong>"${proximaAula.titulo}"</strong>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(notificacao);
-    
-    setTimeout(() => {
-        if (notificacao.parentNode) {
-            notificacao.style.animation = 'fadeOutRight 0.5s ease forwards';
-            setTimeout(() => notificacao.remove(), 500);
-        }
-    }, 5000);
-}
-    
     async function enviarSolicitacaoAutorizacaoManual(aulaId) {
         const gerenciador = window.gerenciador;
         const motivo = document.getElementById('motivo-solicitacao')?.value.trim() || 
@@ -2569,7 +2416,6 @@ function mostrarNotificacaoSolicitacaoEnviada(proximaAula) {
         try {
             showGlobalLoading(true);
             
-            // Enviar solicitação manual
             const enviada = await enviarSolicitacaoParaAdm(aulaId, 'autorizacao_manual', motivo);
             
             if (enviada) {
@@ -2587,110 +2433,179 @@ function mostrarNotificacaoSolicitacaoEnviada(proximaAula) {
         }
     }
 
-window.marcarAulaConcluida = async function() {
-    console.log('🎯 Iniciando marcação de aula como concluída...');
-    
-    try {
-        if (!aulaAtualId) {
-            console.error('❌ Nenhuma aula selecionada');
-            mostrarNotificacao('Nenhuma aula selecionada', 'error');
-            return;
+    // FUNÇÕES GLOBAIS EXPOSTAS
+    window.toggleModulo = function(index) {
+        const modulo = document.getElementById(`modulo-${index}`);
+        const aulasContainer = document.getElementById(`modulo-aulas-${index}`);
+        
+        if (!modulo || !aulasContainer) return;
+        
+        if (modulo.classList.contains('expanded')) {
+            modulo.classList.remove('expanded');
+            aulasContainer.style.maxHeight = '0';
+        } else {
+            modulo.classList.add('expanded');
+            aulasContainer.style.maxHeight = aulasContainer.scrollHeight + 'px';
         }
-        
-        const gerenciador = window.gerenciador;
-        if (!gerenciador) {
-            console.error('❌ Gerenciador não inicializado');
-            mostrarNotificacao('Sistema não inicializado', 'error');
-            return;
-        }
-        
-        console.log(`🔍 Verificando aula ${aulaAtualId}...`);
-        
-        // Verificar se já está concluída
-        if (gerenciador.aulasConcluidas.includes(aulaAtualId)) {
-            console.log('ℹ️ Aula já está concluída');
-            mostrarNotificacao('Esta aula já está concluída', 'info');
-            return;
-        }
-        
-        const aula = gerenciador.encontrarAula(aulaAtualId);
-        if (!aula) {
-            console.error(`❌ Aula ${aulaAtualId} não encontrada`);
-            mostrarNotificacao('Aula não encontrada', 'error');
-            return;
-        }
-        
-        console.log(`📝 Aula encontrada: ${aula.titulo}`);
-        
-        const isPrimeiraAula = aula.aulaIndex === 0;
-        
-        if (!isPrimeiraAula) {
-            const autorizada = gerenciador.verificarAulaAutorizada(aulaAtualId);
+    };
+
+    window.iniciarAula = async function(aulaId) {
+        try {
+            console.log('=== INICIANDO AULA ===');
+            console.log('Aula ID:', aulaId);
+            
+            const gerenciador = window.gerenciador;
+            if (!gerenciador) {
+                throw new Error('Sistema não inicializado');
+            }
+            
+            const autorizada = gerenciador.verificarAulaAutorizada(aulaId);
+            console.log('Aula autorizada?', autorizada);
             
             if (!autorizada) {
-                console.log('❌ Aula não autorizada! Mostrando modal...');
-                mostrarModalSolicitacaoAutorizacao(aulaAtualId);
+                const aula = gerenciador.encontrarAula(aulaId);
+                if (aula && aula.aulaIndex !== 0) {
+                    mostrarModalSolicitacaoAutorizacao(aulaId);
+                    return;
+                }
+            }
+            
+            const conteudoElement = document.getElementById('aula-conteudo');
+            if (conteudoElement) {
+                conteudoElement.innerHTML = `
+                    <div style="text-align:center; padding: 80px 20px;">
+                        <div class="spinner"></div>
+                        <h3 style="margin-top:25px; color:var(--primary);">Carregando conteúdo da aula...</h3>
+                        <p style="color:var(--gray);">Preparando a melhor experiência de aprendizado</p>
+                    </div>
+                `;
+            }
+            
+            const modal = document.getElementById('aula-modal');
+            if (modal) {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+            
+            const conteudo = await gerenciador.carregarConteudoAula(aulaId);
+            
+            if (conteudoElement) {
+                conteudoElement.innerHTML = conteudo;
+            }
+            
+        } catch (error) {
+            console.error('Erro ao iniciar aula:', error);
+            const conteudoElement = document.getElementById('aula-conteudo');
+            if (conteudoElement) {
+                conteudoElement.innerHTML = `
+                    <div style="text-align:center; padding: 50px 20px; color:var(--danger);">
+                        <i class="fas fa-exclamation-triangle" style="font-size:3rem; margin-bottom:20px;"></i>
+                        <h3>Erro ao iniciar a aula</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    };
+
+    window.marcarAulaConcluida = async function() {
+        console.log('🎯 Iniciando marcação de aula como concluída...');
+        
+        try {
+            if (!aulaAtualId) {
+                console.error('❌ Nenhuma aula selecionada');
+                mostrarNotificacao('Nenhuma aula selecionada', 'error');
                 return;
             }
-        }
-        
-        // Marcar aula como concluída
-        console.log('✅ Marcando aula como concluída...');
-        const concluida = gerenciador.marcarAulaConcluida(aulaAtualId);
-        
-        if (concluida) {
-            aulaAtualConcluida = true;
-            console.log(`✅ Aula "${aula.titulo}" marcada como concluída`);
             
-            // Encontrar próxima aula
-            const proximaAula = encontrarProximaAula(aulaAtualId);
+            const gerenciador = window.gerenciador;
+            if (!gerenciador) {
+                console.error('❌ Gerenciador não inicializado');
+                mostrarNotificacao('Sistema não inicializado', 'error');
+                return;
+            }
             
-            if (proximaAula) {
-                console.log(`📤 Próxima aula encontrada: ${proximaAula.titulo}`);
-                console.log(`📤 Enviando solicitação automática...`);
+            console.log(`🔍 Verificando aula ${aulaAtualId}...`);
+            
+            if (gerenciador.aulasConcluidas.includes(aulaAtualId)) {
+                console.log('ℹ️ Aula já está concluída');
+                mostrarNotificacao('Esta aula já está concluída', 'info');
+                return;
+            }
+            
+            const aula = gerenciador.encontrarAula(aulaAtualId);
+            if (!aula) {
+                console.error(`❌ Aula ${aulaAtualId} não encontrada`);
+                mostrarNotificacao('Aula não encontrada', 'error');
+                return;
+            }
+            
+            console.log(`📝 Aula encontrada: ${aula.titulo}`);
+            
+            const isPrimeiraAula = aula.aulaIndex === 0;
+            
+            if (!isPrimeiraAula) {
+                const autorizada = gerenciador.verificarAulaAutorizada(aulaAtualId);
                 
-                // Enviar solicitação automática APENAS com aulaConcluidaId
-                const solicitacaoEnviada = await enviarSolicitacaoAutomaticaParaProximaAula(aulaAtualId);
-                
-                if (solicitacaoEnviada) {
-                    console.log('✅ Solicitação enviada com sucesso');
-                } else {
-                    console.log('⚠️ Problema ao enviar solicitação');
-                    // Não mostrar erro aqui - a função já mostrou
+                if (!autorizada) {
+                    console.log('❌ Aula não autorizada! Mostrando modal...');
+                    mostrarModalSolicitacaoAutorizacao(aulaAtualId);
+                    return;
                 }
+            }
+            
+            console.log('✅ Marcando aula como concluída...');
+            const concluida = gerenciador.marcarAulaConcluida(aulaAtualId);
+            
+            if (concluida) {
+                aulaAtualConcluida = true;
+                console.log(`✅ Aula "${aula.titulo}" marcada como concluída`);
+                
+                const proximaAula = encontrarProximaAula(aulaAtualId);
+                
+                if (proximaAula) {
+                    console.log(`📤 Próxima aula encontrada: ${proximaAula.titulo}`);
+                    console.log(`📤 Enviando solicitação automática...`);
+                    
+                    const solicitacaoEnviada = await enviarSolicitacaoAutomaticaParaProximaAula(aulaAtualId);
+                    
+                    if (solicitacaoEnviada) {
+                        console.log('✅ Solicitação enviada com sucesso');
+                    } else {
+                        console.log('⚠️ Problema ao enviar solicitação');
+                    }
+                } else {
+                    console.log('🎉 Última aula do curso concluída!');
+                    mostrarNotificacao(
+                        '🎊 Parabéns! Você concluiu todas as aulas deste curso!',
+                        'success',
+                        5000
+                    );
+                }
+                
+                const btnConcluir = document.getElementById('btn-concluir-aula');
+                if (btnConcluir) {
+                    btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
+                    btnConcluir.classList.add('concluida');
+                    btnConcluir.disabled = true;
+                }
+                
+                const estadoElement = document.getElementById('aula-estado');
+                if (estadoElement) {
+                    estadoElement.textContent = 'Concluída';
+                    estadoElement.style.color = '#4CAF50';
+                }
+                
             } else {
-                console.log('🎉 Última aula do curso concluída!');
-                mostrarNotificacao(
-                    '🎊 Parabéns! Você concluiu todas as aulas deste curso!',
-                    'success',
-                    5000
-                );
+                console.error('❌ Falha ao marcar aula como concluída');
+                mostrarNotificacao('Falha ao salvar progresso', 'error');
             }
             
-            // Atualizar UI
-            const btnConcluir = document.getElementById('btn-concluir-aula');
-            if (btnConcluir) {
-                btnConcluir.innerHTML = '<i class="fas fa-check-double"></i> <span>Aula Concluída</span>';
-                btnConcluir.classList.add('concluida');
-                btnConcluir.disabled = true;
-            }
-            
-            const estadoElement = document.getElementById('aula-estado');
-            if (estadoElement) {
-                estadoElement.textContent = 'Concluída';
-                estadoElement.style.color = '#4CAF50';
-            }
-            
-        } else {
-            console.error('❌ Falha ao marcar aula como concluída');
-            mostrarNotificacao('Falha ao salvar progresso', 'error');
+        } catch (error) {
+            console.error('❌ Erro ao marcar aula como concluída:', error);
+            mostrarNotificacao(`Erro: ${error.message}`, 'error');
         }
-        
-    } catch (error) {
-        console.error('❌ Erro ao marcar aula como concluída:', error);
-        mostrarNotificacao(`Erro: ${error.message}`, 'error');
-    }
-};
+    };
     
     window.fecharAula = function() {
         const modal = document.getElementById('aula-modal');
@@ -2731,7 +2646,3 @@ window.marcarAulaConcluida = async function() {
 </script>
 </body>
 </html>
-
-
-
-
