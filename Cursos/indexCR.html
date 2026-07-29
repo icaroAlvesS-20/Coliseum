@@ -2221,21 +2221,35 @@
             console.log('📡 Status:', response.status, response.statusText);
 
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('❌ Erro do servidor:', errorText);
-                
-                console.log('🔄 Tentando endpoint alternativo...');
-                const altResponse = await fetch(`${gerenciador.API_BASE}/solicitacoes-autorizacao`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(payload)
-                });
-                
-                if (altResponse.ok) {
-                    console.log('✅ Sucesso no endpoint alternativo');
+                let errorData = null;
+            
+                try {
+                    errorData = await response.json();
+                } catch (error) {
+                    console.error('Não foi possível ler o erro do servidor:', error);
+                }
+            
+                console.error('❌ Erro do servidor:', errorData);
+            
+                if (
+                    errorData?.error === 'Solicitação já existe' ||
+                    errorData?.details?.includes('solicitação pendente')
+                ) {
+                    mostrarNotificacao(
+                        'Sua solicitação já foi enviada e está aguardando autorização.',
+                        'info',
+                        5000
+                    );
+            
                     return true;
                 }
-                
+            
+                mostrarNotificacao(
+                    errorData?.error || 'Não foi possível enviar a solicitação.',
+                    'error',
+                    5000
+                );
+            
                 return false;
             }
 
