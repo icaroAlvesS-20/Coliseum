@@ -1537,103 +1537,144 @@
             container.innerHTML = html;
         }
 
-        gerarListaAulas(aulas) {
-            if (!aulas || aulas.length === 0) {
-                return '<div style="padding:20px;color:#888;text-align:center;">Nenhuma aula disponível neste módulo</div>';
-            }
+       gerarListaAulas(aulas) {
+    if (!aulas || aulas.length === 0) {
+        return '<div style="padding:20px;color:#888;text-align:center;">Nenhuma aula disponível neste módulo</div>';
+    }
 
-            const solicitacaoEnviada =
-                localStorage.getItem(
-                    `solicitacao_${this.usuarioId}_${aula.id}`
-                ) === 'enviada';
-            
-            let aulasHTML = '';
-            
-            for (let i = 0; i < aulas.length; i++) {
-                const aula = aulas[i];
-                if (!aula || !aula.id) continue;
-                
-                const concluida = this.aulasConcluidas.includes(aula.id);
-                const primeiraAula = (i === 0);
-                const autorizada = this.verificarAulaAutorizada(aula.id);
-                const aulaIcon = aula.videoUrl ? 'fas fa-play-circle' : 'fas fa-book';
-                const bloqueada = !autorizada && !concluida;
+    let aulasHTML = '';
 
-                const mostrarBotaoSolicitar = !concluida && !autorizada && !primeiraAula;
-                const mostrarConcluirRapido = !concluida && (primeiraAula || autorizada);
-                
-                aulasHTML += `
-                    <div class="aula-item ${concluida ? 'completa' : ''} ${bloqueada ? 'bloqueada' : ''}" 
-                         onclick="${bloqueada ? '' : `iniciarAula(${aula.id})`}"
-                         data-aula-id="${aula.id}"
-                         data-aula-autorizada="${autorizada}"
-                         data-primeira-aula="${primeiraAula}"
-                         style="${bloqueada ? 'cursor: not-allowed;' : ''}">
-                        <div class="aula-icone">
-                            ${bloqueada ? 
-                                '<i class="fas fa-lock" style="color: var(--warning);"></i>' : 
-                                `<i class="${aulaIcon}"></i>`
-                            }
-                        </div>
-                        <div class="aula-info">
-                            <h4 style="${bloqueada ? 'color: #888;' : ''}">
-                                ${this.escapeHtml(aula.titulo || `Aula ${aula.id}`)}
-                                ${primeiraAula && !concluida ? 
-                                    '<span style="color: var(--success); font-size: 0.8em; margin-left: 8px;">(Início)</span>' : 
-                                    ''}
-                                ${bloqueada ? 
-                                    '<span style="color: var(--warning); font-size: 0.8em; margin-left: 8px;">(Bloqueada)</span>' : 
-                                    ''}
-                            </h4>
-                            <div class="aula-meta">
-                                <span><i class="fas fa-clock"></i> ${aula.duracao || '10:00'} min</span>
-                                ${aula.nivel ? `<span><i class="fas fa-chart-bar"></i> ${aula.nivel}</span>` : ''}
-                            </div>
-                        </div>
-                        
-                        <div class="aula-status-container">
-                            ${mostrarConcluirRapido ? `
-                                <button class="btn-concluir-rapido" 
-                                        onclick="event.stopPropagation(); concluirAulaRapidamente(${aula.id})"
-                                        title="Concluir esta aula sem abrir">
+    for (let i = 0; i < aulas.length; i++) {
+        const aula = aulas[i];
+
+        if (!aula || !aula.id) continue;
+
+        const solicitacaoEnviada =
+            localStorage.getItem(
+                `solicitacao_${this.usuarioId}_${aula.id}`
+            ) === 'enviada';
+
+        const concluida = this.aulasConcluidas.includes(aula.id);
+        const primeiraAula = i === 0;
+        const autorizada = this.verificarAulaAutorizada(aula.id);
+        const aulaIcon = aula.videoUrl
+            ? 'fas fa-play-circle'
+            : 'fas fa-book';
+
+        const bloqueada = !autorizada && !concluida;
+
+        const mostrarBotaoSolicitar =
+            !concluida && !autorizada && !primeiraAula;
+
+        const mostrarConcluirRapido =
+            !concluida && (primeiraAula || autorizada);
+
+        aulasHTML += `
+            <div
+                class="aula-item ${concluida ? 'completa' : ''} ${bloqueada ? 'bloqueada' : ''}"
+                onclick="${bloqueada ? '' : `iniciarAula(${aula.id})`}"
+                data-aula-id="${aula.id}"
+                data-aula-autorizada="${autorizada}"
+                data-primeira-aula="${primeiraAula}"
+                style="${bloqueada ? 'cursor: not-allowed;' : ''}"
+            >
+                <div class="aula-icone">
+                    ${
+                        bloqueada
+                            ? '<i class="fas fa-lock" style="color: var(--warning);"></i>'
+                            : `<i class="${aulaIcon}"></i>`
+                    }
+                </div>
+
+                <div class="aula-info">
+                    <h4 style="${bloqueada ? 'color: #888;' : ''}">
+                        ${this.escapeHtml(aula.titulo || `Aula ${aula.id}`)}
+
+                        ${
+                            primeiraAula && !concluida
+                                ? '<span style="color: var(--success); font-size: 0.8em; margin-left: 8px;">(Início)</span>'
+                                : ''
+                        }
+
+                        ${
+                            bloqueada
+                                ? '<span style="color: var(--warning); font-size: 0.8em; margin-left: 8px;">(Bloqueada)</span>'
+                                : ''
+                        }
+                    </h4>
+
+                    <div class="aula-meta">
+                        <span>
+                            <i class="fas fa-clock"></i>
+                            ${aula.duracao || '10:00'} min
+                        </span>
+
+                        ${
+                            aula.nivel
+                                ? `<span><i class="fas fa-chart-bar"></i> ${aula.nivel}</span>`
+                                : ''
+                        }
+                    </div>
+                </div>
+
+                <div class="aula-status-container">
+                    ${
+                        mostrarConcluirRapido
+                            ? `
+                                <button
+                                    class="btn-concluir-rapido"
+                                    onclick="event.stopPropagation(); concluirAulaRapidamente(${aula.id})"
+                                    title="Concluir esta aula sem abrir"
+                                >
                                     <i class="fas fa-check"></i>
                                     <span>Concluir</span>
                                 </button>
-                            ` : ''}
-                            
-                            ${mostrarBotaoSolicitar ? `
+                            `
+                            : ''
+                    }
+
+                    ${
+                        mostrarBotaoSolicitar
+                            ? `
                                 <button
                                     class="btn-solicitar ${solicitacaoEnviada ? 'solicitacao-enviada' : ''}"
                                     ${solicitacaoEnviada ? 'disabled' : ''}
                                     onclick="event.stopPropagation(); mostrarModalSolicitacaoAutorizacao(${aula.id})"
                                 >
                                     <i class="fas ${solicitacaoEnviada ? 'fa-clock' : 'fa-paper-plane'}"></i>
-                            
+
                                     <span>
-                                        ${solicitacaoEnviada
-                                            ? 'Solicitação enviada'
-                                            : 'Solicitar'}
+                                        ${
+                                            solicitacaoEnviada
+                                                ? 'Solicitação enviada'
+                                                : 'Solicitar'
+                                        }
                                     </span>
                                 </button>
-                            ` : ''}
-                            
-                            <div class="aula-status">
-                                ${concluida ? 
-                                    '<i class="fas fa-check"></i> Concluída' : 
-                                    bloqueada ? 
-                                        '<i class="fas fa-lock"></i> Bloqueada' : 
-                                        primeiraAula ? 
-                                            '<i class="fas fa-play-circle"></i> Disponível' : 
-                                            '<i class="fas fa-user-shield"></i> Autorizada'
-                                }
-                            </div>
-                        </div>
+                            `
+                            : ''
+                    }
+
+                    <div class="aula-status ${solicitacaoEnviada ? 'aguardando-autorizacao' : ''}">
+                        ${
+                            concluida
+                                ? '<i class="fas fa-check"></i> Concluída'
+                                : solicitacaoEnviada
+                                    ? '<i class="fas fa-hourglass-half"></i> Aguardando autorização'
+                                    : bloqueada
+                                        ? '<i class="fas fa-lock"></i> Bloqueada'
+                                        : primeiraAula
+                                            ? '<i class="fas fa-play-circle"></i> Disponível'
+                                            : '<i class="fas fa-user-shield"></i> Autorizada'
+                        }
                     </div>
-                `;
-            }
-            
-            return aulasHTML;
-        }
+                </div>
+            </div>
+        `;
+    }
+
+    return aulasHTML;
+}
 
         encontrarAula(aulaId) {
             if (this.aulasMap.has(aulaId)) {
