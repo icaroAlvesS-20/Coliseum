@@ -2408,30 +2408,78 @@
         document.body.style.overflow = 'hidden';
     }
 
-    async function enviarSolicitacaoAutorizacaoManual(aulaId) {
-        const gerenciador = window.gerenciador;
-        const motivo = document.getElementById('motivo-solicitacao')?.value.trim() || 
-                       `Solicitação manual do aluno para acessar a aula.`;
-        
-        try {
-            showGlobalLoading(true);
-            
-            const enviada = await enviarSolicitacaoParaAdm(aulaId, 'autorizacao_manual', motivo);
-            
-            if (enviada) {
-                mostrarNotificacaoSolicitacaoEnviada();
-                fecharModalSolicitacao();
-            } else {
-                throw new Error('Não foi possível enviar a solicitação');
-            }
-            
-        } catch (error) {
-            console.error('❌ Erro ao enviar solicitação:', error);
-            alert('❌ Erro ao enviar solicitação. Tente novamente.');
-        } finally {
-            showGlobalLoading(false);
+   async function enviarSolicitacaoAutorizacaoManual(aulaId) {
+    const motivo =
+        document.getElementById('motivo-solicitacao')?.value.trim() ||
+        'Solicitação manual do aluno para acessar a aula.';
+
+    const botao = document.querySelector(
+        `button[onclick="enviarSolicitacaoAutorizacaoManual(${aulaId})"]`
+    );
+
+    try {
+        showGlobalLoading(true);
+
+        if (botao) {
+            botao.disabled = true;
+            botao.innerHTML =
+                '<i class="fas fa-spinner fa-spin"></i> Enviando...';
         }
+
+        const enviada = await enviarSolicitacaoParaAdm(
+            aulaId,
+            'autorizacao_manual',
+            motivo
+        );
+
+        if (!enviada) {
+            throw new Error('Não foi possível enviar a solicitação');
+        }
+
+        fecharModalSolicitacao();
+
+        mostrarNotificacao(
+            'Solicitação enviada! Aguarde a autorização do administrador.',
+            'success',
+            5000
+        );
+
+        const aulaElement = document.querySelector(
+            `.aula-item[data-aula-id="${aulaId}"]`
+        );
+
+        const botaoSolicitar = aulaElement?.querySelector('.btn-solicitar');
+
+        if (botaoSolicitar) {
+            botaoSolicitar.disabled = true;
+            botaoSolicitar.innerHTML =
+                '<i class="fas fa-clock"></i><span>Solicitação enviada</span>';
+        }
+
+        const status = aulaElement?.querySelector('.aula-status');
+
+        if (status) {
+            status.innerHTML =
+                '<i class="fas fa-clock"></i> Aguardando autorização';
+        }
+    } catch (error) {
+        console.error('Erro ao enviar solicitação:', error);
+
+        mostrarNotificacao(
+            'Não foi possível enviar a solicitação. Tente novamente.',
+            'error',
+            5000
+        );
+
+        if (botao) {
+            botao.disabled = false;
+            botao.innerHTML =
+                '<i class="fas fa-paper-plane"></i> Enviar Solicitação';
+        }
+    } finally {
+        showGlobalLoading(false);
     }
+}
 
     // FUNÇÕES GLOBAIS EXPOSTAS
     window.toggleModulo = function(index) {
