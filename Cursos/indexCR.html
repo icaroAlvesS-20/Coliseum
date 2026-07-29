@@ -971,6 +971,22 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--primary-dark);
         }
+
+.btn-solicitar.solicitacao-enviada {
+    background: rgba(255, 193, 7, 0.15);
+    border: 1px solid rgba(255, 193, 7, 0.45);
+    color: #ffc107;
+    cursor: default;
+    opacity: 1;
+}
+
+.btn-solicitar.solicitacao-enviada:disabled {
+    opacity: 1;
+}
+
+.aguardando-autorizacao {
+    color: #ffc107;
+}
     </style>
 </head>
 <body>
@@ -1526,6 +1542,11 @@
                 return '<div style="padding:20px;color:#888;text-align:center;">Nenhuma aula disponível neste módulo</div>';
             }
 
+            const solicitacaoEnviada =
+                localStorage.getItem(
+                    `solicitacao_${this.usuarioId}_${aula.id}`
+                ) === 'enviada';
+            
             let aulasHTML = '';
             
             for (let i = 0; i < aulas.length; i++) {
@@ -1581,9 +1602,18 @@
                             ` : ''}
                             
                             ${mostrarBotaoSolicitar ? `
-                                <button class="btn-solicitar" onclick="event.stopPropagation();enviarSolicitacaoParaAdm(${aula.id})">
-                                    <i class="fas fa-paper-plane"></i>
-                                    <span>Solicitar</span>
+                                <button
+                                    class="btn-solicitar ${solicitacaoEnviada ? 'solicitacao-enviada' : ''}"
+                                    ${solicitacaoEnviada ? 'disabled' : ''}
+                                    onclick="event.stopPropagation(); mostrarModalSolicitacaoAutorizacao(${aula.id})"
+                                >
+                                    <i class="fas ${solicitacaoEnviada ? 'fa-clock' : 'fa-paper-plane'}"></i>
+                            
+                                    <span>
+                                        ${solicitacaoEnviada
+                                            ? 'Solicitação enviada'
+                                            : 'Solicitar'}
+                                    </span>
                                 </button>
                             ` : ''}
                             
@@ -2422,23 +2452,48 @@
         document.body.style.overflow = 'hidden';
     }
 
-   async function enviarSolicitacaoAutorizacaoManual(aulaId) {
+        function marcarSolicitacaoComoEnviada(aulaId) {
+            const aulaElement = document.querySelector(
+                `.aula-item[data-aula-id="${aulaId}"]`
+            );
+        
+            if (!aulaElement) return;
+        
+            const botaoSolicitar = aulaElement.querySelector('.btn-solicitar');
+            const statusAula = aulaElement.querySelector('.aula-status');
+        
+            if (botaoSolicitar) {
+                botaoSolicitar.disabled = true;
+                botaoSolicitar.classList.add('solicitacao-enviada');
+        
+                botaoSolicitar.innerHTML = `
+                    <i class="fas fa-clock"></i>
+                    <span>Solicitação enviada</span>
+                `;
+            }
+        
+            if (statusAula) {
+                statusAula.innerHTML = `
+                    <i class="fas fa-hourglass-half"></i>
+                    Aguardando autorização
+                `;
+        
+                statusAula.classList.add('aguardando-autorizacao');
+            }
+        
+            localStorage.setItem(
+                `solicitacao_${window.gerenciador.usuarioId}_${aulaId}`,
+                'enviada'
+            );
+        }
+    
+  async function enviarSolicitacaoAutorizacaoManual(aulaId) {
     const motivo =
         document.getElementById('motivo-solicitacao')?.value.trim() ||
         'Solicitação manual do aluno para acessar a aula.';
 
-    const botao = document.querySelector(
-        `button[onclick="enviarSolicitacaoAutorizacaoManual(${aulaId})"]`
-    );
-
     try {
         showGlobalLoading(true);
-
-        if (botao) {
-            botao.disabled = true;
-            botao.innerHTML =
-                '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-        }
 
         const enviada = await enviarSolicitacaoParaAdm(
             aulaId,
@@ -2446,35 +2501,18 @@
             motivo
         );
 
-        if (!enviada) {
+        if (enviada) {
+            fecharModalSolicitacao();
+
+            marcarSolicitacaoComoEnviada(aulaId);
+
+            mostrarNotificacao(
+                'Solicitação enviada! Aguarde a autorização do administrador.',
+                'success',
+                5000
+            );
+        } else {
             throw new Error('Não foi possível enviar a solicitação');
-        }
-
-        fecharModalSolicitacao();
-
-        mostrarNotificacao(
-            'Solicitação enviada! Aguarde a autorização do administrador.',
-            'success',
-            5000
-        );
-
-        const aulaElement = document.querySelector(
-            `.aula-item[data-aula-id="${aulaId}"]`
-        );
-
-        const botaoSolicitar = aulaElement?.querySelector('.btn-solicitar');
-
-        if (botaoSolicitar) {
-            botaoSolicitar.disabled = true;
-            botaoSolicitar.innerHTML =
-                '<i class="fas fa-clock"></i><span>Solicitação enviada</span>';
-        }
-
-        const status = aulaElement?.querySelector('.aula-status');
-
-        if (status) {
-            status.innerHTML =
-                '<i class="fas fa-clock"></i> Aguardando autorização';
         }
     } catch (error) {
         console.error('Erro ao enviar solicitação:', error);
@@ -2484,12 +2522,6 @@
             'error',
             5000
         );
-
-        if (botao) {
-            botao.disabled = false;
-            botao.innerHTML =
-                '<i class="fas fa-paper-plane"></i> Enviar Solicitação';
-        }
     } finally {
         showGlobalLoading(false);
     }
